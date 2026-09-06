@@ -10,7 +10,7 @@ export interface PantryMatch {
 
 export function matchPantryToRecipes(
   pantryIngredientIds: string[],
-  recipes: RecipeIngredients[]
+  recipes: RecipeIngredients[],
 ): PantryMatch[] {
   const pantrySet = new Set(pantryIngredientIds);
 

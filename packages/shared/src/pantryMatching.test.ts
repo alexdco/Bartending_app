@@ -9,9 +9,7 @@ describe("matchPantryToRecipes", () => {
 
     const result = matchPantryToRecipes(["rum", "lime", "mint"], recipes);
 
-    expect(result).toEqual([
-      { recipeId: "mojito", missingIngredientIds: [] },
-    ]);
+    expect(result).toEqual([{ recipeId: "mojito", missingIngredientIds: [] }]);
   });
 
   it("lists only the ingredients not present in the pantry", () => {
@@ -33,11 +31,7 @@ describe("matchPantryToRecipes", () => {
 
     const result = matchPantryToRecipes(["rum", "cola"], recipes);
 
-    expect(result.map((r) => r.recipeId)).toEqual([
-      "rum-and-coke",
-      "daiquiri",
-      "old-fashioned",
-    ]);
+    expect(result.map((r) => r.recipeId)).toEqual(["rum-and-coke", "daiquiri", "old-fashioned"]);
   });
 
   it("returns an empty array when there are no recipes", () => {
@@ -57,9 +51,7 @@ describe("matchPantryToRecipes", () => {
   });
 
   it("treats a recipe with no ingredients as always fully matched", () => {
-    const recipes: RecipeIngredients[] = [
-      { recipeId: "water", ingredientIds: [] },
-    ];
+    const recipes: RecipeIngredients[] = [{ recipeId: "water", ingredientIds: [] }];
 
     const result = matchPantryToRecipes([], recipes);
 
@@ -71,10 +63,7 @@ describe("matchPantryToRecipes", () => {
       { recipeId: "martini", ingredientIds: ["gin", "vermouth"] },
     ];
 
-    const result = matchPantryToRecipes(
-      ["gin", "cola", "orange-juice", "vodka"],
-      recipes
-    );
+    const result = matchPantryToRecipes(["gin", "cola", "orange-juice", "vodka"], recipes);
 
     expect(result[0].missingIngredientIds).toEqual(["vermouth"]);
   });
@@ -87,9 +76,7 @@ describe("matchPantryToRecipes", () => {
 
     matchPantryToRecipes(pantry, recipes);
 
-    expect(recipes).toEqual([
-      { recipeId: "mojito", ingredientIds: ["rum", "lime", "mint"] },
-    ]);
+    expect(recipes).toEqual([{ recipeId: "mojito", ingredientIds: ["rum", "lime", "mint"] }]);
     expect(pantry).toEqual(["rum"]);
   });
 });

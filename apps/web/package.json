@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@bartendingapp/shared": "workspace:*",
@@ -25,4 +26,3 @@
   },
   "packageManager": "pnpm@12.3.4"
 }
-

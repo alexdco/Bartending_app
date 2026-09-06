@@ -1,0 +1,12 @@
+node_modules
+.next
+.expo
+.turbo
+dist
+build
+pnpm-lock.yaml
+*.md
+.agents
+.claude
+assets
+**/*.icon/**
