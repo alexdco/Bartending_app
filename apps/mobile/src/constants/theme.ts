@@ -1,65 +1,61 @@
-/**
- * Below are the colors that are used in the app. The colors are defined in the light and dark mode.
- * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
- */
-
-import "@/global.css";
+// Design tokens, sourced from packages/shared/src/tokens.ts (the single
+// cross platform source of truth; see docs/design/design.md and spec 0003).
 
 import { Platform } from "react-native";
+import {
+  colors as sharedColors,
+  spacing as sharedSpacing,
+  radii as sharedRadii,
+  typeScale as sharedTypeScale,
+  fonts as sharedFonts,
+  type ColorTokens,
+} from "@bartendingapp/shared";
 
-export const Colors = {
-  light: {
-    text: "#000000",
-    background: "#ffffff",
-    backgroundElement: "#F0F0F3",
-    backgroundSelected: "#E0E1E6",
-    textSecondary: "#60646C",
-  },
-  dark: {
-    text: "#ffffff",
-    background: "#000000",
-    backgroundElement: "#212225",
-    backgroundSelected: "#2E3135",
-    textSecondary: "#B0B4BA",
-  },
-} as const;
+export const Colors = sharedColors;
+export type ThemeColor = keyof ColorTokens;
 
-export type ThemeColor = keyof typeof Colors.light & keyof typeof Colors.dark;
+export const Spacing = sharedSpacing;
+export const Radii = sharedRadii;
+export const TypeScale = sharedTypeScale;
 
 export const Fonts = Platform.select({
   ios: {
-    /** iOS `UIFontDescriptorSystemDesignDefault` */
-    sans: "system-ui",
-    /** iOS `UIFontDescriptorSystemDesignSerif` */
-    serif: "ui-serif",
-    /** iOS `UIFontDescriptorSystemDesignRounded` */
-    rounded: "ui-rounded",
-    /** iOS `UIFontDescriptorSystemDesignMonospaced` */
+    display: sharedFonts.display,
+    body: sharedFonts.body,
     mono: "ui-monospace",
   },
   default: {
-    sans: "normal",
-    serif: "serif",
-    rounded: "normal",
+    display: sharedFonts.display,
+    body: sharedFonts.body,
     mono: "monospace",
-  },
-  web: {
-    sans: "var(--font-display)",
-    serif: "var(--font-serif)",
-    rounded: "var(--font-rounded)",
-    mono: "var(--font-mono)",
   },
 });
 
-export const Spacing = {
-  half: 2,
-  one: 4,
-  two: 8,
-  three: 16,
-  four: 24,
-  five: 32,
-  six: 64,
+/**
+ * Compatibility shim for the pre-existing Expo scaffold screens
+ * (src/app/index.tsx, explore.tsx, themed-text.tsx, themed-view.tsx),
+ * which reference Colors.backgroundElement / Colors.backgroundSelected.
+ * Not part of the new semantic token set; remove once those screens are
+ * rebuilt against the real design system (Slice 1: recipe search and detail).
+ */
+export const LegacyColors = {
+  light: {
+    text: sharedColors.light.text,
+    background: sharedColors.light.bg,
+    backgroundElement: sharedColors.light.surface,
+    backgroundSelected: sharedColors.light.surfaceSelected,
+    textSecondary: sharedColors.light.textMuted,
+  },
+  dark: {
+    text: sharedColors.dark.text,
+    background: sharedColors.dark.bg,
+    backgroundElement: sharedColors.dark.surface,
+    backgroundSelected: sharedColors.dark.surfaceSelected,
+    textSecondary: sharedColors.dark.textMuted,
+  },
 } as const;
+
+export type LegacyThemeColor = keyof typeof LegacyColors.light & keyof typeof LegacyColors.dark;
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;

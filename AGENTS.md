@@ -45,6 +45,10 @@ pnpm lint
 
 Stored in `docs/specs/`. Format: `docs/specs/NNNN-title.md`.
 
+## Design system
+
+Visual language and token reference: [docs/design/design.md](docs/design/design.md). Token values live in `packages/shared/src/tokens.ts` (the source of truth); `design.md` is the human readable reference.
+
 ## Rules
 
 - Functional and immutable by default: pure functions, no shared mutable state, side effects pushed to the edges (network, I/O, Supabase calls). Prefer composition over classes.

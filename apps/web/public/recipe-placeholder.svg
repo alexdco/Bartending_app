@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" fill="none" role="img" aria-label="Cocktail glass placeholder">
+  <rect width="200" height="200" fill="#1C1815" />
+  <g stroke="#79695A" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M60 50 L100 110 L140 50 Z" />
+    <line x1="100" y1="110" x2="100" y2="150" />
+    <line x1="75" y1="150" x2="125" y2="150" />
+    <line x1="55" y1="50" x2="145" y2="50" />
+    <path d="M115 60 q10 -14 24 -8" />
+  </g>
+</svg>

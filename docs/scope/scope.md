@@ -13,10 +13,10 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 |---|---------|-------|--------|
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | in-progress |
-| 3 | Data model | Foundation | planned |
-| 4 | Design system & UI foundation | Foundation | planned |
-| 5 | Recipe search and detail (core loop) | Slice 1 | planned |
-| 6 | Guest pantry | Slice 2 | planned |
+| 3 | Data model | Foundation | in-progress |
+| 4 | Design system & UI foundation | Foundation | in-progress |
+| 5 | Recipe search and detail (core loop) | Slice 1 | in-progress |
+| 6 | Guest pantry | Slice 2 | in-progress |
 | 7 | Drink ideas from pantry | Slice 3 | planned |
 | 8 | AI generated pantry drink ideas | Slice 4 | planned |
 | 9 | Sign in and cross device sync | Slice 5 | planned |
@@ -47,26 +47,62 @@ code in root `package.json`, `turbo.json`, `.prettierrc.json`, `.husky/`, plus p
 ### 3. Data model
 Core entities every feature builds on: recipes, ingredients, pantry items, users (optional accounts), favorites, regions/tags. Recipes and ingredient reference data are sourced from a public cocktail API and cached locally.
 **Done when:** entities and relationships support search, pantry, generation, favorites, and region filtering without a breaking migration.
-- [ ] Design it (spec): `/architect data model`
+- [x] Design it (spec): `/architect data model`
+- [x] Build it: `/develop data model` — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via the Supabase MCP server
+  - [x] Migration, indexes, and RLS policies for all seven tables (recipes, ingredients, recipe_ingredients, tags, recipe_tags, pantry_items, favorites), satisfies AC-1, AC-2, AC-3, AC-5, AC-6, AC-7 — applied from `supabase/migrations/20260906202328_core_data_model.sql`; a follow up migration (`20260907000343_harden_search_path_and_extension_schema.sql`) pinned the `set_updated_at` function's search_path and moved `pg_trgm` into an `extensions` schema, clearing both security advisories
+  - [x] Full text and trigram search indexes for recipe/ingredient search, satisfies AC-1 — applied in the same migration
+  - [x] Generated TypeScript types in `packages/shared`, satisfies AC-1 through AC-5 — regenerated for real in `packages/shared/src/database.types.ts` from the live schema via the Supabase MCP type generator
+  - [x] Import job (upsert, transactional, reconciliation via `deleted_at`), satisfies AC-6 — run twice against the live project (426 recipes, 293 ingredients, 60 tags, 1662 recipe_ingredients, 635 recipe_tags both times, confirming idempotent reimport); a within-recipe ingredient/tag name collision (two source names normalizing to the same canonical row) was hit on the first run and fixed in `20260907001512_import_catalog_dedupe_join_rows.sql` (`on conflict (recipe_id, ingredient_id) / (recipe_id, tag_id) do nothing`)
+- [x] Verify it: `/check verify data model` — PASS. All 7 ACs met live against BartendingAppWeb; reconciliation (AC-6) exercised end to end (soft delete + restore via real reimport); RLS/grants (AC-7) confirmed via live policy introspection. `region` browsing (part of AC-5) has no data yet, expected per spec's own Follow-up (tagging method deferred to the recipe search and detail feature).
+- [ ] Test it: `/test data model`
+Spec [0002](../specs/0002-data-model.md) · code in `supabase/migrations`, `packages/shared/src/database.types.ts`, `packages/import-job`
 
 ### 4. Design system & UI foundation
 Visual language, layout primitives, and base components shared by mobile and web so recipe cards, pantry chips, and detail pages feel cohesive and accessible (WCAG AA).
 **Done when:** `design.md` covers type/color/spacing/components, and base components handle focus and keyboard on web and touch targets on mobile.
-- [ ] Design it (spec): `/architect design system & UI foundation`
+- [x] Design it (spec): `/architect design system & UI foundation`
+- [x] Build it: `/develop design system & UI foundation`
+  - [x] Write `docs/design/design.md` (tokens, typefaces, spacing, radii) and its automated WCAG contrast test in `packages/shared` (`tokens.test.ts`, 16 pairs, all passing), satisfies AC-2, AC-5, AC-6
+  - [x] Shared TypeScript token module in `packages/shared` (`tokens.ts`: semantic color/spacing/type/radii tokens, both themes), satisfies AC-1
+  - [x] Wire tokens into web (Tailwind v4 + generated `@theme` block, CSS variables, `prefers-color-scheme`, Fraunces/Inter via `next/font`) and mobile (`useTheme()` hook over `Appearance`, replacing the scaffold `theme.ts`/`global.css`; a `LegacyColors`/`useLegacyTheme()` shim keeps the pre-existing Expo starter screens compiling untouched), satisfies AC-1, AC-2
+  - [x] Build the core component set (Button, Text, Card, Chip, Input, Spinner, EmptyState) on both platforms; web uses native elements plus Radix `Toggle` for Chip (a native `<button>` needs no Radix wrapper), mobile via `StyleSheet` with accessibility props and 44×44 minimum hit targets, satisfies AC-3, AC-4
+  - [x] Document the finished component inventory (real props, states, bases) in `docs/design/design.md`, satisfies AC-6
+- [x] Verify it: `/check verify design system & UI foundation` — PASS. All 6 ACs met with live evidence (fresh typecheck/lint/test/build, a temporary live render of all 7 components on web and mobile). Mobile's full on-device visual/touch confirmation wasn't possible (no simulator in this environment); confirmed via compiled bundle content instead.
+- [ ] Test it: `/test design system & UI foundation`
+Spec [0003](../specs/0003-design-system-ui-foundation/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `docs/design/design.md`
 
 ## Slice 1: Recipe search and detail (core loop)
 
 ### 5. Recipe search and detail (core loop)
 The thinnest real thread through the whole product: a user (signed in or guest) searches cocktail recipes by name or ingredient, sees results with images, and opens a detail page with full instructions and image. Works on mobile and web against the real recipe data source. No pantry, no generation, no accounts yet.
 **Done when:** a user can search, see image backed results, open a detail page with instructions, and it works on both mobile and web against real data.
-- [ ] Design it (spec): `/architect recipe search and detail`
+- [x] Design it (spec): `/architect recipe search and detail`
+- [x] Build it: `/develop recipe search and detail`
+  - [x] `search_recipes` Postgres function (union search, ranking, pagination, soft delete exclusion) plus regenerated shared types, satisfies AC-1, AC-2, AC-3, AC-5
+  - [x] Web image config (`next.config.ts` TheCocktailDB domain), satisfies AC-6
+  - [x] Shared query layer (`searchRecipes`/`useRecipeDetail` TanStack Query hooks) and `RecipeCard`/`RecipeDetailHeader` components on spec 0003's design system, satisfies AC-1 through AC-8
+  - [x] Web search page (`/`) and detail page (`/recipes/[id]`), satisfies AC-1 through AC-8
+  - [x] Mobile Search tab and detail screen (pushed via Expo Router), satisfies AC-1 through AC-8
+  - [x] Cross platform parity check (same query, same live data, both platforms), satisfies AC-9
+- [ ] Verify it: `/check verify recipe search and detail`
+- [ ] Test it: `/test recipe search and detail`
+Spec [0004](../specs/0004-recipe-search-and-detail/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Slice 2: Guest pantry
 
 ### 6. Guest pantry
 A pantry list a user (guest or signed in) can add and remove ingredients from, stored on device. This is the segment the generator and recommendations later depend on.
 **Done when:** a user can add, remove, and view pantry ingredients, and it persists across app restarts on device.
-- [ ] Design it (spec): `/architect guest pantry`
+- [x] Design it (spec): `/architect guest pantry`
+- [x] Build it: `/develop guest pantry`
+  - [x] Anonymous session bootstrap on both platforms (`ensureAnonymousSession`, persisted storage, wired into mobile `_layout.tsx` and web `providers.tsx`), satisfies AC-10
+  - [x] `search_ingredients` Postgres function plus the shared `pantry.ts` fetch/add/remove layer, satisfies AC-1, AC-2, AC-9
+  - [x] Shared TanStack Query hooks with optimistic update and rollback, satisfies AC-6, AC-7, AC-8
+  - [x] Dedicated pantry screen/page (mobile and web) with the ingredient search picker and empty state, satisfies AC-1, AC-2, AC-3
+  - [x] Recipe detail inline add and "already in pantry" marker, plus cross platform parity check, satisfies AC-4, AC-5
+- [ ] Verify it: `/check verify guest pantry`
+- [ ] Test it: `/test guest pantry`
+Spec [0005](../specs/0005-guest-pantry.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
 
 ## Slice 3: Drink ideas from pantry
 
