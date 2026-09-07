@@ -14,6 +14,11 @@ export function SiteNav() {
           Pantry
         </Text>
       </Link>
+      <Link href="/drink-ideas">
+        <Text variant="label" as="span">
+          Drink ideas
+        </Text>
+      </Link>
     </nav>
   );
 }

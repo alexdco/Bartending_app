@@ -5,15 +5,16 @@ import { Spacing } from "@/constants/theme";
 import { Card } from "@/components/card";
 import { Chip } from "@/components/chip";
 import { Text } from "@/components/text";
-import type { RecipeSearchResult } from "@bartendingapp/shared";
+import { formatMissingIngredients, type RecipeSearchResult } from "@bartendingapp/shared";
 import { alcoholicStatusLabel } from "./format";
 import { RecipeImage } from "./recipe-image";
 
 export interface RecipeCardProps {
   recipe: RecipeSearchResult;
+  missingIngredientNames?: string[];
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) {
   const router = useRouter();
 
   return (
@@ -29,6 +30,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           {recipe.name}
         </Text>
         <Chip>{alcoholicStatusLabel(recipe.alcoholicStatus)}</Chip>
+        {missingIngredientNames && missingIngredientNames.length > 0 && (
+          <Text variant="bodySmall" muted numberOfLines={1}>
+            Missing: {formatMissingIngredients(missingIngredientNames)}
+          </Text>
+        )}
       </Card>
     </Pressable>
   );

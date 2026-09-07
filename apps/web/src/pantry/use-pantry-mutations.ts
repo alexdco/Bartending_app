@@ -3,6 +3,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { addPantryItem, removePantryItem, type PantryItem } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
+import { drinkIdeasQueryKey } from "@/drink-ideas/use-drink-ideas";
 import { pantryQueryKey } from "./use-pantry";
 
 interface MutationContext {
@@ -36,6 +37,7 @@ export function useAddPantryItem() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: pantryQueryKey });
+      queryClient.invalidateQueries({ queryKey: drinkIdeasQueryKey });
     },
   });
 }
@@ -63,6 +65,7 @@ export function useRemovePantryItem() {
     },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: pantryQueryKey });
+      queryClient.invalidateQueries({ queryKey: drinkIdeasQueryKey });
     },
   });
 }

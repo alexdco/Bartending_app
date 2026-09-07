@@ -4,13 +4,14 @@ import { Card } from "@/components/card";
 import { Chip } from "@/components/chip";
 import { Text } from "@/components/text";
 import { alcoholicStatusLabel } from "./format";
-import type { RecipeSearchResult } from "@bartendingapp/shared";
+import { formatMissingIngredients, type RecipeSearchResult } from "@bartendingapp/shared";
 
 export interface RecipeCardProps {
   recipe: RecipeSearchResult;
+  missingIngredientNames?: string[];
 }
 
-export function RecipeCard({ recipe }: RecipeCardProps) {
+export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) {
   return (
     <Link href={`/recipes/${recipe.id}`} className="block">
       <Card className="flex flex-col gap-two">
@@ -27,6 +28,11 @@ export function RecipeCard({ recipe }: RecipeCardProps) {
           {recipe.name}
         </Text>
         <Chip>{alcoholicStatusLabel(recipe.alcoholicStatus)}</Chip>
+        {missingIngredientNames && missingIngredientNames.length > 0 && (
+          <Text variant="bodySmall" muted>
+            Missing: {formatMissingIngredients(missingIngredientNames)}
+          </Text>
+        )}
       </Card>
     </Link>
   );

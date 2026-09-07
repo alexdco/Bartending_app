@@ -228,6 +228,17 @@ export type Database = {
     };
     Functions: {
       import_catalog: { Args: { drinks: Json }; Returns: undefined };
+      match_recipes_to_pantry: {
+        Args: { max_ratio?: number; page_limit?: number; page_offset?: number };
+        Returns: {
+          alcoholic_status: string;
+          id: string;
+          image_url: string;
+          missing_ingredients: Json;
+          missing_ratio: number;
+          name: string;
+        }[];
+      };
       search_ingredients: {
         Args: { query?: string; result_limit?: number };
         Returns: {

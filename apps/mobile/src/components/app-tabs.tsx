@@ -46,6 +46,15 @@ export default function AppTabs() {
           renderingMode="template"
         />
       </NativeTabs.Trigger>
+
+      {/* TODO: missing asset: a dedicated drink ideas tab icon; reusing explore.png as a placeholder per the engineer's call */}
+      <NativeTabs.Trigger name="drink-ideas">
+        <NativeTabs.Trigger.Label>Drink ideas</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require("@/assets/images/tabIcons/explore.png")}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
     </NativeTabs>
   );
 }

@@ -17,7 +17,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 4 | Design system & UI foundation | Foundation | in-progress |
 | 5 | Recipe search and detail (core loop) | Slice 1 | in-progress |
 | 6 | Guest pantry | Slice 2 | in-progress |
-| 7 | Drink ideas from pantry | Slice 3 | planned |
+| 7 | Drink ideas from pantry | Slice 3 | in-progress |
 | 8 | AI generated pantry drink ideas | Slice 4 | planned |
 | 9 | Sign in and cross device sync | Slice 5 | planned |
 | 10 | Recipe recommendations | Slice 6 | planned |
@@ -109,7 +109,17 @@ Spec [0005](../specs/0005-guest-pantry.md) · code in `packages/shared`, `apps/w
 ### 7. Drink ideas from pantry
 Filters the existing recipe library down to drinks the user can make now (or is close to making) with what is in their pantry.
 **Done when:** given pantry contents, the user sees a list of matching or near matching real recipes, ranked by fewest missing ingredients.
-- [ ] Design it (spec): `/architect drink ideas from pantry`
+- [x] Design it (spec): `/architect drink ideas from pantry`
+- [x] Build it: `/develop drink ideas from pantry`
+  - [x] `match_recipes_to_pantry` Postgres function (one ranked, paginated list at or under the near match cutoff, short recipe floor exception, session required), satisfies AC-1, AC-2, AC-3, AC-6, AC-7, AC-9 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260907133100_match_recipes_to_pantry_function.sql`; security advisor clean, verified live (no-session 28000 error, missing-count-exception qualifying a 0.5 ratio recipe)
+  - [x] Extend spec 0005's pantry mutation hooks to also invalidate the drink ideas query key, satisfies AC-5 — both apps' `use-pantry-mutations.ts`
+  - [x] Shared `drinkIdeas.ts` fetch function in `packages/shared`, plus a `useDrinkIdeas()` infinite query hook per app (web and mobile, matching the existing per-app hook pattern used by `useRecipeSearch`, since shared has no React dependency), satisfies AC-1, AC-2, AC-3, AC-8
+  - [x] `RecipeCard` missing ingredients prop, satisfies AC-2 — both apps' `recipe-card.tsx`, using a shared `formatMissingIngredients` truncation helper
+  - [x] Dedicated drink ideas screen/page (mobile and web), client side section split, empty state, and retryable error state, satisfies AC-1 through AC-4, AC-6, AC-8 — `apps/web/src/app/drink-ideas/page.tsx` (+ nav link) and `apps/mobile/src/app/drink-ideas.tsx` (+ tab entry)
+  - [x] Cross platform parity check — both apps share identical query keys, page size/cutoff constants, and section split logic via the same `fetchDrinkIdeaMatches`
+- [ ] Verify it: `/check verify drink ideas from pantry`
+- [ ] Test it: `/test drink ideas from pantry`
+Spec [0006](../specs/0006-drink-ideas-from-pantry.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
 
 ## Slice 4: AI generated pantry drink ideas
 
