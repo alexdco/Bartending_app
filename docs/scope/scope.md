@@ -119,7 +119,7 @@ Filters the existing recipe library down to drinks the user can make now (or is 
   - [x] Cross platform parity check — both apps share identical query keys, page size/cutoff constants, and section split logic via the same `fetchDrinkIdeaMatches`
 - [ ] Verify it: `/check verify drink ideas from pantry`
 - [ ] Test it: `/test drink ideas from pantry`
-Spec [0006](../specs/0006-drink-ideas-from-pantry.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
+Spec [0006](../specs/0006-drink-ideas-from-pantry/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
 
 ## Slice 4: AI generated pantry drink ideas
 
