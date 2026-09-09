@@ -288,7 +288,7 @@ Replaces the current search-first landing page (`/` on web, the default Search t
   - [x] Guest/signed-in parity and cross platform parity check, satisfies AC-12
 - [ ] Verify it: `/check verify personalized homepage`
 - [ ] Test it: `/test personalized homepage`
-Spec [0016](../specs/0016-personalized-homepage.md) · code in `packages/shared/src/{recipes.ts,homepage.ts}`, `apps/web/src/{app/page.tsx,app/search,homepage}`, `apps/mobile/src/{app/index.tsx,homepage}`
+Spec [0016](../specs/0016-personalized-homepage/index.md) · code in `packages/shared/src/{recipes.ts,homepage.ts}`, `apps/web/src/{app/page.tsx,app/search,homepage}`, `apps/mobile/src/{app/index.tsx,homepage}`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
