@@ -47,6 +47,23 @@ export async function searchRecipes(
   }));
 }
 
+export interface RecipeSitemapEntry {
+  id: string;
+  name: string;
+}
+
+export async function listAllRecipesForSitemap(
+  client: SupabaseClient<Database>,
+): Promise<RecipeSitemapEntry[]> {
+  const { data, error } = await client.from("recipes").select("id, name").is("deleted_at", null);
+
+  if (error) {
+    throw error;
+  }
+
+  return data ?? [];
+}
+
 export interface RecipeIngredientDetail {
   ingredientId: string;
   name: string;
@@ -62,6 +79,7 @@ export interface RecipeDetail {
   alcoholicStatus: string;
   glass: string | null;
   ingredients: RecipeIngredientDetail[];
+  isFavorited: boolean;
 }
 
 export async function fetchRecipeDetail(
@@ -75,7 +93,8 @@ export async function fetchRecipeDetail(
        recipe_ingredients (
          ingredient_id, measure, sort_order,
          ingredients ( name )
-       )`,
+       ),
+       favorites ( recipe_id )`,
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -106,5 +125,6 @@ export async function fetchRecipeDetail(
     alcoholicStatus: data.alcoholic_status,
     glass: data.glass,
     ingredients,
+    isFavorited: (data.favorites ?? []).length > 0,
   };
 }

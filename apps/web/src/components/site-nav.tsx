@@ -19,6 +19,21 @@ export function SiteNav() {
           Drink ideas
         </Text>
       </Link>
+      <Link href="/popular">
+        <Text variant="label" as="span">
+          Popular
+        </Text>
+      </Link>
+      <Link href="/favorites">
+        <Text variant="label" as="span">
+          Favorites
+        </Text>
+      </Link>
+      <Link href="/account">
+        <Text variant="label" as="span">
+          Account
+        </Text>
+      </Link>
     </nav>
   );
 }

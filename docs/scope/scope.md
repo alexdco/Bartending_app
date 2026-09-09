@@ -18,13 +18,17 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 5 | Recipe search and detail (core loop) | Slice 1 | in-progress |
 | 6 | Guest pantry | Slice 2 | in-progress |
 | 7 | Drink ideas from pantry | Slice 3 | in-progress |
-| 8 | AI generated pantry drink ideas | Slice 4 | planned |
-| 9 | Sign in and cross device sync | Slice 5 | planned |
-| 10 | Recipe recommendations | Slice 6 | planned |
-| 11 | Popular drinks by region | Slice 7 | planned |
-| 12 | SEO for public recipe pages | Slice 8 | planned |
-| 13 | Privacy policy and cookie consent | Slice 9 | planned |
-| 14 | Basic product analytics | Slice 10 | planned |
+| 8 | AI generated pantry drink ideas | Slice 4 | in-progress |
+| 9 | Sign in and cross device sync | Slice 5 | in-progress |
+| 10 | Recipe recommendations | Slice 6 | in-progress |
+| 11 | Popular drinks by region | Slice 7 | in-progress |
+| 12 | SEO for public recipe pages | Slice 8 | in-progress |
+| 13 | Privacy policy and cookie consent | Slice 9 | in-progress |
+| 14 | Basic product analytics | Slice 10 | in-progress |
+| 15 | Recipe favoriting | Slice 11 | in-progress |
+| 16 | Idle anonymous account cleanup job | Slice 12 | planned |
+| 17 | Personalized homepage | Slice 13 | planned |
+| 18 | Green and charcoal rebrand | Foundation | in-progress |
 
 ## Foundations
 
@@ -70,6 +74,19 @@ Visual language, layout primitives, and base components shared by mobile and web
 - [x] Verify it: `/check verify design system & UI foundation` — PASS. All 6 ACs met with live evidence (fresh typecheck/lint/test/build, a temporary live render of all 7 components on web and mobile). Mobile's full on-device visual/touch confirmation wasn't possible (no simulator in this environment); confirmed via compiled bundle content instead.
 - [ ] Test it: `/test design system & UI foundation`
 Spec [0003](../specs/0003-design-system-ui-foundation/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `docs/design/design.md`
+
+### 18. Green and charcoal rebrand
+Replaces the dark amber and copper "cocktail bar" palette from feature 4 with a dark charcoal and green palette, matching a reference screenshot; also grows Card corner radius and switches Chip's selected state to a solid accent fill. Colors only: font, spacing, and structure are unchanged.
+**Done when:** both themes in `packages/shared/src/tokens.ts` use the new palette, the WCAG contrast test still passes, Card and Chip reflect the new radius/fill, `docs/design/design.md` is updated, and no screen in either app still shows the old amber/copper colors.
+- [x] Design it (spec): `/architect green and charcoal rebrand`
+- [x] Build it: `/develop green and charcoal rebrand`
+  - [x] Replace dark/light color token values in `packages/shared/src/tokens.ts` and confirm the WCAG contrast test still passes, satisfies AC-1, AC-2, AC-3 — all 16 `verifiedContrastPairs` pass (`pnpm test`)
+  - [x] Update Card radius and Chip selected fill on both web and mobile, satisfies AC-4 — Card now uses `radius.large` on both platforms; web Chip's selected state already used a solid `color.accent` fill (Radix `data-[state=on]`), mobile Chip's selected state already used `theme.accent`/`theme.accentText`, so both were already compliant once the token values changed
+  - [x] Update `docs/design/design.md`'s palette and component notes, satisfies AC-5
+  - [x] Visual pass (via source search, not a live render) over the repo for leftover amber/copper hex values, satisfies AC-6 — none found outside the regenerated `apps/web/src/app/theme.generated.css` (rebuilt via `pnpm --filter web generate-theme`) and stale `.next/` build cache (regenerates on next build); a live on-screen check in both apps still hasn't been done in this environment
+- [ ] Verify it: `/check verify green and charcoal rebrand`
+- [ ] Test it: `/test green and charcoal rebrand`
+Spec [0014](../specs/0014-green-charcoal-rebrand/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `docs/design/design.md`
 
 ## Slice 1: Recipe search and detail (core loop)
 
@@ -126,49 +143,142 @@ Spec [0006](../specs/0006-drink-ideas-from-pantry/index.md) · code in `packages
 ### 8. AI generated pantry drink ideas
 On top of the recipe matching, offer an AI generated novel drink idea from the pantry contents when no strong existing match is found (or as an extra option).
 **Done when:** a user can request a generated idea from their pantry and receives a plausible, safely worded original recipe with ingredients and steps, clearly labeled as generated.
-- [ ] Design it (spec): `/architect AI generated pantry drink ideas`
+- [x] Design it (spec): `/architect AI generated pantry drink ideas`
+- [x] Build it: `/develop AI generated pantry drink ideas`
+  - [x] `ai_generation_quota` migration (no client RLS policy, atomic reservation), satisfies AC-4, AC-8 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260907145247_ai_generation_quota.sql` and `supabase/migrations/20260907145830_reserve_ai_generation_quota_function.sql` (atomic reservation function); verified live (two-of-two-then-reject test against a temporary user, cleaned up), security advisor clean (only the expected `rls_enabled_no_policy` info lint, by design)
+  - [x] `generate-drink-idea` Supabase Edge Function (auth check, pantry read, quota reservation, Claude Haiku call via `messages.parse()`, pantry verification, retry/error handling, Sentry), satisfies AC-1, AC-4, AC-6, AC-7, AC-8 — `supabase/functions/generate-drink-idea/index.ts`, deployed and ACTIVE on the live project; `ANTHROPIC_API_KEY` (and optional `SENTRY_DSN`) must still be set as Edge Function secrets by the engineer (no MCP tool available here to set secrets; the CLI needs an interactive `supabase login` this environment can't do)
+  - [x] Shared `generateDrinkIdea.ts` fetch wrapper in `packages/shared`, satisfies AC-1, AC-6, AC-7 — `packages/shared/src/generateDrinkIdea.ts`, exported from `packages/shared/src/index.ts`
+  - [x] Generate action and result card on the drink ideas page (spec 0006), both apps, satisfies AC-1 through AC-4, AC-6, AC-7 — web: `apps/web/src/drink-ideas/{use-generate-drink-idea.ts,generated-recipe-card.tsx}` wired into `drink-ideas-page-client.tsx`; mobile: `apps/mobile/src/drink-ideas/{use-generate-drink-idea.ts,generated-recipe-card.tsx}` wired into `apps/mobile/src/app/drink-ideas.tsx`
+  - [x] Cross platform parity check — both apps share the same `generateDrinkIdea` fetch wrapper, the same minimum pantry gate, and the same error-reason-to-message mapping
+- [ ] Verify it: `/check verify AI generated pantry drink ideas`
+- [ ] Test it: `/test AI generated pantry drink ideas`
+Spec [0007](../specs/0007-ai-generated-pantry-drink-ideas/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/functions`, `supabase/migrations`
 
 ## Slice 5: Sign in and cross device sync
 
 ### 9. Sign in and cross device sync
 Optional sign in. Guests keep full functionality on device; signing in syncs pantry, favorites, and preferences to the account and across devices.
 **Done when:** a signed out user retains full guest functionality; a signed in user's pantry and favorites sync across two devices.
-- [ ] Design it (spec): `/architect sign in and cross device sync`
+- [x] Design it (spec): `/architect sign in and cross device sync`
+- [x] Build it: `/develop sign in and cross device sync`
+  - [x] `user_preferences` migration and RLS policies, satisfies AC-9 — applied live via `supabase/migrations/20260907201908_user_preferences.sql`; security advisor clean
+  - [x] Shared `auth.ts` (sign up/in/out, password reset, change email) and `preferences.ts` in `packages/shared`, satisfies AC-1 through AC-3, AC-5 through AC-8
+  - [x] `delete-account` Edge Function and shared wrapper, satisfies AC-10 — `supabase/functions/delete-account/index.ts`, deployed and ACTIVE
+  - [x] Account/profile screen or page (mobile and web) and the shared auth callback route (email confirmation, password reset, email change), satisfies AC-1, AC-2, AC-4 through AC-6, AC-8, AC-10, AC-11 — engineer still needs to configure the web callback URL and mobile custom scheme as allowed redirect URLs in the Supabase Auth dashboard (no MCP tool exposes this setting)
+  - [x] Session expiry handling and cross platform parity check, satisfies AC-7, AC-11, AC-12
+- [ ] Verify it: `/check verify sign in and cross device sync`
+- [ ] Test it: `/test sign in and cross device sync`
+Spec [0008](../specs/0008-sign-in-and-cross-device-sync/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/functions`, `supabase/migrations`
 
 ## Slice 6: Recipe recommendations
 
 ### 10. Recipe recommendations
-Simple rules based "you may also like" suggestions using pantry contents, favorites, and recently viewed recipes (shared ingredients/tags), working for guests via local activity too.
-**Done when:** a user sees a suggestions section that changes based on their pantry, favorites, and recent views, with a sane default when there is no activity yet.
-- [ ] Design it (spec): `/architect recipe recommendations`
+Simple rules based "you may also like" suggestions using pantry contents and recently viewed recipes (shared ingredients), working for guests via local activity too. Favorites was dropped from this revision's signal set since favoriting doesn't exist in the app yet; see spec 0009's Follow-up.
+**Done when:** a user sees a suggestions section on the recipe detail page that changes based on their pantry and recent views, with a stable default when there is no activity yet.
+- [x] Design it (spec): `/architect recipe recommendations`
+- [x] Build it: `/develop recipe recommendations`
+  - [x] `recommend_recipes` Postgres function (weighted ingredient overlap scoring, stable name ordered fallback, offset pagination) plus regenerated shared types, satisfies AC-1, AC-2, AC-3, AC-8, AC-9 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260907210000_recommend_recipes_function.sql`; security advisor clean; verified live (pantry-only scoring, cold-start name-ordered fallback, recent-view-only scoring, malformed/duplicate/unknown/soft-deleted `recent_recipe_ids` silently ignored, no-session 28000 error, zero soft-deleted leakage)
+  - [x] Local recently viewed tracking (shared pure `appendRecentlyViewed` helper + per app storage adapter) wired into recipe detail, satisfies AC-6 — `packages/shared/src/recentlyViewed.ts`, `apps/web/src/recipes/recently-viewed-storage.ts` (localStorage), `apps/mobile/src/recipes/recently-viewed-storage.ts` (AsyncStorage)
+  - [x] Shared `recommendations.ts` fetch function and `useRecipeRecommendations()` hook (web + mobile), satisfies AC-1, AC-4, AC-7 — `packages/shared/src/recommendations.ts`, `apps/web/src/recipe-recommendations/use-recipe-recommendations.ts`, `apps/mobile/src/recipe-recommendations/use-recipe-recommendations.ts`
+  - [x] Extend pantry mutation hooks to invalidate the recommendations query, satisfies AC-5 — both apps' `use-pantry-mutations.ts`
+  - [x] "You may also like" section on the recipe detail page (web + mobile) with a "See more" action to a dedicated full page/screen and retryable error state, satisfies AC-1, AC-4, AC-7 — web: `apps/web/src/recipe-recommendations/{recommendations-section.tsx,more-like-this-client.tsx}` + `apps/web/src/app/recipes/[slug]/more-like-this/page.tsx` (relocated from `[id]` to `[slug]` by spec 0011's SEO slugged URLs); mobile: `apps/mobile/src/recipe-recommendations/recommendations-section.tsx` + `apps/mobile/src/app/recipe/[id]/more-like-this.tsx` (detail screen relocated to `apps/mobile/src/app/recipe/[id]/index.tsx` to coexist with the new nested route)
+  - [x] Cross platform parity check — both apps share identical query key shape, page size/cap constants, and byte-identical pantry mutation invalidation
+- [ ] Verify it: `/check verify recipe recommendations`
+- [ ] Test it: `/test recipe recommendations`
+Spec [0009](../specs/0009-recipe-recommendations/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
 
 ## Slice 7: Popular drinks by region
 
 ### 11. Popular drinks by region
 A browsable section of popular drinks, curated per region using recipe source data and tagging, with a region filter.
 **Done when:** a user can browse a popular drinks list and filter it by region, and results are real curated recipes with images.
-- [ ] Design it (spec): `/architect popular drinks by region`
+- [x] Design it (spec): `/architect popular drinks by region`
+- [ ] Build it: `/develop popular drinks by region`
+  - [ ] Migration applied live (`region` check constraint, `fame_score`, `popularity_rank`, the partial unique index); the one time tagging + apply scripts are written (`packages/shared/scripts/{tag-regions,apply-regions}.ts`) but not yet run against the live catalog, needs `ANTHROPIC_API_KEY` run locally by the engineer, satisfies AC-3, AC-7
+  - [x] `popular_recipes_by_region` and `list_popular_regions` Postgres functions plus regenerated shared types, satisfies AC-1, AC-2, AC-3
+  - [x] Shared `packages/shared/src/popularByRegion.ts` fetch layer and per app TanStack Query hooks, satisfies AC-1, AC-5, AC-6
+  - [x] Web `/popular` page and mobile `Popular` tab (region picker, ranked list reusing `RecipeCard`, loading/error/empty states), satisfies AC-1 through AC-5
+  - [x] Cross platform parity check, satisfies AC-6
+- [ ] Verify it: `/check verify popular drinks by region`
+- [ ] Test it: `/test popular drinks by region`
+Spec [0010](../specs/0010-popular-drinks-by-region/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Slice 8: SEO for public recipe pages
 
 ### 12. SEO for public recipe pages
 Public recipe and popular drinks pages on web get metadata, clean URLs, and structured data so they are discoverable via search engines.
 **Done when:** public recipe pages have unique titles/descriptions, structured data for recipes, a sitemap, and clean shareable URLs.
-- [ ] Design it (spec): `/architect SEO for public recipe pages`
+- [x] Design it (spec): `/architect SEO for public recipe pages`
+- [x] Build it: `/develop SEO for public recipe pages`
+  - [x] Site base URL config + slug and region-matching helpers, satisfies AC-3, AC-5, AC-6, AC-9 — `NEXT_PUBLIC_SITE_URL` in `apps/web/.env.local`, `metadataBase` on the root layout, `packages/shared/src/seo.ts` (`slugify`, `buildRecipeSlugPath`, `extractIdFromRecipeSlug`, `matchRegionSlug`, `absoluteUrl`), `apps/web/src/lib/site-url.ts`
+  - [x] Recipe detail metadata, JSON-LD, and slugged URL with legacy redirect, satisfies AC-1, AC-2, AC-3 — `apps/web/src/app/recipes/[slug]/page.tsx` (moved from `[id]`; a bare or mis-slugged id 308s to the canonical slug via the same route), `apps/web/src/recipes/recipe-json-ld.ts`; verified live (unique title, valid Recipe JSON-LD, 308 from bare UUID to slugged canonical, 404 on unknown/deleted id)
+  - [x] Search page dynamic metadata + noindex on query pages, satisfies AC-4 — `apps/web/src/app/page.tsx` `generateMetadata` reading the `q` search param; `apps/web/src/recipes/search-page-client.tsx` now syncs `q` into the URL via `router.replace` (it previously held the query only in local state, a gap the spec assumed already existed); verified live (`?q=margarita` renders a "margarita recipes" title with `noindex, follow`, bare `/` stays indexable)
+  - [x] Popular page server rendering, per-region routes, and redirects, satisfies AC-5, AC-6 — `apps/web/src/app/popular/page.tsx` (redirects to the first region, or an empty state when none are tagged yet) and `apps/web/src/app/popular/[region]/page.tsx` (server rendered, per-region metadata, `notFound()` on an unmatched slug); replaces the old client only `popular-page-client.tsx`/`use-popular-by-region.ts` (removed). Region redirect/404 paths verified via the `seo.ts` slug/match logic directly (unit level), not live: no region has been tagged against the catalog yet (feature 11's tagging script hasn't been run), so `listPopularRegions()` returns empty in this environment
+  - [x] Sitemap and robots, satisfies AC-7, AC-8 — `apps/web/src/app/sitemap.ts` (every non deleted recipe's slugged URL, home, real region URLs), `apps/web/src/app/robots.ts` (disallows `/account`, `/auth`, `/pantry`); verified live
+- [x] Verify it: `/check verify SEO for public recipe pages`
+- [ ] Test it: `/test SEO for public recipe pages`
+Spec [0011](../specs/0011-seo-for-public-recipe-pages/index.md) · code in `apps/web`, `packages/shared`
 
 ## Slice 9: Privacy policy and cookie consent
 
 ### 13. Privacy policy and cookie consent
 A privacy policy page and cookie/consent notice for the web app, covering account data and analytics collection.
 **Done when:** the privacy policy is published and linked from the app, and a consent notice appears before non essential tracking runs.
-- [ ] Design it (spec): `/architect privacy policy and cookie consent`
+- [x] Design it (spec): `/architect privacy policy and cookie consent`
+- [x] Build it: `/develop privacy policy and cookie consent`
+  - [x] Shared privacy policy URL constant + `/privacy` page content (data categories, effective date, contact, account deletion reference), satisfies AC-1, AC-2, AC-3, AC-5
+  - [x] Web site footer with a `/privacy` link, satisfies AC-4
+  - [x] Cookie consent notice bar (client component + localStorage helper), satisfies AC-6, AC-7, AC-8, AC-9
+  - [x] Mobile account screen "Privacy Policy" row via `ExternalLink`, plus cross platform check, satisfies AC-5
+- [ ] Verify it: `/check verify privacy policy and cookie consent`
+- [ ] Test it: `/test privacy policy and cookie consent`
+Spec [0012](../specs/0012-privacy-policy-and-cookie-consent/index.md) · code in `packages/shared/src/seo.ts`, `apps/web/src/app/privacy/`, `apps/web/src/components/site-footer.tsx`, `apps/web/src/consent/`, `apps/mobile/src/app/account.tsx`
 
 ## Slice 10: Basic product analytics
 
 ### 14. Basic product analytics
-Track core activation events (search performed, pantry item added, drink idea generated, recipe favorited) to measure whether users complete a core action.
-**Done when:** activation events fire for the core actions and are visible in an analytics dashboard, for both guest and signed in users.
-- [ ] Design it (spec): `/architect basic product analytics`
+Track core activation events (search performed, pantry item added, drink idea generated) using PostHog, to measure whether users complete a core action. Recipe favoriting does not exist yet (spec 0009 deferred it), so its event is deferred too; see spec 0013's Follow-up.
+**Done when:** activation events fire for the core actions and are visible in the PostHog dashboard, for both guest and signed in users.
+- [x] Design it (spec): `/architect basic product analytics`
+- [x] Build it: `/develop basic product analytics`
+  - [x] Shared event builders, types, and unit test in `packages/shared`, plus each app's PostHog client module (init, no op fallback, `track()` wrapper), satisfies AC-5, AC-7, AC-8, AC-9 — `packages/shared/src/{analytics.ts,analytics.test.ts}`, `apps/web/src/analytics/posthog-client.ts`, `apps/mobile/src/analytics/posthog-client.ts`; no `PostHogProvider`/autocapture wiring used on either platform, so AC-7 holds by construction
+  - [x] Web consent store wiring so PostHog only initializes after cookie notice acceptance, satisfies AC-4 — `apps/web/src/consent/consent-storage.ts` grew a subscriber list notified from `acceptCookieConsent()`; `apps/web/src/app/providers.tsx` subscribes and calls `initAnalyticsIfConsented`
+  - [x] Identity establishment (`posthog.identify`) from each app's root, satisfies AC-6 — `apps/web/src/app/providers.tsx` and `apps/mobile/src/app/_layout.tsx`, each reading `useSession()` once and calling `identify(session.user.id)` guarded against re-firing the same id
+  - [x] Event wiring: pantry add mutation, search page client, drink ideas page client (matched + AI paths, including the Edge Function's new `pantry_size` field), satisfies AC-1, AC-2, AC-3 — both apps' `use-pantry-mutations.ts` (`onSuccess`, not `onSettled`), `search-page-client.tsx`/`search.tsx` (last fired query ref), `drink-ideas-page-client.tsx`/`drink-ideas.tsx` (first page effect) and `use-generate-drink-idea.ts`; `supabase/functions/generate-drink-idea/index.ts` now returns `pantry_size`, mirrored in `packages/shared/src/generateDrinkIdea.ts`'s `GeneratedDrinkIdea` type
+  - [x] Update spec 0012's consent notice copy and the `/privacy` page for the new PostHog data category, plus cross platform check — `apps/web/src/consent/consent-banner.tsx`, `apps/web/src/app/privacy/page.tsx`; both apps share identical event names/property shapes via the same shared builders (locked by the shared unit test), and `identify` fires once per app instance on both
+- [ ] Verify it: `/check verify basic product analytics`
+- [ ] Test it: `/test basic product analytics`
+Spec [0013](../specs/0013-basic-product-analytics/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/functions`
+
+## Slice 11: Recipe favoriting
+
+### 15. Recipe favoriting
+A toggle favorite control on the recipe card and detail page, backed by the existing `favorites` table from spec 0002. Surfaced repeatedly as a real gap: spec 0009 (recipe recommendations) dropped favorites from its signal set because this does not exist yet, and spec 0013 (basic product analytics) deferred a `recipe_favorited` event for the same reason.
+**Done when:** a signed in or guest user can favorite and unfavorite a recipe from the card or detail page, see their favorites list, and it persists across sessions for signed in users.
+- [x] Design it (spec): `/architect recipe favoriting`
+- [x] Build it: `/develop recipe favoriting`
+  - [x] `recommend_recipes` migration adding the favorited-recipes weighted signal (0.75) and the already-favorited exclusion, plus regenerated shared types, satisfies AC-7 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260909053700_recommend_recipes_favorites_signal.sql`; security advisor clean (only the pre-existing expected `ai_generation_quota` info lint); signature unchanged so no type regeneration was needed
+  - [x] Shared `favorites.ts` fetch/add/remove/list layer in `packages/shared`, plus `isFavorited` added to `fetchRecipeDetail`, satisfies AC-1, AC-3, AC-4, AC-6, AC-10 — `packages/shared/src/favorites.ts`, `packages/shared/src/recipes.ts`
+  - [x] Per app query/mutation hooks (`useFavoriteRecipeIds`, `useFavoriteRecipes`, `useToggleFavorite`) with optimistic update, silent rollback, and invalidation of the favorites and recommendations query keys, satisfies AC-2, AC-3, AC-5, AC-8 — both apps' `favorites/use-favorites.ts` and `favorites/use-favorite-mutations.ts`, mirroring `use-pantry-mutations.ts`'s pattern
+  - [x] Favorite toggle on `RecipeCard` and the recipe detail page, plus the `recipe_favorited` analytics event on confirmed success, satisfies AC-1, AC-2, AC-9 — both apps' `recipe-card.tsx`/`recipe-detail-header.tsx`, a new `favorites/favorite-toggle.tsx` per app, `buildRecipeFavoritedEvent` in `packages/shared/src/analytics.ts` fired from each mutation's `onSuccess`
+  - [x] Dedicated favorites list page/screen, paginated, with empty state, plus cross platform parity check, satisfies AC-4, AC-5, AC-1 through AC-10 — web `/favorites` (`apps/web/src/app/favorites/page.tsx` + nav link) and mobile `apps/mobile/src/app/favorites.tsx` (reachable from the account screen); both share byte identical query key shapes, page size constant (`FAVORITES_PAGE_SIZE` = `RECIPE_SEARCH_PAGE_SIZE`), and mutation behavior
+- [ ] Verify it: `/check verify recipe favoriting`
+- [ ] Test it: `/test recipe favoriting`
+Spec [0015](../specs/0015-recipe-favoriting.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
+
+## Slice 12: Idle anonymous account cleanup job
+
+### 16. Idle anonymous account cleanup job
+A scheduled job that sweeps anonymous Supabase sessions idle past a retention window, per spec 0001's original design. Never built; spec 0008 (sign in and cross device sync) flagged that whenever this job is designed, it must explicitly exclude `linked` (non anonymous) users from the sweep.
+**Done when:** idle anonymous sessions past the retention window are cleaned up on a schedule, and a linked user is never swept.
+- [ ] Design it (spec): `/architect idle anonymous account cleanup job`
+
+## Slice 13: Personalized homepage
+
+### 17. Personalized homepage
+Replaces the current search-first landing page (`/` on web, the default Search tab on mobile) with a browsable homepage of carousels (recommended drinks, recently viewed, drink ideas from pantry, popular by region), built on the existing recommendations, recently viewed, drink ideas, and popular-by-region data. Search moves to its own dedicated route/tab.
+**Done when:** a user lands on a homepage with multiple scrollable carousels of real recipes drawn from their pantry and activity, a stable default for users with no activity yet, and search remains fully reachable from its own route/tab on both platforms.
+- [ ] Design it (spec): `/architect personalized homepage`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
