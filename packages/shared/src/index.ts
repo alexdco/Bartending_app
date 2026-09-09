@@ -16,3 +16,4 @@ export * from "./recentlyViewed";
 export * from "./popularByRegion";
 export * from "./seo";
 export * from "./analytics";
+export * from "./homepage";

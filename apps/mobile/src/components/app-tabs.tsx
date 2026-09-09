@@ -21,14 +21,6 @@ export default function AppTabs() {
         />
       </NativeTabs.Trigger>
 
-      <NativeTabs.Trigger name="explore">
-        <NativeTabs.Trigger.Label>Explore</NativeTabs.Trigger.Label>
-        <NativeTabs.Trigger.Icon
-          src={require("@/assets/images/tabIcons/explore.png")}
-          renderingMode="template"
-        />
-      </NativeTabs.Trigger>
-
       {/* TODO: missing asset: a dedicated search tab icon; reusing explore.png as a placeholder per the engineer's call */}
       <NativeTabs.Trigger name="search">
         <NativeTabs.Trigger.Label>Search</NativeTabs.Trigger.Label>
@@ -52,6 +44,24 @@ export default function AppTabs() {
         <NativeTabs.Trigger.Label>Drink ideas</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           src={require("@/assets/images/tabIcons/explore.png")}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
+      {/* TODO: missing asset: a dedicated popular tab icon; reusing explore.png as a placeholder per the engineer's call */}
+      <NativeTabs.Trigger name="popular">
+        <NativeTabs.Trigger.Label>Popular</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require("@/assets/images/tabIcons/explore.png")}
+          renderingMode="template"
+        />
+      </NativeTabs.Trigger>
+
+      {/* TODO: missing asset: a dedicated account tab icon; reusing home.png as a placeholder per the engineer's call */}
+      <NativeTabs.Trigger name="account">
+        <NativeTabs.Trigger.Label>Account</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          src={require("@/assets/images/tabIcons/home.png")}
           renderingMode="template"
         />
       </NativeTabs.Trigger>

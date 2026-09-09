@@ -1,18 +1,31 @@
-import { searchRecipes, RECIPE_SEARCH_PAGE_SIZE } from "@bartendingapp/shared";
-import { supabase } from "@/lib/supabase";
-import { SearchPageClient } from "@/recipes/search-page-client";
+import type { Metadata } from "next";
+import { redirect } from "next/navigation";
+import { HomePageClient } from "@/homepage/home-page-client";
 
-export default async function Home() {
-  const initialResults = await searchRecipes(supabase, {
-    query: "",
-    statusFilter: null,
-    pageLimit: RECIPE_SEARCH_PAGE_SIZE,
-    pageOffset: 0,
-  });
+const DEFAULT_DESCRIPTION =
+  "Browse cocktail and mocktail recipes picked for you: drink ideas from your pantry, recommendations, and popular drinks by region.";
+
+export const metadata: Metadata = {
+  description: DEFAULT_DESCRIPTION,
+  alternates: { canonical: "/" },
+  openGraph: {
+    title: "Bartending App",
+    description: DEFAULT_DESCRIPTION,
+    url: "/",
+  },
+};
+
+export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
+  const { q } = await searchParams;
+  const query = q?.trim() ?? "";
+
+  if (query) {
+    redirect(`/search?q=${encodeURIComponent(query)}`);
+  }
 
   return (
     <main className="flex flex-1 flex-col">
-      <SearchPageClient initialResults={initialResults} />
+      <HomePageClient />
     </main>
   );
 }

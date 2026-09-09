@@ -27,7 +27,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 14 | Basic product analytics | Slice 10 | in-progress |
 | 15 | Recipe favoriting | Slice 11 | in-progress |
 | 16 | Idle anonymous account cleanup job | Slice 12 | planned |
-| 17 | Personalized homepage | Slice 13 | planned |
+| 17 | Personalized homepage | Slice 13 | in-progress |
 | 18 | Green and charcoal rebrand | Foundation | in-progress |
 
 ## Foundations
@@ -278,7 +278,17 @@ A scheduled job that sweeps anonymous Supabase sessions idle past a retention wi
 ### 17. Personalized homepage
 Replaces the current search-first landing page (`/` on web, the default Search tab on mobile) with a browsable homepage of carousels (recommended drinks, recently viewed, drink ideas from pantry, popular by region), built on the existing recommendations, recently viewed, drink ideas, and popular-by-region data. Search moves to its own dedicated route/tab.
 **Done when:** a user lands on a homepage with multiple scrollable carousels of real recipes drawn from their pantry and activity, a stable default for users with no activity yet, and search remains fully reachable from its own route/tab on both platforms.
-- [ ] Design it (spec): `/architect personalized homepage`
+- [x] Design it (spec): `/architect personalized homepage`
+- [x] Build it: `/develop personalized homepage`
+  - [x] Route split: web's new `/search` (carrying the current search experience, unconditionally `noindex`) plus the `/?q=` redirect, and web's `/` rewritten to a homepage shell; mobile's unused `explore` tab removed, `index` confirmed first/default, satisfies AC-8, AC-10, AC-11
+  - [x] Shared horizontal carousel UI pattern (web CSS scroll snap row, mobile horizontal `FlatList`) plus the hero, satisfies AC-2, AC-8, AC-9
+  - [x] Drink ideas carousel (zero-match call to action card, session-error retry banner) and the new `fetchRecipesByIds` shared function powering the recently viewed carousel, satisfies AC-1, AC-3, AC-4, AC-5, AC-9
+  - [x] Recommended drinks carousel (homepage-scoped query, no "see more"), satisfies AC-1, AC-3, AC-9
+  - [x] Region shortcut row and popular by region carousel, including mobile's new `region` route param on the Popular screen, satisfies AC-1, AC-3, AC-6, AC-7, AC-9, AC-13
+  - [x] Guest/signed-in parity and cross platform parity check, satisfies AC-12
+- [ ] Verify it: `/check verify personalized homepage`
+- [ ] Test it: `/test personalized homepage`
+Spec [0016](../specs/0016-personalized-homepage.md) · code in `packages/shared/src/{recipes.ts,homepage.ts}`, `apps/web/src/{app/page.tsx,app/search,homepage}`, `apps/mobile/src/{app/index.tsx,homepage}`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

@@ -128,3 +128,39 @@ export async function fetchRecipeDetail(
     isFavorited: (data.favorites ?? []).length > 0,
   };
 }
+
+export async function fetchRecipesByIds(
+  client: SupabaseClient<Database>,
+  ids: string[],
+): Promise<RecipeSearchResult[]> {
+  if (ids.length === 0) {
+    return [];
+  }
+
+  const { data, error } = await client
+    .from("recipes")
+    .select("id, name, image_url, alcoholic_status")
+    .in("id", ids)
+    .is("deleted_at", null);
+
+  if (error) {
+    throw error;
+  }
+
+  const byId = new Map(
+    (data ?? []).map((row) => [
+      row.id,
+      {
+        id: row.id,
+        name: row.name,
+        imageUrl: row.image_url,
+        alcoholicStatus: row.alcoholic_status,
+      },
+    ]),
+  );
+
+  return ids.flatMap((id) => {
+    const recipe = byId.get(id);
+    return recipe ? [recipe] : [];
+  });
+}

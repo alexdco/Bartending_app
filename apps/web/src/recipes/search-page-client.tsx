@@ -1,13 +1,19 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
-import type { AlcoholicStatusFilter, RecipeSearchResult } from "@bartendingapp/shared";
+import {
+  buildSearchPerformedEvent,
+  type AlcoholicStatusFilter,
+  type RecipeSearchResult,
+} from "@bartendingapp/shared";
+import { track } from "@/analytics/posthog-client";
 import { RecipeCard } from "./recipe-card";
 import { useRecipeSearch } from "./use-recipe-search";
 
@@ -24,14 +30,24 @@ export interface SearchPageClientProps {
 }
 
 export function SearchPageClient({ initialResults }: SearchPageClientProps) {
-  const [inputValue, setInputValue] = useState("");
-  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get("q") ?? "";
+
+  const [inputValue, setInputValue] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [statusFilter, setStatusFilter] = useState<AlcoholicStatusFilter | null>(null);
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedQuery(inputValue.trim()), DEBOUNCE_MS);
     return () => clearTimeout(timeout);
   }, [inputValue]);
+
+  useEffect(() => {
+    const trimmed = debouncedQuery.trim();
+    const url = trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : "/search";
+    router.replace(url, { scroll: false });
+  }, [debouncedQuery, router]);
 
   const isDefaultQuery = debouncedQuery === "" && statusFilter === null;
 
@@ -43,6 +59,29 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
     });
 
   const results = useMemo(() => data?.pages.flat() ?? [], [data]);
+
+  const lastFiredQueryRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!debouncedQuery || isPending || isFetchingNextPage) {
+      return;
+    }
+    if (lastFiredQueryRef.current === debouncedQuery) {
+      return;
+    }
+
+    const firstPage = data?.pages[0];
+    if (!firstPage) {
+      return;
+    }
+
+    lastFiredQueryRef.current = debouncedQuery;
+    const event = buildSearchPerformedEvent({
+      query: debouncedQuery,
+      result_count: firstPage.length,
+    });
+    track(event.name, event.properties);
+  }, [debouncedQuery, data, isPending, isFetchingNextPage]);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 

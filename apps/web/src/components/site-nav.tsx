@@ -6,7 +6,12 @@ export function SiteNav() {
     <nav className="flex items-center gap-four border-b border-border px-six py-three">
       <Link href="/">
         <Text variant="label" as="span">
-          Recipes
+          Home
+        </Text>
+      </Link>
+      <Link href="/search">
+        <Text variant="label" as="span">
+          Search
         </Text>
       </Link>
       <Link href="/pantry">
