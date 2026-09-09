@@ -264,7 +264,7 @@ A toggle favorite control on the recipe card and detail page, backed by the exis
   - [x] Dedicated favorites list page/screen, paginated, with empty state, plus cross platform parity check, satisfies AC-4, AC-5, AC-1 through AC-10 — web `/favorites` (`apps/web/src/app/favorites/page.tsx` + nav link) and mobile `apps/mobile/src/app/favorites.tsx` (reachable from the account screen); both share byte identical query key shapes, page size constant (`FAVORITES_PAGE_SIZE` = `RECIPE_SEARCH_PAGE_SIZE`), and mutation behavior
 - [ ] Verify it: `/check verify recipe favoriting`
 - [ ] Test it: `/test recipe favoriting`
-Spec [0015](../specs/0015-recipe-favoriting.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
+Spec [0015](../specs/0015-recipe-favoriting/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
 
 ## Slice 12: Idle anonymous account cleanup job
 
