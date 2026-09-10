@@ -313,7 +313,7 @@ Right now a signed in user has no visual sign that they are signed in. Add a rea
   - [x] Cross platform parity check — both apps consume the same `getInitials`/`validateDisplayName`/`updateDisplayName`/`avatarSize` exports from `@bartendingapp/shared`
 - [ ] Verify it: `/check verify user profile and nav badge`
 - [ ] Test it: `/test user profile and nav badge`
-Spec [0018](../specs/0018-user-profile-and-nav-badge.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
+Spec [0018](../specs/0018-user-profile-and-nav-badge/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
