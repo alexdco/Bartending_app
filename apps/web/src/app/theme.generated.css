@@ -3,15 +3,15 @@
    Regenerate: pnpm --filter web run generate-theme (runs automatically before dev/build) */
 
 :root {
-  --color-bg: #12100e;
-  --color-surface: #1c1815;
-  --color-surface-selected: #2a2420;
-  --color-border: #79695a;
-  --color-text: #f5efe7;
-  --color-text-muted: #b8aa9a;
-  --color-accent: #d98e3e;
-  --color-accent-text: #12100e;
-  --color-focus: #e8ac5e;
+  --color-bg: #121212;
+  --color-surface: #1c1c1c;
+  --color-surface-selected: #262626;
+  --color-border: #6e6e6e;
+  --color-text: #f2f2f2;
+  --color-text-muted: #a3a3a3;
+  --color-accent: #1e763b;
+  --color-accent-text: #ffffff;
+  --color-focus: #45d67a;
   --color-danger: #f5716f;
   --color-danger-text: #2b0605;
   --spacing-half: 2px;
@@ -45,15 +45,15 @@
 
 @media (prefers-color-scheme: light) {
   :root {
-    --color-bg: #fbf9f6;
+    --color-bg: #f7f7f5;
     --color-surface: #ffffff;
-    --color-surface-selected: #f2e9de;
-    --color-border: #8c7c68;
-    --color-text: #1c1815;
-    --color-text-muted: #6b5f52;
-    --color-accent: #8a4c15;
+    --color-surface-selected: #e4f5e9;
+    --color-border: #8a8a85;
+    --color-text: #181818;
+    --color-text-muted: #5c5c57;
+    --color-accent: #1c7a43;
     --color-accent-text: #ffffff;
-    --color-focus: #8a4c15;
+    --color-focus: #1c7a43;
     --color-danger: #c4362b;
     --color-danger-text: #ffffff;
   }

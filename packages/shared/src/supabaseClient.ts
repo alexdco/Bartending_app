@@ -1,6 +1,8 @@
 import { createClient, type SupabaseClient, type SupportedStorage } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 
+export type { Session } from "@supabase/supabase-js";
+
 export function createSupabaseClient(
   url: string,
   anonKey: string,

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, SafeAreaView, StyleSheet, View } from "react-native";
 
 import { Button } from "@/components/button";
@@ -9,7 +9,12 @@ import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import type { AlcoholicStatusFilter, RecipeSearchResult } from "@bartendingapp/shared";
+import {
+  buildSearchPerformedEvent,
+  type AlcoholicStatusFilter,
+  type RecipeSearchResult,
+} from "@bartendingapp/shared";
+import { track } from "@/analytics/posthog-client";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { useRecipeSearch } from "@/recipes/use-recipe-search";
 
@@ -36,6 +41,29 @@ export default function SearchScreen() {
     useRecipeSearch({ query: debouncedQuery, statusFilter });
 
   const results = useMemo<RecipeSearchResult[]>(() => data?.pages.flat() ?? [], [data]);
+
+  const lastFiredQueryRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!debouncedQuery || isPending || isFetchingNextPage) {
+      return;
+    }
+    if (lastFiredQueryRef.current === debouncedQuery) {
+      return;
+    }
+
+    const firstPage = data?.pages[0];
+    if (!firstPage) {
+      return;
+    }
+
+    lastFiredQueryRef.current = debouncedQuery;
+    const event = buildSearchPerformedEvent({
+      query: debouncedQuery,
+      result_count: firstPage.length,
+    });
+    track(event.name, event.properties);
+  }, [debouncedQuery, data, isPending, isFetchingNextPage]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>

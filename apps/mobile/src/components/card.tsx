@@ -27,7 +27,7 @@ export function Card({ selected = false, style, ...rest }: CardProps) {
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: Radii.medium,
+    borderRadius: Radii.large,
     borderWidth: 1,
     padding: Spacing.four,
   },

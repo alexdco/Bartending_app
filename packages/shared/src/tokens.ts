@@ -18,28 +18,28 @@ export interface ColorTokens {
 
 export const colors: { dark: ColorTokens; light: ColorTokens } = {
   dark: {
-    bg: "#12100E",
-    surface: "#1C1815",
-    surfaceSelected: "#2A2420",
-    border: "#79695A",
-    text: "#F5EFE7",
-    textMuted: "#B8AA9A",
-    accent: "#D98E3E",
-    accentText: "#12100E",
-    focus: "#E8AC5E",
+    bg: "#121212",
+    surface: "#1C1C1C",
+    surfaceSelected: "#262626",
+    border: "#6E6E6E",
+    text: "#F2F2F2",
+    textMuted: "#A3A3A3",
+    accent: "#1E763B",
+    accentText: "#FFFFFF",
+    focus: "#45D67A",
     danger: "#F5716F",
     dangerText: "#2B0605",
   },
   light: {
-    bg: "#FBF9F6",
+    bg: "#F7F7F5",
     surface: "#FFFFFF",
-    surfaceSelected: "#F2E9DE",
-    border: "#8C7C68",
-    text: "#1C1815",
-    textMuted: "#6B5F52",
-    accent: "#8A4C15",
+    surfaceSelected: "#E4F5E9",
+    border: "#8A8A85",
+    text: "#181818",
+    textMuted: "#5C5C57",
+    accent: "#1C7A43",
     accentText: "#FFFFFF",
-    focus: "#8A4C15",
+    focus: "#1C7A43",
     danger: "#C4362B",
     dangerText: "#FFFFFF",
   },
@@ -62,6 +62,11 @@ export const radii = {
   medium: 12,
   large: 20,
   full: 9999,
+} as const;
+
+export const avatarSize = {
+  web: 32,
+  mobile: 28,
 } as const;
 
 export interface TypeScaleEntry {

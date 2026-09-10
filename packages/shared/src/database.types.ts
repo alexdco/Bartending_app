@@ -8,6 +8,24 @@ export type Database = {
   };
   public: {
     Tables: {
+      ai_generation_quota: {
+        Row: {
+          count: number;
+          day: string;
+          user_id: string;
+        };
+        Insert: {
+          count?: number;
+          day?: string;
+          user_id: string;
+        };
+        Update: {
+          count?: number;
+          day?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       favorites: {
         Row: {
           created_at: string;
@@ -158,12 +176,14 @@ export type Database = {
           alcoholic_status: string;
           created_at: string;
           deleted_at: string | null;
+          fame_score: number | null;
           glass: string | null;
           id: string;
           image_url: string | null;
           instructions: string;
           name: string;
           name_search: unknown;
+          popularity_rank: number | null;
           region: string | null;
           source_id: string;
           updated_at: string;
@@ -172,12 +192,14 @@ export type Database = {
           alcoholic_status?: string;
           created_at?: string;
           deleted_at?: string | null;
+          fame_score?: number | null;
           glass?: string | null;
           id?: string;
           image_url?: string | null;
           instructions: string;
           name: string;
           name_search?: unknown;
+          popularity_rank?: number | null;
           region?: string | null;
           source_id: string;
           updated_at?: string;
@@ -186,12 +208,14 @@ export type Database = {
           alcoholic_status?: string;
           created_at?: string;
           deleted_at?: string | null;
+          fame_score?: number | null;
           glass?: string | null;
           id?: string;
           image_url?: string | null;
           instructions?: string;
           name?: string;
           name_search?: unknown;
+          popularity_rank?: number | null;
           region?: string | null;
           source_id?: string;
           updated_at?: string;
@@ -222,12 +246,40 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_preferences: {
+        Row: {
+          display_name: string | null;
+          theme: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          display_name?: string | null;
+          theme?: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          display_name?: string | null;
+          theme?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: {
       [_ in never]: never;
     };
     Functions: {
+      apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
       import_catalog: { Args: { drinks: Json }; Returns: undefined };
+      list_popular_regions: {
+        Args: never;
+        Returns: {
+          region_name: string;
+        }[];
+      };
       match_recipes_to_pantry: {
         Args: { max_ratio?: number; page_limit?: number; page_offset?: number };
         Returns: {
@@ -238,6 +290,35 @@ export type Database = {
           missing_ratio: number;
           name: string;
         }[];
+      };
+      popular_recipes_by_region: {
+        Args: { region_filter: string };
+        Returns: {
+          alcoholic_status: string;
+          id: string;
+          image_url: string;
+          name: string;
+          popularity_rank: number;
+        }[];
+      };
+      recommend_recipes: {
+        Args: {
+          current_recipe_id?: string;
+          page_limit?: number;
+          page_offset?: number;
+          recent_recipe_ids?: string[];
+        };
+        Returns: {
+          alcoholic_status: string;
+          id: string;
+          image_url: string;
+          name: string;
+          score: number;
+        }[];
+      };
+      reserve_ai_generation_quota: {
+        Args: { p_day: string; p_limit: number; p_user_id: string };
+        Returns: boolean;
       };
       search_ingredients: {
         Args: { query?: string; result_limit?: number };

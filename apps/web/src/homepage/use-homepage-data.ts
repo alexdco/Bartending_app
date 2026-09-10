@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
   fetchPopularByRegion,
@@ -12,7 +13,7 @@ import { supabase } from "@/lib/supabase";
 import { getRecentlyViewedRecipeIds } from "@/recipes/recently-viewed-storage";
 
 export function useHomeRecommendations() {
-  const recentRecipeIds = getRecentlyViewedRecipeIds();
+  const [recentRecipeIds] = useState<string[]>(() => getRecentlyViewedRecipeIds());
 
   return useQuery({
     queryKey: ["home", "recommendations", recentRecipeIds] as const,
@@ -25,7 +26,7 @@ export function useHomeRecommendations() {
 }
 
 export function useHomeRecentlyViewed() {
-  const ids = getRecentlyViewedRecipeIds();
+  const [ids] = useState<string[]>(() => getRecentlyViewedRecipeIds());
 
   return useQuery({
     queryKey: ["home", "recentlyViewed", ids] as const,

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -11,8 +11,9 @@ import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import { AuthError, PRIVACY_POLICY_URL } from "@bartendingapp/shared";
+import { AuthError, PRIVACY_POLICY_URL, getInitials, avatarSize } from "@bartendingapp/shared";
 import { useSession } from "@/auth/use-session";
+import { useProfile, useUpdateDisplayName } from "@/auth/use-preferences";
 import {
   useChangeEmail,
   useDeleteAccount,
@@ -40,15 +41,27 @@ function authErrorMessage(error: unknown): string {
   return "Something went wrong. Check your connection and try again.";
 }
 
-function GuestAuthForm() {
+function GuestAuthForm({
+  onSignedUpWithUnsavedName,
+}: {
+  onSignedUpWithUnsavedName: (name: string) => void;
+}) {
   const theme = useTheme();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const signIn = useSignIn();
   const signUp = useSignUp();
 
   const active = mode === "sign-in" ? signIn : signUp;
+
+  useEffect(() => {
+    if (mode === "sign-up" && signUp.isSuccess && !signUp.data.nameSaved) {
+      onSignedUpWithUnsavedName(name);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [signUp.isSuccess, signUp.data]);
 
   if (mode === "sign-up" && signUp.isSuccess) {
     return (
@@ -77,12 +90,22 @@ function GuestAuthForm() {
         value={password}
         onChangeText={setPassword}
       />
+      {mode === "sign-up" && (
+        <Input label="Name (optional)" autoComplete="name" value={name} onChangeText={setName} />
+      )}
       {active.isError && (
         <Text variant="bodySmall" style={{ color: theme.danger }}>
           {authErrorMessage(active.error)}
         </Text>
       )}
-      <Button disabled={active.isPending} onPress={() => active.mutate({ email, password })}>
+      <Button
+        disabled={active.isPending}
+        onPress={() =>
+          mode === "sign-up"
+            ? signUp.mutate({ email, password, name })
+            : signIn.mutate({ email, password })
+        }
+      >
         {active.isPending ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}
       </Button>
       <Button
@@ -95,7 +118,58 @@ function GuestAuthForm() {
   );
 }
 
-function LinkedAccountPanel({ email }: { email: string }) {
+function DisplayNameCard({ email, prefillName }: { email: string; prefillName: string }) {
+  const theme = useTheme();
+  const { data: profile } = useProfile();
+  const updateDisplayName = useUpdateDisplayName();
+  const [editedName, setEditedName] = useState<string | null>(
+    prefillName.length > 0 ? prefillName : null,
+  );
+
+  // Not yet touched by the user: show the loaded value (or blank while loading), never write it into state directly.
+  const name = editedName ?? profile?.displayName ?? "";
+
+  const previewInitials = getInitials(name, email);
+
+  return (
+    <Card style={styles.card}>
+      <Text variant="heading">Name</Text>
+      <View style={styles.badgePreviewRow}>
+        <View
+          style={[
+            styles.badge,
+            { width: avatarSize.mobile, height: avatarSize.mobile, backgroundColor: theme.accent },
+          ]}
+        >
+          <Text variant="label" style={{ color: theme.accentText }}>
+            {previewInitials}
+          </Text>
+        </View>
+        <View style={styles.badgePreviewInput}>
+          <Input label="Display name" value={name} onChangeText={setEditedName} />
+        </View>
+      </View>
+      {updateDisplayName.data?.error && (
+        <Text variant="bodySmall" style={{ color: theme.danger }}>
+          {updateDisplayName.data.error.reason === "too_long"
+            ? "Name must be 50 characters or fewer."
+            : updateDisplayName.data.error.reason === "too_short"
+              ? "Name must be at least 1 character."
+              : "We couldn't save your name. Check your connection and try again."}
+        </Text>
+      )}
+      <Button
+        variant="secondary"
+        disabled={updateDisplayName.isPending}
+        onPress={() => updateDisplayName.mutate(name)}
+      >
+        {updateDisplayName.isPending ? "Saving…" : "Save name"}
+      </Button>
+    </Card>
+  );
+}
+
+function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName: string }) {
   const theme = useTheme();
   const [newEmail, setNewEmail] = useState("");
   const [confirmText, setConfirmText] = useState("");
@@ -115,6 +189,8 @@ function LinkedAccountPanel({ email }: { email: string }) {
           {signOut.isPending ? "Signing out…" : "Sign out"}
         </Button>
       </Card>
+
+      <DisplayNameCard email={email} prefillName={prefillName} />
 
       <Card style={styles.card}>
         <Text variant="heading">Change email</Text>
@@ -191,6 +267,7 @@ export default function AccountScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { session, isLinked, isLoading, expired } = useSession();
+  const [unsavedSignUpName, setUnsavedSignUpName] = useState("");
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -215,9 +292,9 @@ export default function AccountScreen() {
             <Spinner label="Loading account" />
           </View>
         ) : isLinked && session?.user.email ? (
-          <LinkedAccountPanel email={session.user.email} />
+          <LinkedAccountPanel email={session.user.email} prefillName={unsavedSignUpName} />
         ) : (
-          <GuestAuthForm />
+          <GuestAuthForm onSignedUpWithUnsavedName={setUnsavedSignUpName} />
         )}
 
         <Card style={styles.card}>
@@ -243,6 +320,19 @@ const styles = StyleSheet.create({
   },
   card: {
     gap: Spacing.two,
+  },
+  badgePreviewRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.three,
+  },
+  badgePreviewInput: {
+    flex: 1,
+  },
+  badge: {
+    borderRadius: 9999,
+    alignItems: "center",
+    justifyContent: "center",
   },
   centered: {
     alignItems: "center",

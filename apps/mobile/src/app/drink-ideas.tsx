@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 
@@ -9,7 +9,29 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { RecipeCard } from "@/recipes/recipe-card";
+import { usePantry } from "@/pantry/use-pantry";
+import { buildDrinkIdeaGeneratedEvent, GenerateDrinkIdeaError } from "@bartendingapp/shared";
+import { track } from "@/analytics/posthog-client";
 import { useDrinkIdeas } from "@/drink-ideas/use-drink-ideas";
+import { useGenerateDrinkIdea } from "@/drink-ideas/use-generate-drink-idea";
+import { GeneratedRecipeCard } from "@/drink-ideas/generated-recipe-card";
+
+const MIN_PANTRY_INGREDIENTS_FOR_GENERATION = 2;
+
+function generateErrorMessage(reason: GenerateDrinkIdeaError["reason"], resetsAt?: string): string {
+  switch (reason) {
+    case "no_session":
+      return "We couldn't verify your session. Check your connection and try again.";
+    case "quota_exceeded":
+      return resetsAt
+        ? `You've reached today's generation limit. Try again after ${new Date(resetsAt).toLocaleString()}.`
+        : "You've reached today's generation limit. Try again tomorrow.";
+    case "pantry_too_small":
+      return "Add a couple more pantry ingredients to generate an idea.";
+    default:
+      return "We couldn't generate a drink idea. Try again.";
+  }
+}
 
 export default function DrinkIdeasScreen() {
   const theme = useTheme();
@@ -17,10 +39,60 @@ export default function DrinkIdeasScreen() {
 
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
     useDrinkIdeas();
+  const { data: pantryItems } = usePantry();
+  const generateDrinkIdea = useGenerateDrinkIdea();
 
   const matches = useMemo(() => data?.pages.flat() ?? [], [data]);
   const canMakeNow = useMemo(() => matches.filter((match) => match.missingRatio === 0), [matches]);
   const almostThere = useMemo(() => matches.filter((match) => match.missingRatio > 0), [matches]);
+  const canGenerate = (pantryItems?.length ?? 0) >= MIN_PANTRY_INGREDIENTS_FOR_GENERATION;
+
+  const firstPage = data?.pages[0];
+  const firedMatchedRef = useRef(false);
+
+  useEffect(() => {
+    if (!firstPage || firstPage.length === 0 || firedMatchedRef.current) {
+      return;
+    }
+
+    firedMatchedRef.current = true;
+    const event = buildDrinkIdeaGeneratedEvent({
+      source: "matched",
+      pantry_size: pantryItems?.length ?? 0,
+      match_count: firstPage.length,
+    });
+    track(event.name, event.properties);
+  }, [firstPage, pantryItems]);
+
+  const generateSection = canGenerate && (
+    <View style={styles.section}>
+      <Text variant="heading">Something new</Text>
+      {generateDrinkIdea.data ? (
+        <GeneratedRecipeCard idea={generateDrinkIdea.data} />
+      ) : generateDrinkIdea.error ? (
+        <EmptyState
+          title="Couldn't generate an idea"
+          description={
+            generateDrinkIdea.error instanceof GenerateDrinkIdeaError
+              ? generateErrorMessage(
+                  generateDrinkIdea.error.reason,
+                  generateDrinkIdea.error.resetsAt,
+                )
+              : generateErrorMessage("generation_failed")
+          }
+          action={<Button onPress={() => generateDrinkIdea.mutate()}>Retry</Button>}
+        />
+      ) : (
+        <Button
+          variant="secondary"
+          onPress={() => generateDrinkIdea.mutate()}
+          disabled={generateDrinkIdea.isPending}
+        >
+          {generateDrinkIdea.isPending ? "Generating…" : "Generate a new idea"}
+        </Button>
+      )}
+    </View>
+  );
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -39,11 +111,14 @@ export default function DrinkIdeasScreen() {
           <Spinner label="Loading drink ideas" />
         </View>
       ) : matches.length === 0 ? (
-        <EmptyState
-          title="No drink ideas yet"
-          description="Add a few ingredients to your pantry and we'll show you what you can make."
-          action={<Button onPress={() => router.push("/pantry")}>Go to pantry</Button>}
-        />
+        <View style={styles.list}>
+          <EmptyState
+            title="No drink ideas yet"
+            description="Add a few ingredients to your pantry and we'll show you what you can make."
+            action={<Button onPress={() => router.push("/pantry")}>Go to pantry</Button>}
+          />
+          {generateSection}
+        </View>
       ) : (
         <View style={styles.list}>
           {canMakeNow.length > 0 && (
@@ -88,6 +163,8 @@ export default function DrinkIdeasScreen() {
               </View>
             </View>
           )}
+
+          {generateSection}
 
           {hasNextPage && (
             <View style={styles.centered}>

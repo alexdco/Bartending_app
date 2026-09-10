@@ -9,7 +9,7 @@ export function Card({ children, selected = false, className = "", ...rest }: Ca
   const background = selected ? "bg-surface-selected" : "bg-surface";
   return (
     <div
-      className={`${background} rounded-medium border border-border p-four ${className}`}
+      className={`${background} rounded-large border border-border p-four ${className}`}
       {...rest}
     >
       {children}

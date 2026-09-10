@@ -26,9 +26,10 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 13 | Privacy policy and cookie consent | Slice 9 | in-progress |
 | 14 | Basic product analytics | Slice 10 | in-progress |
 | 15 | Recipe favoriting | Slice 11 | in-progress |
-| 16 | Idle anonymous account cleanup job | Slice 12 | planned |
+| 16 | Idle anonymous account cleanup job | Slice 12 | in-progress |
 | 17 | Personalized homepage | Slice 13 | in-progress |
 | 18 | Green and charcoal rebrand | Foundation | in-progress |
+| 19 | User profile and nav badge | Slice 14 | in-progress |
 
 ## Foundations
 
@@ -271,7 +272,15 @@ Spec [0015](../specs/0015-recipe-favoriting/index.md) · code in `packages/share
 ### 16. Idle anonymous account cleanup job
 A scheduled job that sweeps anonymous Supabase sessions idle past a retention window, per spec 0001's original design. Never built; spec 0008 (sign in and cross device sync) flagged that whenever this job is designed, it must explicitly exclude `linked` (non anonymous) users from the sweep.
 **Done when:** idle anonymous sessions past the retention window are cleaned up on a schedule, and a linked user is never swept.
-- [ ] Design it (spec): `/architect idle anonymous account cleanup job`
+- [x] Design it (spec): `/architect idle anonymous account cleanup job`
+- [ ] Build it: `/develop idle anonymous account cleanup job`
+  - [ ] Enable `pg_cron`/`pg_net` and add the `select_idle_anonymous_accounts()`/`is_candidate_still_idle()` SQL functions, satisfies AC-1, AC-2, AC-2b, AC-4, AC-7b
+  - [ ] Register the weekly pg_cron job (Vault secret, `net.http_post` call), satisfies AC-3, AC-9
+  - [ ] `cleanup-anonymous-accounts` Edge Function (auth check, candidate log, per id re-check + delete, partial failure handling, Sentry), satisfies AC-5, AC-6, AC-7, AC-7b, AC-8, AC-9
+  - [ ] Deploy and confirm the scheduled job is registered live, satisfies AC-3
+- [ ] Verify it: `/check verify idle anonymous account cleanup job`
+- [ ] Test it: `/test idle anonymous account cleanup job`
+Spec [0017](../specs/0017-idle-anonymous-account-cleanup-job.md)
 
 ## Slice 13: Personalized homepage
 
@@ -289,6 +298,22 @@ Replaces the current search-first landing page (`/` on web, the default Search t
 - [ ] Verify it: `/check verify personalized homepage`
 - [ ] Test it: `/test personalized homepage`
 Spec [0016](../specs/0016-personalized-homepage/index.md) · code in `packages/shared/src/{recipes.ts,homepage.ts}`, `apps/web/src/{app/page.tsx,app/search,homepage}`, `apps/mobile/src/{app/index.tsx,homepage}`
+
+## Slice 14: User profile and nav badge
+
+### 19. User profile and nav badge
+Right now a signed in user has no visual sign that they are signed in. Add a real user profile (a name field, collected at sign up or added after) and show an initials badge in the top right corner of the nav on web and in a new thin header bar above the mobile tab bar, so sign in state is visible at a glance. The name lives as a new `display_name` column on the existing `user_preferences` table.
+**Done when:** a signed in user's initials appear as a badge in the top right nav (web) and the mobile header bar, a guest sees a neutral state instead, and a name can be set and edited from the account page.
+- [x] Design it (spec): `/architect user profile and nav badge`
+- [x] Build it: `/develop user profile and nav badge`
+  - [x] Data model and shared logic: migration for `display_name`, regenerated types, the shared initials algorithm, `avatarSize` token, and the column scoped save function, satisfies AC-1, AC-2, AC-6, AC-7, AC-10, AC-11 — applied live to `BartendingAppWeb` via `supabase/migrations/20260910120000_user_preferences_display_name.sql`; `packages/shared/src/{initials.ts,preferences.ts,tokens.ts}`
+  - [x] Sign up flow: optional name field on sign up plus the non blocking post link save, satisfies AC-4 — `packages/shared/src/auth.ts` (`signUpWithPassword`), both apps' sign up forms
+  - [x] Web: account page name field with live preview, and the nav badge in `site-nav.tsx`, satisfies AC-1 through AC-3, AC-5, AC-8, AC-9, AC-11
+  - [x] Mobile: account screen name field with live preview, and the new header bar badge above the tab bar, satisfies AC-1 through AC-3, AC-5, AC-8, AC-9, AC-11 — `app-tabs.web.tsx` untouched (stale starter template, not the real app, per spec's own allowance)
+  - [x] Cross platform parity check — both apps consume the same `getInitials`/`validateDisplayName`/`updateDisplayName`/`avatarSize` exports from `@bartendingapp/shared`
+- [ ] Verify it: `/check verify user profile and nav badge`
+- [ ] Test it: `/test user profile and nav badge`
+Spec [0018](../specs/0018-user-profile-and-nav-badge.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

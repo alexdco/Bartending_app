@@ -10,6 +10,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { IngredientList } from "@/recipes/ingredient-list";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { useRecipeDetail } from "@/recipes/use-recipe-detail";
+import { RecommendationsSection } from "@/recipe-recommendations/recommendations-section";
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -58,6 +59,8 @@ export default function RecipeDetailScreen() {
           <Text variant="heading">Instructions</Text>
           <Text variant="body">{recipe.instructions}</Text>
         </View>
+
+        <RecommendationsSection recipeId={recipe.id} />
       </ScrollView>
     </SafeAreaView>
   );

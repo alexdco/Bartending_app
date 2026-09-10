@@ -1,8 +1,16 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { addPantryItem, removePantryItem, type PantryItem } from "@bartendingapp/shared";
+import {
+  addPantryItem,
+  buildPantryItemAddedEvent,
+  removePantryItem,
+  type PantryItem,
+} from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
+import { track } from "@/analytics/posthog-client";
 import { drinkIdeasQueryKey } from "@/drink-ideas/use-drink-ideas";
 import { pantryQueryKey } from "./use-pantry";
+
+const recommendationsQueryKeyPrefix = ["recommendations"] as const;
 
 interface MutationContext {
   previousItems: PantryItem[] | undefined;
@@ -33,9 +41,14 @@ export function useAddPantryItem() {
         queryClient.setQueryData(pantryQueryKey, context.previousItems);
       }
     },
+    onSuccess: (_data, { ingredientId }) => {
+      const event = buildPantryItemAddedEvent({ ingredient_id: ingredientId });
+      track(event.name, event.properties);
+    },
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: pantryQueryKey });
       queryClient.invalidateQueries({ queryKey: drinkIdeasQueryKey });
+      queryClient.invalidateQueries({ queryKey: recommendationsQueryKeyPrefix });
     },
   });
 }
@@ -64,6 +77,7 @@ export function useRemovePantryItem() {
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: pantryQueryKey });
       queryClient.invalidateQueries({ queryKey: drinkIdeasQueryKey });
+      queryClient.invalidateQueries({ queryKey: recommendationsQueryKeyPrefix });
     },
   });
 }

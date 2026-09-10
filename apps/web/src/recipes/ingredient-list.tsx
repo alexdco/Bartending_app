@@ -26,7 +26,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
               {ingredient.name}
             </Text>
             <Button
-              variant="secondary"
+              variant={inPantry ? "secondary" : "primary"}
               disabled={inPantry}
               onClick={() =>
                 addPantryItem.mutate({
