@@ -273,14 +273,14 @@ Spec [0015](../specs/0015-recipe-favoriting/index.md) · code in `packages/share
 A scheduled job that sweeps anonymous Supabase sessions idle past a retention window, per spec 0001's original design. Never built; spec 0008 (sign in and cross device sync) flagged that whenever this job is designed, it must explicitly exclude `linked` (non anonymous) users from the sweep.
 **Done when:** idle anonymous sessions past the retention window are cleaned up on a schedule, and a linked user is never swept.
 - [x] Design it (spec): `/architect idle anonymous account cleanup job`
-- [ ] Build it: `/develop idle anonymous account cleanup job`
-  - [ ] Enable `pg_cron`/`pg_net` and add the `select_idle_anonymous_accounts()`/`is_candidate_still_idle()` SQL functions, satisfies AC-1, AC-2, AC-2b, AC-4, AC-7b
-  - [ ] Register the weekly pg_cron job (Vault secret, `net.http_post` call), satisfies AC-3, AC-9
-  - [ ] `cleanup-anonymous-accounts` Edge Function (auth check, candidate log, per id re-check + delete, partial failure handling, Sentry), satisfies AC-5, AC-6, AC-7, AC-7b, AC-8, AC-9
-  - [ ] Deploy and confirm the scheduled job is registered live, satisfies AC-3
+- [x] Build it: `/develop idle anonymous account cleanup job`
+  - [x] Enable `pg_cron`/`pg_net` and add the `select_idle_anonymous_accounts()`/`is_candidate_still_idle()` SQL functions, satisfies AC-1, AC-2, AC-2b, AC-4, AC-7b
+  - [x] Register the weekly pg_cron job (Vault secret, `net.http_post` call), satisfies AC-3, AC-9
+  - [x] `cleanup-anonymous-accounts` Edge Function (auth check, candidate log, per id re-check + delete, partial failure handling, Sentry), satisfies AC-5, AC-6, AC-7, AC-7b, AC-8, AC-9
+  - [x] Deploy and confirm the scheduled job is registered live, satisfies AC-3
 - [ ] Verify it: `/check verify idle anonymous account cleanup job`
 - [ ] Test it: `/test idle anonymous account cleanup job`
-Spec [0017](../specs/0017-idle-anonymous-account-cleanup-job.md)
+Spec [0017](../specs/0017-idle-anonymous-account-cleanup-job/index.md) · code in `supabase/migrations`, `supabase/functions/cleanup-anonymous-accounts`
 
 ## Slice 13: Personalized homepage
 
