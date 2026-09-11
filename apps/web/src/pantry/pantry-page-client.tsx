@@ -67,7 +67,10 @@ export function PantryPageClient() {
                       variant="secondary"
                       disabled={alreadyAdded}
                       onClick={() =>
-                        addPantryItem.mutate({ ingredientId: ingredient.id, name: ingredient.name })
+                        addPantryItem.mutate(
+                          { ingredientId: ingredient.id, name: ingredient.name },
+                          { onSuccess: () => setInputValue("") },
+                        )
                       }
                     >
                       {alreadyAdded ? "Added" : "Add"}

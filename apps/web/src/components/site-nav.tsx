@@ -1,14 +1,26 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { DropdownMenu } from "radix-ui";
 import { avatarSize, getInitials } from "@bartendingapp/shared";
 import { Text } from "./text";
 import { useSession } from "@/auth/use-session";
 import { useProfile } from "@/auth/use-preferences";
+import { useSignOut } from "@/auth/use-auth-mutations";
+
+function PersonIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.8-3.6-5-8-5Z" />
+    </svg>
+  );
+}
 
 function NavBadge() {
   const { session, isLinked, isLoading } = useSession();
   const { data: profile } = useProfile();
+  const signOut = useSignOut();
 
   if (isLoading) {
     return null;
@@ -16,14 +28,12 @@ function NavBadge() {
 
   if (!isLinked) {
     return (
-      <Link href="/account" aria-label="Account (signed out)">
+      <Link href="/account" aria-label="Sign in">
         <span
           className="flex items-center justify-center rounded-full bg-surface-selected text-text-muted"
           style={{ width: avatarSize.web, height: avatarSize.web }}
         >
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
-            <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.8-3.6-5-8-5Z" />
-          </svg>
+          <PersonIcon />
         </span>
       </Link>
     );
@@ -32,58 +42,83 @@ function NavBadge() {
   const initials = getInitials(profile?.displayName ?? null, session?.user.email ?? null);
 
   return (
-    <Link href="/account" aria-label="Account">
-      <span
-        className="flex items-center justify-center rounded-full bg-accent text-accent-text"
-        style={{ width: avatarSize.web, height: avatarSize.web }}
-      >
-        <Text variant="label" as="span" className="text-accent-text">
-          {initials}
-        </Text>
-      </span>
-    </Link>
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button type="button" aria-label="Account menu" className="rounded-full">
+          <span
+            className="flex items-center justify-center rounded-full bg-accent text-accent-text"
+            style={{ width: avatarSize.web, height: avatarSize.web }}
+          >
+            <Text variant="label" as="span" className="text-accent-text">
+              {initials}
+            </Text>
+          </span>
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={8}
+          className="min-w-40 rounded-medium border border-border bg-surface py-two shadow-lg"
+        >
+          <DropdownMenu.Item asChild>
+            <Link
+              href="/account"
+              className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+            >
+              <Text variant="label" as="span">
+                Account
+              </Text>
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item
+            className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected"
+            onSelect={() => signOut.mutate()}
+          >
+            <Text variant="label" as="span">
+              Sign out
+            </Text>
+          </DropdownMenu.Item>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
   );
 }
 
+const navLinks = [
+  { href: "/", label: "Home" },
+  { href: "/search", label: "Search" },
+  { href: "/pantry", label: "Pantry" },
+  { href: "/drink-ideas", label: "Drink ideas" },
+  { href: "/popular", label: "Popular" },
+  { href: "/favorites", label: "Favorites" },
+];
+
 export function SiteNav() {
+  const pathname = usePathname();
+
   return (
     <nav className="flex items-center justify-between border-b border-border px-six py-three">
       <div className="flex items-center gap-four">
-        <Link href="/">
-          <Text variant="label" as="span">
-            Home
-          </Text>
-        </Link>
-        <Link href="/search">
-          <Text variant="label" as="span">
-            Search
-          </Text>
-        </Link>
-        <Link href="/pantry">
-          <Text variant="label" as="span">
-            Pantry
-          </Text>
-        </Link>
-        <Link href="/drink-ideas">
-          <Text variant="label" as="span">
-            Drink ideas
-          </Text>
-        </Link>
-        <Link href="/popular">
-          <Text variant="label" as="span">
-            Popular
-          </Text>
-        </Link>
-        <Link href="/favorites">
-          <Text variant="label" as="span">
-            Favorites
-          </Text>
-        </Link>
-        <Link href="/account">
-          <Text variant="label" as="span">
-            Account
-          </Text>
-        </Link>
+        {navLinks.map(({ href, label }) => {
+          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={
+                isActive
+                  ? "rounded-medium bg-accent px-three py-one text-accent-text"
+                  : "rounded-medium px-three py-one"
+              }
+            >
+              <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
+                {label}
+              </Text>
+            </Link>
+          );
+        })}
       </div>
       <NavBadge />
     </nav>

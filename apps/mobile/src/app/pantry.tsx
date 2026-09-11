@@ -66,7 +66,10 @@ export default function PantryScreen() {
                       variant="secondary"
                       disabled={alreadyAdded}
                       onPress={() =>
-                        addPantryItem.mutate({ ingredientId: ingredient.id, name: ingredient.name })
+                        addPantryItem.mutate(
+                          { ingredientId: ingredient.id, name: ingredient.name },
+                          { onSuccess: () => setInputValue("") },
+                        )
                       }
                     >
                       {alreadyAdded ? "Added" : "Add"}
