@@ -329,7 +329,7 @@ The web nav (`apps/web/src/components/site-nav.tsx`) is one non wrapping flex ro
   - [x] Add the resize `matchMedia` force close and the full height/scroll/animation styling, satisfies AC-6, AC-7
 - [ ] Verify it: `/check verify mobile friendly collapsible nav`
 - [ ] Test it: `/test mobile friendly collapsible nav`
-Spec [0019](../specs/0019-mobile-friendly-collapsible-nav.md) · code in `packages/shared/src/tokens.ts`, `apps/web/scripts/generate-theme-css.mjs`, `apps/web/src/components/site-nav.tsx`, `apps/web/src/app/globals.css`
+Spec [0019](../specs/0019-mobile-friendly-collapsible-nav/index.md) · code in `packages/shared/src/tokens.ts`, `apps/web/scripts/generate-theme-css.mjs`, `apps/web/src/components/site-nav.tsx`, `apps/web/src/app/globals.css`
 
 ## Slice 15: Sentry error monitoring
 
