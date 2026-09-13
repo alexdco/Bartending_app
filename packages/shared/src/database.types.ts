@@ -52,6 +52,41 @@ export type Database = {
           },
         ];
       };
+      ingredient_translations: {
+        Row: {
+          created_at: string;
+          ingredient_id: string;
+          locale: string;
+          name: string;
+          source_name_hash: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          ingredient_id: string;
+          locale: string;
+          name: string;
+          source_name_hash: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          ingredient_id?: string;
+          locale?: string;
+          name?: string;
+          source_name_hash?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ingredient_translations_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ingredients: {
         Row: {
           created_at: string;
@@ -102,6 +137,35 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "ingredients";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      recipe_ingredient_translations: {
+        Row: {
+          ingredient_id: string;
+          locale: string;
+          measure: string | null;
+          recipe_id: string;
+        };
+        Insert: {
+          ingredient_id: string;
+          locale: string;
+          measure?: string | null;
+          recipe_id: string;
+        };
+        Update: {
+          ingredient_id?: string;
+          locale?: string;
+          measure?: string | null;
+          recipe_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recipe_ingredient_translations_recipe_id_ingredient_id_fkey";
+            columns: ["recipe_id", "ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "recipe_ingredients";
+            referencedColumns: ["recipe_id", "ingredient_id"];
           },
         ];
       };
@@ -167,6 +231,50 @@ export type Database = {
             columns: ["tag_id"];
             isOneToOne: false;
             referencedRelation: "tags";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      recipe_translations: {
+        Row: {
+          created_at: string;
+          glass: string | null;
+          instructions: string;
+          locale: string;
+          name: string;
+          name_search: unknown;
+          recipe_id: string;
+          source_name_hash: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          glass?: string | null;
+          instructions: string;
+          locale: string;
+          name: string;
+          name_search?: unknown;
+          recipe_id: string;
+          source_name_hash: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          glass?: string | null;
+          instructions?: string;
+          locale?: string;
+          name?: string;
+          name_search?: unknown;
+          recipe_id?: string;
+          source_name_hash?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recipe_translations_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
         ];
@@ -249,18 +357,21 @@ export type Database = {
       user_preferences: {
         Row: {
           display_name: string | null;
+          locale: string | null;
           theme: string;
           updated_at: string;
           user_id: string;
         };
         Insert: {
           display_name?: string | null;
+          locale?: string | null;
           theme?: string;
           updated_at?: string;
           user_id: string;
         };
         Update: {
           display_name?: string | null;
+          locale?: string | null;
           theme?: string;
           updated_at?: string;
           user_id?: string;
@@ -269,7 +380,33 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      ingredients_localized: {
+        Row: {
+          created_at: string | null;
+          id: string | null;
+          image_url: string | null;
+          name: string | null;
+          normalized_name: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [];
+      };
+      recipes_localized: {
+        Row: {
+          alcoholic_status: string | null;
+          created_at: string | null;
+          deleted_at: string | null;
+          glass: string | null;
+          id: string | null;
+          image_url: string | null;
+          instructions: string | null;
+          name: string | null;
+          region: string | null;
+          source_id: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
