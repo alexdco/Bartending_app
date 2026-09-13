@@ -69,6 +69,14 @@ export const avatarSize = {
   mobile: 28,
 } as const;
 
+export const breakpoints = {
+  mobileNav: 768,
+} as const;
+
+export const motion = {
+  drawerDurationMs: 200,
+} as const;
+
 export interface TypeScaleEntry {
   size: number;
   lineHeight: number;

@@ -30,6 +30,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 17 | Personalized homepage | Slice 13 | in-progress |
 | 18 | Green and charcoal rebrand | Foundation | in-progress |
 | 19 | User profile and nav badge | Slice 14 | in-progress |
+| 20 | Sentry error monitoring | Slice 15 | planned |
+| 21 | Cron job run monitoring | Slice 16 | planned |
+| 22 | Mobile friendly collapsible nav | Slice 14 | in-progress |
 
 ## Foundations
 
@@ -314,6 +317,33 @@ Right now a signed in user has no visual sign that they are signed in. Add a rea
 - [ ] Verify it: `/check verify user profile and nav badge`
 - [ ] Test it: `/test user profile and nav badge`
 Spec [0018](../specs/0018-user-profile-and-nav-badge/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`
+
+### 22. Mobile friendly collapsible nav
+The web nav (`apps/web/src/components/site-nav.tsx`) is one non wrapping flex row with no responsive behavior today. Below 768px, it collapses behind a hamburger toggle in the upper right that opens a Radix Dialog side drawer holding the nav links and the full account menu (Account, Theme, Sign out); desktop keeps today's inline layout unchanged. Adds a `breakpoints.mobileNav` and a `motion.drawerDurationMs` token to `packages/shared/src/tokens.ts`, wired into the web app's generated theme CSS. Mobile app is out of scope here; it already has its own tab bar (feature 19).
+**Done when:** on a mobile viewport, the nav links and account menu collapse behind a single upper right toggle that opens and closes a side drawer with all current nav links and account content reachable and operable by keyboard/touch; on a desktop viewport, the nav is unchanged from today.
+- [x] Design it (spec): `/architect mobile friendly collapsible nav`
+- [x] Build it: `/develop mobile friendly collapsible nav`
+  - [x] Add and wire the new breakpoint/motion tokens (`tokens.ts` plus `generate-theme-css.mjs`), satisfies AC-1, AC-2, AC-7
+  - [x] Build the `MobileNavToggle`/`MobileNavDrawer` components (icon, aria labeling, drawer content with full account parity including Account, Theme, Sign out), satisfies AC-3, AC-4, AC-9
+  - [x] Wire the `md:` visibility split and all drawer close behaviors (overlay, Escape, toggle, link click, route change), satisfies AC-1, AC-2, AC-5
+  - [x] Add the resize `matchMedia` force close and the full height/scroll/animation styling, satisfies AC-6, AC-7
+- [ ] Verify it: `/check verify mobile friendly collapsible nav`
+- [ ] Test it: `/test mobile friendly collapsible nav`
+Spec [0019](../specs/0019-mobile-friendly-collapsible-nav.md) · code in `packages/shared/src/tokens.ts`, `apps/web/scripts/generate-theme-css.mjs`, `apps/web/src/components/site-nav.tsx`, `apps/web/src/app/globals.css`
+
+## Slice 15: Sentry error monitoring
+
+### 20. Sentry error monitoring · needs a decision
+Real Sentry install across web, mobile, and Supabase Edge Functions (the observability layer named in `AGENTS.md` but never built as its own feature). Spec 0007 left `SENTRY_DSN` as an optional secret an engineer still has to set; spec 0016 left recently viewed and homepage error paths logging via `console.error` with a `TODO` marker, waiting on this.
+**Done when:** errors on web, mobile, and Edge Functions reach Sentry with useful context, the deferred `console.error` TODOs are swapped to `Sentry.captureException`, and `SENTRY_DSN` is a real configured secret rather than optional/unset.
+- [ ] Design it (spec): `/architect sentry error monitoring`
+
+## Slice 16: Cron job run monitoring
+
+### 21. Cron job run monitoring · needs a decision
+Alert if the idle anonymous account cleanup job (feature 16, spec 0017) silently stops firing, whether from a bad Vault secret or an unreachable function. Spec 0017 flagged this as a real gap but not required for its initial build, since per run Sentry reporting already covers the more likely failure mode of individual delete failures within a run that does fire.
+**Done when:** a run that never fires in the expected window (not just a run that fires and fails) is flagged, whether via a periodic check or a Sentry cron monitor.
+- [ ] Design it (spec): `/architect cron job run monitoring`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

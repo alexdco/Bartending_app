@@ -115,4 +115,7 @@
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+
+  --breakpoint-md: 768px;
+  --duration-drawer: 200ms;
 }

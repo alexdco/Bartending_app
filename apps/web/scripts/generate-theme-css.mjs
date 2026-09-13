@@ -6,7 +6,15 @@
 import { writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { dirname, resolve } from "node:path";
-import { colors, spacing, radii, typeScale, fonts } from "../../../packages/shared/src/tokens.ts";
+import {
+  colors,
+  spacing,
+  radii,
+  typeScale,
+  fonts,
+  breakpoints,
+  motion,
+} from "../../../packages/shared/src/tokens.ts";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, "../src/app/theme.generated.css");
@@ -95,6 +103,9 @@ ${colorVars(colors.dark)}
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+
+  --breakpoint-md: ${breakpoints.mobileNav}px;
+  --duration-drawer: ${motion.drawerDurationMs}ms;
 }
 `;
 

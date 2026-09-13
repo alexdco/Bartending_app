@@ -50,4 +50,31 @@
   .no-scrollbar::-webkit-scrollbar {
     display: none;
   }
+
+  .drawer-overlay {
+    opacity: 0;
+    transition: opacity var(--duration-drawer) ease-in;
+  }
+
+  .drawer-overlay[data-state="open"] {
+    opacity: 1;
+    transition-timing-function: ease-out;
+  }
+
+  .drawer-content {
+    transform: translateX(100%);
+    transition: transform var(--duration-drawer) ease-in;
+  }
+
+  .drawer-content[data-state="open"] {
+    transform: translateX(0);
+    transition-timing-function: ease-out;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .drawer-overlay,
+    .drawer-content {
+      transition: none;
+    }
+  }
 }
