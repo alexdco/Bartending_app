@@ -54,9 +54,17 @@ ${typeLineHeightVars}
 }
 
 @media (prefers-color-scheme: light) {
-  :root {
+  :root:not([data-theme="dark"]) {
 ${colorVars(colors.light)}
   }
+}
+
+:root[data-theme="light"] {
+${colorVars(colors.light)}
+}
+
+:root[data-theme="dark"] {
+${colorVars(colors.dark)}
 }
 
 @theme inline {

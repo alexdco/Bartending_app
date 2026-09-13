@@ -36,7 +36,8 @@ export function Text({
   ...rest
 }: TextProps) {
   const Tag = as ?? defaultTag[variant];
-  const color = muted ? "text-text-muted" : "text-text";
+  const hasColorOverride = className.includes("text-accent-text");
+  const color = hasColorOverride ? "" : muted ? "text-text-muted" : "text-text";
   return (
     <Tag className={`${variantClass[variant]} ${color} ${className}`} {...rest}>
       {children}

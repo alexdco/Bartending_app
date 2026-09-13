@@ -12,6 +12,8 @@ import {
   useRecordRecentlyViewedRecipe,
 } from "./use-recipe-recommendations";
 
+const MAX_VISIBLE_RECOMMENDATIONS = 8;
+
 export function RecommendationsSection({
   recipeId,
   recipeName,
@@ -45,7 +47,7 @@ export function RecommendationsSection({
       ) : (
         <>
           <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
-            {data.map((recipe) => (
+            {data.slice(0, MAX_VISIBLE_RECOMMENDATIONS).map((recipe) => (
               <RecipeCard
                 key={recipe.id}
                 recipe={{

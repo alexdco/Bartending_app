@@ -5,9 +5,11 @@ import { usePathname } from "next/navigation";
 import { DropdownMenu } from "radix-ui";
 import { avatarSize, getInitials } from "@bartendingapp/shared";
 import { Text } from "./text";
+import { SiteLogo } from "./site-logo";
 import { useSession } from "@/auth/use-session";
 import { useProfile } from "@/auth/use-preferences";
 import { useSignOut } from "@/auth/use-auth-mutations";
+import { useTheme, type ThemePreference } from "@/theme/use-theme";
 
 function PersonIcon() {
   return (
@@ -17,10 +19,17 @@ function PersonIcon() {
   );
 }
 
+const themeOptions: { value: ThemePreference; label: string }[] = [
+  { value: "light", label: "Light" },
+  { value: "dark", label: "Dark" },
+  { value: "system", label: "System" },
+];
+
 function NavBadge() {
   const { session, isLinked, isLoading } = useSession();
   const { data: profile } = useProfile();
   const signOut = useSignOut();
+  const { preference, setTheme } = useTheme();
 
   if (isLoading) {
     return null;
@@ -71,6 +80,42 @@ function NavBadge() {
               </Text>
             </Link>
           </DropdownMenu.Item>
+          <DropdownMenu.Separator className="my-two h-px bg-border" />
+          <DropdownMenu.Sub>
+            <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none hover:bg-surface-selected data-[state=open]:bg-surface-selected">
+              <Text variant="label" as="span">
+                Theme
+              </Text>
+              <Text variant="label" as="span" className="text-text-muted">
+                {themeOptions.find((option) => option.value === preference)?.label}
+              </Text>
+            </DropdownMenu.SubTrigger>
+            <DropdownMenu.Portal>
+              <DropdownMenu.SubContent
+                sideOffset={4}
+                alignOffset={-4}
+                className="min-w-32 rounded-medium border border-border bg-surface py-two shadow-lg"
+              >
+                <DropdownMenu.RadioGroup
+                  value={preference}
+                  onValueChange={(value) => setTheme(value as ThemePreference)}
+                >
+                  {themeOptions.map((option) => (
+                    <DropdownMenu.RadioItem
+                      key={option.value}
+                      value={option.value}
+                      className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
+                    >
+                      <Text variant="label" as="span">
+                        {option.label}
+                      </Text>
+                    </DropdownMenu.RadioItem>
+                  ))}
+                </DropdownMenu.RadioGroup>
+              </DropdownMenu.SubContent>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Sub>
+          <DropdownMenu.Separator className="my-two h-px bg-border" />
           <DropdownMenu.Item
             className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected"
             onSelect={() => signOut.mutate()}
@@ -99,26 +144,33 @@ export function SiteNav() {
 
   return (
     <nav className="flex items-center justify-between border-b border-border px-six py-three">
-      <div className="flex items-center gap-four">
-        {navLinks.map(({ href, label }) => {
-          const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+      <div className="flex items-center gap-five">
+        <SiteLogo />
+        <div className="flex items-center gap-four">
+          {navLinks.map(({ href, label }) => {
+            const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-          return (
-            <Link
-              key={href}
-              href={href}
-              className={
-                isActive
-                  ? "rounded-medium bg-accent px-three py-one text-accent-text"
-                  : "rounded-medium px-three py-one"
-              }
-            >
-              <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
-                {label}
-              </Text>
-            </Link>
-          );
-        })}
+            return (
+              <Link
+                key={href}
+                href={href}
+                className={
+                  isActive
+                    ? "rounded-medium bg-accent px-three py-one text-accent-text"
+                    : "rounded-medium px-three py-one"
+                }
+              >
+                <Text
+                  variant="label"
+                  as="span"
+                  className={isActive ? "text-accent-text" : undefined}
+                >
+                  {label}
+                </Text>
+              </Link>
+            );
+          })}
+        </div>
       </div>
       <NavBadge />
     </nav>
