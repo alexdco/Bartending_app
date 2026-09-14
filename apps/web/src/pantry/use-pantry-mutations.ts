@@ -1,16 +1,18 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 import {
   addPantryItem,
   buildPantryItemAddedEvent,
   removePantryItem,
+  type Locale,
   type PantryItem,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { track } from "@/analytics/posthog-client";
 import { drinkIdeasQueryKeyPrefix } from "@/drink-ideas/use-drink-ideas";
-import { pantryQueryKey } from "./use-pantry";
+import { pantryQueryKey, pantryQueryKeyPrefix } from "./use-pantry";
 
 const recommendationsQueryKeyPrefix = ["recommendations"] as const;
 
@@ -20,15 +22,17 @@ interface MutationContext {
 
 export function useAddPantryItem() {
   const queryClient = useQueryClient();
+  const locale = useLocale() as Locale;
+  const queryKey = pantryQueryKey(locale);
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string; name: string }) =>
       addPantryItem(supabase, ingredientId),
     onMutate: async ({ ingredientId, name }): Promise<MutationContext> => {
-      await queryClient.cancelQueries({ queryKey: pantryQueryKey });
-      const previousItems = queryClient.getQueryData<PantryItem[]>(pantryQueryKey);
+      await queryClient.cancelQueries({ queryKey });
+      const previousItems = queryClient.getQueryData<PantryItem[]>(queryKey);
 
-      queryClient.setQueryData<PantryItem[]>(pantryQueryKey, (current) => {
+      queryClient.setQueryData<PantryItem[]>(queryKey, (current) => {
         const items = current ?? [];
         if (items.some((item) => item.ingredientId === ingredientId)) {
           return items;
@@ -40,7 +44,7 @@ export function useAddPantryItem() {
     },
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(pantryQueryKey, context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
     },
     onSuccess: (_data, { ingredientId }) => {
@@ -48,7 +52,7 @@ export function useAddPantryItem() {
       track(event.name, event.properties);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: pantryQueryKey });
+      queryClient.invalidateQueries({ queryKey: pantryQueryKeyPrefix });
       queryClient.invalidateQueries({ queryKey: drinkIdeasQueryKeyPrefix });
       queryClient.invalidateQueries({ queryKey: recommendationsQueryKeyPrefix });
     },
@@ -57,15 +61,17 @@ export function useAddPantryItem() {
 
 export function useRemovePantryItem() {
   const queryClient = useQueryClient();
+  const locale = useLocale() as Locale;
+  const queryKey = pantryQueryKey(locale);
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string }) =>
       removePantryItem(supabase, ingredientId),
     onMutate: async ({ ingredientId }): Promise<MutationContext> => {
-      await queryClient.cancelQueries({ queryKey: pantryQueryKey });
-      const previousItems = queryClient.getQueryData<PantryItem[]>(pantryQueryKey);
+      await queryClient.cancelQueries({ queryKey });
+      const previousItems = queryClient.getQueryData<PantryItem[]>(queryKey);
 
-      queryClient.setQueryData<PantryItem[]>(pantryQueryKey, (current) =>
+      queryClient.setQueryData<PantryItem[]>(queryKey, (current) =>
         (current ?? []).filter((item) => item.ingredientId !== ingredientId),
       );
 
@@ -73,11 +79,11 @@ export function useRemovePantryItem() {
     },
     onError: (_error, _variables, context) => {
       if (context?.previousItems) {
-        queryClient.setQueryData(pantryQueryKey, context.previousItems);
+        queryClient.setQueryData(queryKey, context.previousItems);
       }
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: pantryQueryKey });
+      queryClient.invalidateQueries({ queryKey: pantryQueryKeyPrefix });
       queryClient.invalidateQueries({ queryKey: drinkIdeasQueryKeyPrefix });
       queryClient.invalidateQueries({ queryKey: recommendationsQueryKeyPrefix });
     },

@@ -356,7 +356,7 @@ Adds Spanish alongside English across web, mobile, and the recipe catalog itself
   - [x] Data model: `recipe_translations`/`ingredient_translations`/`tag_translations`/`recipe_ingredient_translations`, `recipes_localized`/`ingredients_localized` views, `user_preferences.locale`, per locale search indexes, satisfies AC-6, AC-9, AC-13, AC-14, AC-15, AC-17
   - [x] UI i18n wiring: `next-intl` on web (`[locale]` routing) and `i18next`/`react-i18next`/`expo-localization` on mobile, satisfies AC-1, AC-3, AC-5
   - [ ] Catalog translation pipeline: one-time backfill script plus the import job's ongoing translation step (hash gated), satisfies AC-9, AC-11, AC-17
-  - [ ] Locale aware reads: search/browse/recommend/pantry-match functions and PostgREST embed paths (detail, pantry, favorites, homepage) via the localized views, satisfies AC-2, AC-6, AC-7, AC-13, AC-14
+  - [x] Locale aware reads: search/browse/recommend/pantry-match functions, plus `fetch_recipe_detail`/`fetch_pantry_items`/`fetch_favorite_recipes`/`fetch_recipes_by_ids` RPC functions replacing the detail/pantry/favorites/homepage PostgREST embeds (the originally planned `recipes_localized`/`ingredients_localized` views were dropped, see spec 0020's Correction), satisfies AC-2, AC-6, AC-7, AC-13, AC-14
   - [ ] Locale switch control, sign in merge behavior, and `generate-drink-idea`'s locale aware generation with corrected pantry verification, satisfies AC-4, AC-10, AC-16
   - [ ] Locale aware recipe slugs, sitemap, and hreflang alternates, satisfies AC-8, AC-12
 - [ ] Verify it: `/check verify multi language support`
@@ -385,7 +385,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 
 - **Next step** = the first unticked box (always a command or a tracked milestone).
 - **needs a decision** = run `/architect` first; otherwise straight to `/develop` (or `/audit` for standards & tooling). The tag drops once the spec is captured.
-- **Atomic build tasks live in the spec's `## Build plan`, not here**: the scope carries only the milestone rollup.
+- **Atomic build tasks live istahe spec's `## Build plan`, not here**: the scope carries only the milestone rollup.
 - **Status** `planned` → `in-progress` → `done`, plus `existing` (pre-workflow) and `dropped` (de-scoped, kept for history).
 - **Workflow** (header line) is the project default, what runs after `/develop`: **Beta** = `/check verify` then `/test`. A feature built on an unratified decision (an `Assumed` spec) stays flagged, but that never blocks `done`.
 - **Pointer line** (`spec <n> · code in <path>`): the spec link added by `/architect`, the code path by `/develop`.

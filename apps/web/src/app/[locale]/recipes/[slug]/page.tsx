@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
 import { notFound, permanentRedirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
 import {
   buildRecipeSlugPath,
   extractIdFromRecipeSlug,
   fetchRecipeDetail,
+  type Locale,
 } from "@bartendingapp/shared";
 import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
@@ -17,13 +19,13 @@ interface RecipePageParams {
   slug: string;
 }
 
-async function resolveRecipe(slugParam: string) {
+async function resolveRecipe(slugParam: string, locale: Locale) {
   const id = extractIdFromRecipeSlug(slugParam);
   if (!id) {
     return null;
   }
 
-  const recipe = await fetchRecipeDetail(supabase, id);
+  const recipe = await fetchRecipeDetail(supabase, id, locale);
   return recipe;
 }
 
@@ -33,7 +35,8 @@ export async function generateMetadata({
   params: Promise<RecipePageParams>;
 }): Promise<Metadata> {
   const { slug } = await params;
-  const recipe = await resolveRecipe(slug);
+  const locale = (await getLocale()) as Locale;
+  const recipe = await resolveRecipe(slug, locale);
 
   if (!recipe) {
     return {};
@@ -66,7 +69,8 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
     notFound();
   }
 
-  const recipe = await fetchRecipeDetail(supabase, id);
+  const locale = (await getLocale()) as Locale;
+  const recipe = await fetchRecipeDetail(supabase, id, locale);
 
   if (!recipe) {
     notFound();

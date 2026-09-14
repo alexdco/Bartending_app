@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { DEFAULT_LOCALE, type Locale } from "./locale";
 import { RECIPE_SEARCH_PAGE_SIZE, type RecipeSearchResult } from "./recipes";
 
 export const FAVORITES_PAGE_SIZE = RECIPE_SEARCH_PAGE_SIZE;
@@ -56,28 +57,31 @@ export async function removeFavorite(
 export interface FetchFavoriteRecipesParams {
   pageLimit?: number;
   pageOffset?: number;
+  locale?: Locale;
 }
 
 export async function fetchFavoriteRecipes(
   client: SupabaseClient<Database>,
-  { pageLimit = FAVORITES_PAGE_SIZE, pageOffset = 0 }: FetchFavoriteRecipesParams = {},
+  {
+    pageLimit = FAVORITES_PAGE_SIZE,
+    pageOffset = 0,
+    locale = DEFAULT_LOCALE,
+  }: FetchFavoriteRecipesParams = {},
 ): Promise<RecipeSearchResult[]> {
-  const { data, error } = await client
-    .from("favorites")
-    .select("created_at, recipes ( id, name, image_url, alcoholic_status )")
-    .order("created_at", { ascending: false })
-    .range(pageOffset, pageOffset + pageLimit - 1);
+  const { data, error } = await client.rpc("fetch_favorite_recipes", {
+    p_locale: locale,
+    p_page_limit: pageLimit,
+    p_page_offset: pageOffset,
+  });
 
   if (error) {
     throw error;
   }
 
-  return (data ?? [])
-    .filter((row) => row.recipes !== null)
-    .map((row) => ({
-      id: row.recipes!.id,
-      name: row.recipes!.name,
-      imageUrl: row.recipes!.image_url,
-      alcoholicStatus: row.recipes!.alcoholic_status,
-    }));
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    imageUrl: row.image_url,
+    alcoholicStatus: row.alcoholic_status,
+  }));
 }

@@ -7,10 +7,11 @@ export interface PantryItem {
   name: string;
 }
 
-export async function fetchPantryItems(client: SupabaseClient<Database>): Promise<PantryItem[]> {
-  const { data, error } = await client
-    .from("pantry_items")
-    .select("ingredient_id, ingredients ( name )");
+export async function fetchPantryItems(
+  client: SupabaseClient<Database>,
+  locale: Locale = DEFAULT_LOCALE,
+): Promise<PantryItem[]> {
+  const { data, error } = await client.rpc("fetch_pantry_items", { p_locale: locale });
 
   if (error) {
     throw error;
@@ -18,7 +19,7 @@ export async function fetchPantryItems(client: SupabaseClient<Database>): Promis
 
   return (data ?? []).map((row) => ({
     ingredientId: row.ingredient_id,
-    name: row.ingredients?.name ?? "",
+    name: row.name,
   }));
 }
 

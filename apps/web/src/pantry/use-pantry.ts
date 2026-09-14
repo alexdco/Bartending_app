@@ -1,14 +1,21 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { fetchPantryItems } from "@bartendingapp/shared";
+import { useLocale } from "next-intl";
+import { fetchPantryItems, type Locale } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 
-export const pantryQueryKey = ["pantry"] as const;
+export const pantryQueryKeyPrefix = ["pantry"] as const;
+
+export function pantryQueryKey(locale: Locale) {
+  return [...pantryQueryKeyPrefix, locale] as const;
+}
 
 export function usePantry() {
+  const locale = useLocale() as Locale;
+
   return useQuery({
-    queryKey: pantryQueryKey,
-    queryFn: () => fetchPantryItems(supabase),
+    queryKey: pantryQueryKey(locale),
+    queryFn: () => fetchPantryItems(supabase, locale),
   });
 }

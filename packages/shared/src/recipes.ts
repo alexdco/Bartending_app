@@ -86,22 +86,20 @@ export interface RecipeDetail {
   isFavorited: boolean;
 }
 
+interface RecipeDetailIngredientRow {
+  ingredient_id: string;
+  name: string;
+  measure: string | null;
+  sort_order: number;
+}
+
 export async function fetchRecipeDetail(
   client: SupabaseClient<Database>,
   id: string,
+  locale: Locale = DEFAULT_LOCALE,
 ): Promise<RecipeDetail | null> {
   const { data, error } = await client
-    .from("recipes")
-    .select(
-      `id, name, instructions, image_url, alcoholic_status, glass,
-       recipe_ingredients (
-         ingredient_id, measure, sort_order,
-         ingredients ( name )
-       ),
-       favorites ( recipe_id )`,
-    )
-    .eq("id", id)
-    .is("deleted_at", null)
+    .rpc("fetch_recipe_detail", { p_id: id, p_locale: locale })
     .maybeSingle();
 
   if (error) {
@@ -112,10 +110,10 @@ export async function fetchRecipeDetail(
     return null;
   }
 
-  const ingredients = (data.recipe_ingredients ?? [])
+  const ingredients = ((data.ingredients as RecipeDetailIngredientRow[] | null) ?? [])
     .map((ri) => ({
       ingredientId: ri.ingredient_id,
-      name: ri.ingredients?.name ?? "",
+      name: ri.name,
       measure: ri.measure,
       sortOrder: ri.sort_order,
     }))
@@ -129,42 +127,32 @@ export async function fetchRecipeDetail(
     alcoholicStatus: data.alcoholic_status,
     glass: data.glass,
     ingredients,
-    isFavorited: (data.favorites ?? []).length > 0,
+    isFavorited: data.is_favorited,
   };
 }
 
 export async function fetchRecipesByIds(
   client: SupabaseClient<Database>,
   ids: string[],
+  locale: Locale = DEFAULT_LOCALE,
 ): Promise<RecipeSearchResult[]> {
   if (ids.length === 0) {
     return [];
   }
 
-  const { data, error } = await client
-    .from("recipes")
-    .select("id, name, image_url, alcoholic_status")
-    .in("id", ids)
-    .is("deleted_at", null);
+  const { data, error } = await client.rpc("fetch_recipes_by_ids", {
+    p_ids: ids,
+    p_locale: locale,
+  });
 
   if (error) {
     throw error;
   }
 
-  const byId = new Map(
-    (data ?? []).map((row) => [
-      row.id,
-      {
-        id: row.id,
-        name: row.name,
-        imageUrl: row.image_url,
-        alcoholicStatus: row.alcoholic_status,
-      },
-    ]),
-  );
-
-  return ids.flatMap((id) => {
-    const recipe = byId.get(id);
-    return recipe ? [recipe] : [];
-  });
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    name: row.name,
+    imageUrl: row.image_url,
+    alcoholicStatus: row.alcoholic_status,
+  }));
 }

@@ -45,10 +45,11 @@ export function useHomeRecommendations() {
 export function useHomeRecentlyViewed() {
   const idsQuery = useRecentlyViewedIds();
   const ids = idsQuery.data ?? [];
+  const locale = useActiveLocale();
 
   const recipesQuery = useQuery({
-    queryKey: ["home", "recentlyViewed", ids] as const,
-    queryFn: () => fetchRecipesByIds(supabase, ids),
+    queryKey: ["home", "recentlyViewed", ids, locale] as const,
+    queryFn: () => fetchRecipesByIds(supabase, ids, locale),
     enabled: idsQuery.isSuccess && ids.length > 0,
   });
 

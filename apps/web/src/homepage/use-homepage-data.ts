@@ -31,10 +31,11 @@ export function useHomeRecommendations() {
 
 export function useHomeRecentlyViewed() {
   const [ids] = useState<string[]>(() => getRecentlyViewedRecipeIds());
+  const locale = useLocale() as Locale;
 
   return useQuery({
-    queryKey: ["home", "recentlyViewed", ids] as const,
-    queryFn: () => fetchRecipesByIds(supabase, ids),
+    queryKey: ["home", "recentlyViewed", ids, locale] as const,
+    queryFn: () => fetchRecipesByIds(supabase, ids, locale),
     enabled: ids.length > 0,
   });
 }
