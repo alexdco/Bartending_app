@@ -1,4 +1,12 @@
+import type { Locale } from "./locale";
+
 const TRAILING_UUID_PATTERN = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/** Prefixes a path with its locale segment (`/es/recipes/...`), matching next-intl's `[locale]` routing. */
+export function localizedPath(locale: Locale, path: string): string {
+  const suffix = path.startsWith("/") ? path : `/${path}`;
+  return `/${locale}${suffix}`;
+}
 
 export function slugify(input: string, fallback: "recipe" | "region"): string {
   const slug = input

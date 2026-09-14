@@ -3,7 +3,9 @@ import {
   buildRecipeSlugPath,
   listAllRecipesForSitemap,
   listPopularRegions,
+  localizedPath,
   slugify,
+  SUPPORTED_LOCALES,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { siteAbsoluteUrl } from "@/lib/site-url";
@@ -14,13 +16,56 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     listPopularRegions(supabase),
   ]);
 
-  const recipeEntries: MetadataRoute.Sitemap = recipes.map((recipe) => ({
-    url: siteAbsoluteUrl(`/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`),
+  const homeEntries: MetadataRoute.Sitemap = SUPPORTED_LOCALES.map((locale) => ({
+    url: siteAbsoluteUrl(localizedPath(locale, "/")),
+    alternates: {
+      languages: Object.fromEntries(
+        SUPPORTED_LOCALES.map((altLocale) => [
+          altLocale,
+          siteAbsoluteUrl(localizedPath(altLocale, "/")),
+        ]),
+      ),
+    },
   }));
 
-  const regionEntries: MetadataRoute.Sitemap = regions.map((region) => ({
-    url: siteAbsoluteUrl(`/popular/${slugify(region, "region")}`),
-  }));
+  const recipeEntries: MetadataRoute.Sitemap = recipes.flatMap((recipe) =>
+    SUPPORTED_LOCALES.map((locale) => {
+      const path = `/recipes/${buildRecipeSlugPath(recipe.id, recipe.namesByLocale[locale])}`;
 
-  return [{ url: siteAbsoluteUrl("/") }, ...recipeEntries, ...regionEntries];
+      return {
+        url: siteAbsoluteUrl(localizedPath(locale, path)),
+        alternates: {
+          languages: Object.fromEntries(
+            SUPPORTED_LOCALES.map((altLocale) => [
+              altLocale,
+              siteAbsoluteUrl(
+                localizedPath(
+                  altLocale,
+                  `/recipes/${buildRecipeSlugPath(recipe.id, recipe.namesByLocale[altLocale])}`,
+                ),
+              ),
+            ]),
+          ),
+        },
+      };
+    }),
+  );
+
+  const regionEntries: MetadataRoute.Sitemap = regions.flatMap((region) => {
+    const regionSlug = slugify(region, "region");
+
+    return SUPPORTED_LOCALES.map((locale) => ({
+      url: siteAbsoluteUrl(localizedPath(locale, `/popular/${regionSlug}`)),
+      alternates: {
+        languages: Object.fromEntries(
+          SUPPORTED_LOCALES.map((altLocale) => [
+            altLocale,
+            siteAbsoluteUrl(localizedPath(altLocale, `/popular/${regionSlug}`)),
+          ]),
+        ),
+      },
+    }));
+  });
+
+  return [...homeEntries, ...recipeEntries, ...regionEntries];
 }

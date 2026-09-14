@@ -1,15 +1,18 @@
 import type { Metadata } from "next";
-import { notFound, permanentRedirect } from "next/navigation";
+import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import {
   buildRecipeSlugPath,
   extractIdFromRecipeSlug,
   fetchRecipeDetail,
+  localizedPath,
+  SUPPORTED_LOCALES,
   type Locale,
 } from "@bartendingapp/shared";
 import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
 import { siteAbsoluteUrl } from "@/lib/site-url";
+import { permanentRedirect } from "@/i18n/navigation";
 import { IngredientList } from "@/recipes/ingredient-list";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { buildRecipeJsonLd } from "@/recipes/recipe-json-ld";
@@ -29,6 +32,11 @@ async function resolveRecipe(slugParam: string, locale: Locale) {
   return recipe;
 }
 
+async function resolveSlugForLocale(id: string, locale: Locale): Promise<string | null> {
+  const recipe = await fetchRecipeDetail(supabase, id, locale);
+  return recipe ? buildRecipeSlugPath(recipe.id, recipe.name) : null;
+}
+
 export async function generateMetadata({
   params,
 }: {
@@ -46,11 +54,27 @@ export async function generateMetadata({
   const ingredientNames = recipe.ingredients.map((ingredient) => ingredient.name).join(", ");
   const description = `${recipe.name}: made with ${ingredientNames}.`;
 
+  const otherLocales = SUPPORTED_LOCALES.filter((candidate) => candidate !== locale);
+  const otherSlugs = await Promise.all(
+    otherLocales.map((candidate) => resolveSlugForLocale(recipe.id, candidate)),
+  );
+
+  const languages: Record<string, string> = {
+    [locale]: localizedPath(locale, canonicalPath),
+  };
+  otherLocales.forEach((candidate, index) => {
+    const otherSlug = otherSlugs[index];
+    if (otherSlug) {
+      languages[candidate] = localizedPath(candidate, `/recipes/${otherSlug}`);
+    }
+  });
+
   return {
     title: recipe.name,
     description,
     alternates: {
       canonical: canonicalPath,
+      languages,
     },
     openGraph: {
       title: recipe.name,
@@ -78,7 +102,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
 
   const canonicalSlugPath = buildRecipeSlugPath(recipe.id, recipe.name);
   if (slug !== canonicalSlugPath) {
-    permanentRedirect(`/recipes/${canonicalSlugPath}`);
+    permanentRedirect({ href: `/recipes/${canonicalSlugPath}`, locale });
   }
 
   const jsonLd = buildRecipeJsonLd(recipe, siteAbsoluteUrl(`/recipes/${canonicalSlugPath}`));

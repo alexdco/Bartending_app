@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
-import { DEFAULT_LOCALE, type Locale } from "./locale";
+import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "./locale";
 
 export type AlcoholicStatusFilter = "alcoholic" | "non_alcoholic" | "optional";
 
@@ -53,19 +53,40 @@ export async function searchRecipes(
 
 export interface RecipeSitemapEntry {
   id: string;
-  name: string;
+  /** Locale resolved name per supported locale, falling back to the English name (AC-2). */
+  namesByLocale: Record<Locale, string>;
 }
 
+/**
+ * One direct query joining recipes to recipe_translations, rather than
+ * fetch_recipe_detail per recipe per locale: sitemap generation reads every
+ * recipe in every locale at once, not one recipe for one caller (spec 0020).
+ */
 export async function listAllRecipesForSitemap(
   client: SupabaseClient<Database>,
 ): Promise<RecipeSitemapEntry[]> {
-  const { data, error } = await client.from("recipes").select("id, name").is("deleted_at", null);
+  const { data, error } = await client
+    .from("recipes")
+    .select("id, name, recipe_translations ( locale, name )")
+    .is("deleted_at", null);
 
   if (error) {
     throw error;
   }
 
-  return data ?? [];
+  return (data ?? []).map((row) => {
+    const namesByLocale = Object.fromEntries(
+      SUPPORTED_LOCALES.map((locale) => [locale, row.name]),
+    ) as Record<Locale, string>;
+
+    for (const translation of row.recipe_translations) {
+      if (translation.locale !== DEFAULT_LOCALE) {
+        namesByLocale[translation.locale as Locale] = translation.name;
+      }
+    }
+
+    return { id: row.id, namesByLocale };
+  });
 }
 
 export interface RecipeIngredientDetail {

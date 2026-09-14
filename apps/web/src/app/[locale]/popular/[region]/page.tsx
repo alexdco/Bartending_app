@@ -4,7 +4,9 @@ import { getLocale } from "next-intl/server";
 import {
   fetchPopularByRegion,
   listPopularRegions,
+  localizedPath,
   matchRegionSlug,
+  SUPPORTED_LOCALES,
   type Locale,
 } from "@bartendingapp/shared";
 import { EmptyState } from "@/components/empty-state";
@@ -37,17 +39,23 @@ export async function generateMetadata({
 
   const title = `Popular drinks in ${region}`;
   const description = `Browse the most popular cocktail and mocktail recipes in ${region}.`;
+  const canonicalPath = `/popular/${regionSlug}`;
+
+  const languages = Object.fromEntries(
+    SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, canonicalPath)]),
+  );
 
   return {
     title,
     description,
     alternates: {
-      canonical: `/popular/${regionSlug}`,
+      canonical: canonicalPath,
+      languages,
     },
     openGraph: {
       title,
       description,
-      url: `/popular/${regionSlug}`,
+      url: canonicalPath,
     },
   };
 }
