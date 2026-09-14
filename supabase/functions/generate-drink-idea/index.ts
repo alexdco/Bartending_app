@@ -29,10 +29,25 @@ function reportError(error: unknown, context: Record<string, unknown>) {
   }
 }
 
+const SUPPORTED_LOCALES = ["en", "es"] as const;
+type Locale = (typeof SUPPORTED_LOCALES)[number];
+const DEFAULT_LOCALE: Locale = "en";
+
+const LOCALE_NAMES: Record<Locale, string> = {
+  en: "English",
+  es: "Spanish",
+};
+
+function parseLocale(value: unknown): Locale {
+  return typeof value === "string" && (SUPPORTED_LOCALES as readonly string[]).includes(value)
+    ? (value as Locale)
+    : DEFAULT_LOCALE;
+}
+
 const DrinkIdeaSchema = z.object({
   name: z.string().max(60),
   ingredients: z
-    .array(z.object({ name: z.string(), amount: z.string() }))
+    .array(z.object({ name: z.string(), source_name: z.string(), amount: z.string() }))
     .min(1)
     .max(8),
   steps: z.array(z.string()).min(1).max(10),
@@ -60,7 +75,14 @@ function normalizeIngredientName(name: string): string {
 async function generateWithClaude(
   anthropic: Anthropic,
   pantryNames: string[],
+  locale: Locale,
 ): Promise<DrinkIdea | null> {
+  const languageInstruction =
+    locale === DEFAULT_LOCALE
+      ? ""
+      : `Write the name, ingredient names, and steps natively in ${LOCALE_NAMES[locale]}, ` +
+        `as a native speaker would phrase them, not a literal translation. `;
+
   const message = await anthropic.messages.parse(
     {
       model: "claude-haiku-4-5-20251001",
@@ -71,8 +93,13 @@ async function generateWithClaude(
           content:
             `Invent one original cocktail or mocktail recipe using only these ingredients ` +
             `(you do not have to use all of them): ${pantryNames.join(", ")}.\n` +
+            `${languageInstruction}` +
             `Give it a short, appealing name, a rough amount for each ingredient used, ` +
-            `and numbered preparation steps. Do not use any ingredient not in this list.`,
+            `and numbered preparation steps. Do not use any ingredient not in this list. ` +
+            `For each ingredient, also return "source_name": the exact English ingredient ` +
+            `name from the list above (unchanged, for matching), alongside "name": the ` +
+            `ingredient name written in the language requested above (or the same as ` +
+            `source_name if no other language was requested).`,
         },
       ],
       output_config: {
@@ -89,7 +116,7 @@ async function generateWithClaude(
 
   const pantrySet = new Set(pantryNames.map(normalizeIngredientName));
   const usesOnlyPantry = idea.ingredients.every((ingredient) =>
-    pantrySet.has(normalizeIngredientName(ingredient.name)),
+    pantrySet.has(normalizeIngredientName(ingredient.source_name)),
   );
 
   return usesOnlyPantry ? idea : null;
@@ -108,6 +135,15 @@ Deno.serve(async (req) => {
   }
 
   const authHeader = req.headers.get("Authorization") ?? "";
+
+  let locale: Locale = DEFAULT_LOCALE;
+  try {
+    const body = await req.json();
+    locale = parseLocale(body?.locale);
+  } catch {
+    // No body, or not JSON; default to English (matches the request's
+    // pre step 8 shape, which never sent a body).
+  }
 
   const supabase = createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_ANON_KEY")!, {
     global: { headers: { Authorization: authHeader } },
@@ -174,7 +210,7 @@ Deno.serve(async (req) => {
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      idea = await generateWithClaude(anthropic, pantryNames);
+      idea = await generateWithClaude(anthropic, pantryNames, locale);
       if (idea) break;
       lastError = new Error("generation did not match the expected shape");
     } catch (error) {

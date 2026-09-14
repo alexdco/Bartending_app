@@ -1,8 +1,11 @@
 import { FunctionsHttpError, type SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { DEFAULT_LOCALE, type Locale } from "./locale";
 
 export interface GeneratedDrinkIdeaIngredient {
   name: string;
+  /** English ingredient name, for pantry verification only; never shown to the user. */
+  source_name: string;
   amount: string;
 }
 
@@ -29,10 +32,11 @@ export class GenerateDrinkIdeaError extends Error {
 
 export async function generateDrinkIdea(
   client: SupabaseClient<Database>,
+  locale: Locale = DEFAULT_LOCALE,
 ): Promise<GeneratedDrinkIdea> {
   const { data, error } = await client.functions.invoke<
     GeneratedDrinkIdea | { error: string; resetsAt?: string }
-  >("generate-drink-idea", { method: "POST" });
+  >("generate-drink-idea", { method: "POST", body: { locale } });
 
   if (error) {
     if (error instanceof FunctionsHttpError) {
