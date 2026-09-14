@@ -1,0 +1,16 @@
+[
+  {
+    "slug": "house-margarita",
+    "name": "House Margarita",
+    "instructions": "Shake tequila, lime juice, and orange liqueur with ice. Strain into a salt-rimmed glass over fresh ice. Garnish with a lime wheel.",
+    "imageUrl": null,
+    "glass": "Rocks glass",
+    "alcoholicStatus": "alcoholic",
+    "ingredients": [
+      { "ingredientName": "Tequila", "measure": "2 oz" },
+      { "ingredientName": "Lime juice", "measure": "1 oz" },
+      { "ingredientName": "Orange liqueur", "measure": "1 oz" }
+    ],
+    "tags": ["House Original", "Shaken"]
+  }
+]

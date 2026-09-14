@@ -7,6 +7,7 @@
   "types": "./src/index.ts",
   "scripts": {
     "import": "tsx src/index.ts",
+    "import:custom": "tsx src/importCustomRecipes.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
   },

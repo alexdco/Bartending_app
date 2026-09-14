@@ -492,6 +492,7 @@ export type Database = {
     Functions: {
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
       import_catalog: { Args: { drinks: Json }; Returns: undefined };
+      import_custom_recipes: { Args: { recipes: Json }; Returns: undefined };
       is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
       list_popular_regions: {
         Args: never;
