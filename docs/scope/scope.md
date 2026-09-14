@@ -353,8 +353,8 @@ Adds Spanish alongside English across web, mobile, and the recipe catalog itself
 **Done when:** a Spanish speaking user can browse, search, use pantry and drink ideas, and read recipe instructions entirely in Spanish, with English available as a stable fallback and no broken or blank content.
 - [x] Design it (spec): `/architect multi language / internationalization`
 - [ ] Build it: `/develop multi language support`
-  - [ ] Data model: `recipe_translations`/`ingredient_translations`/`tag_translations`/`recipe_ingredient_translations`, `recipes_localized`/`ingredients_localized` views, `user_preferences.locale`, per locale search indexes, satisfies AC-6, AC-9, AC-13, AC-14, AC-15, AC-17
-  - [ ] UI i18n wiring: `next-intl` on web (`[locale]` routing) and `i18next`/`react-i18next`/`expo-localization` on mobile, satisfies AC-1, AC-3, AC-5
+  - [x] Data model: `recipe_translations`/`ingredient_translations`/`tag_translations`/`recipe_ingredient_translations`, `recipes_localized`/`ingredients_localized` views, `user_preferences.locale`, per locale search indexes, satisfies AC-6, AC-9, AC-13, AC-14, AC-15, AC-17
+  - [x] UI i18n wiring: `next-intl` on web (`[locale]` routing) and `i18next`/`react-i18next`/`expo-localization` on mobile, satisfies AC-1, AC-3, AC-5
   - [ ] Catalog translation pipeline: one-time backfill script plus the import job's ongoing translation step (hash gated), satisfies AC-9, AC-11, AC-17
   - [ ] Locale aware reads: search/browse/recommend/pantry-match functions and PostgREST embed paths (detail, pantry, favorites, homepage) via the localized views, satisfies AC-2, AC-6, AC-7, AC-13, AC-14
   - [ ] Locale switch control, sign in merge behavior, and `generate-drink-idea`'s locale aware generation with corrected pantry verification, satisfies AC-4, AC-10, AC-16

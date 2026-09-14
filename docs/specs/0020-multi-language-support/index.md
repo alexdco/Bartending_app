@@ -1,7 +1,7 @@
 # 0020. Multi language support (internationalization)
 
 **Date**: 2026-09-13
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 
@@ -133,8 +133,8 @@ Both views take the caller's locale via a `set_config`/session parameter set at 
 
 Ordered as a tracer bullet: one real end to end thread (a single Spanish string, one translated recipe, one working locale switch) before thickening to full catalog coverage and every surface, per the project's Tracer Bullet build approach.
 
-1. Add `SUPPORTED_LOCALES` and the per locale text search config map to `packages/shared`; write the migration for `recipe_translations`, `ingredient_translations`, `tag_translations`, `recipe_ingredient_translations` (RLS, grants, per locale FTS/trigram indexes, `source_name_hash` columns) and the `user_preferences.locale` column (with its check constraint); add the `recipes_localized`/`ingredients_localized` views; regenerate shared types, satisfies **AC-6**, **AC-9**, **AC-13**, **AC-14**, **AC-15**, **AC-17**.
-2. Wire `next-intl` into `apps/web` (`[locale]` route segment, message files, middleware for the bare path redirect using the URL wins rule) and `i18next`/`react-i18next`/`expo-localization` into `apps/mobile` (locale context, device detection, `AsyncStorage` persistence); translate a first minimal string set (nav, one page) to prove the pipe end to end, satisfies **AC-1**, **AC-3**, **AC-5**.
+1. [x] Add `SUPPORTED_LOCALES` and the per locale text search config map to `packages/shared`; write the migration for `recipe_translations`, `ingredient_translations`, `tag_translations`, `recipe_ingredient_translations` (RLS, grants, per locale FTS/trigram indexes, `source_name_hash` columns) and the `user_preferences.locale` column (with its check constraint); add the `recipes_localized`/`ingredients_localized` views; regenerate shared types, satisfies **AC-6**, **AC-9**, **AC-13**, **AC-14**, **AC-15**, **AC-17**.
+2. [x] Wire `next-intl` into `apps/web` (`[locale]` route segment, message files, middleware for the bare path redirect using the URL wins rule) and `i18next`/`react-i18next`/`expo-localization` into `apps/mobile` (locale context, device detection, `AsyncStorage` persistence); translate a first minimal string set (nav, one page) to prove the pipe end to end, satisfies **AC-1**, **AC-3**, **AC-5**.
 3. Write the one-time `translate-catalog.ts` backfill script (mirrors spec 0011's `tag-regions.ts` shape) calling Claude Haiku per recipe (name, instructions, glass, ingredient measures) and per ingredient/tag into Spanish, computing and storing `source_name_hash`, upserting the new translation tables; run it once against the live catalog, satisfies **AC-11**, **AC-15**.
 4. Extend `search_recipes`, `search_ingredients`, `popular_recipes_by_region`, `list_popular_regions`, `recommend_recipes`, and `match_recipes_to_pantry` with a `locale` parameter; recipe/ingredient search matches the translated name OR the English name (never English-only-invisible in a non English locale); every other function `COALESCE`s to English; regenerate types, satisfies **AC-2**, **AC-6**, **AC-7**, **AC-13**, **AC-14**.
 5. Switch `fetchRecipeDetail`, `fetchPantryItems`, `fetchFavorites`, and the homepage feed's embedded catalog selects from `recipes`/`ingredients` to `recipes_localized`/`ingredients_localized`; add the region display label lookup for the region shown on the detail page, satisfies **AC-2**, **AC-13**, **AC-15**.
