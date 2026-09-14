@@ -50,6 +50,13 @@ export type Database = {
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "favorites_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
         ];
       };
       ingredient_translations: {
@@ -83,6 +90,13 @@ export type Database = {
             columns: ["ingredient_id"];
             isOneToOne: false;
             referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ingredient_translations_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients_localized";
             referencedColumns: ["id"];
           },
         ];
@@ -136,6 +150,13 @@ export type Database = {
             columns: ["ingredient_id"];
             isOneToOne: false;
             referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pantry_items_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients_localized";
             referencedColumns: ["id"];
           },
         ];
@@ -197,10 +218,24 @@ export type Database = {
             referencedColumns: ["id"];
           },
           {
+            foreignKeyName: "recipe_ingredients_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients_localized";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "recipe_ingredients_recipe_id_fkey";
             columns: ["recipe_id"];
             isOneToOne: false;
             referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_ingredients_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
             referencedColumns: ["id"];
           },
         ];
@@ -224,6 +259,13 @@ export type Database = {
             columns: ["recipe_id"];
             isOneToOne: false;
             referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_tags_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
             referencedColumns: ["id"];
           },
           {
@@ -275,6 +317,13 @@ export type Database = {
             columns: ["recipe_id"];
             isOneToOne: false;
             referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_translations_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
             referencedColumns: ["id"];
           },
         ];
@@ -329,6 +378,38 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [];
+      };
+      tag_translations: {
+        Row: {
+          created_at: string;
+          locale: string;
+          name: string;
+          tag_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          locale: string;
+          name: string;
+          tag_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          locale?: string;
+          name?: string;
+          tag_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "tag_translations_tag_id_fkey";
+            columns: ["tag_id"];
+            isOneToOne: false;
+            referencedRelation: "tags";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       tags: {
         Row: {
@@ -411,6 +492,7 @@ export type Database = {
     Functions: {
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
       import_catalog: { Args: { drinks: Json }; Returns: undefined };
+      is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
       list_popular_regions: {
         Args: never;
         Returns: {
@@ -476,6 +558,12 @@ export type Database = {
           id: string;
           image_url: string;
           name: string;
+        }[];
+      };
+      select_idle_anonymous_accounts: {
+        Args: never;
+        Returns: {
+          id: string;
         }[];
       };
     };

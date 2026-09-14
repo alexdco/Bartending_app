@@ -8,7 +8,8 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "tag-regions": "tsx scripts/tag-regions.ts",
-    "apply-regions": "tsx scripts/apply-regions.ts"
+    "apply-regions": "tsx scripts/apply-regions.ts",
+    "translate-catalog": "tsx scripts/translate-catalog.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
