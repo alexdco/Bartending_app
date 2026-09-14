@@ -1,0 +1,9 @@
+{
+  "nav": {
+    "home": "Home",
+    "search": "Search",
+    "pantry": "Pantry",
+    "drinkIdeas": "Drink ideas",
+    "popular": "Popular"
+  }
+}

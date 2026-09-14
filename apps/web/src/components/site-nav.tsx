@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { Dialog, DropdownMenu, VisuallyHidden } from "radix-ui";
 import { avatarSize, getInitials } from "@bartendingapp/shared";
+import { Link, usePathname } from "@/i18n/navigation";
 import { Text } from "./text";
 import { SiteLogo } from "./site-logo";
 import { useSession } from "@/auth/use-session";
@@ -148,13 +148,13 @@ function NavBadge() {
 }
 
 const navLinks = [
-  { href: "/", label: "Home" },
-  { href: "/search", label: "Search" },
-  { href: "/pantry", label: "Pantry" },
-  { href: "/drink-ideas", label: "Drink ideas" },
-  { href: "/popular", label: "Popular" },
-  { href: "/favorites", label: "Favorites" },
-];
+  { href: "/", key: "home" },
+  { href: "/search", key: "search" },
+  { href: "/pantry", key: "pantry" },
+  { href: "/drink-ideas", key: "drinkIdeas" },
+  { href: "/popular", key: "popular" },
+  { href: "/favorites", key: "favorites" },
+] as const;
 
 function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
   const { session, isLinked, isLoading } = useSession();
@@ -260,6 +260,7 @@ function MobileNavDrawer({
   onOpenChange: (open: boolean) => void;
 }) {
   const pathname = usePathname();
+  const t = useTranslations("nav");
 
   useEffect(() => {
     onOpenChange(false);
@@ -294,7 +295,7 @@ function MobileNavDrawer({
             <Dialog.Title>Navigation</Dialog.Title>
           </VisuallyHidden.Root>
           <div className="flex flex-col gap-one">
-            {navLinks.map(({ href, label }) => {
+            {navLinks.map(({ href, key }) => {
               const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
               return (
@@ -313,7 +314,7 @@ function MobileNavDrawer({
                     as="span"
                     className={isActive ? "text-accent-text" : undefined}
                   >
-                    {label}
+                    {t(key)}
                   </Text>
                 </Link>
               );
@@ -329,6 +330,7 @@ function MobileNavDrawer({
 
 export function SiteNav() {
   const pathname = usePathname();
+  const t = useTranslations("nav");
   const [drawerOpen, setDrawerOpen] = useState(false);
 
   return (
@@ -336,7 +338,7 @@ export function SiteNav() {
       <div className="flex items-center gap-five">
         <SiteLogo />
         <div className="hidden md:flex items-center gap-four">
-          {navLinks.map(({ href, label }) => {
+          {navLinks.map(({ href, key }) => {
             const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
             return (
@@ -354,7 +356,7 @@ export function SiteNav() {
                   as="span"
                   className={isActive ? "text-accent-text" : undefined}
                 >
-                  {label}
+                  {t(key)}
                 </Text>
               </Link>
             );

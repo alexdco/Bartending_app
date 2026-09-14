@@ -2,14 +2,16 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ensureAnonymousSession } from "@bartendingapp/shared";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useColorScheme } from "react-native";
+import { I18nextProvider } from "react-i18next";
 
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import AppTabs from "@/components/app-tabs";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/auth/use-session";
 import { identify } from "@/analytics/posthog-client";
+import { i18n, initI18n } from "@/i18n";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -18,6 +20,11 @@ const queryClient = new QueryClient();
 export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { session } = useSession();
+  const [i18nReady, setI18nReady] = useState(false);
+
+  useEffect(() => {
+    initI18n().then(() => setI18nReady(true));
+  }, []);
 
   useEffect(() => {
     if (session?.user.id) {
@@ -52,12 +59,18 @@ export default function TabLayout() {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
+  if (!i18nReady) {
+    return null;
+  }
+
   return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <AnimatedSplashOverlay />
-        <AppTabs />
-      </ThemeProvider>
-    </QueryClientProvider>
+    <I18nextProvider i18n={i18n}>
+      <QueryClientProvider client={queryClient}>
+        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+          <AnimatedSplashOverlay />
+          <AppTabs />
+        </ThemeProvider>
+      </QueryClientProvider>
+    </I18nextProvider>
   );
 }
