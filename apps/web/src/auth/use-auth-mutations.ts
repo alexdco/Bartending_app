@@ -1,6 +1,7 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useLocale } from "next-intl";
 import {
   changeEmail,
   deleteAccount,
@@ -8,6 +9,7 @@ import {
   signInWithPassword,
   signOutToAnonymous,
   signUpWithPassword,
+  type Locale,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 
@@ -23,9 +25,10 @@ export function useSignUp() {
 
 export function useSignIn() {
   const queryClient = useQueryClient();
+  const locale = useLocale() as Locale;
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
-      signInWithPassword(supabase, email, password),
+      signInWithPassword(supabase, email, password, locale),
     onSuccess: () => queryClient.clear(),
   });
 }

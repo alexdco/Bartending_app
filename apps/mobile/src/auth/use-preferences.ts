@@ -4,6 +4,7 @@ import {
   fetchProfile,
   updatePreferences,
   updateDisplayName,
+  updateLocale,
   type Theme,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
@@ -30,6 +31,15 @@ export function useUpdateDisplayName() {
 
   return useMutation({
     mutationFn: (rawValue: string) => updateDisplayName(supabase, rawValue),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey }),
+  });
+}
+
+export function useUpdateLocale() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (locale: string) => updateLocale(supabase, locale),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey }),
   });
 }

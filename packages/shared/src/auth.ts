@@ -1,7 +1,8 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { ensureAnonymousSession } from "./supabaseClient";
 import type { Database } from "./database.types";
-import { updateDisplayName } from "./preferences";
+import { fetchProfile, updateDisplayName, updateLocale } from "./preferences";
+import type { Locale } from "./locale";
 
 export type AuthErrorReason =
   | "weak_password"
@@ -66,6 +67,7 @@ export async function signInWithPassword(
   client: SupabaseClient<Database>,
   email: string,
   password: string,
+  guestLocale?: Locale | null,
 ): Promise<void> {
   const { error: signOutError } = await client.auth.signOut();
   if (signOutError) {
@@ -76,6 +78,17 @@ export async function signInWithPassword(
 
   if (error) {
     throw toAuthError(error);
+  }
+
+  // AC-16: the account's own stored locale always wins; the guest's local
+  // choice is written up only when the account has none yet. Non blocking,
+  // matching signUpWithPassword's display name write: sign in already
+  // succeeded above regardless of this outcome.
+  if (guestLocale) {
+    const profile = await fetchProfile(client);
+    if (profile.locale === null) {
+      await updateLocale(client, guestLocale);
+    }
   }
 }
 

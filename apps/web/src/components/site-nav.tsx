@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Dialog, DropdownMenu, VisuallyHidden } from "radix-ui";
-import { avatarSize, getInitials } from "@bartendingapp/shared";
-import { Link, usePathname } from "@/i18n/navigation";
+import { avatarSize, getInitials, type Locale } from "@bartendingapp/shared";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Text } from "./text";
 import { SiteLogo } from "./site-logo";
 import { useSession } from "@/auth/use-session";
-import { useProfile } from "@/auth/use-preferences";
+import { useProfile, useUpdateLocale } from "@/auth/use-preferences";
 import { useSignOut } from "@/auth/use-auth-mutations";
 import { useTheme, type ThemePreference } from "@/theme/use-theme";
 
@@ -41,6 +41,74 @@ const themeOptions: { value: ThemePreference; label: string }[] = [
   { value: "dark", label: "Dark" },
   { value: "system", label: "System" },
 ];
+
+const localeValues: Locale[] = ["en", "es"];
+
+/**
+ * Switching locale is a route change (the URL segment is the source of truth,
+ * AC-5), not just local state. Also syncs to the account when signed in
+ * (AC-4); a signed out visitor's choice is carried by next-intl's own
+ * NEXT_LOCALE cookie via the route change alone.
+ */
+function useLocaleSwitch() {
+  const router = useRouter();
+  const pathname = usePathname();
+  const { isLinked } = useSession();
+  const updateLocale = useUpdateLocale();
+
+  return (next: Locale) => {
+    router.replace(pathname, { locale: next });
+    if (isLinked) {
+      updateLocale.mutate(next);
+    }
+  };
+}
+
+function LanguageMenu() {
+  const t = useTranslations("language");
+  const activeLocale = useLocale() as Locale;
+  const switchLocale = useLocaleSwitch();
+
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger asChild>
+        <button
+          type="button"
+          aria-label={t("changeLanguage")}
+          className="rounded-medium px-three py-one text-label hover:bg-surface-selected"
+        >
+          <Text variant="label" as="span">
+            {t(activeLocale)}
+          </Text>
+        </button>
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Portal>
+        <DropdownMenu.Content
+          align="end"
+          sideOffset={8}
+          className="min-w-32 rounded-medium border border-border bg-surface py-two shadow-lg"
+        >
+          <DropdownMenu.RadioGroup
+            value={activeLocale}
+            onValueChange={(value) => switchLocale(value as Locale)}
+          >
+            {localeValues.map((value) => (
+              <DropdownMenu.RadioItem
+                key={value}
+                value={value}
+                className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
+              >
+                <Text variant="label" as="span">
+                  {t(value)}
+                </Text>
+              </DropdownMenu.RadioItem>
+            ))}
+          </DropdownMenu.RadioGroup>
+        </DropdownMenu.Content>
+      </DropdownMenu.Portal>
+    </DropdownMenu.Root>
+  );
+}
 
 function NavBadge() {
   const { session, isLinked, isLoading } = useSession();
@@ -155,6 +223,51 @@ const navLinks = [
   { href: "/popular", key: "popular" },
   { href: "/favorites", key: "favorites" },
 ] as const;
+
+function DrawerLanguageSection() {
+  const t = useTranslations("language");
+  const activeLocale = useLocale() as Locale;
+  const switchLocale = useLocaleSwitch();
+  const [expanded, setExpanded] = useState(false);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        className="flex w-full items-center justify-between rounded-medium px-three py-two hover:bg-surface-selected"
+      >
+        <Text variant="label" as="span">
+          {t("label")}
+        </Text>
+        <Text variant="label" as="span" className="text-text-muted">
+          {t(activeLocale)}
+        </Text>
+      </button>
+      {expanded ? (
+        <div className="flex flex-col gap-one pl-three">
+          {localeValues.map((value) => (
+            <button
+              key={value}
+              type="button"
+              onClick={() => switchLocale(value)}
+              className={
+                value === activeLocale
+                  ? "block rounded-medium bg-surface-selected px-three py-two text-left"
+                  : "block rounded-medium px-three py-two text-left hover:bg-surface-selected"
+              }
+            >
+              <Text variant="label" as="span">
+                {t(value)}
+              </Text>
+            </button>
+          ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
 
 function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
   const { session, isLinked, isLoading } = useSession();
@@ -321,6 +434,8 @@ function MobileNavDrawer({
             })}
           </div>
           <div className="my-three h-px bg-border" />
+          <DrawerLanguageSection />
+          <div className="my-three h-px bg-border" />
           <DrawerAccountSection onNavigate={() => onOpenChange(false)} />
         </Dialog.Content>
       </Dialog.Portal>
@@ -363,7 +478,8 @@ export function SiteNav() {
           })}
         </div>
       </div>
-      <div className="hidden md:block">
+      <div className="hidden items-center gap-two md:flex">
+        <LanguageMenu />
         <NavBadge />
       </div>
       <MobileNavDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />

@@ -26,6 +26,7 @@ function AccountMenu({
 }) {
   const theme = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
 
   return (
     <Modal visible={visible} transparent animationType="fade" onRequestClose={onClose}>
@@ -43,7 +44,7 @@ function AccountMenu({
               }}
             >
               <Text variant="label" style={{ color: theme.text }}>
-                Account
+                {t("menu.account")}
               </Text>
             </Pressable>
             <Pressable
@@ -55,7 +56,7 @@ function AccountMenu({
               }}
             >
               <Text variant="label" style={{ color: theme.text }}>
-                Sign out
+                {t("menu.signOut")}
               </Text>
             </Pressable>
           </View>

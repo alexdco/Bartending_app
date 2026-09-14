@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
@@ -11,9 +12,15 @@ import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
-import { AuthError, PRIVACY_POLICY_URL, getInitials, avatarSize } from "@bartendingapp/shared";
+import {
+  AuthError,
+  PRIVACY_POLICY_URL,
+  getInitials,
+  avatarSize,
+  type Locale,
+} from "@bartendingapp/shared";
 import { useSession } from "@/auth/use-session";
-import { useProfile, useUpdateDisplayName } from "@/auth/use-preferences";
+import { useProfile, useUpdateDisplayName, useUpdateLocale } from "@/auth/use-preferences";
 import {
   useChangeEmail,
   useDeleteAccount,
@@ -22,23 +29,61 @@ import {
   useSignOut,
   useSignUp,
 } from "@/auth/use-auth-mutations";
+import { changeLocale, useActiveLocale } from "@/i18n";
 
-function authErrorMessage(error: unknown): string {
-  if (error instanceof AuthError) {
-    switch (error.reason) {
-      case "weak_password":
-        return "Password must be at least 6 characters.";
-      case "invalid_credentials":
-        return "Incorrect email or password.";
-      case "email_already_registered":
-        return "Check your email to finish creating your account, or sign in if you already have one.";
-      case "no_session":
-        return "We couldn't verify your session. Check your connection and try again.";
-      default:
-        return "Something went wrong. Check your connection and try again.";
+const localeValues: Locale[] = ["en", "es"];
+
+function useAuthErrorMessage() {
+  const { t } = useTranslation();
+
+  return (error: unknown): string => {
+    if (error instanceof AuthError) {
+      switch (error.reason) {
+        case "weak_password":
+          return t("account.errorWeakPassword");
+        case "invalid_credentials":
+          return t("account.errorInvalidCredentials");
+        case "email_already_registered":
+          return t("account.errorEmailAlreadyRegistered");
+        case "no_session":
+          return t("account.errorNoSession");
+        default:
+          return t("account.errorGeneric");
+      }
     }
-  }
-  return "Something went wrong. Check your connection and try again.";
+    return t("account.errorGeneric");
+  };
+}
+
+function LanguageCard() {
+  const { t } = useTranslation();
+  const activeLocale = useActiveLocale();
+  const { isLinked } = useSession();
+  const updateLocale = useUpdateLocale();
+
+  const switchLocale = (next: Locale) => {
+    void changeLocale(next);
+    if (isLinked) {
+      updateLocale.mutate(next);
+    }
+  };
+
+  return (
+    <Card style={styles.card}>
+      <Text variant="heading">{t("menu.language")}</Text>
+      <View style={styles.languageRow}>
+        {localeValues.map((value) => (
+          <Button
+            key={value}
+            variant={value === activeLocale ? "primary" : "secondary"}
+            onPress={() => switchLocale(value)}
+          >
+            {t(`language.${value}`)}
+          </Button>
+        ))}
+      </View>
+    </Card>
+  );
 }
 
 function GuestAuthForm({
@@ -47,6 +92,8 @@ function GuestAuthForm({
   onSignedUpWithUnsavedName: (name: string) => void;
 }) {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const authErrorMessage = useAuthErrorMessage();
   const [mode, setMode] = useState<"sign-in" | "sign-up">("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,17 +113,19 @@ function GuestAuthForm({
   if (mode === "sign-up" && signUp.isSuccess) {
     return (
       <EmptyState
-        title="Check your inbox"
-        description="Check your email to finish creating your account, or sign in if you already have one."
+        title={t("account.checkYourInbox")}
+        description={t("account.checkEmailToFinish")}
       />
     );
   }
 
   return (
     <Card style={styles.card}>
-      <Text variant="heading">{mode === "sign-in" ? "Sign in" : "Create an account"}</Text>
+      <Text variant="heading">
+        {mode === "sign-in" ? t("account.signIn") : t("account.createAccount")}
+      </Text>
       <Input
-        label="Email"
+        label={t("account.email")}
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
@@ -84,14 +133,19 @@ function GuestAuthForm({
         onChangeText={setEmail}
       />
       <Input
-        label="Password"
+        label={t("account.password")}
         secureTextEntry
         autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
         value={password}
         onChangeText={setPassword}
       />
       {mode === "sign-up" && (
-        <Input label="Name (optional)" autoComplete="name" value={name} onChangeText={setName} />
+        <Input
+          label={t("account.nameOptional")}
+          autoComplete="name"
+          value={name}
+          onChangeText={setName}
+        />
       )}
       {active.isError && (
         <Text variant="bodySmall" style={{ color: theme.danger }}>
@@ -106,13 +160,19 @@ function GuestAuthForm({
             : signIn.mutate({ email, password })
         }
       >
-        {active.isPending ? "Please wait…" : mode === "sign-in" ? "Sign in" : "Create account"}
+        {active.isPending
+          ? t("account.pleaseWait")
+          : mode === "sign-in"
+            ? t("account.signIn")
+            : t("account.createAccountAction")}
       </Button>
       <Button
         variant="secondary"
         onPress={() => setMode(mode === "sign-in" ? "sign-up" : "sign-in")}
       >
-        {mode === "sign-in" ? "Need an account? Sign up" : "Already have an account? Sign in"}
+        {mode === "sign-in"
+          ? t("account.needAccountSignUp")
+          : t("account.alreadyHaveAccountSignIn")}
       </Button>
     </Card>
   );
@@ -120,6 +180,7 @@ function GuestAuthForm({
 
 function DisplayNameCard({ email, prefillName }: { email: string; prefillName: string }) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const { data: profile } = useProfile();
   const updateDisplayName = useUpdateDisplayName();
   const [editedName, setEditedName] = useState<string | null>(
@@ -133,7 +194,7 @@ function DisplayNameCard({ email, prefillName }: { email: string; prefillName: s
 
   return (
     <Card style={styles.card}>
-      <Text variant="heading">Name</Text>
+      <Text variant="heading">{t("account.name")}</Text>
       <View style={styles.badgePreviewRow}>
         <View
           style={[
@@ -146,16 +207,16 @@ function DisplayNameCard({ email, prefillName }: { email: string; prefillName: s
           </Text>
         </View>
         <View style={styles.badgePreviewInput}>
-          <Input label="Display name" value={name} onChangeText={setEditedName} />
+          <Input label={t("account.displayName")} value={name} onChangeText={setEditedName} />
         </View>
       </View>
       {updateDisplayName.data?.error && (
         <Text variant="bodySmall" style={{ color: theme.danger }}>
           {updateDisplayName.data.error.reason === "too_long"
-            ? "Name must be 50 characters or fewer."
+            ? t("account.nameTooLong")
             : updateDisplayName.data.error.reason === "too_short"
-              ? "Name must be at least 1 character."
-              : "We couldn't save your name. Check your connection and try again."}
+              ? t("account.nameTooShort")
+              : t("account.nameSaveFailed")}
         </Text>
       )}
       <Button
@@ -163,7 +224,7 @@ function DisplayNameCard({ email, prefillName }: { email: string; prefillName: s
         disabled={updateDisplayName.isPending}
         onPress={() => updateDisplayName.mutate(name)}
       >
-        {updateDisplayName.isPending ? "Saving…" : "Save name"}
+        {updateDisplayName.isPending ? t("account.saving") : t("account.saveName")}
       </Button>
     </Card>
   );
@@ -171,6 +232,8 @@ function DisplayNameCard({ email, prefillName }: { email: string; prefillName: s
 
 function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName: string }) {
   const theme = useTheme();
+  const { t } = useTranslation();
+  const authErrorMessage = useAuthErrorMessage();
   const [newEmail, setNewEmail] = useState("");
   const [confirmText, setConfirmText] = useState("");
   const signOut = useSignOut();
@@ -181,21 +244,21 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
   return (
     <View style={styles.section}>
       <Card style={styles.card}>
-        <Text variant="heading">Signed in</Text>
+        <Text variant="heading">{t("account.signedIn")}</Text>
         <Text variant="body" muted>
           {email}
         </Text>
         <Button variant="secondary" disabled={signOut.isPending} onPress={() => signOut.mutate()}>
-          {signOut.isPending ? "Signing out…" : "Sign out"}
+          {signOut.isPending ? t("account.signingOut") : t("account.signOut")}
         </Button>
       </Card>
 
       <DisplayNameCard email={email} prefillName={prefillName} />
 
       <Card style={styles.card}>
-        <Text variant="heading">Change email</Text>
+        <Text variant="heading">{t("account.changeEmail")}</Text>
         <Input
-          label="New email"
+          label={t("account.newEmail")}
           keyboardType="email-address"
           autoCapitalize="none"
           value={newEmail}
@@ -203,7 +266,7 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
         />
         {changeEmail.isSuccess && (
           <Text variant="bodySmall" muted>
-            Check your new email to confirm the change.
+            {t("account.checkNewEmailToConfirm")}
           </Text>
         )}
         {changeEmail.isError && (
@@ -216,18 +279,18 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
           disabled={changeEmail.isPending}
           onPress={() => changeEmail.mutate(newEmail)}
         >
-          {changeEmail.isPending ? "Saving…" : "Update email"}
+          {changeEmail.isPending ? t("account.saving") : t("account.updateEmail")}
         </Button>
       </Card>
 
       <Card style={styles.card}>
-        <Text variant="heading">Change password</Text>
+        <Text variant="heading">{t("account.changePassword")}</Text>
         <Text variant="bodySmall" muted>
-          We&apos;ll email you a link to set a new password.
+          {t("account.resetEmailDescription")}
         </Text>
         {requestPasswordReset.isSuccess && (
           <Text variant="bodySmall" muted>
-            Check your email for a reset link.
+            {t("account.checkEmailForResetLink")}
           </Text>
         )}
         <Button
@@ -235,20 +298,25 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
           disabled={requestPasswordReset.isPending}
           onPress={() => requestPasswordReset.mutate(email)}
         >
-          {requestPasswordReset.isPending ? "Sending…" : "Send reset email"}
+          {requestPasswordReset.isPending
+            ? t("account.sendingResetEmail")
+            : t("account.sendResetEmail")}
         </Button>
       </Card>
 
       <Card style={styles.card}>
-        <Text variant="heading">Delete account</Text>
+        <Text variant="heading">{t("account.deleteAccount")}</Text>
         <Text variant="bodySmall" muted>
-          This permanently deletes your account, pantry, favorites, and preferences. This cannot be
-          undone. Type DELETE to confirm.
+          {t("account.deleteAccountDescription")}
         </Text>
-        <Input label="Type DELETE to confirm" value={confirmText} onChangeText={setConfirmText} />
+        <Input
+          label={t("account.typeDeleteToConfirm")}
+          value={confirmText}
+          onChangeText={setConfirmText}
+        />
         {deleteAccount.isError && (
           <Text variant="bodySmall" style={{ color: theme.danger }}>
-            We couldn&apos;t delete your account. Check your connection and try again.
+            {t("account.deleteAccountFailed")}
           </Text>
         )}
         <Button
@@ -256,7 +324,7 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
           disabled={confirmText !== "DELETE" || deleteAccount.isPending}
           onPress={() => deleteAccount.mutate()}
         >
-          {deleteAccount.isPending ? "Deleting…" : "Delete my account"}
+          {deleteAccount.isPending ? t("account.deleting") : t("account.deleteMyAccount")}
         </Button>
       </Card>
     </View>
@@ -266,30 +334,33 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
 export default function AccountScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const { t } = useTranslation();
   const { session, isLinked, isLoading, expired } = useSession();
   const [unsavedSignUpName, setUnsavedSignUpName] = useState("");
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>
-        <Text variant="display">Account</Text>
+        <Text variant="display">{t("account.heading")}</Text>
 
         <Card style={styles.card}>
           <Button variant="secondary" onPress={() => router.push("/favorites")}>
-            View favorites
+            {t("account.viewFavorites")}
           </Button>
         </Card>
 
+        <LanguageCard />
+
         {expired && (
           <EmptyState
-            title="Signed out"
-            description="Your session expired. Sign in again to keep syncing your pantry and favorites."
+            title={t("account.signedOut")}
+            description={t("account.sessionExpiredDescription")}
           />
         )}
 
         {isLoading ? (
           <View style={styles.centered}>
-            <Spinner label="Loading account" />
+            <Spinner label={t("account.loadingAccount")} />
           </View>
         ) : isLinked && session?.user.email ? (
           <LinkedAccountPanel email={session.user.email} prefillName={unsavedSignUpName} />
@@ -299,7 +370,7 @@ export default function AccountScreen() {
 
         <Card style={styles.card}>
           <ExternalLink href={PRIVACY_POLICY_URL as `https://${string}` | `http://${string}`}>
-            <Text variant="body">Privacy Policy</Text>
+            <Text variant="body">{t("account.privacyPolicy")}</Text>
           </ExternalLink>
         </Card>
       </ScrollView>
@@ -328,6 +399,10 @@ const styles = StyleSheet.create({
   },
   badgePreviewInput: {
     flex: 1,
+  },
+  languageRow: {
+    flexDirection: "row",
+    gap: Spacing.two,
   },
   badge: {
     borderRadius: 9999,

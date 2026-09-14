@@ -9,6 +9,7 @@ import {
   signUpWithPassword,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
+import { useActiveLocale } from "@/i18n";
 
 export function useSignUp() {
   return useMutation({
@@ -19,9 +20,10 @@ export function useSignUp() {
 
 export function useSignIn() {
   const queryClient = useQueryClient();
+  const locale = useActiveLocale();
   return useMutation({
     mutationFn: ({ email, password }: { email: string; password: string }) =>
-      signInWithPassword(supabase, email, password),
+      signInWithPassword(supabase, email, password, locale),
     onSuccess: () => queryClient.clear(),
   });
 }
