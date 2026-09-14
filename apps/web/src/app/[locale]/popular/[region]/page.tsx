@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { fetchPopularByRegion, listPopularRegions, matchRegionSlug } from "@bartendingapp/shared";
+import { getLocale } from "next-intl/server";
+import {
+  fetchPopularByRegion,
+  listPopularRegions,
+  matchRegionSlug,
+  type Locale,
+} from "@bartendingapp/shared";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
@@ -58,7 +64,8 @@ export default async function PopularRegionPage({
     notFound();
   }
 
-  const recipes = await fetchPopularByRegion(supabase, region);
+  const locale = (await getLocale()) as Locale;
+  const recipes = await fetchPopularByRegion(supabase, region, locale);
 
   return (
     <div className="flex flex-col gap-four p-six">

@@ -1,16 +1,24 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { DRINK_IDEAS_PAGE_SIZE, fetchDrinkIdeaMatches } from "@bartendingapp/shared";
+import { DRINK_IDEAS_PAGE_SIZE, fetchDrinkIdeaMatches, type Locale } from "@bartendingapp/shared";
+import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
 
-export const drinkIdeasQueryKey = ["drinkIdeas"] as const;
+export const drinkIdeasQueryKeyPrefix = ["drinkIdeas"] as const;
+
+export function drinkIdeasQueryKey(locale: Locale) {
+  return [...drinkIdeasQueryKeyPrefix, locale] as const;
+}
 
 export function useDrinkIdeas() {
+  const locale = useActiveLocale();
+
   return useInfiniteQuery({
-    queryKey: drinkIdeasQueryKey,
+    queryKey: drinkIdeasQueryKey(locale),
     queryFn: ({ pageParam }) =>
       fetchDrinkIdeaMatches(supabase, {
         pageLimit: DRINK_IDEAS_PAGE_SIZE,
         pageOffset: pageParam,
+        locale,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>

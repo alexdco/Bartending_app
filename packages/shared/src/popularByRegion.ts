@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { DEFAULT_LOCALE, type Locale } from "./locale";
 
 export interface PopularRecipe {
   id: string;
@@ -22,9 +23,11 @@ export async function listPopularRegions(client: SupabaseClient<Database>): Prom
 export async function fetchPopularByRegion(
   client: SupabaseClient<Database>,
   region: string,
+  locale: Locale = DEFAULT_LOCALE,
 ): Promise<PopularRecipe[]> {
   const { data, error } = await client.rpc("popular_recipes_by_region", {
     region_filter: region,
+    locale,
   });
 
   if (error) {

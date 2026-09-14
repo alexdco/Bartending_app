@@ -6,6 +6,7 @@ import {
   listPopularRegions,
   RECOMMENDATIONS_PAGE_SIZE,
 } from "@bartendingapp/shared";
+import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
 import { getRecentlyViewedRecipeIds } from "@/recipes/recently-viewed-storage";
 
@@ -21,13 +22,15 @@ function useRecentlyViewedIds() {
 export function useHomeRecommendations() {
   const idsQuery = useRecentlyViewedIds();
   const recentRecipeIds = idsQuery.data ?? [];
+  const locale = useActiveLocale();
 
   const recommendationsQuery = useQuery({
-    queryKey: ["home", "recommendations", recentRecipeIds] as const,
+    queryKey: ["home", "recommendations", recentRecipeIds, locale] as const,
     queryFn: () =>
       fetchRecipeRecommendations(supabase, {
         recentRecipeIds,
         pageLimit: RECOMMENDATIONS_PAGE_SIZE,
+        locale,
       }),
     enabled: idsQuery.isSuccess,
   });
@@ -65,9 +68,11 @@ export function useHomePopularRegions() {
 }
 
 export function useHomePopularByRegion(region: string | null) {
+  const locale = useActiveLocale();
+
   return useQuery({
-    queryKey: ["home", "popularByRegion", region] as const,
-    queryFn: () => fetchPopularByRegion(supabase, region as string),
+    queryKey: ["home", "popularByRegion", region, locale] as const,
+    queryFn: () => fetchPopularByRegion(supabase, region as string, locale),
     enabled: region !== null,
   });
 }

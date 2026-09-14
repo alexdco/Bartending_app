@@ -1,5 +1,5 @@
 import i18n from "i18next";
-import { initReactI18next } from "react-i18next";
+import { initReactI18next, useTranslation } from "react-i18next";
 import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from "@bartendingapp/shared";
@@ -50,6 +50,11 @@ export async function initI18n(): Promise<void> {
       interpolation: { escapeValue: false },
     });
   }
+}
+
+export function useActiveLocale(): Locale {
+  const { i18n: instance } = useTranslation();
+  return isSupportedLocale(instance.language) ? instance.language : DEFAULT_LOCALE;
 }
 
 export { i18n };

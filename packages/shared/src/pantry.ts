@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { DEFAULT_LOCALE, type Locale } from "./locale";
 
 export interface PantryItem {
   ingredientId: string;
@@ -69,10 +70,12 @@ export async function searchIngredients(
   client: SupabaseClient<Database>,
   query: string,
   resultLimit = 20,
+  locale: Locale = DEFAULT_LOCALE,
 ): Promise<IngredientSearchResult[]> {
   const { data, error } = await client.rpc("search_ingredients", {
     query,
     result_limit: resultLimit,
+    locale,
   });
 
   if (error) {

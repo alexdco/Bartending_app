@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { DEFAULT_LOCALE, type Locale } from "./locale";
 
 export interface MissingIngredient {
   id: string;
@@ -19,6 +20,7 @@ export interface DrinkIdeaMatchParams {
   maxRatio?: number;
   pageLimit?: number;
   pageOffset?: number;
+  locale?: Locale;
 }
 
 export const DRINK_IDEAS_PAGE_SIZE = 20;
@@ -30,12 +32,14 @@ export async function fetchDrinkIdeaMatches(
     maxRatio = DRINK_IDEAS_MAX_RATIO,
     pageLimit = DRINK_IDEAS_PAGE_SIZE,
     pageOffset = 0,
+    locale = DEFAULT_LOCALE,
   }: DrinkIdeaMatchParams = {},
 ): Promise<DrinkIdeaMatch[]> {
   const { data, error } = await client.rpc("match_recipes_to_pantry", {
     max_ratio: maxRatio,
     page_limit: pageLimit,
     page_offset: pageOffset,
+    locale,
   });
 
   if (error) {

@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { DEFAULT_LOCALE, type Locale } from "./locale";
 
 export type AlcoholicStatusFilter = "alcoholic" | "non_alcoholic" | "optional";
 
@@ -15,6 +16,7 @@ export interface RecipeSearchParams {
   statusFilter?: AlcoholicStatusFilter | null;
   pageLimit?: number;
   pageOffset?: number;
+  locale?: Locale;
 }
 
 export const RECIPE_SEARCH_PAGE_SIZE = 20;
@@ -26,6 +28,7 @@ export async function searchRecipes(
     statusFilter = null,
     pageLimit = RECIPE_SEARCH_PAGE_SIZE,
     pageOffset = 0,
+    locale = DEFAULT_LOCALE,
   }: RecipeSearchParams = {},
 ): Promise<RecipeSearchResult[]> {
   const { data, error } = await client.rpc("search_recipes", {
@@ -33,6 +36,7 @@ export async function searchRecipes(
     status_filter: statusFilter ?? undefined,
     page_limit: pageLimit,
     page_offset: pageOffset,
+    locale,
   });
 
   if (error) {

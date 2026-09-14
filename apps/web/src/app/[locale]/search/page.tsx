@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { searchRecipes, RECIPE_SEARCH_PAGE_SIZE } from "@bartendingapp/shared";
+import { getLocale } from "next-intl/server";
+import { searchRecipes, RECIPE_SEARCH_PAGE_SIZE, type Locale } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { SearchPageClient } from "@/recipes/search-page-client";
 
@@ -30,11 +31,13 @@ export async function generateMetadata({
 }
 
 export default async function SearchPage() {
+  const locale = (await getLocale()) as Locale;
   const initialResults = await searchRecipes(supabase, {
     query: "",
     statusFilter: null,
     pageLimit: RECIPE_SEARCH_PAGE_SIZE,
     pageOffset: 0,
+    locale,
   });
 
   return (

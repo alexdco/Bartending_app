@@ -500,7 +500,12 @@ export type Database = {
         }[];
       };
       match_recipes_to_pantry: {
-        Args: { max_ratio?: number; page_limit?: number; page_offset?: number };
+        Args: {
+          locale?: string;
+          max_ratio?: number;
+          page_limit?: number;
+          page_offset?: number;
+        };
         Returns: {
           alcoholic_status: string;
           id: string;
@@ -511,7 +516,7 @@ export type Database = {
         }[];
       };
       popular_recipes_by_region: {
-        Args: { region_filter: string };
+        Args: { locale?: string; region_filter: string };
         Returns: {
           alcoholic_status: string;
           id: string;
@@ -523,6 +528,7 @@ export type Database = {
       recommend_recipes: {
         Args: {
           current_recipe_id?: string;
+          locale?: string;
           page_limit?: number;
           page_offset?: number;
           recent_recipe_ids?: string[];
@@ -540,7 +546,7 @@ export type Database = {
         Returns: boolean;
       };
       search_ingredients: {
-        Args: { query?: string; result_limit?: number };
+        Args: { locale?: string; query?: string; result_limit?: number };
         Returns: {
           id: string;
           name: string;
@@ -548,6 +554,7 @@ export type Database = {
       };
       search_recipes: {
         Args: {
+          locale?: string;
           page_limit?: number;
           page_offset?: number;
           query?: string;

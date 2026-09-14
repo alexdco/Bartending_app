@@ -1,5 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { fetchPopularByRegion, listPopularRegions } from "@bartendingapp/shared";
+import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
 
 export function usePopularRegions() {
@@ -10,9 +11,11 @@ export function usePopularRegions() {
 }
 
 export function usePopularByRegion(region: string | null) {
+  const locale = useActiveLocale();
+
   return useQuery({
-    queryKey: ["popular-recipes", region] as const,
-    queryFn: () => fetchPopularByRegion(supabase, region as string),
+    queryKey: ["popular-recipes", region, locale] as const,
+    queryFn: () => fetchPopularByRegion(supabase, region as string, locale),
     enabled: region !== null,
   });
 }
