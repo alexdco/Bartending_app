@@ -1,5 +1,7 @@
 import { createClient } from "@supabase/supabase-js";
+import Anthropic from "@anthropic-ai/sdk";
 import type { Database, Json } from "@bartendingapp/shared";
+import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { fetchAllDrinks } from "./theCocktailDb";
 import { transformDrink } from "./transform";
 
@@ -42,6 +44,26 @@ async function main(): Promise<void> {
   }
 
   console.log(`Imported ${transformed.length} recipes.`);
+
+  const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicApiKey) {
+    console.warn("ANTHROPIC_API_KEY not set; skipping catalog translation step.");
+    return;
+  }
+
+  // Runs after the catalog transaction above has committed, not inside its
+  // advisory lock: translation is a slower, network dependent step, and a
+  // failure here must never block or roll back the catalog import itself
+  // (AC-9). Only genuinely new or changed rows are (re)translated (AC-17).
+  const anthropic = new Anthropic({ apiKey: anthropicApiKey });
+  try {
+    await translateCatalog(supabase, anthropic);
+  } catch (translationError) {
+    console.error(
+      "Catalog translation step failed; will retry on the next import run:",
+      translationError,
+    );
+  }
 }
 
 main().catch((error: unknown) => {

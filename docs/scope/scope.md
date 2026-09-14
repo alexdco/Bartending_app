@@ -355,7 +355,7 @@ Adds Spanish alongside English across web, mobile, and the recipe catalog itself
 - [ ] Build it: `/develop multi language support`
   - [x] Data model: `recipe_translations`/`ingredient_translations`/`tag_translations`/`recipe_ingredient_translations`, `recipes_localized`/`ingredients_localized` views, `user_preferences.locale`, per locale search indexes, satisfies AC-6, AC-9, AC-13, AC-14, AC-15, AC-17
   - [x] UI i18n wiring: `next-intl` on web (`[locale]` routing) and `i18next`/`react-i18next`/`expo-localization` on mobile, satisfies AC-1, AC-3, AC-5
-  - [ ] Catalog translation pipeline: one-time backfill script plus the import job's ongoing translation step (hash gated), satisfies AC-9, AC-11, AC-17
+  - [x] Catalog translation pipeline: one-time backfill script plus the import job's ongoing translation step (hash gated), satisfies AC-9, AC-11, AC-17. Backfill script and import job wiring are done and typecheck/lint/build clean; the actual one-time run against the live catalog (427 recipes) is still pending, tracked in spec 0020 build plan step 3.
   - [x] Locale aware reads: search/browse/recommend/pantry-match functions, plus `fetch_recipe_detail`/`fetch_pantry_items`/`fetch_favorite_recipes`/`fetch_recipes_by_ids` RPC functions replacing the detail/pantry/favorites/homepage PostgREST embeds (the originally planned `recipes_localized`/`ingredients_localized` views were dropped, see spec 0020's Correction), satisfies AC-2, AC-6, AC-7, AC-13, AC-14
   - [ ] Locale switch control, sign in merge behavior, and `generate-drink-idea`'s locale aware generation with corrected pantry verification, satisfies AC-4, AC-10, AC-16
   - [ ] Locale aware recipe slugs, sitemap, and hreflang alternates, satisfies AC-8, AC-12

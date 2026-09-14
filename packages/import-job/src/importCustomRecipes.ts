@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
+import Anthropic from "@anthropic-ai/sdk";
 import type { Database, Json } from "@bartendingapp/shared";
+import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { parseCustomRecipes } from "./customRecipesSchema";
 
 function requireEnv(name: string): string {
@@ -49,6 +51,25 @@ async function main(): Promise<void> {
   }
 
   console.log(`Imported ${payload.length} custom recipe(s).`);
+
+  const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
+  if (!anthropicApiKey) {
+    console.warn("ANTHROPIC_API_KEY not set; skipping catalog translation step.");
+    return;
+  }
+
+  // Runs after the import transaction above has committed, not inside its
+  // advisory lock (AC-9); only genuinely new or changed rows are
+  // (re)translated (AC-17).
+  const anthropic = new Anthropic({ apiKey: anthropicApiKey });
+  try {
+    await translateCatalog(supabase, anthropic);
+  } catch (translationError) {
+    console.error(
+      "Catalog translation step failed; will retry on the next import run:",
+      translationError,
+    );
+  }
 }
 
 main().catch((error: unknown) => {
