@@ -36,6 +36,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 23 | Multi language support | Slice 17 | in-progress |
 | 24 | Recipe ingredient unit conversion | Slice 18 | in-progress |
 | 25 | Batch cocktail conversion | Slice 19 | in-progress |
+| 26 | Bartender Mode | Slice 20 | in-progress |
 
 ## Foundations
 
@@ -396,11 +397,30 @@ Given a recipe and a target number of servings, scale every ingredient into a ba
 - [ ] Test it: `/test batch cocktail conversion`
 Spec [0022](../specs/0022-batch-cocktail-conversion/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
 
+## Slice 20: Bartender Mode
+
+### 26. Bartender Mode
+A separate, mobile only part of the app for working bartenders during a shift: a shared "bar" (venue/team) that staff join with a real account, house recipes that override a catalog cocktail or stand alone, a curated current menu, and an out of stock (86'd) ingredient list any staff member can update. Adds ranked search with bartender shorthand ("old f" for Old Fashioned) and ingredient list matching ("gin campari vermouth" for Negroni), plus a distraction free "Quick Build Mode" screen (large type, high contrast, oz/ml/parts toggle, keep screen awake, offline tolerant) so a bartender can find the correct spec in about 2 to 3 seconds. Umbrella spec split into three child decisions: the bar data model, search, and Quick Build Mode.
+**Done when:** an owner can create a bar and invite staff by email; house recipes, the current menu, and the 86 list stay in sync across every staff member; search resolves shorthand and ingredient list queries and ranks house/menu/pinned results first; and Quick Build Mode renders a recipe in large, high contrast type with a working unit toggle, keep-awake option, and offline support that survives an app restart.
+- [x] Design it (spec): `/architect bartender mode`
+- [ ] Build it: `/develop bartender mode`
+  - [ ] Bar data model: bars/bar_members/bar_invites/bar_recipes/bar_menu_items/bar_ingredient_stock/pinned_recipes schema, RLS (including the linked-account-only and `WITH CHECK` rules), and the Service tab shell with bar switcher and no-bar empty state, satisfies AC-1 through AC-10 (bar data model spec)
+  - [ ] House recipe, menu, invite, and 86 toggle management UI (owner/staff scoped), satisfies AC-2 through AC-5, AC-10 (bar data model spec)
+  - [ ] Ranked search: `recipe_aliases` seeding, ingredient overlap RPC, and the unified `search_bartender` RPC with deterministic tiering, satisfies AC-1 through AC-6 (search spec)
+  - [ ] Quick Build Mode screen: large type layout, method/straining line, unit toggle (oz/ml/parts) with the parts ratio edge case handling, keep-awake, and fast exit, satisfies AC-1 through AC-5, AC-7, AC-8 (Quick Build spec)
+  - [ ] Offline persistence: AsyncStorage query persister across app restarts, the "not available offline" state, and bar-removal cache eviction, satisfies AC-6, AC-9 (Quick Build spec)
+- [ ] Verify it: `/check verify bartender mode`
+- [ ] Test it: `/test bartender mode`
+Spec [0023](../specs/0023-bartender-mode/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/mobile`
+
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
 - **Ads or subscription monetization**: no monetization in this build pass; revisit once there is usage · needs a decision
 - **User submitted recipes**: community recipe submission and moderation · needs a decision
 - **ML/collaborative recommendations**: usage based recommendation model once there is a real user base · needs a decision
+- **Ingredient substitution suggestions**: suggest a swap when an ingredient is 86'd (feature 26) · needs a decision · from spec 0023
+- **Shared "recently made" shift log**: a server persisted, all-staff-visible build history for a bar, beyond today's per-bartender client side recently viewed list (feature 26) · needs a decision · from spec 0023
+- **Bartender training / quiz mode**: a study mode for house recipes, separate from live service (feature 26) · needs a decision · from spec 0023
 
 ## Legend
 
