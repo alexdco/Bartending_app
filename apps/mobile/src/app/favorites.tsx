@@ -2,6 +2,7 @@ import { useMemo } from "react";
 import { SafeAreaView, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
@@ -23,6 +24,7 @@ export default function FavoritesScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
+        <BackButton />
         <Text variant="display">Favorites</Text>
       </View>
 

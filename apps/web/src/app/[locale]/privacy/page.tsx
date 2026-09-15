@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
 import { Card } from "@/components/card";
 
@@ -21,6 +22,7 @@ export default async function PrivacyPage() {
 
   return (
     <main className="mx-auto flex max-w-2xl flex-1 flex-col gap-six px-six py-eight">
+      <BackButton />
       <div className="flex flex-col gap-two">
         <Text variant="display">{t("title")}</Text>
         <Text variant="bodySmall" muted>

@@ -9,6 +9,7 @@ import {
   SUPPORTED_LOCALES,
   type Locale,
 } from "@bartendingapp/shared";
+import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
 import { siteAbsoluteUrl } from "@/lib/site-url";
@@ -117,6 +118,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
         />
       ) : null}
 
+      <BackButton />
       <RecipeDetailHeader recipe={recipe} />
 
       <section className="flex flex-col gap-two">

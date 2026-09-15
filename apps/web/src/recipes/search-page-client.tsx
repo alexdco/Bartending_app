@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
@@ -104,6 +105,7 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
 
   return (
     <div className="flex flex-col gap-four p-six">
+      <BackButton />
       <Text variant="display" as="h1">
         Find a recipe
       </Text>

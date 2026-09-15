@@ -2,6 +2,7 @@ import { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import { useLocalSearchParams } from "expo-router";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
@@ -30,6 +31,7 @@ export default function PopularScreen() {
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={styles.list}>
         <View style={styles.header}>
+          <BackButton />
           <Text variant="display">Popular drinks by region</Text>
         </View>
 

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { FlatList, SafeAreaView, StyleSheet, View } from "react-native";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
@@ -34,6 +35,7 @@ export default function PantryScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
+        <BackButton />
         <Text variant="display">Your pantry</Text>
         <Input
           label="Add an ingredient"

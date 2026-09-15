@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
@@ -39,6 +40,7 @@ export function PantryPageClient() {
 
   return (
     <div className="flex flex-col gap-four p-six">
+      <BackButton />
       <Text variant="display" as="h1">
         Your pantry
       </Text>

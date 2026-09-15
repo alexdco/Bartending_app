@@ -3,6 +3,7 @@ import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
@@ -341,6 +342,7 @@ export default function AccountScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>
+        <BackButton />
         <Text variant="display">{t("account.heading")}</Text>
 
         <Card style={styles.card}>

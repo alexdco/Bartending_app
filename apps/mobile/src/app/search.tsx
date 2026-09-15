@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, SafeAreaView, StyleSheet, View } from "react-native";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
@@ -68,6 +69,7 @@ export default function SearchScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
+        <BackButton />
         <Text variant="display">Find a recipe</Text>
         <Input
           label="Search by name or ingredient"

@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
@@ -36,6 +37,7 @@ export function FavoritesPageClient() {
 
   return (
     <div className="flex flex-col gap-four p-six">
+      <BackButton />
       <Text variant="display" as="h1">
         Favorites
       </Text>

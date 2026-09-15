@@ -2,6 +2,7 @@ import { useLocalSearchParams } from "expo-router";
 import { useMemo, useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
@@ -26,6 +27,7 @@ export default function MoreLikeThisScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
+        <BackButton />
         <Text variant="display">You may also like</Text>
       </View>
 

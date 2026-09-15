@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { useTranslations } from "next-intl";
 import { AuthError, getInitials } from "@bartendingapp/shared";
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
@@ -315,6 +316,7 @@ export function AccountPageClient() {
 
   return (
     <div className="flex flex-col gap-four p-six">
+      <BackButton />
       <Text variant="display" as="h1">
         {t("heading")}
       </Text>

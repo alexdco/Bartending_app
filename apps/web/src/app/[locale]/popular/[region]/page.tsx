@@ -9,6 +9,7 @@ import {
   SUPPORTED_LOCALES,
   type Locale,
 } from "@bartendingapp/shared";
+import { BackButton } from "@/components/back-button";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
@@ -77,6 +78,7 @@ export default async function PopularRegionPage({
 
   return (
     <div className="flex flex-col gap-four p-six">
+      <BackButton />
       <Text variant="display" as="h1">
         Popular drinks by region
       </Text>

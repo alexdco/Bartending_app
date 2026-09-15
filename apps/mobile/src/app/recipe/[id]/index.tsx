@@ -1,6 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
 
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
@@ -20,28 +21,37 @@ export default function RecipeDetailScreen() {
 
   if (isPending) {
     return (
-      <SafeAreaView style={[styles.centered, { backgroundColor: theme.bg }]}>
-        <Spinner label="Loading recipe" />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+        <BackButton />
+        <View style={styles.centered}>
+          <Spinner label="Loading recipe" />
+        </View>
       </SafeAreaView>
     );
   }
 
   if (error) {
     return (
-      <SafeAreaView style={[styles.centered, { backgroundColor: theme.bg }]}>
-        <EmptyState
-          title="Something went wrong"
-          description="We couldn't load this recipe. Check your connection and try again."
-          action={<Button onPress={() => refetch()}>Retry</Button>}
-        />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+        <BackButton />
+        <View style={styles.centered}>
+          <EmptyState
+            title="Something went wrong"
+            description="We couldn't load this recipe. Check your connection and try again."
+            action={<Button onPress={() => refetch()}>Retry</Button>}
+          />
+        </View>
       </SafeAreaView>
     );
   }
 
   if (!recipe) {
     return (
-      <SafeAreaView style={[styles.centered, { backgroundColor: theme.bg }]}>
-        <EmptyState title="Recipe not found" description="This recipe may have been removed." />
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+        <BackButton />
+        <View style={styles.centered}>
+          <EmptyState title="Recipe not found" description="This recipe may have been removed." />
+        </View>
       </SafeAreaView>
     );
   }
@@ -49,6 +59,7 @@ export default function RecipeDetailScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={styles.content}>
+        <BackButton />
         <RecipeDetailHeader recipe={recipe} />
 
         <View style={styles.section}>

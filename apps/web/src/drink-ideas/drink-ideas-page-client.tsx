@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef } from "react";
 import Link from "next/link";
+import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
@@ -112,6 +113,7 @@ export function DrinkIdeasPageClient() {
 
   return (
     <div className="flex flex-col gap-four p-six">
+      <BackButton />
       <Text variant="display" as="h1">
         Drink ideas
       </Text>

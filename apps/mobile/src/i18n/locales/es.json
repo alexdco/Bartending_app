@@ -1,4 +1,7 @@
 {
+  "common": {
+    "back": "Atrás"
+  },
   "nav": {
     "home": "Inicio",
     "search": "Buscar",
