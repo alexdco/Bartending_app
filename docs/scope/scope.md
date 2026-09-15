@@ -34,6 +34,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 21 | Cron job run monitoring | Slice 16 | planned |
 | 22 | Mobile friendly collapsible nav | Slice 14 | in-progress |
 | 23 | Multi language support | Slice 17 | in-progress |
+| 24 | Recipe ingredient unit conversion | Slice 18 | in-progress |
 
 ## Foundations
 
@@ -362,6 +363,22 @@ Adds Spanish alongside English across web, mobile, and the recipe catalog itself
 - [ ] Verify it: `/check verify multi language support`
 - [ ] Test it: `/test multi language support`
 Spec [0020](../specs/0020-multi-language-support/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `supabase/migrations`, `supabase/functions`
+
+## Slice 18: Recipe ingredient unit conversion
+
+### 24. Recipe ingredient unit conversion
+On the recipe detail page, add a toggle so a user can switch how ingredient measurements are displayed, between oz, ml, and cl. Converted values round to the nearest tenth.
+**Done when:** a user on a recipe detail page can toggle ingredient units between oz, ml, and cl, and every measured ingredient amount updates and rounds to the nearest tenth.
+- [x] Design it (spec): [0021](../specs/0021-recipe-ingredient-unit-conversion/index.md)
+- [x] Build it: /develop recipe ingredient unit conversion
+  - [x] Schema migration (amount_value/amount_unit/amount_max_value on recipe_ingredients) plus the upsert conflict handling fix on both import paths, satisfies AC-5, AC-6 — applied live to BartendingAppWeb
+  - [x] Measure parsing function, wired into both the TheCocktailDB and custom recipe import call sites, satisfies AC-3, AC-5, AC-6, AC-7
+  - [x] Conversion and formatting functions in packages/shared (oz/ml/cl math, formatOunces, per locale unit labels), satisfies AC-2, AC-7
+  - [x] Unit toggle UI on web and mobile ingredient lists, satisfies AC-1, AC-3, AC-4, AC-7
+  - [x] Run the import job to populate existing recipes, satisfies AC-5 — run live (426 catalog recipes, 2 custom recipes; 841/1665 ingredient lines parsed)
+- [ ] Verify it: `/check verify recipe ingredient unit conversion`
+- [ ] Test it: `/test recipe ingredient unit conversion`
+Spec [0021](../specs/0021-recipe-ingredient-unit-conversion/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

@@ -6,7 +6,8 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
-    "./catalog-translation": "./src/catalogTranslation.ts"
+    "./catalog-translation": "./src/catalogTranslation.ts",
+    "./units": "./src/units.ts"
   },
   "scripts": {
     "lint": "eslint .",

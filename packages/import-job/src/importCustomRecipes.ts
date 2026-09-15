@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database, Json } from "@bartendingapp/shared";
+import { parseMeasure } from "@bartendingapp/shared/units";
 import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { parseCustomRecipes } from "./customRecipesSchema";
 
@@ -34,11 +35,16 @@ async function main(): Promise<void> {
     imageUrl: recipe.imageUrl,
     glass: recipe.glass,
     alcoholicStatus: recipe.alcoholicStatus,
-    ingredients: recipe.ingredients.map((ingredient, index) => ({
-      ingredientName: ingredient.ingredientName,
-      measure: ingredient.measure,
-      sortOrder: index + 1,
-    })),
+    ingredients: recipe.ingredients.map((ingredient, index) => {
+      const parsed = parseMeasure(ingredient.measure);
+      return {
+        ingredientName: ingredient.ingredientName,
+        measure: ingredient.measure,
+        sortOrder: index + 1,
+        amountValue: parsed?.value ?? null,
+        amountUnit: parsed?.unit ?? null,
+      };
+    }),
     tags: recipe.tags.map((tagName) => ({ tagName })),
   }));
 

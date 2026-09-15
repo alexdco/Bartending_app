@@ -171,18 +171,27 @@ export type Database = {
       };
       recipe_ingredients: {
         Row: {
+          amount_max_value: number | null;
+          amount_unit: string | null;
+          amount_value: number | null;
           ingredient_id: string;
           measure: string | null;
           recipe_id: string;
           sort_order: number;
         };
         Insert: {
+          amount_max_value?: number | null;
+          amount_unit?: string | null;
+          amount_value?: number | null;
           ingredient_id: string;
           measure?: string | null;
           recipe_id: string;
           sort_order: number;
         };
         Update: {
+          amount_max_value?: number | null;
+          amount_unit?: string | null;
+          amount_value?: number | null;
           ingredient_id?: string;
           measure?: string | null;
           recipe_id?: string;

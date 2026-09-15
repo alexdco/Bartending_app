@@ -1,3 +1,4 @@
+import { parseMeasure, type RecognizedUnit } from "@bartendingapp/shared/units";
 import type { TheCocktailDbDrink } from "./theCocktailDb";
 
 export type AlcoholicStatus = "alcoholic" | "non_alcoholic" | "optional" | "unknown";
@@ -15,6 +16,8 @@ export interface RecipeIngredientInput {
   ingredientName: string;
   measure: string | null;
   sortOrder: number;
+  amountValue: number | null;
+  amountUnit: RecognizedUnit | null;
 }
 
 export interface RecipeTagInput {
@@ -47,7 +50,14 @@ function extractIngredients(drink: TheCocktailDbDrink): RecipeIngredientInput[] 
     if (!name) continue;
 
     const measure = drink[`strMeasure${position}`]?.trim() || null;
-    ingredients.push({ ingredientName: name, measure, sortOrder: position });
+    const parsed = parseMeasure(measure);
+    ingredients.push({
+      ingredientName: name,
+      measure,
+      sortOrder: position,
+      amountValue: parsed?.value ?? null,
+      amountUnit: parsed?.unit ?? null,
+    });
   }
 
   return ingredients;

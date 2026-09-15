@@ -1,5 +1,19 @@
 [
   {
+    "slug": "adonis",
+    "name": "Adonis",
+    "instructions": "Add sherry, sweet vermouth, and orange bitters to a mixing glass with ice. Stir for 15-20 seconds until chilled. Strain into a chilled coupe or cocktail glass. Garnish with an orange twist.",
+    "imageUrl": null,
+    "glass": "Cocktail glass",
+    "alcoholicStatus": "alcoholic",
+    "ingredients": [
+      { "ingredientName": "Fino Sherry", "measure": "1 1/2 oz" },
+      { "ingredientName": "Sweet Vermouth", "measure": "1 1/2 oz" },
+      { "ingredientName": "Orange Bitters", "measure": "2 Dashes" }
+    ],
+    "tags": ["Herbal", "Stirred"]
+  },
+  {
     "slug": "house-margarita",
     "name": "House Margarita",
     "instructions": "Shake tequila, lime juice, and orange liqueur with ice. Strain into a salt-rimmed glass over fresh ice. Garnish with a lime wheel.",
