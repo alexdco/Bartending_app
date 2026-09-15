@@ -64,28 +64,25 @@ function useLocaleSwitch() {
   };
 }
 
-function LanguageMenu() {
+function LanguageSubmenu() {
   const t = useTranslations("language");
   const activeLocale = useLocale() as Locale;
   const switchLocale = useLocaleSwitch();
 
   return (
-    <DropdownMenu.Root>
-      <DropdownMenu.Trigger asChild>
-        <button
-          type="button"
-          aria-label={t("changeLanguage")}
-          className="rounded-medium px-three py-one text-label hover:bg-surface-selected"
-        >
-          <Text variant="label" as="span">
-            {t(activeLocale)}
-          </Text>
-        </button>
-      </DropdownMenu.Trigger>
+    <DropdownMenu.Sub>
+      <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none hover:bg-surface-selected data-[state=open]:bg-surface-selected">
+        <Text variant="label" as="span">
+          {t("label")}
+        </Text>
+        <Text variant="label" as="span" className="text-text-muted">
+          {t(activeLocale)}
+        </Text>
+      </DropdownMenu.SubTrigger>
       <DropdownMenu.Portal>
-        <DropdownMenu.Content
-          align="end"
-          sideOffset={8}
+        <DropdownMenu.SubContent
+          sideOffset={4}
+          alignOffset={-4}
           className="min-w-32 rounded-medium border border-border bg-surface py-two shadow-lg"
         >
           <DropdownMenu.RadioGroup
@@ -104,9 +101,9 @@ function LanguageMenu() {
               </DropdownMenu.RadioItem>
             ))}
           </DropdownMenu.RadioGroup>
-        </DropdownMenu.Content>
+        </DropdownMenu.SubContent>
       </DropdownMenu.Portal>
-    </DropdownMenu.Root>
+    </DropdownMenu.Sub>
   );
 }
 
@@ -115,6 +112,7 @@ function NavBadge() {
   const { data: profile } = useProfile();
   const signOut = useSignOut();
   const { preference, setTheme } = useTheme();
+  const t = useTranslations("nav");
 
   if (isLoading) {
     return null;
@@ -122,14 +120,48 @@ function NavBadge() {
 
   if (!isLinked) {
     return (
-      <Link href="/account" aria-label="Sign in">
-        <span
-          className="flex items-center justify-center rounded-full bg-surface-selected text-text-muted"
-          style={{ width: avatarSize.web, height: avatarSize.web }}
-        >
-          <PersonIcon />
-        </span>
-      </Link>
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger asChild>
+          <button type="button" aria-label="Account menu" className="rounded-full">
+            <span
+              className="flex items-center justify-center rounded-full bg-surface-selected text-text-muted"
+              style={{ width: avatarSize.web, height: avatarSize.web }}
+            >
+              <PersonIcon />
+            </span>
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="end"
+            sideOffset={8}
+            className="min-w-40 rounded-medium border border-border bg-surface py-two shadow-lg"
+          >
+            <DropdownMenu.Item asChild>
+              <Link
+                href="/account"
+                className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+              >
+                <Text variant="label" as="span">
+                  Sign in
+                </Text>
+              </Link>
+            </DropdownMenu.Item>
+            <DropdownMenu.Separator className="my-two h-px bg-border" />
+            <DropdownMenu.Item asChild>
+              <Link
+                href="/favorites"
+                className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+              >
+                <Text variant="label" as="span">
+                  {t("favorites")}
+                </Text>
+              </Link>
+            </DropdownMenu.Item>
+            <LanguageSubmenu />
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </DropdownMenu.Root>
     );
   }
 
@@ -162,6 +194,16 @@ function NavBadge() {
             >
               <Text variant="label" as="span">
                 Account
+              </Text>
+            </Link>
+          </DropdownMenu.Item>
+          <DropdownMenu.Item asChild>
+            <Link
+              href="/favorites"
+              className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+            >
+              <Text variant="label" as="span">
+                {t("favorites")}
               </Text>
             </Link>
           </DropdownMenu.Item>
@@ -200,6 +242,7 @@ function NavBadge() {
               </DropdownMenu.SubContent>
             </DropdownMenu.Portal>
           </DropdownMenu.Sub>
+          <LanguageSubmenu />
           <DropdownMenu.Separator className="my-two h-px bg-border" />
           <DropdownMenu.Item
             className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected"
@@ -221,7 +264,6 @@ const navLinks = [
   { href: "/pantry", key: "pantry" },
   { href: "/drink-ideas", key: "drinkIdeas" },
   { href: "/popular", key: "popular" },
-  { href: "/favorites", key: "favorites" },
 ] as const;
 
 function DrawerLanguageSection() {
@@ -275,6 +317,7 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
   const signOut = useSignOut();
   const { preference, setTheme } = useTheme();
   const [themeExpanded, setThemeExpanded] = useState(false);
+  const t = useTranslations("nav");
 
   if (isLoading) {
     return null;
@@ -282,15 +325,26 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
 
   if (!isLinked) {
     return (
-      <Link
-        href="/account"
-        onClick={onNavigate}
-        className="block rounded-medium px-three py-two hover:bg-surface-selected"
-      >
-        <Text variant="label" as="span">
-          Sign in
-        </Text>
-      </Link>
+      <div className="flex flex-col gap-two">
+        <Link
+          href="/account"
+          onClick={onNavigate}
+          className="block rounded-medium px-three py-two hover:bg-surface-selected"
+        >
+          <Text variant="label" as="span">
+            Sign in
+          </Text>
+        </Link>
+        <Link
+          href="/favorites"
+          onClick={onNavigate}
+          className="block rounded-medium px-three py-two hover:bg-surface-selected"
+        >
+          <Text variant="label" as="span">
+            {t("favorites")}
+          </Text>
+        </Link>
+      </div>
     );
   }
 
@@ -315,6 +369,15 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
       >
         <Text variant="label" as="span">
           Account
+        </Text>
+      </Link>
+      <Link
+        href="/favorites"
+        onClick={onNavigate}
+        className="block rounded-medium px-three py-two hover:bg-surface-selected"
+      >
+        <Text variant="label" as="span">
+          {t("favorites")}
         </Text>
       </Link>
       <div>
@@ -479,7 +542,6 @@ export function SiteNav() {
         </div>
       </div>
       <div className="hidden items-center gap-two md:flex">
-        <LanguageMenu />
         <NavBadge />
       </div>
       <MobileNavDrawer open={drawerOpen} onOpenChange={setDrawerOpen} />

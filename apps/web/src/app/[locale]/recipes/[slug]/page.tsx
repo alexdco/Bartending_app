@@ -126,8 +126,6 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
         <IngredientList ingredients={recipe.ingredients} />
       </section>
 
-      <BatchPanel ingredients={recipe.ingredients} />
-
       <section className="flex flex-col gap-two">
         <Text variant="heading" as="h2">
           Instructions
@@ -136,6 +134,8 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
           {recipe.instructions}
         </Text>
       </section>
+
+      <BatchPanel ingredients={recipe.ingredients} />
 
       <RecommendationsSection recipeId={recipe.id} recipeName={recipe.name} />
     </main>

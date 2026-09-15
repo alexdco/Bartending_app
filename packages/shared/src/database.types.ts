@@ -50,6 +50,13 @@ export type Database = {
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "favorites_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
         ];
       };
       ingredient_translations: {
@@ -218,6 +225,13 @@ export type Database = {
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "recipe_ingredients_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
         ];
       };
       recipe_tags: {
@@ -239,6 +253,13 @@ export type Database = {
             columns: ["recipe_id"];
             isOneToOne: false;
             referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_tags_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
             referencedColumns: ["id"];
           },
           {
@@ -292,6 +313,13 @@ export type Database = {
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "recipe_translations_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
         ];
       };
       recipes: {
@@ -299,6 +327,8 @@ export type Database = {
           alcoholic_status: string;
           created_at: string;
           deleted_at: string | null;
+          difficulty: string | null;
+          difficulty_source_name_hash: string | null;
           fame_score: number | null;
           glass: string | null;
           id: string;
@@ -315,6 +345,8 @@ export type Database = {
           alcoholic_status?: string;
           created_at?: string;
           deleted_at?: string | null;
+          difficulty?: string | null;
+          difficulty_source_name_hash?: string | null;
           fame_score?: number | null;
           glass?: string | null;
           id?: string;
@@ -331,6 +363,8 @@ export type Database = {
           alcoholic_status?: string;
           created_at?: string;
           deleted_at?: string | null;
+          difficulty?: string | null;
+          difficulty_source_name_hash?: string | null;
           fame_score?: number | null;
           glass?: string | null;
           id?: string;
@@ -381,6 +415,7 @@ export type Database = {
         Row: {
           created_at: string;
           id: string;
+          kind: string;
           name: string;
           normalized_name: string | null;
           updated_at: string;
@@ -388,6 +423,7 @@ export type Database = {
         Insert: {
           created_at?: string;
           id?: string;
+          kind?: string;
           name: string;
           normalized_name?: string | null;
           updated_at?: string;
@@ -395,6 +431,7 @@ export type Database = {
         Update: {
           created_at?: string;
           id?: string;
+          kind?: string;
           name?: string;
           normalized_name?: string | null;
           updated_at?: string;
@@ -427,7 +464,23 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      recipes_localized: {
+        Row: {
+          alcoholic_status: string | null;
+          created_at: string | null;
+          deleted_at: string | null;
+          difficulty: string | null;
+          glass: string | null;
+          id: string | null;
+          image_url: string | null;
+          instructions: string | null;
+          name: string | null;
+          region: string | null;
+          source_id: string | null;
+          updated_at: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
@@ -455,6 +508,7 @@ export type Database = {
         Args: { p_id: string; p_locale?: string };
         Returns: {
           alcoholic_status: string;
+          difficulty: string;
           glass: string;
           id: string;
           image_url: string;
@@ -462,6 +516,7 @@ export type Database = {
           instructions: string;
           is_favorited: boolean;
           name: string;
+          taste_tags: string[];
         }[];
       };
       fetch_recipes_by_ids: {

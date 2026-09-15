@@ -6,6 +6,8 @@ import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
+import { RecipeCard } from "@/recipes/recipe-card";
+import { useDrinkIdeas } from "@/drink-ideas/use-drink-ideas";
 import { useIngredientSearch } from "./use-ingredient-search";
 import { usePantry } from "./use-pantry";
 import { useAddPantryItem, useRemovePantryItem } from "./use-pantry-mutations";
@@ -25,11 +27,15 @@ export function PantryPageClient() {
   const ingredientSearch = useIngredientSearch(debouncedQuery);
   const addPantryItem = useAddPantryItem();
   const removePantryItem = useRemovePantryItem();
+  const drinkIdeas = useDrinkIdeas();
 
   const pantryIds = useMemo(
     () => new Set((pantry.data ?? []).map((item) => item.ingredientId)),
     [pantry.data],
   );
+
+  const drinkIdeaMatches = useMemo(() => drinkIdeas.data?.pages.flat() ?? [], [drinkIdeas.data]);
+  const hasPantryItems = (pantry.data ?? []).length > 0;
 
   return (
     <div className="flex flex-col gap-four p-six">
@@ -133,6 +139,48 @@ export function PantryPageClient() {
           </ul>
         )}
       </section>
+
+      {hasPantryItems && (
+        <section className="flex flex-col gap-three">
+          <Text variant="heading" as="h2">
+            Drink ideas
+          </Text>
+
+          {drinkIdeas.error ? (
+            <EmptyState
+              title="Something went wrong"
+              description="We couldn't load drink ideas. Check your connection and try again."
+              action={<Button onClick={() => drinkIdeas.refetch()}>Retry</Button>}
+            />
+          ) : drinkIdeas.isPending ? (
+            <div className="flex justify-center py-six">
+              <Spinner label="Loading drink ideas" />
+            </div>
+          ) : drinkIdeaMatches.length === 0 ? (
+            <EmptyState
+              title="No drink ideas yet"
+              description="Add a few more ingredients and we'll show you what you can make."
+            />
+          ) : (
+            <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
+              {drinkIdeaMatches.map((match) => (
+                <RecipeCard
+                  key={match.id}
+                  recipe={{
+                    id: match.id,
+                    name: match.name,
+                    imageUrl: match.imageUrl,
+                    alcoholicStatus: match.alcoholicStatus,
+                  }}
+                  missingIngredientNames={match.missingIngredients.map(
+                    (ingredient) => ingredient.name,
+                  )}
+                />
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }
