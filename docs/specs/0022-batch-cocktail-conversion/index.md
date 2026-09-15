@@ -7,11 +7,7 @@
 
 Adds a "batch this recipe" tool to the recipe detail page: a bartender enters a number of servings, and every ingredient amount is scaled up into a single batch quantity, shown in ounces, milliliters, or liters. They can also add water to mimic the dilution a shaken or stirred drink normally gets, and choose whether to batch every ingredient, only the alcohol, everything except citrus, or a custom pick of ingredients. Builds directly on spec 0021's parsed ingredient amounts and conversion math; ingredients that could not be parsed are shown unscaled with a flag rather than silently dropped.
 
-## Context
-
-Spec 0021 gave every parseable ingredient line a structured amount and unit (`amount_value`, `amount_unit` on `recipe_ingredients`) and pure oz/ml/cl conversion math in `packages/shared/src/units.ts`. That work solved single serving unit display. A bartender preparing for an event does a different job: they need one recipe turned into a large batch (a fixed multiple of servings), usually diluted with water to approximate the ice melt a shaken or stirred drink gets when made to order, and often split by ingredient type (all the alcohol pre batched, citrus kept separate since it degrades and is normally added fresh).
-
-None of that math or ingredient classification exists yet. Scaling is simple multiplication once a serving count is set, but classifying an ingredient as alcohol, citrus, or neither has no existing data to draw on: the `ingredients` table has no category field. Dilution needs a fixed, explicit rule (what percentage of what volume the added water represents) or two bartenders reading "20% dilution" will expect different numbers. And because batch quantities can run into hundreds of ounces or several liters, the existing per serving rounding rules (nearest tenth for ml/cl, nearest eighth for oz) need to be confirmed as still appropriate, not assumed.
+See [rationale.md](rationale.md) for context, options considered, and the decision rationale.
 
 ## Requirements
 
@@ -32,67 +28,20 @@ None of that math or ingredient classification exists yet. Scaling is simple mul
 - **AC-9**: Every ingredient's category (`spirit`, `liqueur`, `citrus`, `other`) is populated by the import job (TheCocktailDB catalog and custom recipes alike) via a Claude Haiku classification call, from the ingredient name alone (no other source signal). The call constrains its response to a JSON object with a single `category` field restricted to exactly those four values (via a tool/structured output schema, not free text parsing); a response that fails to parse or names a value outside that set is treated as a classification failure, `category` is left null, and a warning is logged, mirroring `translateCatalog`'s existing non fatal error handling. The result is cached on the `ingredients` row and only re-classified when the ingredient's name changes (the same hash-of-name gate spec 0020 uses for translation). Existing ingredients are backfilled once via a dedicated script following the same pattern as spec 0020's translation backfill.
 - **AC-10**: The batch tool is available to any visitor, signed in or guest, with no new access restriction.
 
-## Options considered
-
-### Option 1: Client side batch calculator on the recipe detail page, ingredient category stored on `ingredients`
-
-Add a `category` column to `ingredients`, populated by the import job via a cached Haiku call (mirroring spec 0020's translation pattern). Add a batch panel to the recipe detail page that reuses spec 0021's already loaded `amount_value`/`amount_unit`/`unit conversion` functions, doing all scaling, scoping, and dilution math client side in `packages/shared`.
-
-**Pros**:
-- No new network round trip for the actual batch math; instant feedback as the bartender adjusts servings, scope, or dilution.
-- Reuses spec 0021's conversion functions and parsed data directly; no duplicate parsing or a second data pipeline.
-- Ingredient category is a durable, reusable property (available to any future feature, e.g. a "spirits only" filter), not a one off computation.
-
-**Cons**:
-- Requires a schema migration and a one time classification backfill before the alcohol/citrus presets work correctly on existing recipes.
-- Client side classification-driven filtering means the category values ship to the browser; not a concern here (they're already public recipe data) but worth naming.
-
-### Option 2: Server side batch endpoint (a Postgres function or Edge Function) computing the batch on each change
-
-Every serving count, scope, or dilution change calls a Supabase RPC that returns the computed batch.
-
-**Pros**:
-- Centralizes the math in one place shared identically by web and mobile without duplicating the calculation in two client codebases.
-- Keeps the client thin.
-
-**Cons**:
-- Adds a network round trip (and loading state) to every slider or dropdown change on what is fundamentally simple multiplication and unit conversion; a worse interactive experience for no correctness benefit, since the same pure functions in `packages/shared` are already usable from both web and mobile without a server hop.
-- No new I/O or side effect is actually needed; this contradicts the project's own "side effects pushed to the edges" rule for a computation that has none.
-
-### Option 3: Keyword based ingredient classification at batch time, no schema change
-
-Classify "alcohol" and "citrus" on the fly by matching ingredient names against a fixed keyword list, computed each time the batch panel runs, no new column.
-
-**Pros**:
-- No migration, no backfill script, ships faster.
-
-**Cons**:
-- Fragile: a keyword list misses real world naming variety ("Blanco tequila", "aged rum", "yuzu") and needs constant manual upkeep as new ingredients are added to the catalog.
-- Duplicates classification logic if any future feature also needs an ingredient's category (recommendation filters, a "spirits" browse page); a stored column is the reusable version of the same information.
-
-**A considered hybrid, rejected**: TheCocktailDB's own source data carries a per ingredient alcoholic boolean the import job already reads (`toAlcoholicStatus` in `transform.ts`, currently used for the recipe level `alcoholicStatus`, not per ingredient), which could seed the spirit/liqueur split cheaply for catalog ingredients. This is deliberately not used here: it only covers catalog recipes (custom recipes have no equivalent signal), and introducing a second, inconsistent classification path for the same column is worse than one Haiku call applied uniformly to both import sources. At 293 existing ingredients plus a slow trickle of new ones, the Haiku cost is small enough that the consistency is worth more than the savings.
-
 ## Decision
 
-**Chosen option**: Option 1: client side batch calculator on the recipe detail page, with ingredient category stored on `ingredients` and populated by a cached Haiku call in the import job.
-
-## Rationale
-
-The batch math itself (multiply, convert, round) has no side effects and nothing to fail over the network, so per the project's functional/immutable rule it belongs in `packages/shared` as pure functions, run client side, exactly like spec 0021's conversion functions. A server round trip (Option 2) would add latency and a loading state to what should feel like a live calculator, for a computation that is deterministic and cheap.
-
-Ingredient category (Option 1 vs Option 3) is a property of the ingredient itself, not of a single batch calculation, so it belongs stored on `ingredients` and computed once, the same reasoning spec 0020 already applied to catalog translation: classify once at import time, cache the result, only redo it when the source name changes. A keyword list (Option 3) is cheaper to ship but degrades silently as new ingredients are added; the project already has a working Haiku-in-the-import-job pattern (`translateCatalog`), so reusing it costs little extra and produces a durable, reusable column instead of throwaway logic duplicated wherever ingredient type matters next.
-
-Spec 0021's per serving rounding rules (nearest eighth for oz, nearest tenth for ml/cl) do not carry over unchanged to batch quantities: a 500 serving batch rendering "312 3/8 oz" is spurious precision that reads worse than at single serving scale, and a fraction is harder to measure at that volume besides. This spec deliberately defines batch specific display rules (decimal oz to the nearest tenth, ml to the nearest tenth, liters to the nearest hundredth, see Feature design) rather than reusing spec 0021's oz fraction formatting for batch output.
+**Chosen option**: Option 1: client side batch calculator on the recipe detail page, with ingredient category stored on `ingredients` and populated by a cached Haiku call in the import job. See [rationale.md](rationale.md) for the alternatives considered and why.
 
 ## Feature design
 
 **Data model sketch**:
 
-`ingredients` (existing table, one new nullable column):
+`ingredients` (existing table, two new nullable columns):
 
 | Column | Type | Nullable | Notes |
 |---|---|---|---|
 | `category` | text | yes (new) | One of `spirit`, `liqueur`, `citrus`, `other`, constrained by a `check` constraint. Null until classified. |
+| `category_source_name_hash` | text | yes (new) | sha256 of the ingredient name last classified, the hash gate for re-classification (added during the build; the same pattern as spec 0020's `source_name_hash`). |
 
 No other table changes. Batch computation itself is never persisted (no new table): it is derived client side from the recipe's already loaded ingredient list plus the bartender's current servings/scope/unit/dilution selections.
 
@@ -158,13 +107,13 @@ No change. `category` lives on the existing public read `ingredients` table (spe
 
 ## Build plan
 
-1. Add the migration: `category` (text, nullable, `check` constrained to `spirit`/`liqueur`/`citrus`/`other`) on `ingredients`; extend `fetch_recipe_detail` to also return `category` per ingredient, satisfies **AC-4**, **AC-9**.
-2. Write the ingredient classification call in the import job (new module alongside the existing `catalog-translation` pattern): a cached, hash gated Haiku call per distinct ingredient name (name only, no other input signal), using a structured output schema constrained to the 4 category values; any parse failure or out of range response leaves `category` null and logs a warning (not a failure), skipped entirely with a warning when `ANTHROPIC_API_KEY` is unset, satisfies **AC-9**.
-3. Wire the classification call into both import call sites (`transform.ts` for the TheCocktailDB catalog, `importCustomRecipes.ts` for custom recipes), so every newly imported or renamed ingredient gets classified on the next import run, satisfies **AC-9**.
-4. Write the one time backfill script (mirroring spec 0020's translation backfill) to classify the 293 existing ingredients, satisfies **AC-9**.
-5. Write the batch computation functions in `packages/shared` (scaling, scope/selection filtering, the dilution alcohol base computed from the post filter scope, a `liter` case added to the existing unit conversion math, one rounding pass at final display per the batch specific rules above), pure and side effect free, carrying every intermediate value in unrounded milliliters per the line state matrix and key invariants, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-6**, **AC-7**, **AC-8**.
-6. Build the "Batch this recipe" panel on the recipe detail page (web and mobile): servings input (1 to 500, whole numbers, inline validation), scope picker (with the custom checkbox list, reset on scope re-entry), output unit picker (oz/ml/liter), dilution picker (with custom percent input and its 0 to 50 validation, and the "no alcohol in this batch" note when applicable), the batched ingredient list with unscaled/uncategorized flags per the line state matrix, and the total volume display; visible only when at least one ingredient is convertible, satisfies **AC-1**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-10**.
-7. Run the classification backfill script once against the live catalog, satisfies **AC-9**.
+1. [x] Add the migration: `category` (text, nullable, `check` constrained to `spirit`/`liqueur`/`citrus`/`other`) on `ingredients`; extend `fetch_recipe_detail` to also return `category` per ingredient, satisfies **AC-4**, **AC-9**. A second migration added `category_source_name_hash` for the hash gate. Applied live to `BartendingAppWeb` (`ctuzjhhpnkkhooneporu`) via `supabase/migrations/20260915000000_batch_cocktail_conversion.sql` and `20260915000100_ingredient_category_source_hash.sql`.
+2. [x] Write the ingredient classification call in the import job (new module alongside the existing `catalog-translation` pattern): a cached, hash gated Haiku call per distinct ingredient name (name only, no other input signal), using a structured output schema constrained to the 4 category values; any parse failure or out of range response leaves `category` null and logs a warning (not a failure), skipped entirely with a warning when `ANTHROPIC_API_KEY` is unset, satisfies **AC-9**. `packages/shared/src/ingredientClassification.ts`, exposed via the `@bartendingapp/shared/ingredient-classification` subpath (kept out of the main barrel, mirroring `catalog-translation`).
+3. [x] Wire the classification call into both import call sites (`packages/import-job/src/index.ts` for the TheCocktailDB catalog, `packages/import-job/src/importCustomRecipes.ts` for custom recipes), so every newly imported or renamed ingredient gets classified on the next import run, satisfies **AC-9**.
+4. [x] Write the one time backfill script (mirroring spec 0020's translation backfill) to classify the 293 existing ingredients, satisfies **AC-9**. `packages/shared/scripts/classify-ingredients.ts`, run via `pnpm classify-ingredients` (`--all` to reclassify every row).
+5. [x] Write the batch computation functions in `packages/shared` (scaling, scope/selection filtering, the dilution alcohol base computed from the post filter scope, a `liter` case added to the existing unit conversion math, one rounding pass at final display per the batch specific rules above), pure and side effect free, carrying every intermediate value in unrounded milliliters per the line state matrix and key invariants, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-6**, **AC-7**, **AC-8**. `packages/shared/src/batch.ts`, 15 unit tests in `batch.test.ts`.
+6. [x] Build the "Batch this recipe" panel on the recipe detail page (web and mobile): servings input (1 to 500, whole numbers, inline validation), scope picker (with the custom checkbox list, reset on scope re-entry), output unit picker (oz/ml/liter), dilution picker (with custom percent input and its 0 to 50 validation, and the "no alcohol in this batch" note when applicable), the batched ingredient list with unscaled/uncategorized flags per the line state matrix, and the total volume display; visible only when at least one ingredient is convertible, satisfies **AC-1**, **AC-3**, **AC-4**, **AC-5**, **AC-6**, **AC-7**, **AC-10**. `apps/web/src/recipes/batch-panel.tsx`, `apps/mobile/src/recipes/batch-panel.tsx`.
+7. [ ] Run the classification backfill script once against the live catalog, satisfies **AC-9**. Not yet run in this environment: needs `ANTHROPIC_API_KEY`/`SUPABASE_SERVICE_ROLE_KEY` set locally by the engineer (no MCP tool exposes the real service role key here, the same constraint spec 0020's backfill hit).
 
 ## Consequences
 

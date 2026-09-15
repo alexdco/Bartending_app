@@ -386,7 +386,7 @@ Spec [0021](../specs/0021-recipe-ingredient-unit-conversion/index.md) · code in
 ### 25. Batch cocktail conversion
 Given a recipe and a target number of servings, scale every ingredient into a batch quantity in oz, ml, or liters, with an optional dilution percentage (none/15/20/25/custom) and a choice of which ingredients to batch (everything, alcohol only, everything except citrus, or a custom ingredient selection). Displays total batch volume. Builds on feature 24's parsed ingredient amounts; adds a Haiku classified `category` column on `ingredients` to drive the alcohol/citrus presets.
 **Done when:** a bartender can enter a serving count for any recipe, choose a batching scope and unit, optionally apply dilution, and see every batched ingredient amount plus total volume, rounded to bartender friendly values with no floating point display errors.
-- [x] Design it (spec): [0022](../specs/0022-batch-cocktail-conversion.md)
+- [x] Design it (spec): [0022](../specs/0022-batch-cocktail-conversion/index.md)
 - [ ] Build it: `/develop batch cocktail conversion`
   - [x] Ingredient category migration (`category` + hash gated `category_source_name_hash` on `ingredients`, `fetch_recipe_detail` extended) and classification (Haiku structured output call in `packages/shared/src/ingredientClassification.ts`, wired into both import call sites, plus the one time `classify-ingredients.ts` backfill script mirroring spec 0020's pattern), satisfies AC-4, AC-9 — applied live to `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260915000000_batch_cocktail_conversion.sql` and `20260915000100_ingredient_category_source_hash.sql`; security advisor clean (no new findings)
   - [x] Batch computation functions in `packages/shared/src/batch.ts` (scaling, scope/selection filtering, dilution, liter unit support, single-pass rounding from unrounded ml), satisfies AC-2, AC-3, AC-4, AC-6, AC-7, AC-8 — 15 unit tests covering every AC in `batch.test.ts`, all passing
@@ -394,7 +394,7 @@ Given a recipe and a target number of servings, scale every ingredient into a ba
   - [ ] Run the classification backfill against the live catalog, satisfies AC-9 — script is written and typechecks (`pnpm classify-ingredients` in `packages/shared`) but not yet run: needs `ANTHROPIC_API_KEY`/`SUPABASE_SERVICE_ROLE_KEY` run locally by the engineer (no MCP tool exposes the real service role key in this environment)
 - [ ] Verify it: `/check verify batch cocktail conversion`
 - [ ] Test it: `/test batch cocktail conversion`
-Spec [0022](../specs/0022-batch-cocktail-conversion.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
+Spec [0022](../specs/0022-batch-cocktail-conversion/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
