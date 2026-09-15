@@ -134,7 +134,8 @@ export function parseMeasure(measure: string | null | undefined): ParsedMeasure 
 const OZ_PER_ML = 1 / 29.5735;
 const ML_PER_CL = 10;
 
-function toMl(value: number, unit: RecognizedUnit): number {
+/** Converts a value in any recognized unit to unrounded milliliters. Exported for spec 0022's batch math, which carries every intermediate value in unrounded ml. */
+export function toMl(value: number, unit: RecognizedUnit): number {
   switch (unit) {
     case "oz":
       return value / OZ_PER_ML;
@@ -151,7 +152,7 @@ function toMl(value: number, unit: RecognizedUnit): number {
   }
 }
 
-function roundToTenth(value: number): number {
+export function roundToTenth(value: number): number {
   return Math.round(value * 10) / 10;
 }
 

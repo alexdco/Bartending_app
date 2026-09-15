@@ -2,6 +2,7 @@ import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database, Json } from "@bartendingapp/shared";
 import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
+import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
 import { fetchAllDrinks } from "./theCocktailDb";
 import { transformDrink } from "./transform";
 
@@ -62,6 +63,17 @@ async function main(): Promise<void> {
     console.error(
       "Catalog translation step failed; will retry on the next import run:",
       translationError,
+    );
+  }
+
+  // Same non fatal handling as the translation step above (spec 0022, AC-9):
+  // a failure here must never block or roll back the catalog import.
+  try {
+    await classifyIngredients(supabase, anthropic);
+  } catch (classificationError) {
+    console.error(
+      "Ingredient classification step failed; will retry on the next import run:",
+      classificationError,
     );
   }
 }

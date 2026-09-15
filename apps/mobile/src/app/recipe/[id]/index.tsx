@@ -7,6 +7,7 @@ import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
+import { BatchPanel } from "@/recipes/batch-panel";
 import { IngredientList } from "@/recipes/ingredient-list";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { useRecipeDetail } from "@/recipes/use-recipe-detail";
@@ -54,6 +55,8 @@ export default function RecipeDetailScreen() {
           <Text variant="heading">Ingredients</Text>
           <IngredientList ingredients={recipe.ingredients} />
         </View>
+
+        <BatchPanel ingredients={recipe.ingredients} />
 
         <View style={styles.section}>
           <Text variant="heading">Instructions</Text>

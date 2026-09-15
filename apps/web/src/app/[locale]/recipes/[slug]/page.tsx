@@ -13,6 +13,7 @@ import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
 import { siteAbsoluteUrl } from "@/lib/site-url";
 import { permanentRedirect } from "@/i18n/navigation";
+import { BatchPanel } from "@/recipes/batch-panel";
 import { IngredientList } from "@/recipes/ingredient-list";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { buildRecipeJsonLd } from "@/recipes/recipe-json-ld";
@@ -124,6 +125,8 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
         </Text>
         <IngredientList ingredients={recipe.ingredients} />
       </section>
+
+      <BatchPanel ingredients={recipe.ingredients} />
 
       <section className="flex flex-col gap-two">
         <Text variant="heading" as="h2">

@@ -89,6 +89,8 @@ export type Database = {
       };
       ingredients: {
         Row: {
+          category: string | null;
+          category_source_name_hash: string | null;
           created_at: string;
           id: string;
           image_url: string | null;
@@ -97,6 +99,8 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          category?: string | null;
+          category_source_name_hash?: string | null;
           created_at?: string;
           id?: string;
           image_url?: string | null;
@@ -105,6 +109,8 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          category?: string | null;
+          category_source_name_hash?: string | null;
           created_at?: string;
           id?: string;
           image_url?: string | null;

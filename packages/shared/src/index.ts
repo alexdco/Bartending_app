@@ -20,3 +20,4 @@ export * from "./homepage";
 export * from "./initials";
 export * from "./locale";
 export * from "./units";
+export * from "./batch";

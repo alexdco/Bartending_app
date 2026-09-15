@@ -35,6 +35,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 22 | Mobile friendly collapsible nav | Slice 14 | in-progress |
 | 23 | Multi language support | Slice 17 | in-progress |
 | 24 | Recipe ingredient unit conversion | Slice 18 | in-progress |
+| 25 | Batch cocktail conversion | Slice 19 | in-progress |
 
 ## Foundations
 
@@ -376,9 +377,24 @@ On the recipe detail page, add a toggle so a user can switch how ingredient meas
   - [x] Conversion and formatting functions in packages/shared (oz/ml/cl math, formatOunces, per locale unit labels), satisfies AC-2, AC-7
   - [x] Unit toggle UI on web and mobile ingredient lists, satisfies AC-1, AC-3, AC-4, AC-7
   - [x] Run the import job to populate existing recipes, satisfies AC-5 — run live (426 catalog recipes, 2 custom recipes; 841/1665 ingredient lines parsed)
-- [ ] Verify it: `/check verify recipe ingredient unit conversion`
+- [x] Verify it: `/check verify recipe ingredient unit conversion` — PASS (web). Live browser driven (toggle click, ml/cl/oz values, unparseable line stays unchanged, Spanish locale), live schema and import job evidence. Mobile UI not exercised (no simulator/device in this environment); `units.ts` has no committed test file yet (`/test` to add).
 - [ ] Test it: `/test recipe ingredient unit conversion`
 Spec [0021](../specs/0021-recipe-ingredient-unit-conversion/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
+
+## Slice 19: Batch cocktail conversion
+
+### 25. Batch cocktail conversion
+Given a recipe and a target number of servings, scale every ingredient into a batch quantity in oz, ml, or liters, with an optional dilution percentage (none/15/20/25/custom) and a choice of which ingredients to batch (everything, alcohol only, everything except citrus, or a custom ingredient selection). Displays total batch volume. Builds on feature 24's parsed ingredient amounts; adds a Haiku classified `category` column on `ingredients` to drive the alcohol/citrus presets.
+**Done when:** a bartender can enter a serving count for any recipe, choose a batching scope and unit, optionally apply dilution, and see every batched ingredient amount plus total volume, rounded to bartender friendly values with no floating point display errors.
+- [x] Design it (spec): [0022](../specs/0022-batch-cocktail-conversion.md)
+- [ ] Build it: `/develop batch cocktail conversion`
+  - [x] Ingredient category migration (`category` + hash gated `category_source_name_hash` on `ingredients`, `fetch_recipe_detail` extended) and classification (Haiku structured output call in `packages/shared/src/ingredientClassification.ts`, wired into both import call sites, plus the one time `classify-ingredients.ts` backfill script mirroring spec 0020's pattern), satisfies AC-4, AC-9 — applied live to `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260915000000_batch_cocktail_conversion.sql` and `20260915000100_ingredient_category_source_hash.sql`; security advisor clean (no new findings)
+  - [x] Batch computation functions in `packages/shared/src/batch.ts` (scaling, scope/selection filtering, dilution, liter unit support, single-pass rounding from unrounded ml), satisfies AC-2, AC-3, AC-4, AC-6, AC-7, AC-8 — 15 unit tests covering every AC in `batch.test.ts`, all passing
+  - [x] "Batch this recipe" panel on the recipe detail page, web (`apps/web/src/recipes/batch-panel.tsx`) and mobile (`apps/mobile/src/recipes/batch-panel.tsx`) (servings, scope, unit, dilution, flagged lines, total volume), satisfies AC-1, AC-3, AC-4, AC-5, AC-6, AC-7, AC-10
+  - [ ] Run the classification backfill against the live catalog, satisfies AC-9 — script is written and typechecks (`pnpm classify-ingredients` in `packages/shared`) but not yet run: needs `ANTHROPIC_API_KEY`/`SUPABASE_SERVICE_ROLE_KEY` run locally by the engineer (no MCP tool exposes the real service role key in this environment)
+- [ ] Verify it: `/check verify batch cocktail conversion`
+- [ ] Test it: `/test batch cocktail conversion`
+Spec [0022](../specs/0022-batch-cocktail-conversion.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

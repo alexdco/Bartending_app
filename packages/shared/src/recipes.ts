@@ -2,6 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "./locale";
 import type { RecognizedUnit } from "./units";
+import type { IngredientCategory } from "./batch";
 
 export type AlcoholicStatusFilter = "alcoholic" | "non_alcoholic" | "optional";
 
@@ -98,6 +99,8 @@ export interface RecipeIngredientDetail {
   /** Null when `measure` could not be parsed into a number + recognized unit (AC-3). */
   amountValue: number | null;
   amountUnit: RecognizedUnit | null;
+  /** Null until the ingredient is Haiku classified (spec 0022, AC-4, AC-9). */
+  category: IngredientCategory | null;
 }
 
 export interface RecipeDetail {
@@ -118,6 +121,7 @@ interface RecipeDetailIngredientRow {
   sort_order: number;
   amount_value: number | null;
   amount_unit: RecognizedUnit | null;
+  category: IngredientCategory | null;
 }
 
 export async function fetchRecipeDetail(
@@ -145,6 +149,7 @@ export async function fetchRecipeDetail(
       sortOrder: ri.sort_order,
       amountValue: ri.amount_value,
       amountUnit: ri.amount_unit,
+      category: ri.category,
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
