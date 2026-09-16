@@ -483,6 +483,45 @@ export type Database = {
           },
         ];
       };
+      recipe_aliases: {
+        Row: {
+          alias: string;
+          created_at: string;
+          id: string;
+          recipe_id: string;
+          source: string;
+        };
+        Insert: {
+          alias: string;
+          created_at?: string;
+          id?: string;
+          recipe_id: string;
+          source: string;
+        };
+        Update: {
+          alias?: string;
+          created_at?: string;
+          id?: string;
+          recipe_id?: string;
+          source?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recipe_aliases_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_aliases_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       recipe_ingredient_translations: {
         Row: {
           ingredient_id: string;
@@ -994,6 +1033,16 @@ export type Database = {
         Args: { p_day: string; p_limit: number; p_user_id: string };
         Returns: boolean;
       };
+      search_bartender: {
+        Args: { bar_id?: string; query: string; recent_recipe_ids?: string[] };
+        Returns: {
+          id: string;
+          kind: string;
+          name: string;
+          score: number;
+          tier: number;
+        }[];
+      };
       search_ingredients: {
         Args: { locale?: string; query?: string; result_limit?: number };
         Returns: {
@@ -1014,6 +1063,14 @@ export type Database = {
           id: string;
           image_url: string;
           name: string;
+        }[];
+      };
+      search_recipes_by_ingredients: {
+        Args: { ingredient_tokens: string[] };
+        Returns: {
+          id: string;
+          name: string;
+          score: number;
         }[];
       };
       select_idle_anonymous_accounts: {

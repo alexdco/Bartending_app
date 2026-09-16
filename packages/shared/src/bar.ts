@@ -481,3 +481,44 @@ export async function reorderPins(
     }
   }
 }
+
+export type SearchResultKind = "recipe" | "bar_recipe";
+
+// Tier 1 = current bar's menu, 2 = other house recipes, 3 = pinned,
+// 4 = recently viewed, 5 = exact catalog name match, 6 = fuzzy/trigram
+// catalog match, 7 = alias/ingredient-overlap match. See spec
+// 0023-bartender-mode/0023-search-and-shorthand.md AC-1.
+export type SearchResultTier = 1 | 2 | 3 | 4 | 5 | 6 | 7;
+
+export interface BartenderSearchResult {
+  kind: SearchResultKind;
+  id: string;
+  name: string;
+  tier: SearchResultTier;
+  score: number;
+}
+
+export async function searchBartender(
+  client: SupabaseClient<Database>,
+  query: string,
+  barId: string | null,
+  recentRecipeIds: string[],
+): Promise<BartenderSearchResult[]> {
+  const { data, error } = await client.rpc("search_bartender", {
+    query,
+    bar_id: barId ?? undefined,
+    recent_recipe_ids: recentRecipeIds,
+  });
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => ({
+    kind: row.kind as SearchResultKind,
+    id: row.id,
+    name: row.name,
+    tier: row.tier as SearchResultTier,
+    score: row.score,
+  }));
+}

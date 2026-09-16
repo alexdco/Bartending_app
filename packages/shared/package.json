@@ -9,6 +9,7 @@
     "./catalog-translation": "./src/catalogTranslation.ts",
     "./ingredient-classification": "./src/ingredientClassification.ts",
     "./recipe-classification": "./src/recipeClassification.ts",
+    "./method-and-alias-classification": "./src/methodAndAliasClassification.ts",
     "./units": "./src/units.ts"
   },
   "scripts": {
@@ -18,7 +19,8 @@
     "apply-regions": "tsx scripts/apply-regions.ts",
     "translate-catalog": "tsx scripts/translate-catalog.ts",
     "classify-ingredients": "tsx scripts/classify-ingredients.ts",
-    "classify-recipes": "tsx scripts/classify-recipes.ts"
+    "classify-recipes": "tsx scripts/classify-recipes.ts",
+    "classify-method-and-aliases": "tsx scripts/classify-method-and-aliases.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",
