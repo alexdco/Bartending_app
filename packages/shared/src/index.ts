@@ -21,3 +21,4 @@ export * from "./initials";
 export * from "./locale";
 export * from "./units";
 export * from "./batch";
+export * from "./bar";

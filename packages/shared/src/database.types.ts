@@ -26,6 +26,287 @@ export type Database = {
         };
         Relationships: [];
       };
+      bar_ingredient_stock: {
+        Row: {
+          bar_id: string;
+          ingredient_id: string;
+          is_86d: boolean;
+          updated_at: string;
+          updated_by: string;
+        };
+        Insert: {
+          bar_id: string;
+          ingredient_id: string;
+          is_86d?: boolean;
+          updated_at?: string;
+          updated_by: string;
+        };
+        Update: {
+          bar_id?: string;
+          ingredient_id?: string;
+          is_86d?: boolean;
+          updated_at?: string;
+          updated_by?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bar_ingredient_stock_bar_id_fkey";
+            columns: ["bar_id"];
+            isOneToOne: false;
+            referencedRelation: "bars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bar_ingredient_stock_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bar_invites: {
+        Row: {
+          accepted_by: string | null;
+          bar_id: string;
+          created_at: string;
+          email: string;
+          expires_at: string;
+          id: string;
+          invited_by: string;
+          status: string;
+        };
+        Insert: {
+          accepted_by?: string | null;
+          bar_id: string;
+          created_at?: string;
+          email: string;
+          expires_at?: string;
+          id?: string;
+          invited_by: string;
+          status?: string;
+        };
+        Update: {
+          accepted_by?: string | null;
+          bar_id?: string;
+          created_at?: string;
+          email?: string;
+          expires_at?: string;
+          id?: string;
+          invited_by?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bar_invites_bar_id_fkey";
+            columns: ["bar_id"];
+            isOneToOne: false;
+            referencedRelation: "bars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bar_members: {
+        Row: {
+          bar_id: string;
+          joined_at: string;
+          role: string;
+          user_id: string;
+        };
+        Insert: {
+          bar_id: string;
+          joined_at?: string;
+          role: string;
+          user_id: string;
+        };
+        Update: {
+          bar_id?: string;
+          joined_at?: string;
+          role?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bar_members_bar_id_fkey";
+            columns: ["bar_id"];
+            isOneToOne: false;
+            referencedRelation: "bars";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bar_menu_items: {
+        Row: {
+          active: boolean;
+          bar_id: string;
+          bar_recipe_id: string;
+          id: string;
+          sort_order: number;
+        };
+        Insert: {
+          active?: boolean;
+          bar_id: string;
+          bar_recipe_id: string;
+          id?: string;
+          sort_order?: number;
+        };
+        Update: {
+          active?: boolean;
+          bar_id?: string;
+          bar_recipe_id?: string;
+          id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bar_menu_items_bar_id_fkey";
+            columns: ["bar_id"];
+            isOneToOne: false;
+            referencedRelation: "bars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bar_menu_items_bar_recipe_id_fkey";
+            columns: ["bar_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "bar_recipes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bar_recipe_ingredients: {
+        Row: {
+          amount_unit: string | null;
+          amount_value: number | null;
+          bar_recipe_id: string;
+          ingredient_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          amount_unit?: string | null;
+          amount_value?: number | null;
+          bar_recipe_id: string;
+          ingredient_id: string;
+          sort_order?: number;
+        };
+        Update: {
+          amount_unit?: string | null;
+          amount_value?: number | null;
+          bar_recipe_id?: string;
+          ingredient_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bar_recipe_ingredients_bar_recipe_id_fkey";
+            columns: ["bar_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "bar_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bar_recipe_ingredients_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bar_recipes: {
+        Row: {
+          bar_id: string;
+          base_recipe_id: string | null;
+          created_at: string;
+          created_by: string;
+          deleted_at: string | null;
+          garnish: string | null;
+          glass: string | null;
+          ice: string | null;
+          id: string;
+          instructions: string | null;
+          method: string | null;
+          name: string;
+          straining: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          bar_id: string;
+          base_recipe_id?: string | null;
+          created_at?: string;
+          created_by: string;
+          deleted_at?: string | null;
+          garnish?: string | null;
+          glass?: string | null;
+          ice?: string | null;
+          id?: string;
+          instructions?: string | null;
+          method?: string | null;
+          name: string;
+          straining?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          bar_id?: string;
+          base_recipe_id?: string | null;
+          created_at?: string;
+          created_by?: string;
+          deleted_at?: string | null;
+          garnish?: string | null;
+          glass?: string | null;
+          ice?: string | null;
+          id?: string;
+          instructions?: string | null;
+          method?: string | null;
+          name?: string;
+          straining?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "bar_recipes_bar_id_fkey";
+            columns: ["bar_id"];
+            isOneToOne: false;
+            referencedRelation: "bars";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bar_recipes_base_recipe_id_fkey";
+            columns: ["base_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bar_recipes_base_recipe_id_fkey";
+            columns: ["base_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      bars: {
+        Row: {
+          created_at: string;
+          created_by: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string;
+          created_by: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string;
+          created_by?: string;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
+      };
       favorites: {
         Row: {
           created_at: string;
@@ -149,6 +430,55 @@ export type Database = {
             columns: ["ingredient_id"];
             isOneToOne: false;
             referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      pinned_recipes: {
+        Row: {
+          bar_recipe_id: string | null;
+          id: string;
+          pinned_at: string;
+          recipe_id: string | null;
+          sort_order: number;
+          user_id: string;
+        };
+        Insert: {
+          bar_recipe_id?: string | null;
+          id?: string;
+          pinned_at?: string;
+          recipe_id?: string | null;
+          sort_order?: number;
+          user_id: string;
+        };
+        Update: {
+          bar_recipe_id?: string | null;
+          id?: string;
+          pinned_at?: string;
+          recipe_id?: string | null;
+          sort_order?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pinned_recipes_bar_recipe_id_fkey";
+            columns: ["bar_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "bar_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pinned_recipes_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pinned_recipes_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
             referencedColumns: ["id"];
           },
         ];
@@ -334,11 +664,14 @@ export type Database = {
           id: string;
           image_url: string | null;
           instructions: string;
+          method: string | null;
+          method_source_name_hash: string | null;
           name: string;
           name_search: unknown;
           popularity_rank: number | null;
           region: string | null;
           source_id: string;
+          straining: string | null;
           updated_at: string;
         };
         Insert: {
@@ -352,11 +685,14 @@ export type Database = {
           id?: string;
           image_url?: string | null;
           instructions: string;
+          method?: string | null;
+          method_source_name_hash?: string | null;
           name: string;
           name_search?: unknown;
           popularity_rank?: number | null;
           region?: string | null;
           source_id: string;
+          straining?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -370,11 +706,14 @@ export type Database = {
           id?: string;
           image_url?: string | null;
           instructions?: string;
+          method?: string | null;
+          method_source_name_hash?: string | null;
           name?: string;
           name_search?: unknown;
           popularity_rank?: number | null;
           region?: string | null;
           source_id?: string;
+          straining?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -464,6 +803,55 @@ export type Database = {
       };
     };
     Views: {
+      pinned_recipes_visible: {
+        Row: {
+          bar_recipe_id: string | null;
+          id: string | null;
+          pinned_at: string | null;
+          recipe_id: string | null;
+          sort_order: number | null;
+          user_id: string | null;
+        };
+        Insert: {
+          bar_recipe_id?: string | null;
+          id?: string | null;
+          pinned_at?: string | null;
+          recipe_id?: string | null;
+          sort_order?: number | null;
+          user_id?: string | null;
+        };
+        Update: {
+          bar_recipe_id?: string | null;
+          id?: string | null;
+          pinned_at?: string | null;
+          recipe_id?: string | null;
+          sort_order?: number | null;
+          user_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "pinned_recipes_bar_recipe_id_fkey";
+            columns: ["bar_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "bar_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pinned_recipes_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pinned_recipes_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       recipes_localized: {
         Row: {
           alcoholic_status: string | null;
@@ -483,7 +871,30 @@ export type Database = {
       };
     };
     Functions: {
+      accept_bar_invite: {
+        Args: { p_invite_id: string };
+        Returns: {
+          bar_id: string;
+          joined_at: string;
+          role: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "bar_members";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
+      fetch_bar_service_data: {
+        Args: { p_bar_id: string };
+        Returns: {
+          house_recipes: Json;
+          menu: Json;
+          stock_86: Json;
+        }[];
+      };
       fetch_favorite_recipes: {
         Args: {
           p_locale?: string;
@@ -610,6 +1021,22 @@ export type Database = {
         Returns: {
           id: string;
         }[];
+      };
+      toggle_86_status: {
+        Args: { p_bar_id: string; p_ingredient_id: string; p_is_86d: boolean };
+        Returns: {
+          bar_id: string;
+          ingredient_id: string;
+          is_86d: boolean;
+          updated_at: string;
+          updated_by: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "bar_ingredient_stock";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
     };
     Enums: {
