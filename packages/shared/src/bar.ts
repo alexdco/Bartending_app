@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import type { RecognizedUnit } from "./units";
 
 export interface Bar {
   id: string;
@@ -521,4 +522,123 @@ export async function searchBartender(
     tier: row.tier as SearchResultTier,
     score: row.score,
   }));
+}
+
+// Quick Build Mode's own detail shape: unlike the consumer RecipeDetail
+// (packages/shared/src/recipes.ts), this includes method/straining (the
+// bold build-method line) since the consumer screen doesn't need them and
+// adding them there would ripple into an unrelated type. Both read the same
+// fetch_recipe_detail RPC; only the returned shape differs.
+export interface QuickBuildIngredient {
+  ingredientId: string;
+  name: string;
+  measure: string | null;
+  amountValue: number | null;
+  amountUnit: RecognizedUnit | null;
+}
+
+export interface QuickBuildRecipeDetail {
+  kind: "recipe";
+  id: string;
+  name: string;
+  method: string | null;
+  straining: string | null;
+  glass: string | null;
+  ingredients: QuickBuildIngredient[];
+}
+
+export interface QuickBuildBarRecipeDetail {
+  kind: "bar_recipe";
+  id: string;
+  barId: string;
+  name: string;
+  method: string | null;
+  straining: string | null;
+  glass: string | null;
+  ice: string | null;
+  garnish: string | null;
+  ingredients: QuickBuildIngredient[];
+}
+
+interface RawQuickBuildRecipeIngredientRow {
+  ingredient_id: string;
+  name: string;
+  measure: string | null;
+  amount_value: number | null;
+  amount_unit: string | null;
+}
+
+export async function fetchQuickBuildRecipeDetail(
+  client: SupabaseClient<Database>,
+  recipeId: string,
+): Promise<QuickBuildRecipeDetail | null> {
+  const { data, error } = await client.rpc("fetch_recipe_detail", { p_id: recipeId }).maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const ingredients = (
+    (data.ingredients as unknown as RawQuickBuildRecipeIngredientRow[] | null) ?? []
+  ).map((ingredient) => ({
+    ingredientId: ingredient.ingredient_id,
+    name: ingredient.name,
+    measure: ingredient.measure,
+    amountValue: ingredient.amount_value,
+    amountUnit: ingredient.amount_unit as RecognizedUnit | null,
+  }));
+
+  return {
+    kind: "recipe",
+    id: data.id,
+    name: data.name,
+    method: data.method,
+    straining: data.straining,
+    glass: data.glass,
+    ingredients,
+  };
+}
+
+export async function fetchQuickBuildBarRecipeDetail(
+  client: SupabaseClient<Database>,
+  barRecipeId: string,
+): Promise<QuickBuildBarRecipeDetail | null> {
+  const { data, error } = await client
+    .rpc("fetch_bar_recipe_detail", { p_bar_recipe_id: barRecipeId })
+    .maybeSingle();
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data) {
+    return null;
+  }
+
+  const ingredients = (
+    (data.ingredients as unknown as RawQuickBuildRecipeIngredientRow[] | null) ?? []
+  ).map((ingredient) => ({
+    ingredientId: ingredient.ingredient_id,
+    name: ingredient.name,
+    measure: ingredient.measure,
+    amountValue: ingredient.amount_value,
+    amountUnit: ingredient.amount_unit as RecognizedUnit | null,
+  }));
+
+  return {
+    kind: "bar_recipe",
+    id: data.id,
+    barId: data.bar_id,
+    name: data.name,
+    method: data.method,
+    straining: data.straining,
+    glass: data.glass,
+    ice: data.ice,
+    garnish: data.garnish,
+    ingredients,
+  };
 }

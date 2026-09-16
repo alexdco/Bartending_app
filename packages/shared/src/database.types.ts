@@ -926,6 +926,22 @@ export type Database = {
         };
       };
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
+      fetch_bar_recipe_detail: {
+        Args: { p_bar_recipe_id: string };
+        Returns: {
+          bar_id: string;
+          base_recipe_id: string;
+          garnish: string;
+          glass: string;
+          ice: string;
+          id: string;
+          ingredients: Json;
+          instructions: string;
+          method: string;
+          name: string;
+          straining: string;
+        }[];
+      };
       fetch_bar_service_data: {
         Args: { p_bar_id: string };
         Returns: {
@@ -965,7 +981,9 @@ export type Database = {
           ingredients: Json;
           instructions: string;
           is_favorited: boolean;
+          method: string;
           name: string;
+          straining: string;
           taste_tags: string[];
         }[];
       };
