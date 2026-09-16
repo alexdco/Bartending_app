@@ -191,6 +191,15 @@ export default function AppTabs() {
             renderingMode="template"
           />
         </NativeTabs.Trigger>
+
+        {/* TODO: missing asset: a dedicated service/bartender tab icon; reusing home.png as a placeholder per the engineer's call */}
+        <NativeTabs.Trigger name="service">
+          <NativeTabs.Trigger.Label>{t("nav.service")}</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon
+            src={require("@/assets/images/tabIcons/home.png")}
+            renderingMode="template"
+          />
+        </NativeTabs.Trigger>
       </NativeTabs>
     </View>
   );
