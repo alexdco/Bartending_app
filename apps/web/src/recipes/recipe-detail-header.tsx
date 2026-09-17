@@ -6,6 +6,7 @@ import { Chip } from "@/components/chip";
 import { Text } from "@/components/text";
 import { FavoriteToggle } from "@/favorites/favorite-toggle";
 import { useAddFavorite, useRemoveFavorite } from "@/favorites/use-favorite-mutations";
+import { RecipeRating } from "@/ratings/recipe-rating";
 import { alcoholicStatusLabel } from "./format";
 import type { RecipeDetail } from "@bartendingapp/shared";
 
@@ -51,6 +52,7 @@ export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
         <Chip>{alcoholicStatusLabel(recipe.alcoholicStatus)}</Chip>
         {recipe.glass && <Chip>{recipe.glass}</Chip>}
       </div>
+      <RecipeRating recipeId={recipe.id} />
     </header>
   );
 }

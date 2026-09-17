@@ -423,11 +423,11 @@ Spec [0023](../specs/0023-bartender-mode/index.md) · code in `supabase/migratio
 A signed in user can rate any recipe from 1 to 5 stars on its detail page, change that rating anytime, and see a recipe's average rating and count (guests see the average too, but can't rate). Personal ratings feed back into the existing "You may also like" recommendations (feature 10): a user's own 4 and 5 star rated recipes add weight to the ingredient overlap scoring in `recommend_recipes`, alongside pantry, favorites, and recently viewed.
 **Done when:** a signed in user can submit and change a 1 to 5 star rating on a recipe, everyone sees that recipe's average rating and count (or a neutral "no ratings yet" state), a guest sees the picker disabled with a sign in prompt, and a user's own 4 to 5 star ratings measurably shift their "You may also like" recommendations toward similar ingredients.
 - [x] Design it (spec): [0024](../specs/0024-recipe-rating.md)
-- [ ] Build it: `/develop recipe rating`
-  - [ ] `ratings` table migration (RLS, check constraint, non anonymous write gate) plus regenerated shared types, satisfies AC-1, AC-2, AC-3, AC-9
-  - [ ] `recipe_rating_summary` function (average + count, excludes soft deleted recipes), satisfies AC-4, AC-5, AC-8
-  - [ ] `recommend_recipes` extended with the rating weighted signal (5 star = 1.0, 4 star = 0.6) and rated-recipe exclusion, satisfies AC-6, AC-7, AC-8
-  - [ ] Shared `ratings.ts` helpers plus the star rating UI (web and mobile): average/count display, neutral zero state, session gated picker, recommendations query invalidation on rate, satisfies AC-1 through AC-5
+- [x] Build it: `/develop recipe rating`
+  - [x] `ratings` table migration (RLS, check constraint, non anonymous write gate) plus regenerated shared types, satisfies AC-1, AC-2, AC-3, AC-9 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260917120000_recipe_ratings.sql`; security advisor clean (no new findings beyond the expected owner-scoped anon-access info lint, matching favorites/pantry_items); check constraint and non anonymous RLS gate confirmed live
+  - [x] `recipe_rating_summary` function (average + count, excludes soft deleted recipes), satisfies AC-4, AC-5, AC-8 — applied via `supabase/migrations/20260917120100_recipe_rating_summary_function.sql`; verified live (`{average: null, count: 0}` for an unrated recipe)
+  - [x] `recommend_recipes` extended with the rating weighted signal (5 star = 1.0, 4 star = 0.6) and rated-recipe exclusion, satisfies AC-6, AC-7, AC-8 — applied via `supabase/migrations/20260917120200_recommend_recipes_ratings_signal.sql` (full function replace, favorites/pantry/recent signals unchanged)
+  - [x] Shared `ratings.ts` helpers plus the star rating UI (web and mobile): average/count display, neutral zero state, session gated picker, recommendations query invalidation on rate, satisfies AC-1 through AC-5 — `packages/shared/src/ratings.ts` (+ `ratings.test.ts`), both apps' `ratings/{use-ratings.ts,use-rating-mutations.ts,star-rating.tsx,recipe-rating.tsx}`, wired into `recipe-detail-header.tsx` on both platforms
 - [ ] Verify it: `/check verify recipe rating`
 - [ ] Test it: `/test recipe rating`
 Spec [0024](../specs/0024-recipe-rating.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`

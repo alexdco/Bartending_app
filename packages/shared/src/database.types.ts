@@ -483,6 +483,45 @@ export type Database = {
           },
         ];
       };
+      ratings: {
+        Row: {
+          created_at: string;
+          recipe_id: string;
+          score: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          recipe_id: string;
+          score: number;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          recipe_id?: string;
+          score?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ratings_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ratings_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       recipe_aliases: {
         Row: {
           alias: string;
@@ -1044,22 +1083,45 @@ export type Database = {
           popularity_rank: number;
         }[];
       };
-      recommend_recipes: {
-        Args: {
-          current_recipe_id?: string;
-          locale?: string;
-          page_limit?: number;
-          page_offset?: number;
-          recent_recipe_ids?: string[];
-        };
+      recipe_rating_summary: {
+        Args: { p_recipe_id: string };
         Returns: {
-          alcoholic_status: string;
-          id: string;
-          image_url: string;
-          name: string;
-          score: number;
+          average: number;
+          count: number;
         }[];
       };
+      recommend_recipes:
+        | {
+            Args: {
+              current_recipe_id?: string;
+              page_limit?: number;
+              page_offset?: number;
+              recent_recipe_ids?: string[];
+            };
+            Returns: {
+              alcoholic_status: string;
+              id: string;
+              image_url: string;
+              name: string;
+              score: number;
+            }[];
+          }
+        | {
+            Args: {
+              current_recipe_id?: string;
+              locale?: string;
+              page_limit?: number;
+              page_offset?: number;
+              recent_recipe_ids?: string[];
+            };
+            Returns: {
+              alcoholic_status: string;
+              id: string;
+              image_url: string;
+              name: string;
+              score: number;
+            }[];
+          };
       reserve_ai_generation_quota: {
         Args: { p_day: string; p_limit: number; p_user_id: string };
         Returns: boolean;

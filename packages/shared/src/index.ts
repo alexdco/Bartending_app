@@ -6,6 +6,7 @@ export * from "./contrastRatio";
 export * from "./recipes";
 export * from "./pantry";
 export * from "./favorites";
+export * from "./ratings";
 export * from "./drinkIdeas";
 export * from "./generateDrinkIdea";
 export * from "./auth";
