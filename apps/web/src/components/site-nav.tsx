@@ -264,6 +264,7 @@ const navLinks = [
   { href: "/pantry", key: "pantry" },
   { href: "/drink-ideas", key: "drinkIdeas" },
   { href: "/popular", key: "popular" },
+  { href: "/service", key: "service" },
 ] as const;
 
 function DrawerLanguageSection() {

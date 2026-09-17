@@ -999,6 +999,19 @@ export type Database = {
       import_catalog: { Args: { drinks: Json }; Returns: undefined };
       import_custom_recipes: { Args: { recipes: Json }; Returns: undefined };
       is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
+      list_my_pending_invites: {
+        Args: never;
+        Returns: {
+          bar_id: string;
+          bar_name: string;
+          created_at: string;
+          email: string;
+          expires_at: string;
+          id: string;
+          invited_by: string;
+          status: string;
+        }[];
+      };
       list_popular_regions: {
         Args: never;
         Returns: {

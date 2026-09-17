@@ -172,6 +172,43 @@ export async function inviteStaff(
   };
 }
 
+export interface PendingInvite {
+  id: string;
+  barId: string;
+  barName: string;
+  email: string;
+  invitedBy: string;
+  status: "pending";
+  createdAt: string;
+  expiresAt: string;
+}
+
+// Backs the web invite-accept screen's in-app list (spec
+// 0023-bar-data-model.md's web build plan step 9): bar_invites' own SELECT
+// policy only lets an owner read a bar's invites, so this calls
+// list_my_pending_invites, a security definer RPC scoped strictly to the
+// caller's own verified email (never a client supplied identity).
+export async function listMyPendingInvites(
+  client: SupabaseClient<Database>,
+): Promise<PendingInvite[]> {
+  const { data, error } = await client.rpc("list_my_pending_invites");
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => ({
+    id: row.id,
+    barId: row.bar_id,
+    barName: row.bar_name,
+    email: row.email,
+    invitedBy: row.invited_by,
+    status: "pending",
+    createdAt: row.created_at,
+    expiresAt: row.expires_at,
+  }));
+}
+
 export async function revokeInvite(
   client: SupabaseClient<Database>,
   inviteId: string,
