@@ -66,12 +66,15 @@ function CreateBarForm() {
   );
 }
 
-function NoBarJoined() {
+function WorkingSoloPanel({ isLinked }: { isLinked: boolean }) {
   return (
-    <EmptyState
-      title="No bar joined yet"
-      description="Create a bar, or accept an invite if an owner already sent you one. Search and your pinned cocktails still work without one."
-      action={
+    <div className="flex flex-col gap-two">
+      <Text variant="subheading">Working solo</Text>
+      <Text variant="bodySmall" muted>
+        Search and pinned cocktails work fully on their own. Create or join a bar anytime to add a
+        shared menu and 86 list with a team.
+      </Text>
+      {isLinked ? (
         <div className="flex w-full flex-col gap-two">
           <CreateBarForm />
           <Link href="/service/invites">
@@ -80,8 +83,14 @@ function NoBarJoined() {
             </Button>
           </Link>
         </div>
-      }
-    />
+      ) : (
+        <Link href="/account">
+          <Button variant="secondary" className="w-full">
+            Sign in to create or join a bar
+          </Button>
+        </Link>
+      )}
+    </div>
   );
 }
 
@@ -248,15 +257,7 @@ export function ServicePageClient() {
 
       {!isLinked ? (
         <Card>
-          <EmptyState
-            title="No bar joined yet"
-            description="Sign in with a real account to create or join a bar. Search and your pinned cocktails still work as a guest."
-            action={
-              <Link href="/account">
-                <Button>Sign in</Button>
-              </Link>
-            }
-          />
+          <WorkingSoloPanel isLinked={false} />
         </Card>
       ) : currentBar.isLoading ? null : currentBar.currentBar ? (
         <Card>
@@ -264,7 +265,7 @@ export function ServicePageClient() {
         </Card>
       ) : (
         <Card>
-          <NoBarJoined />
+          <WorkingSoloPanel isLinked />
         </Card>
       )}
     </div>

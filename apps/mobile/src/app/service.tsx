@@ -88,22 +88,29 @@ function CreateBarForm() {
   );
 }
 
-function NoBarJoined() {
+function WorkingSoloPanel({ isLinked }: { isLinked: boolean }) {
   const router = useRouter();
 
   return (
-    <EmptyState
-      title="No bar joined yet"
-      description="Create a bar, or accept an invite if an owner already sent you one. Search and your pinned cocktails still work without one."
-      action={
+    <View style={styles.section}>
+      <Text variant="subheading">Working solo</Text>
+      <Text variant="bodySmall" muted>
+        Search and pinned cocktails work fully on their own. Create or join a bar anytime to add a
+        shared menu and 86 list with a team.
+      </Text>
+      {isLinked ? (
         <View style={styles.noBarActions}>
           <CreateBarForm />
           <Button variant="secondary" onPress={() => router.push("/bar-invite-accept")}>
             I have an invite
           </Button>
         </View>
-      }
-    />
+      ) : (
+        <Button variant="secondary" onPress={() => router.push("/account")}>
+          Sign in to create or join a bar
+        </Button>
+      )}
+    </View>
   );
 }
 
@@ -262,10 +269,12 @@ export default function ServiceScreen() {
           )}
         </View>
 
-        {!isLinked || currentBar.isLoading ? null : currentBar.currentBar ? (
+        {!isLinked ? (
+          <WorkingSoloPanel isLinked={false} />
+        ) : currentBar.isLoading ? null : currentBar.currentBar ? (
           <CurrentMenuSection barId={currentBar.currentBar.id} />
         ) : (
-          <NoBarJoined />
+          <WorkingSoloPanel isLinked />
         )}
       </ScrollView>
     </SafeAreaView>

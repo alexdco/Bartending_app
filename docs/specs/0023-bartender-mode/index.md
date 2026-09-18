@@ -5,7 +5,7 @@
 
 ## Summary
 
-Bartender Mode is a new, separate part of the app built for working bartenders during a shift, not for guests browsing recipes at home. It adds a shared "bar" (a venue or team) that staff can join, so house recipes, the current menu, and an out of stock ("86'd") ingredient list all stay in sync across everyone working there. The goal stated by the product owner is that a bartender can find the right recipe in about 2 to 3 seconds, so the whole design favors speed, large readable text, and as few taps as possible over discovery or education content. This spec is an umbrella: it ties together three focused child specs and holds the parts they all share. Originally mobile only; this revision extends full parity to `apps/web` (bar management, search, and Quick Build Mode all get a web equivalent), for a bar owner working at a desk or a shared back-bar terminal running a browser.
+Bartender Mode is a new, separate part of the app built for working bartenders during a shift, not for guests browsing recipes at home. It adds a shared "bar" (a venue or team) that staff can join, so house recipes, the current menu, and an out of stock ("86'd") ingredient list all stay in sync across everyone working there. It is also fully usable by an independent bartender with no bar: search, Quick Build, and pinning all work standalone, and the Service screen presents that as a real, finished workflow rather than an incomplete setup. The goal stated by the product owner is that a bartender can find the right recipe in about 2 to 3 seconds, so the whole design favors speed, large readable text, and as few taps as possible over discovery or education content. This spec is an umbrella: it ties together four focused child specs and holds the parts they all share. Originally mobile only; a later revision extended full parity to `apps/web` (bar management, search, and Quick Build Mode all get a web equivalent), for a bar owner working at a desk or a shared back-bar terminal running a browser.
 
 ## Structure
 
@@ -14,6 +14,7 @@ This feature splits into three buildable parts, each its own child spec:
 - [0023-bar-data-model.md](0023-bar-data-model.md): the shared bar (venue/team) data model, roles, invites, house recipes, the current menu, and the 86 (out of stock) list. Every other child depends on this.
 - [0023-search-and-shorthand.md](0023-search-and-shorthand.md): the ranked search that powers the Service screen, including bartender shorthand ("old f" for Old Fashioned) and ingredient list queries ("gin campari vermouth" for Negroni).
 - [0023-quick-build-mode.md](0023-quick-build-mode.md): the distraction free, high contrast single recipe screen a bartender opens to build a drink, including the oz / ml / parts toggle and keep screen awake option.
+- [0023-independent-bartender-mode.md](0023-independent-bartender-mode.md): replaces the "no bar" empty state with a first class working solo view, so an independent contractor bartender with no bar gets a finished looking Service screen instead of an incomplete looking one.
 
 ## Cross child contract
 
@@ -31,11 +32,12 @@ These rules are shared by all three child specs and must not be re-decided diffe
 
 ## Build plan
 
-The three child specs each carry their own build plan. Build them in this order, since each depends on the previous. Mobile was built first (see each child spec's existing build plan); the web build plan items added by this revision follow the same order, per child spec, reusing the now-proven `packages/shared/src/bar.ts` layer with no changes:
+The four child specs each carry their own build plan. Build the first three in order, since each depends on the previous; the fourth (independent bartender mode) is a small presentation only fix that can land anytime after the first child, since it only changes the no-bar branch of the Service shell that child already built. Mobile was built first (see each child spec's existing build plan); the web build plan items added by the parity revision follow the same order, per child spec, reusing the now-proven `packages/shared/src/bar.ts` layer with no changes:
 
 1. [0023-bar-data-model.md](0023-bar-data-model.md): the bars/bar_members/bar_recipes/bar_menu_items/bar_ingredient_stock/bar_invites/pinned_recipes schema and RLS (done, mobile and web both read the same tables with no change needed), plus the "Service" shell and empty/no-bar-joined states on both the mobile tab and the new web nav item.
 2. [0023-search-and-shorthand.md](0023-search-and-shorthand.md): the alias table, ingredient overlap RPC, and unified ranked search (done, backend is platform agnostic), plus a web search screen alongside the existing mobile one.
 3. [0023-quick-build-mode.md](0023-quick-build-mode.md): the Quick Build screen itself on both platforms, including web's Screen Wake Lock keep-awake and `localStorage` backed offline persister (see Cross child contract above).
+4. [0023-independent-bartender-mode.md](0023-independent-bartender-mode.md): replaces the no-bar branch built in step 1 with a working solo panel, on both platforms; no schema or backend change.
 
 ## Consequences
 
