@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
+import { ScrollView, SafeAreaView, StyleSheet, Switch, View } from "react-native";
 import { useRouter } from "expo-router";
 import { useTranslation } from "react-i18next";
 
@@ -21,7 +21,12 @@ import {
   type Locale,
 } from "@bartendingapp/shared";
 import { useSession } from "@/auth/use-session";
-import { useProfile, useUpdateDisplayName, useUpdateLocale } from "@/auth/use-preferences";
+import {
+  useProfile,
+  useUpdateBartenderModeEnabled,
+  useUpdateDisplayName,
+  useUpdateLocale,
+} from "@/auth/use-preferences";
 import {
   useChangeEmail,
   useDeleteAccount,
@@ -231,6 +236,22 @@ function DisplayNameCard({ email, prefillName }: { email: string; prefillName: s
   );
 }
 
+function BartenderModeCard() {
+  const { t } = useTranslation();
+  const { data: profile } = useProfile();
+  const updateBartenderModeEnabled = useUpdateBartenderModeEnabled();
+  const enabled = profile?.bartenderModeEnabled ?? true;
+
+  return (
+    <Card style={styles.card}>
+      <View style={styles.bartenderModeRow}>
+        <Text variant="heading">{t("menu.bartenderMode")}</Text>
+        <Switch value={enabled} onValueChange={(next) => updateBartenderModeEnabled.mutate(next)} />
+      </View>
+    </Card>
+  );
+}
+
 function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName: string }) {
   const theme = useTheme();
   const { t } = useTranslation();
@@ -253,6 +274,8 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
           {signOut.isPending ? t("account.signingOut") : t("account.signOut")}
         </Button>
       </Card>
+
+      <BartenderModeCard />
 
       <DisplayNameCard email={email} prefillName={prefillName} />
 
@@ -393,6 +416,11 @@ const styles = StyleSheet.create({
   },
   card: {
     gap: Spacing.two,
+  },
+  bartenderModeRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   badgePreviewRow: {
     flexDirection: "row",

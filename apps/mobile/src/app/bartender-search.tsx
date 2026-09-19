@@ -13,6 +13,7 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useCurrentBar } from "@/service/use-current-bar";
 import { useBartenderSearch } from "@/service/use-bartender-search";
+import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
 
 const DEBOUNCE_MS = 200;
 const TIER_PREVIEW_COUNT = 5;
@@ -84,6 +85,7 @@ export default function BartenderSearchScreen() {
   const currentBar = useCurrentBar();
   const [inputValue, setInputValue] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const bartenderModeAllowed = useBartenderModeGuard();
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedQuery(inputValue.trim()), DEBOUNCE_MS);
@@ -92,6 +94,10 @@ export default function BartenderSearchScreen() {
 
   const barId = currentBar.currentBar?.id ?? null;
   const search = useBartenderSearch(debouncedQuery, barId);
+
+  if (!bartenderModeAllowed) {
+    return null;
+  }
 
   const resultsByTier = new Map<SearchResultTier, BartenderSearchResult[]>();
   for (const result of search.data ?? []) {

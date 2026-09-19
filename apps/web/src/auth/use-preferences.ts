@@ -7,6 +7,8 @@ import {
   updatePreferences,
   updateDisplayName,
   updateLocale,
+  updateBartenderModeEnabled,
+  type Profile,
   type Theme,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
@@ -43,6 +45,29 @@ export function useUpdateLocale() {
   return useMutation({
     mutationFn: (locale: string) => updateLocale(supabase, locale),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: profileQueryKey }),
+  });
+}
+
+export function useUpdateBartenderModeEnabled() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (enabled: boolean) => updateBartenderModeEnabled(supabase, enabled),
+    onMutate: async (enabled) => {
+      await queryClient.cancelQueries({ queryKey: profileQueryKey });
+      const previousProfile = queryClient.getQueryData<Profile>(profileQueryKey);
+      queryClient.setQueryData<Profile>(
+        profileQueryKey,
+        (old) => old && { ...old, bartenderModeEnabled: enabled },
+      );
+      return { previousProfile };
+    },
+    onError: (_error, _enabled, context) => {
+      if (context) {
+        queryClient.setQueryData(profileQueryKey, context.previousProfile);
+      }
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey: profileQueryKey }),
   });
 }
 

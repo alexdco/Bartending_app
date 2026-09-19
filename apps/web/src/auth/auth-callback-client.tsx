@@ -28,13 +28,21 @@ export function AuthCallbackClient() {
 
     supabase.auth
       .exchangeCodeForSession(code)
-      .then(({ error: exchangeError }) => {
-        subscription.subscription.unsubscribe();
-
+      .then(async ({ error: exchangeError }) => {
         if (exchangeError) {
+          subscription.subscription.unsubscribe();
           setError("This link is invalid or has expired.");
           return;
         }
+
+        // Linking an anonymous account swaps auth.users.is_anonymous to
+        // false, but the JWT just issued by exchangeCodeForSession can still
+        // carry the pre-link claim; force a refresh so RLS checks reading
+        // auth.jwt() ->> 'is_anonymous' (e.g. bars_insert) see the update
+        // immediately instead of only after the token's next natural
+        // rotation.
+        await supabase.auth.refreshSession();
+        subscription.subscription.unsubscribe();
 
         router.replace(isRecovery ? "/account/reset-password" : "/account");
       })

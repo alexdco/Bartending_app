@@ -12,6 +12,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { useIngredientSearch } from "@/pantry/use-ingredient-search";
 import { useCurrentBar } from "@/service/use-current-bar";
 import { useCreateBarRecipe } from "@/service/use-bar-mutations";
+import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
 
 const UNITS = RECOGNIZED_UNITS;
 
@@ -85,6 +86,11 @@ export default function BarRecipeFormScreen() {
   const [ice, setIce] = useState("");
   const [garnish, setGarnish] = useState("");
   const [ingredients, setIngredients] = useState<DraftIngredient[]>([]);
+  const bartenderModeAllowed = useBartenderModeGuard();
+
+  if (!bartenderModeAllowed) {
+    return null;
+  }
 
   const isOwner = barId !== undefined;
   const canSave = isOwner && name.trim() !== "" && ingredients.length > 0;

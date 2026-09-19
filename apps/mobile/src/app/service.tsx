@@ -14,6 +14,7 @@ import { useCurrentBar } from "@/service/use-current-bar";
 import { useBarServiceData } from "@/service/use-bar-service-data";
 import { useCreateBar, useToggleStock } from "@/service/use-bar-mutations";
 import { usePinnedRecipes } from "@/service/use-pinned-recipes";
+import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
 
 function BarSwitcher({
   bars,
@@ -222,6 +223,11 @@ export default function ServiceScreen() {
   const { isLinked } = useSession();
   const currentBar = useCurrentBar();
   const pinned = usePinnedRecipes();
+  const bartenderModeAllowed = useBartenderModeGuard();
+
+  if (!bartenderModeAllowed) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>

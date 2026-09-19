@@ -10,6 +10,7 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useCurrentBar } from "@/service/use-current-bar";
 import { useInviteStaff } from "@/service/use-bar-mutations";
+import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
 
 // Send-side of the invite flow (AC-2). Owner only, per RLS on bar_invites:
 // a staff member attempting to insert an invite is denied server side, so
@@ -21,6 +22,11 @@ export default function BarInviteScreen() {
   const barId = currentBar.currentBar?.id;
   const inviteStaff = useInviteStaff(barId ?? "");
   const isOwner = currentBar.currentBar !== null;
+  const bartenderModeAllowed = useBartenderModeGuard();
+
+  if (!bartenderModeAllowed) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>

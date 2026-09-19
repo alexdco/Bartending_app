@@ -15,6 +15,7 @@ This feature splits into three buildable parts, each its own child spec:
 - [0023-search-and-shorthand.md](0023-search-and-shorthand.md): the ranked search that powers the Service screen, including bartender shorthand ("old f" for Old Fashioned) and ingredient list queries ("gin campari vermouth" for Negroni).
 - [0023-quick-build-mode.md](0023-quick-build-mode.md): the distraction free, high contrast single recipe screen a bartender opens to build a drink, including the oz / ml / parts toggle and keep screen awake option.
 - [0023-independent-bartender-mode.md](0023-independent-bartender-mode.md): replaces the "no bar" empty state with a first class working solo view, so an independent contractor bartender with no bar gets a finished looking Service screen instead of an incomplete looking one.
+- [0023-bartender-mode-toggle.md](0023-bartender-mode-toggle.md): an on/off switch for the whole feature, added to the account menu on both platforms, backed by a new `user_preferences` column, with no effect on existing bar membership or data.
 
 ## Cross child contract
 
@@ -38,6 +39,7 @@ The four child specs each carry their own build plan. Build the first three in o
 2. [0023-search-and-shorthand.md](0023-search-and-shorthand.md): the alias table, ingredient overlap RPC, and unified ranked search (done, backend is platform agnostic), plus a web search screen alongside the existing mobile one.
 3. [0023-quick-build-mode.md](0023-quick-build-mode.md): the Quick Build screen itself on both platforms, including web's Screen Wake Lock keep-awake and `localStorage` backed offline persister (see Cross child contract above).
 4. [0023-independent-bartender-mode.md](0023-independent-bartender-mode.md): replaces the no-bar branch built in step 1 with a working solo panel, on both platforms; no schema or backend change.
+5. [0023-bartender-mode-toggle.md](0023-bartender-mode-toggle.md): a small `user_preferences` column addition plus account menu UI and route guards on both platforms; can land anytime after step 1 since it only gates access to what the earlier steps already built.
 
 ## Consequences
 

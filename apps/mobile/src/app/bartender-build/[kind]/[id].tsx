@@ -24,6 +24,7 @@ import {
   type QuickBuildUnit,
 } from "@/service/quick-build-unit-storage";
 import { recordBartenderRecentlyViewed } from "@/service/bartender-recently-viewed-storage";
+import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
 
 const KEEP_AWAKE_TAG = "quick-build-mode";
 const UNITS: QuickBuildUnit[] = ["oz", "ml", "parts"];
@@ -51,6 +52,7 @@ export default function QuickBuildModeScreen() {
 
   const [unit, setUnit] = useState<QuickBuildUnit | null>(null);
   const [keepAwakeOn, setKeepAwakeOn] = useState(false);
+  const bartenderModeAllowed = useBartenderModeGuard();
 
   const recipe = useQuickBuildRecipe(kind, id);
 
@@ -72,6 +74,10 @@ export default function QuickBuildModeScreen() {
       deactivateKeepAwake(KEEP_AWAKE_TAG);
     };
   }, []);
+
+  if (!bartenderModeAllowed) {
+    return null;
+  }
 
   const toggleKeepAwake = () => {
     if (keepAwakeOn) {

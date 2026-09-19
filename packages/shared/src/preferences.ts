@@ -11,6 +11,7 @@ export interface Profile {
   theme: Theme;
   displayName: string | null;
   locale: Locale | null;
+  bartenderModeEnabled: boolean;
 }
 
 export async function fetchPreferences(client: SupabaseClient<Database>): Promise<Theme> {
@@ -26,7 +27,7 @@ export async function fetchPreferences(client: SupabaseClient<Database>): Promis
 export async function fetchProfile(client: SupabaseClient<Database>): Promise<Profile> {
   const { data, error } = await client
     .from("user_preferences")
-    .select("theme, display_name, locale")
+    .select("theme, display_name, locale, bartender_mode_enabled")
     .maybeSingle();
 
   if (error) {
@@ -39,6 +40,7 @@ export async function fetchProfile(client: SupabaseClient<Database>): Promise<Pr
     theme: (data?.theme as Theme | undefined) ?? DEFAULT_THEME,
     displayName: data?.display_name ?? null,
     locale: isSupportedLocale(storedLocale) ? storedLocale : null,
+    bartenderModeEnabled: data?.bartender_mode_enabled ?? true,
   };
 }
 
@@ -129,6 +131,47 @@ export async function updateLocale(
   }
 
   return { data: { locale }, error: null };
+}
+
+export type UpdateBartenderModeError =
+  | { reason: "no_session" }
+  | { reason: "anonymous_session" }
+  | { reason: "request_failed"; message: string };
+
+export type UpdateBartenderModeResult =
+  | { data: { bartenderModeEnabled: boolean }; error: null }
+  | { data: null; error: UpdateBartenderModeError };
+
+/**
+ * Column scoped update (never a full row upsert), matching updateLocale. Requires a
+ * linked (non anonymous) session, mirroring updateDisplayName's session check, since
+ * the toggle UI itself only ever renders for linked accounts (AC-9).
+ */
+export async function updateBartenderModeEnabled(
+  client: SupabaseClient<Database>,
+  enabled: boolean,
+): Promise<UpdateBartenderModeResult> {
+  const { data: sessionData, error: sessionError } = await client.auth.getSession();
+
+  if (sessionError || !sessionData.session?.user.id) {
+    return { data: null, error: { reason: "no_session" } };
+  }
+
+  if (sessionData.session.user.is_anonymous) {
+    return { data: null, error: { reason: "anonymous_session" } };
+  }
+
+  const userId = sessionData.session.user.id;
+
+  const { error } = await client
+    .from("user_preferences")
+    .upsert({ user_id: userId, bartender_mode_enabled: enabled }, { onConflict: "user_id" });
+
+  if (error) {
+    return { data: null, error: { reason: "request_failed", message: error.message } };
+  }
+
+  return { data: { bartenderModeEnabled: enabled }, error: null };
 }
 
 export async function updatePreferences(

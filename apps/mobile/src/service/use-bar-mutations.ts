@@ -9,11 +9,13 @@ import {
   revokeInvite,
   setMenuItem,
   toggleStock,
+  updateBartenderModeEnabled,
   type CreateBarRecipeInput,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { myBarsQueryKey } from "./use-my-bars";
 import { barServiceDataQueryKey } from "./use-bar-service-data";
+import { profileQueryKey } from "@/auth/use-preferences";
 
 export function useCreateBar() {
   const queryClient = useQueryClient();
@@ -30,9 +32,14 @@ export function useAcceptInvite() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: (inviteId: string) => acceptInvite(supabase, inviteId),
+    mutationFn: async (inviteId: string) => {
+      const result = await acceptInvite(supabase, inviteId);
+      await updateBartenderModeEnabled(supabase, true);
+      return result;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: myBarsQueryKey });
+      queryClient.invalidateQueries({ queryKey: profileQueryKey });
     },
   });
 }
