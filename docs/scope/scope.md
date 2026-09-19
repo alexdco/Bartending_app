@@ -418,7 +418,7 @@ A part of the app for working bartenders during a shift, with full parity on mob
   - [x] Independent bartender mode (mobile + web): replaced the "No bar joined yet" empty state with a working solo panel shown whenever there is no current bar, regardless of `isLinked`, including guests (mobile previously hid this section for guests; web showed a separate sign in card instead) — presentation only, no schema or backend change, satisfies AC-1 through AC-6 (independent bartender mode spec)
   - [x] Bartender Mode on/off toggle (mobile + web): `bartender_mode_enabled` column on `user_preferences` (migration applied, schema confirmed live), account menu toggles on both platforms (web `NavBadge`/`DrawerAccountSection`, mobile `AccountMenu`/`account.tsx`), route guards that redirect away from Bartender Mode routes when off (web `service/layout.tsx`, mobile `useBartenderModeGuard` across all 5 gated screens) with no effect on existing bar membership or data, and an invite-accept exemption/auto-enable on both platforms, satisfies AC-1 through AC-10 (bartender mode toggle spec); typecheck/lint/vitest (48 passing) and `next build` (full static generation) all green
 - [ ] Verify it: `/check verify bartender mode` — recommended before `done`; web verified via `next build` (full static generation succeeds), lint, typecheck, the existing vitest suite (45 passing), and a dev-server smoke check of all six new routes (200s, correct empty/guest states rendered); no real browser/device interaction testing has been run in this environment
-- [ ] Test it: `/test bartender mode`
+- [x] Test it: `/test bartender mode` — 16 new unit tests on `packages/shared/src/preferences.ts` (AC-1, AC-8, AC-9); route guard/redirect logic (AC-4, AC-5, AC-7) and the invite-accept auto-enable sequencing (AC-10) are React hooks with no hook-testing infra in this repo yet, deferred to `/check verify`'s manual steps
 Spec [0023](../specs/0023-bartender-mode/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/mobile`, `apps/web`
 
 ## Slice 21: Recipe rating
@@ -442,15 +442,15 @@ Spec [0024](../specs/0024-recipe-rating/index.md) · code in `supabase/migration
 A new top level "Learn" nav item (web and mobile, alongside Home/Search/Pantry/Drink Ideas/Popular/Service) holding curated educational pages about bar tools, spirits, wine, beer, and related basics. Articles are drafted via the existing Claude Haiku integration from a topic prompt (same one time generation pattern as spec 0020's translation pipeline and spec 0022's ingredient classification, never called live from clients) and reviewed/edited by the app owner directly in Supabase Studio before publishing; no user submitted content or comments/ratings in this feature. English only for v1; category is a fixed enum (tools, spirits, wine, beer, other).
 **Done when:** a user can browse Learn articles by category (tools, spirits, wine, beer, other) and open one to read it, on both web and mobile, and every published article started as an owner reviewed Haiku generated draft.
 - [x] Design it (spec): `/architect learn section`
-- [ ] Build it: `/develop learn section`
+- [x] Build it: `/develop learn section`
   - [x] `learn_articles` migration (check constraints, RLS, `published_at` trigger) plus regenerated shared types, satisfies AC-4, AC-6, AC-9 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260919050000_learn_articles.sql`; security advisor clean (no new findings)
   - [x] Generation script (`generate-learn-article.ts`, Haiku structured output) and the shared `learnArticles.ts` fetch layer, satisfies AC-7, AC-8 — `packages/shared/src/{learnArticleGeneration.ts,learnArticles.ts}`, `packages/shared/scripts/generate-learn-article.ts`
   - [x] Markdown rendering dependency on both apps, satisfies AC-3 — `react-markdown` (web), `react-native-markdown-display` (mobile)
   - [x] Web Learn nav entry and category/article routes, satisfies AC-1 through AC-6 — `apps/web/src/app/[locale]/learn/{page.tsx,[category]/page.tsx,[category]/[slug]/page.tsx}`, `site-nav.tsx` nav entry
   - [x] Mobile Learn tab entry and category/article routes, satisfies AC-1 through AC-6 — `apps/mobile/src/app/learn/{index.tsx,[category]/index.tsx,[category]/[id].tsx}`, `app-tabs.tsx` tab entry
-  - [ ] Generate and publish a first real article end to end, satisfies AC-1 through AC-9 — not run in this environment: no `ANTHROPIC_API_KEY`/`SUPABASE_SERVICE_ROLE_KEY` available locally. Engineer still needs to run `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... ANTHROPIC_API_KEY=... pnpm generate-learn-article --title "..." --category tools --topic "..."`, then flip the row's `status` to `published` in Supabase Studio
-- [ ] Verify it: `/check verify learn section`
-- [ ] Test it: `/test learn section`
+  - [x] Generate and publish a first real article end to end, satisfies AC-1 through AC-9 — run during `/check verify` on 2026-09-19: `pnpm generate-learn-article --title "What Is a Jigger?" --category tools --topic "..."` against `BartendingAppWeb`, run twice to also prove AC-8 (two distinct draft rows, `d7389446…` and `5c7e190d…`); `d7389446…` flipped to `published` in Supabase Studio/SQL (confirmed `published_at` trigger fired), `5c7e190d…` flipped to `archived` as the AC-4 fixture
+- [x] Verify it: `/check verify learn section`
+- [x] Test it: `/test learn section`
 Spec [0025](../specs/0025-learn-section.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Slice 23: Learn quizzes
