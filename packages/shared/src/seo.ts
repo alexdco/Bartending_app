@@ -8,7 +8,7 @@ export function localizedPath(locale: Locale, path: string): string {
   return `/${locale}${suffix}`;
 }
 
-export function slugify(input: string, fallback: "recipe" | "region"): string {
+export function slugify(input: string, fallback: "recipe" | "region" | "article"): string {
   const slug = input
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
@@ -28,6 +28,13 @@ export function buildRecipeSlugPath(id: string, name: string): string {
 export function extractIdFromRecipeSlug(slugParam: string): string | null {
   const match = slugParam.match(TRAILING_UUID_PATTERN);
   return match ? match[0] : null;
+}
+
+// Learn articles reuse the same "title-slug" + trailing uuid convention as
+// recipes (spec 0025), so extractIdFromRecipeSlug also extracts a learn
+// article's id from its slug.
+export function buildLearnArticleSlugPath(id: string, title: string): string {
+  return `${slugify(title, "article")}-${id}`;
 }
 
 export function matchRegionSlug(regionSlug: string, regions: readonly string[]): string | null {

@@ -8,12 +8,14 @@
     "pantry": "Despensa",
     "drinkIdeas": "Ideas de tragos",
     "popular": "Populares",
-    "service": "Servicio"
+    "service": "Servicio",
+    "learn": "Aprender"
   },
   "menu": {
     "account": "Cuenta",
     "signOut": "Cerrar sesión",
-    "language": "Idioma"
+    "language": "Idioma",
+    "bartenderMode": "Modo bartender"
   },
   "language": {
     "en": "English",

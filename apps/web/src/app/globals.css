@@ -77,4 +77,19 @@
       transition: none;
     }
   }
+
+  .learn-article-body h2,
+  .learn-article-body h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+
+  .learn-article-body ul,
+  .learn-article-body ol {
+    padding-left: 1.25em;
+  }
+
+  .learn-article-body a {
+    text-decoration: underline;
+  }
 }

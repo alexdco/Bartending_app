@@ -9,7 +9,9 @@
     "drinkIdeas": "Drink ideas",
     "popular": "Popular",
     "favorites": "Favorites",
-    "service": "Service"
+    "service": "Service",
+    "bartenderMode": "Bartender Mode",
+    "learn": "Learn"
   },
   "language": {
     "changeLanguage": "Change language",

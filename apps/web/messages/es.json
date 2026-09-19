@@ -9,7 +9,9 @@
     "drinkIdeas": "Ideas de tragos",
     "popular": "Populares",
     "favorites": "Favoritos",
-    "service": "Servicio"
+    "service": "Servicio",
+    "bartenderMode": "Modo bartender",
+    "learn": "Aprender"
   },
   "language": {
     "changeLanguage": "Cambiar idioma",

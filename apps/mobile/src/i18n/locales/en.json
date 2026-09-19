@@ -8,12 +8,14 @@
     "pantry": "Pantry",
     "drinkIdeas": "Drink ideas",
     "popular": "Popular",
-    "service": "Service"
+    "service": "Service",
+    "learn": "Learn"
   },
   "menu": {
     "account": "Account",
     "signOut": "Sign out",
-    "language": "Language"
+    "language": "Language",
+    "bartenderMode": "Bartender Mode"
   },
   "language": {
     "en": "English",

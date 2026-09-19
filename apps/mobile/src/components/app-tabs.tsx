@@ -3,12 +3,12 @@ import { useRouter } from "expo-router";
 import { SymbolView } from "expo-symbols";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Modal, Pressable, StyleSheet, useColorScheme, View } from "react-native";
+import { Modal, Pressable, StyleSheet, Switch, useColorScheme, View } from "react-native";
 
 import { Colors, LegacyColors, Radii, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useSession } from "@/auth/use-session";
-import { useProfile } from "@/auth/use-preferences";
+import { useProfile, useUpdateBartenderModeEnabled } from "@/auth/use-preferences";
 import { useSignOut } from "@/auth/use-auth-mutations";
 import { Text } from "@/components/text";
 import { avatarSize, getInitials } from "@bartendingapp/shared";
@@ -19,10 +19,14 @@ function AccountMenu({
   visible,
   onClose,
   onSignOut,
+  bartenderModeEnabled,
+  onToggleBartenderMode,
 }: {
   visible: boolean;
   onClose: () => void;
   onSignOut: () => void;
+  bartenderModeEnabled: boolean;
+  onToggleBartenderMode: (enabled: boolean) => void;
 }) {
   const theme = useTheme();
   const router = useRouter();
@@ -47,6 +51,12 @@ function AccountMenu({
                 {t("menu.account")}
               </Text>
             </Pressable>
+            <View style={[styles.menuItem, styles.menuToggleItem]}>
+              <Text variant="label" style={{ color: theme.text }}>
+                {t("menu.bartenderMode")}
+              </Text>
+              <Switch value={bartenderModeEnabled} onValueChange={onToggleBartenderMode} />
+            </View>
             <Pressable
               accessibilityRole="button"
               style={styles.menuItem}
@@ -72,6 +82,7 @@ function HeaderBadge() {
   const { session, isLinked, isLoading } = useSession();
   const { data: profile } = useProfile();
   const signOut = useSignOut();
+  const updateBartenderModeEnabled = useUpdateBartenderModeEnabled();
   const [menuVisible, setMenuVisible] = useState(false);
 
   if (isLoading) {
@@ -128,6 +139,8 @@ function HeaderBadge() {
           visible={menuVisible}
           onClose={() => setMenuVisible(false)}
           onSignOut={() => signOut.mutate()}
+          bartenderModeEnabled={profile?.bartenderModeEnabled ?? true}
+          onToggleBartenderMode={(enabled) => updateBartenderModeEnabled.mutate(enabled)}
         />
       ) : null}
     </View>
@@ -139,6 +152,8 @@ export default function AppTabs() {
   const colors = LegacyColors[scheme === "light" ? "light" : "dark"];
   const accent = Colors[scheme === "light" ? "light" : "dark"].accent;
   const { t } = useTranslation();
+  const { data: profile } = useProfile();
+  const bartenderModeEnabled = profile?.bartenderModeEnabled ?? true;
 
   return (
     <View style={styles.container}>
@@ -192,14 +207,27 @@ export default function AppTabs() {
           />
         </NativeTabs.Trigger>
 
-        {/* TODO: missing asset: a dedicated service/bartender tab icon; reusing home.png as a placeholder per the engineer's call */}
-        <NativeTabs.Trigger name="service">
-          <NativeTabs.Trigger.Label>{t("nav.service")}</NativeTabs.Trigger.Label>
+        {/* TODO: missing asset: a dedicated learn tab icon; reusing explore.png as a placeholder per the engineer's call */}
+        <NativeTabs.Trigger name="learn">
+          <NativeTabs.Trigger.Label>{t("nav.learn")}</NativeTabs.Trigger.Label>
           <NativeTabs.Trigger.Icon
-            src={require("@/assets/images/tabIcons/home.png")}
+            src={require("@/assets/images/tabIcons/explore.png")}
             renderingMode="template"
           />
         </NativeTabs.Trigger>
+
+        {/* TODO: missing asset: a dedicated service/bartender tab icon; reusing home.png as a placeholder per the engineer's call */}
+        {bartenderModeEnabled ? (
+          <NativeTabs.Trigger name="service">
+            <NativeTabs.Trigger.Label>{t("nav.service")}</NativeTabs.Trigger.Label>
+            <NativeTabs.Trigger.Icon
+              src={require("@/assets/images/tabIcons/home.png")}
+              renderingMode="template"
+            />
+          </NativeTabs.Trigger>
+        ) : (
+          <NativeTabs.Trigger name="service" hidden />
+        )}
       </NativeTabs>
     </View>
   );
@@ -246,5 +274,10 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     paddingHorizontal: Spacing.four,
     paddingVertical: Spacing.two,
+  },
+  menuToggleItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
 });

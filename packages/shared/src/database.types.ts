@@ -408,6 +408,42 @@ export type Database = {
         };
         Relationships: [];
       };
+      learn_articles: {
+        Row: {
+          body_markdown: string;
+          category: string;
+          created_at: string;
+          id: string;
+          published_at: string | null;
+          source_topic: string | null;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          body_markdown: string;
+          category: string;
+          created_at?: string;
+          id?: string;
+          published_at?: string | null;
+          source_topic?: string | null;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          body_markdown?: string;
+          category?: string;
+          created_at?: string;
+          id?: string;
+          published_at?: string | null;
+          source_topic?: string | null;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       pantry_items: {
         Row: {
           created_at: string;
@@ -857,6 +893,7 @@ export type Database = {
       };
       user_preferences: {
         Row: {
+          bartender_mode_enabled: boolean;
           display_name: string | null;
           locale: string | null;
           theme: string;
@@ -864,6 +901,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          bartender_mode_enabled?: boolean;
           display_name?: string | null;
           locale?: string | null;
           theme?: string;
@@ -871,6 +909,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          bartender_mode_enabled?: boolean;
           display_name?: string | null;
           locale?: string | null;
           theme?: string;
@@ -1037,6 +1076,11 @@ export type Database = {
       };
       import_catalog: { Args: { drinks: Json }; Returns: undefined };
       import_custom_recipes: { Args: { recipes: Json }; Returns: undefined };
+      is_bar_creator: { Args: { p_bar_id: string }; Returns: boolean };
+      is_bar_member: {
+        Args: { p_bar_id: string; p_required_role?: string };
+        Returns: boolean;
+      };
       is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
       list_my_pending_invites: {
         Args: never;

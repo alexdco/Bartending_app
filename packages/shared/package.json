@@ -10,7 +10,8 @@
     "./ingredient-classification": "./src/ingredientClassification.ts",
     "./recipe-classification": "./src/recipeClassification.ts",
     "./method-and-alias-classification": "./src/methodAndAliasClassification.ts",
-    "./units": "./src/units.ts"
+    "./units": "./src/units.ts",
+    "./learn-article-generation": "./src/learnArticleGeneration.ts"
   },
   "scripts": {
     "lint": "eslint .",
@@ -20,7 +21,8 @@
     "translate-catalog": "tsx scripts/translate-catalog.ts",
     "classify-ingredients": "tsx scripts/classify-ingredients.ts",
     "classify-recipes": "tsx scripts/classify-recipes.ts",
-    "classify-method-and-aliases": "tsx scripts/classify-method-and-aliases.ts"
+    "classify-method-and-aliases": "tsx scripts/classify-method-and-aliases.ts",
+    "generate-learn-article": "tsx scripts/generate-learn-article.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

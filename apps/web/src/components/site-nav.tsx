@@ -8,7 +8,7 @@ import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Text } from "./text";
 import { SiteLogo } from "./site-logo";
 import { useSession } from "@/auth/use-session";
-import { useProfile, useUpdateLocale } from "@/auth/use-preferences";
+import { useProfile, useUpdateLocale, useUpdateBartenderModeEnabled } from "@/auth/use-preferences";
 import { useSignOut } from "@/auth/use-auth-mutations";
 import { useTheme, type ThemePreference } from "@/theme/use-theme";
 
@@ -112,6 +112,7 @@ function NavBadge() {
   const { data: profile } = useProfile();
   const signOut = useSignOut();
   const { preference, setTheme } = useTheme();
+  const updateBartenderModeEnabled = useUpdateBartenderModeEnabled();
   const t = useTranslations("nav");
 
   if (isLoading) {
@@ -243,6 +244,20 @@ function NavBadge() {
             </DropdownMenu.Portal>
           </DropdownMenu.Sub>
           <LanguageSubmenu />
+          <DropdownMenu.Item
+            className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none hover:bg-surface-selected"
+            onSelect={(event) => {
+              event.preventDefault();
+              updateBartenderModeEnabled.mutate(!(profile?.bartenderModeEnabled ?? true));
+            }}
+          >
+            <Text variant="label" as="span">
+              {t("bartenderMode")}
+            </Text>
+            <Text variant="label" as="span" className="text-text-muted">
+              {(profile?.bartenderModeEnabled ?? true) ? "On" : "Off"}
+            </Text>
+          </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-two h-px bg-border" />
           <DropdownMenu.Item
             className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected"
@@ -264,8 +279,13 @@ const navLinks = [
   { href: "/pantry", key: "pantry" },
   { href: "/drink-ideas", key: "drinkIdeas" },
   { href: "/popular", key: "popular" },
-  { href: "/service", key: "service" },
+  { href: "/learn", key: "learn" },
+  { href: "/service", key: "service", requiresBartenderMode: true },
 ] as const;
+
+function visibleNavLinks(bartenderModeEnabled: boolean) {
+  return navLinks.filter((link) => !("requiresBartenderMode" in link) || bartenderModeEnabled);
+}
 
 function DrawerLanguageSection() {
   const t = useTranslations("language");
@@ -317,6 +337,7 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
   const { data: profile } = useProfile();
   const signOut = useSignOut();
   const { preference, setTheme } = useTheme();
+  const updateBartenderModeEnabled = useUpdateBartenderModeEnabled();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const t = useTranslations("nav");
 
@@ -418,6 +439,18 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
       </div>
       <button
         type="button"
+        onClick={() => updateBartenderModeEnabled.mutate(!(profile?.bartenderModeEnabled ?? true))}
+        className="flex w-full items-center justify-between rounded-medium px-three py-two hover:bg-surface-selected"
+      >
+        <Text variant="label" as="span">
+          {t("bartenderMode")}
+        </Text>
+        <Text variant="label" as="span" className="text-text-muted">
+          {(profile?.bartenderModeEnabled ?? true) ? "On" : "Off"}
+        </Text>
+      </button>
+      <button
+        type="button"
         onClick={() => signOut.mutate()}
         className="block rounded-medium px-three py-two text-left hover:bg-surface-selected"
       >
@@ -438,6 +471,8 @@ function MobileNavDrawer({
 }) {
   const pathname = usePathname();
   const t = useTranslations("nav");
+  const { data: profile } = useProfile();
+  const links = visibleNavLinks(profile?.bartenderModeEnabled ?? true);
 
   useEffect(() => {
     onOpenChange(false);
@@ -472,7 +507,7 @@ function MobileNavDrawer({
             <Dialog.Title>Navigation</Dialog.Title>
           </VisuallyHidden.Root>
           <div className="flex flex-col gap-one">
-            {navLinks.map(({ href, key }) => {
+            {links.map(({ href, key }) => {
               const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
               return (
@@ -511,13 +546,15 @@ export function SiteNav() {
   const pathname = usePathname();
   const t = useTranslations("nav");
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const { data: profile } = useProfile();
+  const links = visibleNavLinks(profile?.bartenderModeEnabled ?? true);
 
   return (
     <nav className="flex items-center justify-between border-b border-border px-six py-three">
       <div className="flex items-center gap-five">
         <SiteLogo />
         <div className="hidden md:flex items-center gap-four">
-          {navLinks.map(({ href, key }) => {
+          {links.map(({ href, key }) => {
             const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
             return (

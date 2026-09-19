@@ -38,6 +38,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 25 | Batch cocktail conversion | Slice 19 | in-progress |
 | 26 | Bartender Mode | Slice 20 | in-progress |
 | 27 | Recipe rating | Slice 21 | in-progress |
+| 28 | Learn section | Slice 22 | in-progress |
+| 29 | Learn quizzes | Slice 23 | planned |
 
 ## Foundations
 
@@ -414,6 +416,7 @@ A part of the app for working bartenders during a shift, with full parity on mob
   - [x] Search on web: Service search page (`apps/web/src/app/[locale]/service/search/`) wired to the existing `search_bartender` RPC via `searchBartender`, debounced, tiered, query kept in the URL for back-navigation restore, no new backend work, satisfies AC-1 through AC-6 (search spec)
   - [x] Quick Build Mode on web: the same screen (`apps/web/src/app/[locale]/service/build/[kind]/[id]/`), keep-awake via the Screen Wake Lock API with a disabled/unsupported fallback and visibilitychange re-acquire, a `localStorage` backed offline persister (`local-storage-persister.ts`) wrapped via `PersistQueryClientProvider` in `providers.tsx` (gated to mount after hydration — `PersistQueryClientProvider` does not establish its QueryClient context synchronously during Next.js static prerendering, which would otherwise break every statically generated page; a plain `QueryClientProvider` is used until the client has mounted, same `QueryClient` instance throughout), bar-removal eviction on window focus plus a 5 minute fallback interval, and sign-out/user-change cache clearing for the shared-terminal case, satisfies AC-1 through AC-9 (Quick Build spec)
   - [x] Independent bartender mode (mobile + web): replaced the "No bar joined yet" empty state with a working solo panel shown whenever there is no current bar, regardless of `isLinked`, including guests (mobile previously hid this section for guests; web showed a separate sign in card instead) — presentation only, no schema or backend change, satisfies AC-1 through AC-6 (independent bartender mode spec)
+  - [x] Bartender Mode on/off toggle (mobile + web): `bartender_mode_enabled` column on `user_preferences` (migration applied, schema confirmed live), account menu toggles on both platforms (web `NavBadge`/`DrawerAccountSection`, mobile `AccountMenu`/`account.tsx`), route guards that redirect away from Bartender Mode routes when off (web `service/layout.tsx`, mobile `useBartenderModeGuard` across all 5 gated screens) with no effect on existing bar membership or data, and an invite-accept exemption/auto-enable on both platforms, satisfies AC-1 through AC-10 (bartender mode toggle spec); typecheck/lint/vitest (48 passing) and `next build` (full static generation) all green
 - [ ] Verify it: `/check verify bartender mode` — recommended before `done`; web verified via `next build` (full static generation succeeds), lint, typecheck, the existing vitest suite (45 passing), and a dev-server smoke check of all six new routes (200s, correct empty/guest states rendered); no real browser/device interaction testing has been run in this environment
 - [ ] Test it: `/test bartender mode`
 Spec [0023](../specs/0023-bartender-mode/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/mobile`, `apps/web`
@@ -433,6 +436,30 @@ A signed in user can rate any recipe from 1 to 5 stars on its detail page, chang
 - [ ] Test it: `/test recipe rating`
 Spec [0024](../specs/0024-recipe-rating/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
+## Slice 22: Learn section
+
+### 28. Learn section
+A new top level "Learn" nav item (web and mobile, alongside Home/Search/Pantry/Drink Ideas/Popular/Service) holding curated educational pages about bar tools, spirits, wine, beer, and related basics. Articles are drafted via the existing Claude Haiku integration from a topic prompt (same one time generation pattern as spec 0020's translation pipeline and spec 0022's ingredient classification, never called live from clients) and reviewed/edited by the app owner directly in Supabase Studio before publishing; no user submitted content or comments/ratings in this feature. English only for v1; category is a fixed enum (tools, spirits, wine, beer, other).
+**Done when:** a user can browse Learn articles by category (tools, spirits, wine, beer, other) and open one to read it, on both web and mobile, and every published article started as an owner reviewed Haiku generated draft.
+- [x] Design it (spec): `/architect learn section`
+- [ ] Build it: `/develop learn section`
+  - [x] `learn_articles` migration (check constraints, RLS, `published_at` trigger) plus regenerated shared types, satisfies AC-4, AC-6, AC-9 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260919050000_learn_articles.sql`; security advisor clean (no new findings)
+  - [x] Generation script (`generate-learn-article.ts`, Haiku structured output) and the shared `learnArticles.ts` fetch layer, satisfies AC-7, AC-8 — `packages/shared/src/{learnArticleGeneration.ts,learnArticles.ts}`, `packages/shared/scripts/generate-learn-article.ts`
+  - [x] Markdown rendering dependency on both apps, satisfies AC-3 — `react-markdown` (web), `react-native-markdown-display` (mobile)
+  - [x] Web Learn nav entry and category/article routes, satisfies AC-1 through AC-6 — `apps/web/src/app/[locale]/learn/{page.tsx,[category]/page.tsx,[category]/[slug]/page.tsx}`, `site-nav.tsx` nav entry
+  - [x] Mobile Learn tab entry and category/article routes, satisfies AC-1 through AC-6 — `apps/mobile/src/app/learn/{index.tsx,[category]/index.tsx,[category]/[id].tsx}`, `app-tabs.tsx` tab entry
+  - [ ] Generate and publish a first real article end to end, satisfies AC-1 through AC-9 — not run in this environment: no `ANTHROPIC_API_KEY`/`SUPABASE_SERVICE_ROLE_KEY` available locally. Engineer still needs to run `SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... ANTHROPIC_API_KEY=... pnpm generate-learn-article --title "..." --category tools --topic "..."`, then flip the row's `status` to `published` in Supabase Studio
+- [ ] Verify it: `/check verify learn section`
+- [ ] Test it: `/test learn section`
+Spec [0025](../specs/0025-learn-section.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
+
+## Slice 23: Learn quizzes
+
+### 29. Learn quizzes · needs a decision
+Lets a user test their knowledge of recipes and Learn content (tools/spirits/wine/beer) via quizzes, built once feature 28 has published content and the existing recipe catalog to draw questions from. Supersedes the deferred "Bartender training / quiz mode" line (originally from spec 0023, a study mode for house recipes separate from live service); this initial version scopes to general recipe/Learn content quizzes only, with house recipe quizzing left as a possible later extension. Real decisions still open: the quiz/question schema and how questions are generated or authored, and the scoring/attempt model (retakes, history, pass/fail vs score).
+**Done when:** a user can take a quiz on a Learn topic or on recipes, get scored, and see their result, on both web and mobile.
+- [ ] Design it (spec): `/architect learn quizzes`
+
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
 - **Ads or subscription monetization**: no monetization in this build pass; revisit once there is usage · needs a decision
@@ -440,7 +467,6 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **ML/collaborative recommendations**: usage based recommendation model once there is a real user base · needs a decision
 - **Ingredient substitution suggestions**: suggest a swap when an ingredient is 86'd (feature 26) · needs a decision · from spec 0023
 - **Shared "recently made" shift log**: a server persisted, all-staff-visible build history for a bar, beyond today's per-bartender client side recently viewed list (feature 26) · needs a decision · from spec 0023
-- **Bartender training / quiz mode**: a study mode for house recipes, separate from live service (feature 26) · needs a decision · from spec 0023
 
 ## Legend
 
