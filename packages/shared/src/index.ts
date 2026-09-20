@@ -25,4 +25,5 @@ export * from "./batch";
 export * from "./bar";
 export * from "./bartenderRecentlyViewed";
 export * from "./parts";
+export * from "./quickBuildInstructions";
 export * from "./learnArticles";

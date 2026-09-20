@@ -6,6 +6,7 @@ import {
   convertAmount,
   formatConvertedAmount,
   formatParts,
+  formatQuickBuildInstructions,
   type ConvertibleUnit,
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
@@ -199,6 +200,38 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
   const data = recipe.data;
   const partsLines = unit === "parts" ? computeParts(data.ingredients) : null;
 
+  const ingredientDisplays = data.ingredients.map((ingredient, index) => {
+    if (unit === "parts") {
+      const line = partsLines?.[index];
+      return line?.state === "normal" && line.parts !== null
+        ? `${formatParts(line.parts)} pt`
+        : (line?.measure ?? ingredient.measure ?? "");
+    }
+
+    const hasParsedAmount = ingredient.amountValue !== null && ingredient.amountUnit !== null;
+    return hasParsedAmount
+      ? `${formatConvertedAmount(
+          convertAmount(
+            ingredient.amountValue as number,
+            ingredient.amountUnit as ConvertibleUnit,
+            unit as ConvertibleUnit,
+          ),
+          unit as ConvertibleUnit,
+        )} ${unit}`
+      : (ingredient.measure ?? "");
+  });
+
+  const instructions = formatQuickBuildInstructions({
+    ingredients: data.ingredients.map((ingredient, index) => ({
+      displayAmount: ingredientDisplays[index],
+      name: ingredient.name,
+    })),
+    method: data.method,
+    straining: data.straining,
+    glass: data.glass,
+    garnish: data.kind === "bar_recipe" ? data.garnish : null,
+  });
+
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-six px-four py-six">
       <div className="flex items-center justify-between gap-three">
@@ -221,44 +254,28 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
       </Text>
 
       <div className="flex flex-col gap-three">
-        {data.ingredients.map((ingredient, index) => {
-          let display: string;
-
-          if (unit === "parts") {
-            const line = partsLines?.[index];
-            display =
-              line?.state === "normal" && line.parts !== null
-                ? `${formatParts(line.parts)} pt`
-                : (line?.measure ?? ingredient.measure ?? "");
-          } else {
-            const hasParsedAmount =
-              ingredient.amountValue !== null && ingredient.amountUnit !== null;
-            display = hasParsedAmount
-              ? `${formatConvertedAmount(
-                  convertAmount(
-                    ingredient.amountValue as number,
-                    ingredient.amountUnit as ConvertibleUnit,
-                    unit as ConvertibleUnit,
-                  ),
-                  unit as ConvertibleUnit,
-                )} ${unit}`
-              : (ingredient.measure ?? "");
-          }
-
-          return (
-            <div key={ingredient.ingredientId} className="flex flex-col gap-one">
-              <Text variant="display" className="font-bold">
-                {display}
-              </Text>
-              <Text variant="heading" className="font-medium">
-                {ingredient.name}
-              </Text>
-            </div>
-          );
-        })}
+        {data.ingredients.map((ingredient, index) => (
+          <div key={ingredient.ingredientId} className="flex flex-col gap-one">
+            <Text variant="display" className="font-bold">
+              {ingredientDisplays[index]}
+            </Text>
+            <Text variant="heading" className="font-medium">
+              {ingredient.name}
+            </Text>
+          </div>
+        ))}
       </div>
 
       <MethodLine method={data.method} straining={data.straining} />
+
+      {instructions && (
+        <div className="flex flex-col gap-one">
+          <Text variant="subheading" muted>
+            Instructions
+          </Text>
+          <Text variant="body">{instructions}</Text>
+        </div>
+      )}
 
       <div className="flex flex-col gap-one">
         {data.glass && (

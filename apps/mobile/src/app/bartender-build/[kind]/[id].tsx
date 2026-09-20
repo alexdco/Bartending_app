@@ -7,6 +7,7 @@ import {
   convertAmount,
   formatConvertedAmount,
   formatParts,
+  formatQuickBuildInstructions,
   type ConvertibleUnit,
 } from "@bartendingapp/shared";
 
@@ -139,6 +140,38 @@ export default function QuickBuildModeScreen() {
   const data = recipe.data;
   const partsLines = unit === "parts" ? computeParts(data.ingredients) : null;
 
+  const ingredientDisplays = data.ingredients.map((ingredient, index) => {
+    if (unit === "parts") {
+      const line = partsLines?.[index];
+      return line?.state === "normal" && line.parts !== null
+        ? `${formatParts(line.parts)} pt`
+        : (line?.measure ?? ingredient.measure ?? "");
+    }
+
+    const hasParsedAmount = ingredient.amountValue !== null && ingredient.amountUnit !== null;
+    return hasParsedAmount
+      ? `${formatConvertedAmount(
+          convertAmount(
+            ingredient.amountValue as number,
+            ingredient.amountUnit as ConvertibleUnit,
+            unit as ConvertibleUnit,
+          ),
+          unit as ConvertibleUnit,
+        )} ${unit}`
+      : (ingredient.measure ?? "");
+  });
+
+  const instructions = formatQuickBuildInstructions({
+    ingredients: data.ingredients.map((ingredient, index) => ({
+      displayAmount: ingredientDisplays[index],
+      name: ingredient.name,
+    })),
+    method: data.method,
+    straining: data.straining,
+    glass: data.glass,
+    garnish: data.kind === "bar_recipe" ? data.garnish : null,
+  });
+
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <View style={styles.header}>
@@ -162,53 +195,28 @@ export default function QuickBuildModeScreen() {
         </Text>
 
         <View style={styles.ingredients}>
-          {data.ingredients.map((ingredient, index) => {
-            if (unit === "parts") {
-              const line = partsLines?.[index];
-              const display =
-                line?.state === "normal" && line.parts !== null
-                  ? `${formatParts(line.parts)} pt`
-                  : (line?.measure ?? ingredient.measure ?? "");
-
-              return (
-                <View key={ingredient.ingredientId} style={styles.ingredientRow}>
-                  <Text variant="display" style={styles.amount}>
-                    {display}
-                  </Text>
-                  <Text variant="heading" style={styles.ingredientName}>
-                    {ingredient.name}
-                  </Text>
-                </View>
-              );
-            }
-
-            const hasParsedAmount =
-              ingredient.amountValue !== null && ingredient.amountUnit !== null;
-            const display = hasParsedAmount
-              ? `${formatConvertedAmount(
-                  convertAmount(
-                    ingredient.amountValue as number,
-                    ingredient.amountUnit as ConvertibleUnit,
-                    unit as ConvertibleUnit,
-                  ),
-                  unit as ConvertibleUnit,
-                )} ${unit}`
-              : (ingredient.measure ?? "");
-
-            return (
-              <View key={ingredient.ingredientId} style={styles.ingredientRow}>
-                <Text variant="display" style={styles.amount}>
-                  {display}
-                </Text>
-                <Text variant="heading" style={styles.ingredientName}>
-                  {ingredient.name}
-                </Text>
-              </View>
-            );
-          })}
+          {data.ingredients.map((ingredient, index) => (
+            <View key={ingredient.ingredientId} style={styles.ingredientRow}>
+              <Text variant="display" style={styles.amount}>
+                {ingredientDisplays[index]}
+              </Text>
+              <Text variant="heading" style={styles.ingredientName}>
+                {ingredient.name}
+              </Text>
+            </View>
+          ))}
         </View>
 
         <MethodLine method={data.method} straining={data.straining} />
+
+        {instructions && (
+          <View style={styles.instructions}>
+            <Text variant="subheading" muted>
+              Instructions
+            </Text>
+            <Text variant="body">{instructions}</Text>
+          </View>
+        )}
 
         <View style={styles.details}>
           {data.glass && (
@@ -281,6 +289,9 @@ const styles = StyleSheet.create({
   },
   methodLine: {
     fontWeight: "700",
+  },
+  instructions: {
+    gap: Spacing.one,
   },
   details: {
     gap: Spacing.one,
