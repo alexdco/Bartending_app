@@ -57,7 +57,7 @@ export default async function LearnCategoryPage({
   const articles = await fetchArticlesByCategory(supabase, category);
 
   return (
-    <div className="flex flex-col gap-four p-six">
+    <main className="flex flex-1 flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
         {CATEGORY_LABELS[category]}
@@ -84,6 +84,6 @@ export default async function LearnCategoryPage({
           ))}
         </div>
       )}
-    </div>
+    </main>
   );
 }

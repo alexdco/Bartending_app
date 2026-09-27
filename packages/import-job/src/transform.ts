@@ -10,6 +10,7 @@ export interface RecipeInput {
   imageUrl: string | null;
   glass: string | null;
   alcoholicStatus: AlcoholicStatus;
+  iba: string | null;
 }
 
 export interface RecipeIngredientInput {
@@ -84,6 +85,7 @@ export function transformDrink(drink: TheCocktailDbDrink): TransformedDrink {
       imageUrl: drink.strDrinkThumb || null,
       glass: drink.strGlass?.trim() || null,
       alcoholicStatus: toAlcoholicStatus(drink.strAlcoholic),
+      iba: drink.strIBA?.trim() || null,
     },
     ingredients: extractIngredients(drink),
     tags: extractTags(drink),

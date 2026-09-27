@@ -7,6 +7,7 @@ export interface TheCocktailDbDrink {
   strGlass: string | null;
   strAlcoholic: string | null;
   strTags: string | null;
+  strIBA: string | null;
   [key: `strIngredient${number}`]: string | null | undefined;
   [key: `strMeasure${number}`]: string | null | undefined;
 }

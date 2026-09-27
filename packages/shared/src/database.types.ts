@@ -775,6 +775,7 @@ export type Database = {
           difficulty_source_name_hash: string | null;
           fame_score: number | null;
           glass: string | null;
+          iba: string | null;
           id: string;
           image_url: string | null;
           instructions: string;
@@ -796,6 +797,7 @@ export type Database = {
           difficulty_source_name_hash?: string | null;
           fame_score?: number | null;
           glass?: string | null;
+          iba?: string | null;
           id?: string;
           image_url?: string | null;
           instructions: string;
@@ -817,6 +819,7 @@ export type Database = {
           difficulty_source_name_hash?: string | null;
           fame_score?: number | null;
           glass?: string | null;
+          iba?: string | null;
           id?: string;
           image_url?: string | null;
           instructions?: string;

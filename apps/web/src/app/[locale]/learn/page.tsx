@@ -14,7 +14,7 @@ const CATEGORY_LABELS: Record<(typeof LEARN_CATEGORIES)[number], string> = {
 
 export default function LearnPage() {
   return (
-    <div className="flex flex-col gap-four p-six">
+    <main className="flex flex-1 flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
         Learn
@@ -34,6 +34,6 @@ export default function LearnPage() {
           </Link>
         ))}
       </div>
-    </div>
+    </main>
   );
 }

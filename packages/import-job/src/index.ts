@@ -32,6 +32,7 @@ async function main(): Promise<void> {
     imageUrl: drink.recipe.imageUrl,
     glass: drink.recipe.glass,
     alcoholicStatus: drink.recipe.alcoholicStatus,
+    iba: drink.recipe.iba,
     ingredients: drink.ingredients,
     tags: drink.tags,
   }));
