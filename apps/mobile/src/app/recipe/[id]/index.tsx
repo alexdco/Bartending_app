@@ -9,6 +9,7 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { BatchPanel } from "@/recipes/batch-panel";
+import { CommentSection } from "@/comments/comment-section";
 import { IngredientList } from "@/recipes/ingredient-list";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { useRecipeDetail } from "@/recipes/use-recipe-detail";
@@ -75,6 +76,8 @@ export default function RecipeDetailScreen() {
         </View>
 
         <RecommendationsSection recipeId={recipe.id} />
+
+        <CommentSection recipeId={recipe.id} />
       </ScrollView>
     </SafeAreaView>
   );

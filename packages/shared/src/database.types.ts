@@ -307,6 +307,48 @@ export type Database = {
         };
         Relationships: [];
       };
+      comments: {
+        Row: {
+          body: string;
+          created_at: string;
+          id: string;
+          recipe_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          body: string;
+          created_at?: string;
+          id?: string;
+          recipe_id: string;
+          updated_at?: string;
+          user_id: string;
+        };
+        Update: {
+          body?: string;
+          created_at?: string;
+          id?: string;
+          recipe_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comments_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       favorites: {
         Row: {
           created_at: string;
@@ -1098,6 +1140,21 @@ export type Database = {
         };
         Relationships: [];
       };
+      user_display_names: {
+        Row: {
+          display_name: string | null;
+          user_id: string | null;
+        };
+        Insert: {
+          display_name?: string | null;
+          user_id?: string | null;
+        };
+        Update: {
+          display_name?: string | null;
+          user_id?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       accept_bar_invite: {
@@ -1193,7 +1250,10 @@ export type Database = {
         Args: { p_bar_id: string; p_required_role?: string };
         Returns: boolean;
       };
-      is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
+      is_candidate_still_idle: {
+        Args: { p_user_id: string };
+        Returns: boolean;
+      };
       list_my_pending_invites: {
         Args: never;
         Returns: {

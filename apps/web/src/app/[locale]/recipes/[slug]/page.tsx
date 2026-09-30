@@ -15,6 +15,7 @@ import { supabase } from "@/lib/supabase";
 import { siteAbsoluteUrl } from "@/lib/site-url";
 import { permanentRedirect } from "@/i18n/navigation";
 import { BatchPanel } from "@/recipes/batch-panel";
+import { CommentSection } from "@/comments/comment-section";
 import { IngredientList } from "@/recipes/ingredient-list";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { buildRecipeJsonLd } from "@/recipes/recipe-json-ld";
@@ -140,6 +141,8 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
       <BatchPanel ingredients={recipe.ingredients} />
 
       <RecommendationsSection recipeId={recipe.id} recipeName={recipe.name} />
+
+      <CommentSection recipeId={recipe.id} />
     </main>
   );
 }
