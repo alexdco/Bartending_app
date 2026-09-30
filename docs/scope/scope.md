@@ -477,14 +477,14 @@ Spec [0026](../specs/0026-learn-quizzes.md) · code in `supabase/migrations`, `p
 ### 30. Recipe comments
 A signed in user can post, edit, and delete their own comments on a recipe's detail page (plain text, 1 to 1000 characters); anyone, signed in or guest, can read them. Comments are a flat list, newest first, paginated with stable keyset pagination so a comment posted mid scroll never shifts already loaded rows. No threading, rate limiting, or moderation in this first version.
 **Done when:** a signed in user can post, edit, and delete their own comments on a recipe, any viewer (guest or signed in) can read the full paginated comment list with a neutral zero state, a guest sees a sign in prompt instead of a working composer, and ownership/soft delete rules are enforced by the database, not only the UI.
-- [x] Design it (spec): [0027](../specs/0027-recipe-comments.md)
+- [x] Design it (spec): [0027](../specs/0027-recipe-comments/index.md)
 - [x] Build it: `/develop recipe comments`
   - [x] `comments` table migration (trimmed length check constraint, keyset friendly index, conditional `updated_at` trigger, column level update grant, soft delete scoped RLS on select/insert/update, owner scoped RLS on update/delete) plus regenerated shared types, satisfies AC-1, AC-2, AC-3, AC-5, AC-6, AC-10, AC-11
   - [x] Shared `comments.ts` module (validation, error mapping) plus keyset paginated query and mutation hooks (optimistic update, refetch-on-zero-rows resolution), satisfies AC-1 through AC-4, AC-7, AC-10
   - [x] Comment list, composer, edit, and delete UI on the recipe detail page (web and mobile), plus cross platform parity check, satisfies AC-1 through AC-11
 - [ ] Verify it: `/check verify recipe comments`
 - [ ] Test it: `/test recipe comments`
-Spec [0027](../specs/0027-recipe-comments.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/comments`, `apps/mobile/src/comments`
+Spec [0027](../specs/0027-recipe-comments/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/comments`, `apps/mobile/src/comments`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
