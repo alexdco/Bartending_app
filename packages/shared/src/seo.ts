@@ -8,7 +8,7 @@ export function localizedPath(locale: Locale, path: string): string {
   return `/${locale}${suffix}`;
 }
 
-export function slugify(input: string, fallback: "recipe" | "region" | "article"): string {
+export function slugify(input: string, fallback: "recipe" | "region" | "article" | "quiz"): string {
   const slug = input
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
@@ -35,6 +35,13 @@ export function extractIdFromRecipeSlug(slugParam: string): string | null {
 // article's id from its slug.
 export function buildLearnArticleSlugPath(id: string, title: string): string {
   return `${slugify(title, "article")}-${id}`;
+}
+
+// Quizzes reuse the same "title-slug" + trailing uuid convention as recipes
+// and learn articles (spec 0026), so extractIdFromRecipeSlug also extracts a
+// quiz's id from its slug.
+export function buildQuizSlugPath(id: string, title: string): string {
+  return `${slugify(title, "quiz")}-${id}`;
 }
 
 export function matchRegionSlug(regionSlug: string, regions: readonly string[]): string | null {

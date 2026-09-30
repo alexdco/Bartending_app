@@ -10,6 +10,7 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useLearnArticles } from "@/learn/use-learn-articles";
+import { useQuizBySource } from "@/quizzes/use-quizzes";
 
 const CATEGORY_LABELS: Record<LearnCategory, string> = {
   tools: "Tools",
@@ -27,6 +28,8 @@ export default function LearnCategoryScreen() {
 
   const articlesQuery = useLearnArticles(category ?? "other");
   const articles = category ? (articlesQuery.data ?? []) : [];
+  const quizQuery = useQuizBySource("learn_category", category);
+  const quiz = category ? (quizQuery.data ?? null) : null;
 
   if (!category) {
     return (
@@ -46,6 +49,17 @@ export default function LearnCategoryScreen() {
           <BackButton />
           <Text variant="display">{CATEGORY_LABELS[category]}</Text>
         </View>
+
+        {quiz && (
+          <TouchableOpacity
+            onPress={() => router.push(`/quizzes/${quiz.id}` as never)}
+            accessibilityRole="button"
+          >
+            <Card>
+              <Text variant="label">Take the quiz: {quiz.title}</Text>
+            </Card>
+          </TouchableOpacity>
+        )}
 
         {articlesQuery.error ? (
           <EmptyState

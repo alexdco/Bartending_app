@@ -519,6 +519,115 @@ export type Database = {
           },
         ];
       };
+      quiz_attempts: {
+        Row: {
+          completed_at: string;
+          id: string;
+          quiz_id: string;
+          score: number;
+          total: number;
+          user_id: string;
+        };
+        Insert: {
+          completed_at?: string;
+          id?: string;
+          quiz_id: string;
+          score: number;
+          total: number;
+          user_id: string;
+        };
+        Update: {
+          completed_at?: string;
+          id?: string;
+          quiz_id?: string;
+          score?: number;
+          total?: number;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_quiz_id_fkey";
+            columns: ["quiz_id"];
+            isOneToOne: false;
+            referencedRelation: "quizzes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      quiz_questions: {
+        Row: {
+          correct_option_index: number;
+          explanation: string | null;
+          id: string;
+          options: Json;
+          prompt: string;
+          question_type: string;
+          quiz_id: string;
+          sort_order: number;
+        };
+        Insert: {
+          correct_option_index: number;
+          explanation?: string | null;
+          id?: string;
+          options: Json;
+          prompt: string;
+          question_type: string;
+          quiz_id: string;
+          sort_order: number;
+        };
+        Update: {
+          correct_option_index?: number;
+          explanation?: string | null;
+          id?: string;
+          options?: Json;
+          prompt?: string;
+          question_type?: string;
+          quiz_id?: string;
+          sort_order?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "quiz_questions_quiz_id_fkey";
+            columns: ["quiz_id"];
+            isOneToOne: false;
+            referencedRelation: "quizzes";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      quizzes: {
+        Row: {
+          created_at: string;
+          id: string;
+          published_at: string | null;
+          source_ref: string;
+          source_type: string;
+          status: string;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          published_at?: string | null;
+          source_ref: string;
+          source_type: string;
+          status?: string;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          published_at?: string | null;
+          source_ref?: string;
+          source_type?: string;
+          status?: string;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       ratings: {
         Row: {
           created_at: string;
@@ -1218,6 +1327,23 @@ export type Database = {
         Returns: {
           id: string;
         }[];
+      };
+      submit_quiz_attempt: {
+        Args: { p_quiz_id: string; p_score: number; p_total: number };
+        Returns: {
+          completed_at: string;
+          id: string;
+          quiz_id: string;
+          score: number;
+          total: number;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "quiz_attempts";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
       };
       toggle_86_status: {
         Args: { p_bar_id: string; p_ingredient_id: string; p_is_86d: boolean };

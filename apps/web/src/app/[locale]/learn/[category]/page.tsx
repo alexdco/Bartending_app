@@ -3,7 +3,9 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import {
   buildLearnArticleSlugPath,
+  buildQuizSlugPath,
   fetchArticlesByCategory,
+  fetchQuizBySource,
   isLearnCategory,
   type LearnCategory,
 } from "@bartendingapp/shared";
@@ -55,6 +57,7 @@ export default async function LearnCategoryPage({
   }
 
   const articles = await fetchArticlesByCategory(supabase, category);
+  const quiz = await fetchQuizBySource(supabase, "learn_category", category);
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
@@ -62,6 +65,14 @@ export default async function LearnCategoryPage({
       <Text variant="display" as="h1">
         {CATEGORY_LABELS[category]}
       </Text>
+
+      {quiz && (
+        <Link href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}>
+          <Card className="border-accent">
+            <Text variant="label">Take the quiz: {quiz.title}</Text>
+          </Card>
+        </Link>
+      )}
 
       {articles.length === 0 ? (
         <EmptyState

@@ -216,6 +216,15 @@ export default function AppTabs() {
           />
         </NativeTabs.Trigger>
 
+        {/* TODO: missing asset: a dedicated quizzes tab icon; reusing explore.png as a placeholder per the engineer's call */}
+        <NativeTabs.Trigger name="quizzes">
+          <NativeTabs.Trigger.Label>{t("nav.quizzes")}</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon
+            src={require("@/assets/images/tabIcons/explore.png")}
+            renderingMode="template"
+          />
+        </NativeTabs.Trigger>
+
         {/* TODO: missing asset: a dedicated service/bartender tab icon; reusing home.png as a placeholder per the engineer's call */}
         {bartenderModeEnabled ? (
           <NativeTabs.Trigger name="service">

@@ -280,6 +280,7 @@ const navLinks = [
   { href: "/drink-ideas", key: "drinkIdeas" },
   { href: "/popular", key: "popular" },
   { href: "/learn", key: "learn" },
+  { href: "/quizzes", key: "quizzes" },
   { href: "/service", key: "service", requiresBartenderMode: true },
 ] as const;
 

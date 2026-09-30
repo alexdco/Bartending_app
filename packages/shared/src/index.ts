@@ -27,3 +27,4 @@ export * from "./bartenderRecentlyViewed";
 export * from "./parts";
 export * from "./quickBuildInstructions";
 export * from "./learnArticles";
+export * from "./quizzes";

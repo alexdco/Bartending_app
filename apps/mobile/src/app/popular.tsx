@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
-import { useLocalSearchParams } from "expo-router";
+import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { useLocalSearchParams, useRouter } from "expo-router";
 
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
+import { Card } from "@/components/card";
 import { Chip } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
@@ -12,9 +13,11 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { usePopularRegions, usePopularByRegion } from "@/popular/use-popular-by-region";
+import { useQuizBySource } from "@/quizzes/use-quizzes";
 
 export default function PopularScreen() {
   const theme = useTheme();
+  const router = useRouter();
   const params = useLocalSearchParams<{ region?: string }>();
 
   const regionsQuery = usePopularRegions();
@@ -26,6 +29,8 @@ export default function PopularScreen() {
 
   const recipesQuery = usePopularByRegion(selectedRegion);
   const recipes = recipesQuery.data ?? [];
+  const quizQuery = useQuizBySource("recipe_region", selectedRegion);
+  const quiz = quizQuery.data ?? null;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -63,6 +68,17 @@ export default function PopularScreen() {
                 </Chip>
               ))}
             </View>
+
+            {quiz && (
+              <TouchableOpacity
+                onPress={() => router.push(`/quizzes/${quiz.id}` as never)}
+                accessibilityRole="button"
+              >
+                <Card>
+                  <Text variant="label">Take the quiz: {quiz.title}</Text>
+                </Card>
+              </TouchableOpacity>
+            )}
 
             {recipesQuery.error ? (
               <EmptyState

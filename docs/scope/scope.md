@@ -39,7 +39,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 26 | Bartender Mode | Slice 20 | in-progress |
 | 27 | Recipe rating | Slice 21 | in-progress |
 | 28 | Learn section | Slice 22 | in-progress |
-| 29 | Learn quizzes | Slice 23 | planned |
+| 29 | Learn quizzes | Slice 23 | in-progress |
 
 ## Foundations
 
@@ -456,10 +456,20 @@ Spec [0025](../specs/0025-learn-section.md) · code in `supabase/migrations`, `p
 
 ## Slice 23: Learn quizzes
 
-### 29. Learn quizzes · needs a decision
-Lets a user test their knowledge of recipes and Learn content (tools/spirits/wine/beer) via quizzes, built once feature 28 has published content and the existing recipe catalog to draw questions from. Supersedes the deferred "Bartender training / quiz mode" line (originally from spec 0023, a study mode for house recipes separate from live service); this initial version scopes to general recipe/Learn content quizzes only, with house recipe quizzing left as a possible later extension. Real decisions still open: the quiz/question schema and how questions are generated or authored, and the scoring/attempt model (retakes, history, pass/fail vs score).
+### 29. Learn quizzes
+Lets a user test their knowledge of recipes and Learn content (tools/spirits/wine/beer) via quizzes, built once feature 28 has published content and the existing recipe catalog to draw questions from. Supersedes the deferred "Bartender training / quiz mode" line (originally from spec 0023, a study mode for house recipes separate from live service); this initial version scopes to general recipe/Learn content quizzes only, with house recipe quizzing left as a possible later extension. Quizzes are AI drafted the same way Learn articles are (spec 0026): one quiz per Learn category, or per recipe tag/region grouping; questions are multiple choice or true/false with a fixed order; a user's best score per quiz is remembered, guest or signed in.
 **Done when:** a user can take a quiz on a Learn topic or on recipes, get scored, and see their result, on both web and mobile.
-- [ ] Design it (spec): `/architect learn quizzes`
+- [x] Design it (spec): `/architect learn quizzes`
+- [x] Build it: `/develop learn quizzes`
+  - [x] Migration: `quizzes`/`quiz_questions`/`quiz_attempts` tables, RLS policies, and the `published_at` trigger, plus regenerated shared types, satisfies AC-6, AC-7, AC-11 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260930000000_learn_quizzes.sql`; also adds a `submit_quiz_attempt` security invoker Postgres function (PostgREST upsert can't express the "only overwrite if higher" condition AC-5 needs); security advisor clean (only the expected `auth_allow_anonymous_sign_ins` info lint, matching favorites/pantry_items)
+  - [x] Generation scripts (Learn category quiz, recipe tag/region quiz) using the existing Haiku pipeline, satisfies AC-8, AC-9, AC-10 — `packages/shared/src/quizGeneration.ts` (kept out of the export barrel, service role only) plus `packages/shared/scripts/{generate-learn-category-quiz,generate-recipe-quiz}.ts`, mirroring `generate-learn-article.ts`'s single-call, no-dedupe shape
+  - [x] Shared `quizzes.ts` fetch/upsert layer in `packages/shared`, satisfies AC-1 through AC-7
+  - [x] Web: Quizzes index and detail pages, plus quiz links on Learn category and Popular by region pages, satisfies AC-1 through AC-7 — no recipe tag browsing page exists in the app yet (only `popular/[region]`), so the tag grouping link surface from AC-1 has no page to attach to today; the recipe tag source type and generation path still work, exercised end to end via the Quizzes index instead
+  - [x] Mobile: Quizzes tab, index and detail screens, plus the same conditional links, satisfies AC-1 through AC-7
+  - [x] Run both generation scripts for a first real quiz each, review and publish manually, confirm end to end on both apps, satisfies AC-1 through AC-11 — "Bar Tools Quiz" (learn_category/tools) and "IBA Classics Quiz" (recipe_tag) generated, reviewed, and published live; confirmed rendering on the web dev server (Quizzes index, quiz detail, and the Learn category page's conditional link); mobile screens share the same shared fetch layer and were confirmed via typecheck/lint, not a live device render (no simulator in this environment)
+- [ ] Verify it: `/check verify learn quizzes`
+- [ ] Test it: `/test learn quizzes` — unit tests already added alongside the build (`quizzes.test.ts`, `quizGeneration.test.ts`), full `/test` pass still pending
+Spec [0026](../specs/0026-learn-quizzes.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

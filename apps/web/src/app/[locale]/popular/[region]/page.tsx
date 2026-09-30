@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getLocale } from "next-intl/server";
 import {
+  buildQuizSlugPath,
   fetchPopularByRegion,
+  fetchQuizBySource,
   listPopularRegions,
   localizedPath,
   matchRegionSlug,
@@ -10,6 +13,7 @@ import {
   type Locale,
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
+import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
@@ -75,6 +79,7 @@ export default async function PopularRegionPage({
 
   const locale = (await getLocale()) as Locale;
   const recipes = await fetchPopularByRegion(supabase, region, locale);
+  const quiz = await fetchQuizBySource(supabase, "recipe_region", region);
 
   return (
     <div className="flex flex-col gap-four p-six">
@@ -84,6 +89,14 @@ export default async function PopularRegionPage({
       </Text>
 
       <PopularRegionPicker regions={regions} selectedRegion={region} />
+
+      {quiz && (
+        <Link href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}>
+          <Card className="border-accent">
+            <Text variant="label">Take the quiz: {quiz.title}</Text>
+          </Card>
+        </Link>
+      )}
 
       {recipes.length === 0 ? (
         <EmptyState
