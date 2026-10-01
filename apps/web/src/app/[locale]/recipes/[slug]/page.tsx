@@ -11,7 +11,7 @@ import {
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 import { siteAbsoluteUrl } from "@/lib/site-url";
 import { permanentRedirect } from "@/i18n/navigation";
 import { BatchPanel } from "@/recipes/batch-panel";
@@ -31,12 +31,12 @@ async function resolveRecipe(slugParam: string, locale: Locale) {
     return null;
   }
 
-  const recipe = await fetchRecipeDetail(supabase, id, locale);
+  const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
   return recipe;
 }
 
 async function resolveSlugForLocale(id: string, locale: Locale): Promise<string | null> {
-  const recipe = await fetchRecipeDetail(supabase, id, locale);
+  const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
   return recipe ? buildRecipeSlugPath(recipe.id, recipe.name) : null;
 }
 
@@ -97,7 +97,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
   }
 
   const locale = (await getLocale()) as Locale;
-  const recipe = await fetchRecipeDetail(supabase, id, locale);
+  const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
 
   if (!recipe) {
     notFound();

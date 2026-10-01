@@ -12,7 +12,7 @@ import { getLocale } from "next-intl/server";
 import type { Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 
 interface LearnArticleParams {
   category: string;
@@ -29,7 +29,7 @@ async function resolveArticle(categoryParam: string, slugParam: string) {
     return null;
   }
 
-  return fetchArticleDetail(supabase, id, categoryParam);
+  return fetchArticleDetail(supabasePublic, id, categoryParam);
 }
 
 export async function generateMetadata({

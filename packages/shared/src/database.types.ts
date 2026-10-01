@@ -1049,6 +1049,7 @@ export type Database = {
         Row: {
           bartender_mode_enabled: boolean;
           display_name: string | null;
+          is_admin: boolean;
           locale: string | null;
           theme: string;
           updated_at: string;
@@ -1057,6 +1058,7 @@ export type Database = {
         Insert: {
           bartender_mode_enabled?: boolean;
           display_name?: string | null;
+          is_admin?: boolean;
           locale?: string | null;
           theme?: string;
           updated_at?: string;
@@ -1065,6 +1067,7 @@ export type Database = {
         Update: {
           bartender_mode_enabled?: boolean;
           display_name?: string | null;
+          is_admin?: boolean;
           locale?: string | null;
           theme?: string;
           updated_at?: string;
@@ -1250,10 +1253,7 @@ export type Database = {
         Args: { p_bar_id: string; p_required_role?: string };
         Returns: boolean;
       };
-      is_candidate_still_idle: {
-        Args: { p_user_id: string };
-        Returns: boolean;
-      };
+      is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
       list_my_pending_invites: {
         Args: never;
         Returns: {

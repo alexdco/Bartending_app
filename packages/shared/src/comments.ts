@@ -270,3 +270,84 @@ export async function deleteComment(
 
   return { data: true, error: null };
 }
+
+/**
+ * Whether the given signed in user's own user_preferences.is_admin is true.
+ * Used server side to gate the admin comments page before any comment data
+ * loads (spec 0028 AC-4). A missing row or a request error is treated as
+ * not-admin: fail closed, never an implicit pass.
+ */
+export async function isAdmin(client: SupabaseClient<Database>, userId: string): Promise<boolean> {
+  const { data, error } = await client
+    .from("user_preferences")
+    .select("is_admin")
+    .eq("user_id", userId)
+    .maybeSingle();
+
+  if (error || !data) {
+    return false;
+  }
+
+  return data.is_admin;
+}
+
+export interface AdminComment extends Comment {
+  recipeName: string;
+}
+
+export interface FetchAllCommentsParams {
+  pageLimit?: number;
+  beforeCreatedAt?: string;
+  beforeId?: string;
+}
+
+export interface FetchAllCommentsResult {
+  comments: AdminComment[];
+  hasMore: boolean;
+}
+
+/**
+ * Admin scoped equivalent of fetchRecipeComments: every comment across every
+ * recipe, newest first, same keyset pagination shape. Joins recipes(name)
+ * directly (a real foreign key PostgREST can embed, unlike user_display_names).
+ */
+export async function fetchAllComments(
+  client: SupabaseClient<Database>,
+  { pageLimit = COMMENTS_PAGE_SIZE, beforeCreatedAt, beforeId }: FetchAllCommentsParams = {},
+): Promise<FetchAllCommentsResult> {
+  let query = client
+    .from("comments")
+    .select("id, user_id, recipe_id, body, created_at, updated_at, recipes(name)")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .limit(pageLimit + 1);
+
+  if (beforeCreatedAt && beforeId) {
+    query = query.or(
+      `created_at.lt.${beforeCreatedAt},and(created_at.eq.${beforeCreatedAt},id.lt.${beforeId})`,
+    );
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw error;
+  }
+
+  const rows = data ?? [];
+  const hasMore = rows.length > pageLimit;
+  const page = hasMore ? rows.slice(0, pageLimit) : rows;
+
+  const displayNames = await fetchDisplayNames(
+    client,
+    page.map((row) => row.user_id),
+  );
+
+  return {
+    comments: page.map((row) => ({
+      ...mapRow(row, displayNames.get(row.user_id) ?? null),
+      recipeName: row.recipes?.name ?? "Unknown recipe",
+    })),
+    hasMore,
+  };
+}

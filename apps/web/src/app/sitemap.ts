@@ -7,13 +7,13 @@ import {
   slugify,
   SUPPORTED_LOCALES,
 } from "@bartendingapp/shared";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 import { siteAbsoluteUrl } from "@/lib/site-url";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [recipes, regions] = await Promise.all([
-    listAllRecipesForSitemap(supabase),
-    listPopularRegions(supabase),
+    listAllRecipesForSitemap(supabasePublic),
+    listPopularRegions(supabasePublic),
   ]);
 
   const homeEntries: MetadataRoute.Sitemap = SUPPORTED_LOCALES.map((locale) => ({

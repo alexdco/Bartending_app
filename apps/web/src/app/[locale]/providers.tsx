@@ -53,6 +53,31 @@ function subscribeNever() {
   return () => {};
 }
 
+// @supabase/supabase-js's old localStorage format stores the session under a
+// key shaped "sb-<project-ref>-auth-token"; without this one time step,
+// every existing visitor's anonymous session (and the pantry/favorites/
+// ratings/comments tied to its user_id) becomes unreachable the moment the
+// browser client starts reading cookies instead of localStorage, since
+// ensureAnonymousSession would silently mint a brand new anonymous user.
+function carryOverLegacySession() {
+  const legacyKey = Object.keys(window.localStorage).find(
+    (key) => key.startsWith("sb-") && key.endsWith("-auth-token"),
+  );
+  if (!legacyKey) return; // nothing to carry over, e.g. a first time visitor
+
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(legacyKey) ?? "null");
+    if (stored?.access_token && stored?.refresh_token) {
+      supabase.auth.setSession({
+        access_token: stored.access_token,
+        refresh_token: stored.refresh_token,
+      });
+    }
+  } finally {
+    window.localStorage.removeItem(legacyKey);
+  }
+}
+
 // True only once mounted in a real browser, matching consent-banner.tsx's
 // established pattern for this: the server snapshot is always false, so SSR
 // and Next's static prerender pass agree, and the client re-renders true
@@ -141,6 +166,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         });
     };
 
+    carryOverLegacySession();
     bootstrapGuestSession();
 
     const { data: subscription } = supabase.auth.onAuthStateChange((event, session) => {

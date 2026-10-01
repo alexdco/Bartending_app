@@ -16,7 +16,7 @@ import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 import { PopularRegionPicker } from "@/popular/popular-region-picker";
 import { RecipeCard } from "@/recipes/recipe-card";
 
@@ -25,7 +25,7 @@ interface PopularRegionParams {
 }
 
 async function resolveRegion(regionSlug: string) {
-  const regions = await listPopularRegions(supabase);
+  const regions = await listPopularRegions(supabasePublic);
   const region = matchRegionSlug(regionSlug, regions);
   return { regions, region };
 }
@@ -78,8 +78,8 @@ export default async function PopularRegionPage({
   }
 
   const locale = (await getLocale()) as Locale;
-  const recipes = await fetchPopularByRegion(supabase, region, locale);
-  const quiz = await fetchQuizBySource(supabase, "recipe_region", region);
+  const recipes = await fetchPopularByRegion(supabasePublic, region, locale);
+  const quiz = await fetchQuizBySource(supabasePublic, "recipe_region", region);
 
   return (
     <div className="flex flex-col gap-four p-six">

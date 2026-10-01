@@ -11,7 +11,7 @@ import {
 import { permanentRedirect } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 import { QuizPlayer } from "@/quizzes/quiz-player";
 
 interface QuizDetailParams {
@@ -23,7 +23,7 @@ async function resolveQuiz(slugParam: string) {
   if (!id) {
     return null;
   }
-  return fetchQuizDetail(supabase, id);
+  return fetchQuizDetail(supabasePublic, id);
 }
 
 export async function generateMetadata({
@@ -55,7 +55,7 @@ export default async function QuizDetailPage({ params }: { params: Promise<QuizD
     permanentRedirect({ href: `/quizzes/${canonicalSlugPath}`, locale });
   }
 
-  const bestScore = await fetchQuizAttempt(supabase, quiz.id);
+  const bestScore = await fetchQuizAttempt(supabasePublic, quiz.id);
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">

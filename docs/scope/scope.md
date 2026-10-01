@@ -41,6 +41,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 28 | Learn section | Slice 22 | in-progress |
 | 29 | Learn quizzes | Slice 23 | in-progress |
 | 30 | Recipe comments | Slice 24 | in-progress |
+| 31 | Comment moderation admin UI | Slice 25 | in-progress |
 
 ## Foundations
 
@@ -485,6 +486,22 @@ A signed in user can post, edit, and delete their own comments on a recipe's det
 - [ ] Verify it: `/check verify recipe comments`
 - [ ] Test it: `/test recipe comments`
 Spec [0027](../specs/0027-recipe-comments/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/comments`, `apps/mobile/src/comments`
+
+## Slice 25: Comment moderation admin UI
+
+### 31. Comment moderation admin UI
+Gives you, the site's one admin, a way to see every comment posted across all recipes and delete any of them, closing the moderation gap spec 0027 shipped without (today the only recourse is a hand run SQL command). Adds an `is_admin` flag on `user_preferences`, widens the `comments` delete RLS policy to also allow an admin, and builds a server gated, unlisted `/admin/comments` page on web only (mobile is out of scope for this admin surface).
+**Done when:** you can open `/admin/comments`, see a paginated, newest first list of comments across all recipes with recipe and author context, delete any comment from it, and a non admin or guest hitting the route is redirected to the home page with no admin content ever reaching them.
+- [x] Design it (spec): [0028](../specs/0028-comment-moderation-admin-ui.md), server session prerequisite: [0029](../specs/0029-server-side-session-reading-web.md)
+- [ ] Build it: `/develop comment moderation admin ui`
+  - [x] `is_admin` column migration on `user_preferences` (excluded from the `authenticated` update grant) plus the widened `comments` delete RLS policy (owner OR admin), and regenerated shared types, satisfies AC-3, AC-5
+  - [x] Adopt `@supabase/ssr` per spec 0029: the three client factories (browser, cookie aware server, public anon), the middleware cookie refresh composed into `proxy.ts`, and the one time anonymous session carry over, satisfying this feature's own AC-4 (a gated page needs a real server side session read to redirect before any markup reaches a non admin)
+  - [x] Shared `isAdmin` check and an admin scoped, keyset paginated comments query (joined to recipe name) in `packages/shared`, satisfies AC-1, AC-2, AC-6
+  - [x] Web: server gated `/admin/comments` page (redirect on non admin, built under `[locale]` per spec 0029's canonical pattern) with the comment list and a delete action per row, satisfies AC-1 through AC-6
+  - [ ] Manually set `is_admin = true` for your own account and confirm end to end, satisfies AC-1 through AC-6
+- [ ] Verify it: `/check verify comment moderation admin ui`
+- [ ] Test it: `/test comment moderation admin ui`
+Spec [0028](../specs/0028-comment-moderation-admin-ui.md), [0029](../specs/0029-server-side-session-reading-web.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/app/[locale]/admin`, `apps/web/src/lib`, `apps/web/src/proxy.ts`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

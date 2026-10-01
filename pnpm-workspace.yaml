@@ -1,6 +1,8 @@
 packages:
   - "apps/*"
   - "packages/*"
+overrides:
+  "@supabase/supabase-js": "^2.45.0"
 allowBuilds:
   '@parcel/watcher': true
   '@swc/core': true

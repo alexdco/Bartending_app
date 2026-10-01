@@ -13,7 +13,7 @@ import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 
 const CATEGORY_LABELS: Record<LearnCategory, string> = {
   tools: "Tools",
@@ -56,8 +56,8 @@ export default async function LearnCategoryPage({
     notFound();
   }
 
-  const articles = await fetchArticlesByCategory(supabase, category);
-  const quiz = await fetchQuizBySource(supabase, "learn_category", category);
+  const articles = await fetchArticlesByCategory(supabasePublic, category);
+  const quiz = await fetchQuizBySource(supabasePublic, "learn_category", category);
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">

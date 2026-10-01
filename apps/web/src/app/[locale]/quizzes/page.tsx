@@ -5,7 +5,7 @@ import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 
 export const metadata: Metadata = {
   title: "Quizzes",
@@ -13,8 +13,10 @@ export const metadata: Metadata = {
 };
 
 export default async function QuizzesPage() {
-  const quizzes = await fetchQuizzes(supabase);
-  const bestScores = await Promise.all(quizzes.map((quiz) => fetchQuizAttempt(supabase, quiz.id)));
+  const quizzes = await fetchQuizzes(supabasePublic);
+  const bestScores = await Promise.all(
+    quizzes.map((quiz) => fetchQuizAttempt(supabasePublic, quiz.id)),
+  );
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">

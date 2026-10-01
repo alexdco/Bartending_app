@@ -3,7 +3,7 @@ import { listPopularRegions, slugify } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
-import { supabase } from "@/lib/supabase";
+import { supabasePublic } from "@/lib/supabase-public";
 
 export default async function PopularPage({
   searchParams,
@@ -11,7 +11,7 @@ export default async function PopularPage({
   searchParams: Promise<{ region?: string }>;
 }) {
   const { region } = await searchParams;
-  const regions = await listPopularRegions(supabase);
+  const regions = await listPopularRegions(supabasePublic);
 
   if (region) {
     const matched = regions.find((candidate) => candidate === region);
