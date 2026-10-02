@@ -1,13 +1,22 @@
-function requireEnv(name: string): string {
-  const value = process.env[name];
+function requireEnv(name: string, value: string | undefined): string {
   if (!value) {
     throw new Error(`Missing required environment variable: ${name}`);
   }
   return value;
 }
 
-export const SUPABASE_URL = requireEnv("NEXT_PUBLIC_SUPABASE_URL");
-export const SUPABASE_ANON_KEY = requireEnv("NEXT_PUBLIC_SUPABASE_ANON_KEY");
+// Next.js only inlines NEXT_PUBLIC_* vars into the client bundle when it can
+// statically find a literal `process.env.NEXT_PUBLIC_X` reference at build
+// time; a dynamic `process.env[name]` lookup is never replaced and is always
+// undefined in the browser, even though it works fine server side.
+export const SUPABASE_URL = requireEnv(
+  "NEXT_PUBLIC_SUPABASE_URL",
+  process.env.NEXT_PUBLIC_SUPABASE_URL,
+);
+export const SUPABASE_ANON_KEY = requireEnv(
+  "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
+);
 
 // Shared cookie options for every Supabase cookie written in this app.
 // httpOnly stays false deliberately: the browser client reads these same

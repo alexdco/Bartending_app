@@ -29,3 +29,4 @@ export * from "./parts";
 export * from "./quickBuildInstructions";
 export * from "./learnArticles";
 export * from "./quizzes";
+export * from "./adminRecipes";

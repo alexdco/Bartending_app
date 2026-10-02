@@ -3,6 +3,7 @@ import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { redirect } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 import { AdminCommentList } from "@/admin/admin-comment-list";
+import { AdminNav } from "@/admin/admin-nav";
 
 export default async function AdminCommentsPage({
   params,
@@ -31,6 +32,7 @@ export default async function AdminCommentsPage({
       <Text variant="display" as="h1">
         Comments
       </Text>
+      <AdminNav />
       <AdminCommentList />
     </main>
   );

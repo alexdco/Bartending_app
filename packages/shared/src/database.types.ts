@@ -936,6 +936,7 @@ export type Database = {
           name_search: unknown;
           popularity_rank: number | null;
           region: string | null;
+          source: string;
           source_id: string;
           straining: string | null;
           updated_at: string;
@@ -958,6 +959,7 @@ export type Database = {
           name_search?: unknown;
           popularity_rank?: number | null;
           region?: string | null;
+          source?: string;
           source_id: string;
           straining?: string | null;
           updated_at?: string;
@@ -980,6 +982,7 @@ export type Database = {
           name_search?: unknown;
           popularity_rank?: number | null;
           region?: string | null;
+          source?: string;
           source_id?: string;
           straining?: string | null;
           updated_at?: string;
@@ -1174,6 +1177,21 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      admin_delete_recipe: { Args: { p_recipe_id: string }; Returns: undefined };
+      admin_upsert_recipe: {
+        Args: {
+          p_alcoholic_status: string;
+          p_glass: string;
+          p_image_url: string;
+          p_ingredients: Json;
+          p_instructions: string;
+          p_name: string;
+          p_recipe_id: string;
+          p_region: string;
+          p_tags: Json;
+        };
+        Returns: string;
       };
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
       fetch_bar_recipe_detail: {

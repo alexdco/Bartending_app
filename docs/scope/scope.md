@@ -42,6 +42,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 29 | Learn quizzes | Slice 23 | in-progress |
 | 30 | Recipe comments | Slice 24 | in-progress |
 | 31 | Comment moderation admin UI | Slice 25 | in-progress |
+| 32 | Admin recipe management | Slice 26 | in-progress |
 
 ## Foundations
 
@@ -502,6 +503,20 @@ Gives you, the site's one admin, a way to see every comment posted across all re
 - [ ] Verify it: `/check verify comment moderation admin ui`
 - [ ] Test it: `/test comment moderation admin ui`
 Spec [0028](../specs/0028-comment-moderation-admin-ui.md), [0029](../specs/0029-server-side-session-reading-web.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/app/[locale]/admin`, `apps/web/src/lib`, `apps/web/src/proxy.ts`
+
+## Slice 26: Admin recipe management
+
+### 32. Admin recipe management
+Gives you, the site's one admin, a page to create, edit, and soft delete recipes by hand, independent of the TheCocktailDB import job in `packages/import-job`. Adds a `source` column on `recipes` (catalog vs admin), `is_admin` scoped write policies on the recipe tables, and two Postgres functions (`admin_upsert_recipe`, `admin_delete_recipe`) for the transactional multi table save and soft delete.
+**Done when:** you can open `/admin/recipes`, see a searchable paginated list of recipes with a source indicator, add a new recipe with ingredients and tags, edit any existing recipe (imported or admin made), and soft delete one, all while a non admin or guest hitting the route is redirected with no admin content ever reaching them.
+- [x] Design it (spec): [0030](../specs/0030-admin-recipe-management/index.md)
+- [x] Build it: `/develop admin recipe management`
+  - [x] `recipes.source` column, `is_admin` scoped INSERT/UPDATE policies on `recipes`/`ingredients`/`recipe_ingredients`/`recipe_tags`, and the `admin_upsert_recipe`/`admin_delete_recipe` functions, plus regenerated shared types, satisfies AC-2, AC-3, AC-4, AC-5, AC-7, AC-8 — applied to the live Supabase project `BartendingAppWeb` (ctuzjhhpnkkhooneporu) via `supabase/migrations/20260930200000_admin_recipe_management.sql`; all 12 `is_admin` scoped RLS policies and both `SECURITY DEFINER` functions confirmed live via introspection; security advisor clean (the two new functions showing up as admin/authenticated callable is expected, matching the existing `accept_bar_invite`-style pattern: the in-function `is_admin` check is the real gate, not the grant)
+  - [x] Shared admin recipes query module in `packages/shared` (keyset paginated list with search, single recipe fetch with ingredients/tags, form validation, and `admin_upsert_recipe`/`admin_delete_recipe` RPC wrappers), satisfies AC-1, AC-2, AC-3, AC-5 — `packages/shared/src/adminRecipes.ts`, exported from `packages/shared/src/index.ts`
+  - [x] Web: server gated `/admin/recipes` list page (search box, source indicator, delete action) plus one shared add/edit form component used by both `/admin/recipes/new` and `/admin/recipes/[id]/edit`, and a shared `AdminNav` linking it with `/admin/comments`, satisfies AC-1 through AC-6, AC-8 — `apps/web/src/app/[locale]/admin/recipes/{page.tsx,new/page.tsx,[id]/edit/page.tsx}`, `apps/web/src/admin/{admin-nav.tsx,admin-recipe-list.tsx,admin-recipe-form.tsx,use-admin-recipes.ts,use-admin-recipe-mutations.ts}`; `/admin/comments` also updated to render the new shared `AdminNav`
+- [ ] Verify it: `/check verify admin recipe management`
+- [ ] Test it: `/test admin recipe management`
+Spec [0030](../specs/0030-admin-recipe-management/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/app/[locale]/admin`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
