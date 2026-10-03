@@ -189,6 +189,15 @@ export default function AppTabs() {
           />
         </NativeTabs.Trigger>
 
+        {/* TODO: missing asset: a dedicated shopping list tab icon; reusing home.png as a placeholder per the engineer's call */}
+        <NativeTabs.Trigger name="shopping-list">
+          <NativeTabs.Trigger.Label>{t("nav.shoppingList")}</NativeTabs.Trigger.Label>
+          <NativeTabs.Trigger.Icon
+            src={require("@/assets/images/tabIcons/home.png")}
+            renderingMode="template"
+          />
+        </NativeTabs.Trigger>
+
         {/* TODO: missing asset: a dedicated drink ideas tab icon; reusing explore.png as a placeholder per the engineer's call */}
         <NativeTabs.Trigger name="drink-ideas">
           <NativeTabs.Trigger.Label>{t("nav.drinkIdeas")}</NativeTabs.Trigger.Label>

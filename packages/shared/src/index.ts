@@ -5,6 +5,7 @@ export * from "./tokens";
 export * from "./contrastRatio";
 export * from "./recipes";
 export * from "./pantry";
+export * from "./shoppingList";
 export * from "./favorites";
 export * from "./ratings";
 export * from "./comments";

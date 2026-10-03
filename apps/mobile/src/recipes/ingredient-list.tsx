@@ -18,6 +18,8 @@ import {
 } from "@bartendingapp/shared";
 import { usePantry } from "@/pantry/use-pantry";
 import { useAddPantryItem } from "@/pantry/use-pantry-mutations";
+import { useShoppingList } from "@/shopping-list/use-shopping-list";
+import { useAddShoppingListItem } from "@/shopping-list/use-shopping-list-mutations";
 
 export interface IngredientListProps {
   ingredients: RecipeIngredientDetail[];
@@ -30,6 +32,9 @@ export function IngredientList({ ingredients }: IngredientListProps) {
   const pantry = usePantry();
   const addPantryItem = useAddPantryItem();
   const pantryIds = new Set((pantry.data ?? []).map((item) => item.ingredientId));
+  const shoppingList = useShoppingList();
+  const addShoppingListItem = useAddShoppingListItem();
+  const shoppingListIds = new Set((shoppingList.data ?? []).map((item) => item.ingredientId));
 
   // Defaults to oz on every mount, no persistence across visits or recipes (AC-4).
   const [unit, setUnit] = useState<ConvertibleUnit>("oz");
@@ -69,6 +74,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
       )}
       {ingredients.map((ingredient) => {
         const inPantry = pantryIds.has(ingredient.ingredientId);
+        const onShoppingList = shoppingListIds.has(ingredient.ingredientId);
         const amount = amountFor(ingredient);
         return (
           <View key={ingredient.ingredientId} style={styles.row}>
@@ -76,24 +82,46 @@ export function IngredientList({ ingredients }: IngredientListProps) {
               {amount ? `${amount} ` : ""}
               {ingredient.name}
             </Text>
-            <Button
-              variant={inPantry ? "secondary" : "primary"}
-              disabled={inPantry}
-              onPress={() =>
-                addPantryItem.mutate({
-                  ingredientId: ingredient.ingredientId,
-                  name: ingredient.name,
-                })
-              }
-            >
-              {inPantry ? "In pantry" : "Add to pantry"}
-            </Button>
+            <View style={styles.actions}>
+              <Button
+                variant={inPantry ? "secondary" : "primary"}
+                disabled={inPantry}
+                onPress={() =>
+                  addPantryItem.mutate({
+                    ingredientId: ingredient.ingredientId,
+                    name: ingredient.name,
+                  })
+                }
+              >
+                {inPantry ? "In pantry" : "Add to pantry"}
+              </Button>
+              {!inPantry && (
+                <Button
+                  variant="secondary"
+                  disabled={onShoppingList}
+                  onPress={() =>
+                    addShoppingListItem.mutate({
+                      ingredientId: ingredient.ingredientId,
+                      name: ingredient.name,
+                    })
+                  }
+                >
+                  {onShoppingList ? "On list" : "Add to shopping list"}
+                </Button>
+              )}
+            </View>
           </View>
         );
       })}
       {addPantryItem.isError && (
         <Text variant="bodySmall" style={{ color: theme.danger }}>
           Couldn&apos;t add that ingredient. Check your connection and try again.
+        </Text>
+      )}
+      {addShoppingListItem.isError && (
+        <Text variant="bodySmall" style={{ color: theme.danger }}>
+          Couldn&apos;t add that ingredient to your shopping list. Check your connection and try
+          again.
         </Text>
       )}
     </View>
@@ -112,5 +140,10 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
+  },
+  actions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: Spacing.one,
   },
 });

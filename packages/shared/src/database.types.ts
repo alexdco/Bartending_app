@@ -989,6 +989,32 @@ export type Database = {
         };
         Relationships: [];
       };
+      shopping_list_items: {
+        Row: {
+          created_at: string;
+          ingredient_id: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          ingredient_id: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          ingredient_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "shopping_list_items_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       tag_translations: {
         Row: {
           created_at: string;
@@ -1194,6 +1220,20 @@ export type Database = {
         Returns: string;
       };
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
+      buy_shopping_list_item: {
+        Args: { p_ingredient_id: string };
+        Returns: {
+          created_at: string;
+          ingredient_id: string;
+          user_id: string;
+        };
+        SetofOptions: {
+          from: "*";
+          to: "pantry_items";
+          isOneToOne: true;
+          isSetofReturn: false;
+        };
+      };
       fetch_bar_recipe_detail: {
         Args: { p_bar_recipe_id: string };
         Returns: {
@@ -1261,6 +1301,13 @@ export type Database = {
           alcoholic_status: string;
           id: string;
           image_url: string;
+          name: string;
+        }[];
+      };
+      fetch_shopping_list_items: {
+        Args: { p_locale?: string };
+        Returns: {
+          ingredient_id: string;
           name: string;
         }[];
       };

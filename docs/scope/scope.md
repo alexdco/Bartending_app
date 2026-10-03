@@ -43,6 +43,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 30 | Recipe comments | Slice 24 | in-progress |
 | 31 | Comment moderation admin UI | Slice 25 | in-progress |
 | 32 | Admin recipe management | Slice 26 | in-progress |
+| 33 | Shopping list | Slice 27 | in-progress |
 
 ## Foundations
 
@@ -517,6 +518,21 @@ Gives you, the site's one admin, a page to create, edit, and soft delete recipes
 - [ ] Verify it: `/check verify admin recipe management`
 - [ ] Test it: `/test admin recipe management`
 Spec [0030](../specs/0030-admin-recipe-management/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/app/[locale]/admin`
+
+## Slice 27: Shopping list
+
+### 33. Shopping list
+A shopping list tab next to Pantry where a user keeps track of ingredients they want to buy. Each recipe's ingredient list gets a new "add to shopping list" button next to the existing "add to pantry" button, shown only for ingredients the user doesn't already have. Marking an item bought moves it from the shopping list into the pantry in one atomic action. Built entirely on the pantry feature's already proven session, RLS, and query hook pattern.
+**Done when:** a user can add, remove, and view shopping list items from a dedicated tab, add an ingredient to the list straight from a recipe page, and mark an item bought so it moves into the pantry, with every change reflected live across open views.
+- [x] Design it (spec): [0031](../specs/0031-shopping-list/index.md)
+- [x] Build it: `/develop shopping list`
+  - [x] `shopping_list_items` migration (mirroring `pantry_items`' RLS) plus the atomic `buy_shopping_list_item` Postgres function, satisfies AC-1, AC-2, AC-4, AC-11
+  - [x] Shared `shoppingList.ts` fetch/add/remove/buy module and TanStack Query hooks with optimistic update and rollback, satisfies AC-1, AC-2, AC-4, AC-7, AC-9, AC-10
+  - [x] Dedicated shopping list tab/page (mobile and web), reusing the pantry ingredient search picker and empty state, with a buy action per item, satisfies AC-1, AC-2, AC-3, AC-4, AC-8
+  - [x] Recipe detail "add to shopping list" button next to "add to pantry," shown only for missing ingredients and reflecting on list state, plus cross platform parity check, satisfies AC-5, AC-6, AC-7
+- [ ] Verify it: `/check verify shopping list`
+- [ ] Test it: `/test shopping list`
+Spec [0031](../specs/0031-shopping-list/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

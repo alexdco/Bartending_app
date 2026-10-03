@@ -277,6 +277,7 @@ const navLinks = [
   { href: "/", key: "home" },
   { href: "/search", key: "search" },
   { href: "/pantry", key: "pantry" },
+  { href: "/shopping-list", key: "shoppingList" },
   { href: "/drink-ideas", key: "drinkIdeas" },
   { href: "/popular", key: "popular" },
   { href: "/learn", key: "learn" },
