@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import {
   ADMIN_ALCOHOLIC_STATUSES,
   saveAdminRecipe,
@@ -15,6 +15,11 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Text } from "@/components/text";
+import {
+  useAdminGlassNames,
+  useAdminIngredientSuggestions,
+  useAdminTagNames,
+} from "./use-admin-recipe-suggestions";
 
 const alcoholicStatusLabels: Record<AdminAlcoholicStatus, string> = {
   alcoholic: "Alcoholic",
@@ -69,6 +74,16 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   const [errors, setErrors] = useState<AdminRecipeValidationError[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
+  const [activeIngredientIndex, setActiveIngredientIndex] = useState<number | null>(null);
+
+  const ingredientListId = useId();
+  const glassListId = useId();
+  const tagListId = useId();
+  const activeIngredientQuery =
+    activeIngredientIndex === null ? "" : (ingredients[activeIngredientIndex]?.name ?? "");
+  const { data: ingredientSuggestions = [] } = useAdminIngredientSuggestions(activeIngredientQuery);
+  const { data: glassNames = [] } = useAdminGlassNames();
+  const { data: tagNames = [] } = useAdminTagNames();
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -141,7 +156,18 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
         onChange={(event) => setImageUrl(event.target.value)}
       />
 
-      <Input label="Glass" value={glass} onChange={(event) => setGlass(event.target.value)} />
+      <Input
+        label="Glass"
+        value={glass}
+        onChange={(event) => setGlass(event.target.value)}
+        list={glassListId}
+        autoComplete="off"
+      />
+      <datalist id={glassListId}>
+        {glassNames.map((glassName) => (
+          <option key={glassName} value={glassName} />
+        ))}
+      </datalist>
 
       <div className="flex flex-col gap-one">
         <label htmlFor="alcoholicStatus" className="text-label font-medium text-text">
@@ -182,6 +208,9 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
             <Input
               label="Ingredient name"
               value={ingredient.name}
+              list={ingredientListId}
+              autoComplete="off"
+              onFocus={() => setActiveIngredientIndex(index)}
               onChange={(event) => {
                 const next = [...ingredients];
                 next[index] = { ...next[index], name: event.target.value };
@@ -209,6 +238,11 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
             </Button>
           </div>
         ))}
+        <datalist id={ingredientListId}>
+          {ingredientSuggestions.map((suggestion) => (
+            <option key={suggestion.id} value={suggestion.name} />
+          ))}
+        </datalist>
         <Button
           type="button"
           variant="secondary"
@@ -226,6 +260,8 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
             <Input
               label="Tag name"
               value={tag.name}
+              list={tagListId}
+              autoComplete="off"
               onChange={(event) => {
                 const next = [...tags];
                 next[index] = { name: event.target.value };
@@ -242,6 +278,11 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
             </Button>
           </div>
         ))}
+        <datalist id={tagListId}>
+          {tagNames.map((tagName) => (
+            <option key={tagName} value={tagName} />
+          ))}
+        </datalist>
         <Button
           type="button"
           variant="secondary"

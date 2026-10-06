@@ -37,6 +37,12 @@
       "skillPath": "skills/document/SKILL.md",
       "computedHash": "a47c5d29a1263d987c2fa05dbc993a5276aaf6c4ddc54fbd329463a5f3a1aa77"
     },
+    "i18next-localization": {
+      "source": "i18next/i18next-cli",
+      "sourceType": "github",
+      "skillPath": "skills/i18next-localization/SKILL.md",
+      "computedHash": "b264788d7105224bc961cb5b436f6f9195ad2b4f6edfdb8d800cc6edde4cf29a"
+    },
     "nextjs-app-router-patterns": {
       "source": "wshobson/agents",
       "sourceType": "github",
@@ -78,6 +84,12 @@
       "sourceType": "github",
       "skillPath": "skills/sync/SKILL.md",
       "computedHash": "5986c38a23bbb14f82c018862ff0a601f3f20b4a8a1f429e9731b4da6742a765"
+    },
+    "tailwind-4-docs": {
+      "source": "lombiq/tailwind-agent-skills",
+      "sourceType": "github",
+      "skillPath": "skills/tailwind-4-docs/SKILL.md",
+      "computedHash": "4900f575f24641b1af459cda37cbb8438ecf3f8f1a63148384197cb730895093"
     },
     "test": {
       "source": "jsmastery-pro/skills",

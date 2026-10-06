@@ -293,3 +293,43 @@ export async function deleteAdminRecipe(
 
   return { data: true, error: null };
 }
+
+/**
+ * Distinct, sorted glass names already used by non deleted recipes, for the
+ * admin form's glass autocomplete. recipes.glass is free text (no lookup
+ * table), so reusing an existing spelling is the only guard against near
+ * duplicates like "Highball" vs "Highball glass".
+ */
+export async function fetchAdminGlassNames(client: SupabaseClient<Database>): Promise<string[]> {
+  const { data, error } = await client
+    .from("recipes")
+    .select("glass")
+    .is("deleted_at", null)
+    .not("glass", "is", null);
+
+  if (error) {
+    throw error;
+  }
+
+  const names = (data ?? [])
+    .map((row) => row.glass?.trim() ?? "")
+    .filter((glass) => glass.length > 0);
+
+  return [...new Set(names)].sort((a, b) => a.localeCompare(b));
+}
+
+/**
+ * Every existing tag name (catalog and taste kinds), sorted, for the admin
+ * form's tag autocomplete. admin_upsert_recipe resolves tags by normalized
+ * name regardless of kind, so reusing an existing spelling links the
+ * existing tag instead of creating a near duplicate.
+ */
+export async function fetchAdminTagNames(client: SupabaseClient<Database>): Promise<string[]> {
+  const { data, error } = await client.from("tags").select("name").order("name");
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => row.name);
+}

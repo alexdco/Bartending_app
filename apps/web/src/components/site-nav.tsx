@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dialog, DropdownMenu, VisuallyHidden } from "radix-ui";
 import { avatarSize, getInitials, type Locale } from "@bartendingapp/shared";
@@ -16,6 +16,20 @@ function PersonIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
       <path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v1a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-1c0-2.8-3.6-5-8-5Z" />
+    </svg>
+  );
+}
+
+function ChevronDownIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+      <path
+        d="M6 9l6 6 6-6"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
     </svg>
   );
 }
@@ -277,16 +291,180 @@ const navLinks = [
   { href: "/", key: "home" },
   { href: "/search", key: "search" },
   { href: "/pantry", key: "pantry" },
-  { href: "/shopping-list", key: "shoppingList" },
   { href: "/drink-ideas", key: "drinkIdeas" },
   { href: "/popular", key: "popular" },
   { href: "/learn", key: "learn" },
-  { href: "/quizzes", key: "quizzes" },
   { href: "/service", key: "service", requiresBartenderMode: true },
+] as const;
+
+const pantrySubLinks = [
+  { href: "/pantry", key: "pantry" },
+  { href: "/shopping-list", key: "shoppingList" },
+] as const;
+
+const learnSubLinks = [
+  { href: "/learn", key: "learn" },
+  { href: "/quizzes", key: "quizzes" },
 ] as const;
 
 function visibleNavLinks(bartenderModeEnabled: boolean) {
   return navLinks.filter((link) => !("requiresBartenderMode" in link) || bartenderModeEnabled);
+}
+
+function NavPantryDropdown({ isActive }: { isActive: boolean }) {
+  const pathname = usePathname();
+  const t = useTranslations("nav");
+  const [open, setOpen] = useState(false);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimeout = () => {
+    if (closeTimeout.current !== null) {
+      clearTimeout(closeTimeout.current);
+      closeTimeout.current = null;
+    }
+  };
+
+  const openNow = () => {
+    clearCloseTimeout();
+    setOpen(true);
+  };
+
+  const closeSoon = () => {
+    clearCloseTimeout();
+    closeTimeout.current = setTimeout(() => setOpen(false), 150);
+  };
+
+  useEffect(() => clearCloseTimeout, []);
+
+  return (
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <div onMouseEnter={openNow} onMouseLeave={closeSoon}>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className={
+              isActive
+                ? "flex items-center gap-one rounded-medium bg-accent px-three py-one text-accent-text outline-none"
+                : "flex items-center gap-one rounded-medium px-three py-one outline-none"
+            }
+          >
+            <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
+              {t("pantry")}
+            </Text>
+            <ChevronDownIcon />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="start"
+            sideOffset={4}
+            onMouseEnter={openNow}
+            onMouseLeave={closeSoon}
+            className="min-w-40 rounded-medium border border-border bg-surface py-two shadow-lg"
+          >
+            {pantrySubLinks.map((link) => {
+              const linkIsActive = pathname.startsWith(link.href);
+
+              return (
+                <DropdownMenu.Item key={link.href} asChild>
+                  <Link
+                    href={link.href}
+                    className={
+                      linkIsActive
+                        ? "block px-four py-two text-label outline-none bg-surface-selected"
+                        : "block px-four py-two text-label outline-none hover:bg-surface-selected"
+                    }
+                  >
+                    <Text variant="label" as="span">
+                      {t(link.key)}
+                    </Text>
+                  </Link>
+                </DropdownMenu.Item>
+              );
+            })}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </div>
+    </DropdownMenu.Root>
+  );
+}
+
+function NavLearnDropdown({ isActive }: { isActive: boolean }) {
+  const pathname = usePathname();
+  const t = useTranslations("nav");
+  const [open, setOpen] = useState(false);
+  const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const clearCloseTimeout = () => {
+    if (closeTimeout.current !== null) {
+      clearTimeout(closeTimeout.current);
+      closeTimeout.current = null;
+    }
+  };
+
+  const openNow = () => {
+    clearCloseTimeout();
+    setOpen(true);
+  };
+
+  const closeSoon = () => {
+    clearCloseTimeout();
+    closeTimeout.current = setTimeout(() => setOpen(false), 150);
+  };
+
+  useEffect(() => clearCloseTimeout, []);
+
+  return (
+    <DropdownMenu.Root open={open} onOpenChange={setOpen}>
+      <div onMouseEnter={openNow} onMouseLeave={closeSoon}>
+        <DropdownMenu.Trigger asChild>
+          <button
+            type="button"
+            className={
+              isActive
+                ? "flex items-center gap-one rounded-medium bg-accent px-three py-one text-accent-text outline-none"
+                : "flex items-center gap-one rounded-medium px-three py-one outline-none"
+            }
+          >
+            <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
+              {t("learn")}
+            </Text>
+            <ChevronDownIcon />
+          </button>
+        </DropdownMenu.Trigger>
+        <DropdownMenu.Portal>
+          <DropdownMenu.Content
+            align="start"
+            sideOffset={4}
+            onMouseEnter={openNow}
+            onMouseLeave={closeSoon}
+            className="min-w-40 rounded-medium border border-border bg-surface py-two shadow-lg"
+          >
+            {learnSubLinks.map((link) => {
+              const linkIsActive = pathname.startsWith(link.href);
+
+              return (
+                <DropdownMenu.Item key={link.href} asChild>
+                  <Link
+                    href={link.href}
+                    className={
+                      linkIsActive
+                        ? "block px-four py-two text-label outline-none bg-surface-selected"
+                        : "block px-four py-two text-label outline-none hover:bg-surface-selected"
+                    }
+                  >
+                    <Text variant="label" as="span">
+                      {t(link.key)}
+                    </Text>
+                  </Link>
+                </DropdownMenu.Item>
+              );
+            })}
+          </DropdownMenu.Content>
+        </DropdownMenu.Portal>
+      </div>
+    </DropdownMenu.Root>
+  );
 }
 
 function DrawerLanguageSection() {
@@ -328,6 +506,108 @@ function DrawerLanguageSection() {
               </Text>
             </button>
           ))}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function DrawerPantrySection({ onNavigate }: { onNavigate: () => void }) {
+  const pathname = usePathname();
+  const t = useTranslations("nav");
+  const isActive = pathname.startsWith("/pantry") || pathname.startsWith("/shopping-list");
+  const [expanded, setExpanded] = useState(isActive);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        className={
+          isActive
+            ? "flex w-full items-center justify-between rounded-medium bg-accent px-three py-two text-accent-text"
+            : "flex w-full items-center justify-between rounded-medium px-three py-two hover:bg-surface-selected"
+        }
+      >
+        <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
+          {t("pantry")}
+        </Text>
+        <ChevronDownIcon />
+      </button>
+      {expanded ? (
+        <div className="flex flex-col gap-one pl-three">
+          {pantrySubLinks.map((link) => {
+            const linkIsActive = pathname.startsWith(link.href);
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={onNavigate}
+                className={
+                  linkIsActive
+                    ? "block rounded-medium bg-surface-selected px-three py-two text-left"
+                    : "block rounded-medium px-three py-two text-left hover:bg-surface-selected"
+                }
+              >
+                <Text variant="label" as="span">
+                  {t(link.key)}
+                </Text>
+              </Link>
+            );
+          })}
+        </div>
+      ) : null}
+    </div>
+  );
+}
+
+function DrawerLearnSection({ onNavigate }: { onNavigate: () => void }) {
+  const pathname = usePathname();
+  const t = useTranslations("nav");
+  const isActive = pathname.startsWith("/learn") || pathname.startsWith("/quizzes");
+  const [expanded, setExpanded] = useState(isActive);
+
+  return (
+    <div>
+      <button
+        type="button"
+        onClick={() => setExpanded((value) => !value)}
+        aria-expanded={expanded}
+        className={
+          isActive
+            ? "flex w-full items-center justify-between rounded-medium bg-accent px-three py-two text-accent-text"
+            : "flex w-full items-center justify-between rounded-medium px-three py-two hover:bg-surface-selected"
+        }
+      >
+        <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
+          {t("learn")}
+        </Text>
+        <ChevronDownIcon />
+      </button>
+      {expanded ? (
+        <div className="flex flex-col gap-one pl-three">
+          {learnSubLinks.map((link) => {
+            const linkIsActive = pathname.startsWith(link.href);
+
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                onClick={onNavigate}
+                className={
+                  linkIsActive
+                    ? "block rounded-medium bg-surface-selected px-three py-two text-left"
+                    : "block rounded-medium px-three py-two text-left hover:bg-surface-selected"
+                }
+              >
+                <Text variant="label" as="span">
+                  {t(link.key)}
+                </Text>
+              </Link>
+            );
+          })}
         </div>
       ) : null}
     </div>
@@ -510,6 +790,14 @@ function MobileNavDrawer({
           </VisuallyHidden.Root>
           <div className="flex flex-col gap-one">
             {links.map(({ href, key }) => {
+              if (key === "pantry") {
+                return <DrawerPantrySection key={href} onNavigate={() => onOpenChange(false)} />;
+              }
+
+              if (key === "learn") {
+                return <DrawerLearnSection key={href} onNavigate={() => onOpenChange(false)} />;
+              }
+
               const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
 
               return (
@@ -558,6 +846,19 @@ export function SiteNav() {
         <div className="hidden md:flex items-center gap-four">
           {links.map(({ href, key }) => {
             const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+
+            if (key === "pantry") {
+              return <NavPantryDropdown key={href} isActive={isActive} />;
+            }
+
+            if (key === "learn") {
+              return (
+                <NavLearnDropdown
+                  key={href}
+                  isActive={isActive || pathname.startsWith("/quizzes")}
+                />
+              );
+            }
 
             return (
               <Link

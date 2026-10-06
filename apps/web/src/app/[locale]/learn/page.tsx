@@ -34,6 +34,12 @@ export default function LearnPage() {
           </Link>
         ))}
       </div>
+
+      <Link href="/quizzes">
+        <Card className="border-accent">
+          <Text variant="label">Take a quiz</Text>
+        </Card>
+      </Link>
     </main>
   );
 }

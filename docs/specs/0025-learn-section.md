@@ -1,7 +1,7 @@
 # 0025. Learn section
 
 **Date**: 2026-09-19
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

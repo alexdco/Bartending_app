@@ -45,6 +45,15 @@ export default function LearnScreen() {
             </TouchableOpacity>
           ))}
         </View>
+
+        <TouchableOpacity
+          onPress={() => router.push("/quizzes" as never)}
+          accessibilityRole="button"
+        >
+          <Card>
+            <Text variant="label">Take a quiz</Text>
+          </Card>
+        </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
   );

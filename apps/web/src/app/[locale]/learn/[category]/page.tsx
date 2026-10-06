@@ -66,14 +66,6 @@ export default async function LearnCategoryPage({
         {CATEGORY_LABELS[category]}
       </Text>
 
-      {quiz && (
-        <Link href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}>
-          <Card className="border-accent">
-            <Text variant="label">Take the quiz: {quiz.title}</Text>
-          </Card>
-        </Link>
-      )}
-
       {articles.length === 0 ? (
         <EmptyState
           title="No articles yet"
@@ -94,6 +86,14 @@ export default async function LearnCategoryPage({
             </Link>
           ))}
         </div>
+      )}
+
+      {quiz && (
+        <Link href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}>
+          <Card className="border-accent">
+            <Text variant="label">Take the quiz: {quiz.title}</Text>
+          </Card>
+        </Link>
       )}
     </main>
   );

@@ -38,7 +38,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 25 | Batch cocktail conversion | Slice 19 | in-progress |
 | 26 | Bartender Mode | Slice 20 | in-progress |
 | 27 | Recipe rating | Slice 21 | in-progress |
-| 28 | Learn section | Slice 22 | in-progress |
+| 28 | Learn section | Slice 22 | done |
 | 29 | Learn quizzes | Slice 23 | in-progress |
 | 30 | Recipe comments | Slice 24 | in-progress |
 | 31 | Comment moderation admin UI | Slice 25 | in-progress |
@@ -443,7 +443,7 @@ Spec [0024](../specs/0024-recipe-rating/index.md) · code in `supabase/migration
 
 ## Slice 22: Learn section
 
-### 28. Learn section
+### 28. Learn section · done
 A new top level "Learn" nav item (web and mobile, alongside Home/Search/Pantry/Drink Ideas/Popular/Service) holding curated educational pages about bar tools, spirits, wine, beer, and related basics. Articles are drafted via the existing Claude Haiku integration from a topic prompt (same one time generation pattern as spec 0020's translation pipeline and spec 0022's ingredient classification, never called live from clients) and reviewed/edited by the app owner directly in Supabase Studio before publishing; no user submitted content or comments/ratings in this feature. English only for v1; category is a fixed enum (tools, spirits, wine, beer, other).
 **Done when:** a user can browse Learn articles by category (tools, spirits, wine, beer, other) and open one to read it, on both web and mobile, and every published article started as an owner reviewed Haiku generated draft.
 - [x] Design it (spec): `/architect learn section`

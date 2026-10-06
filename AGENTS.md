@@ -75,6 +75,7 @@ Visual language and token reference: [docs/design/design.md](docs/design/design.
 - [nextjs-app-router-patterns](.agents/skills/nextjs-app-router-patterns/): `wshobson/agents`, Next.js App Router SSR/streaming/data fetching conventions
 - [vitest](.agents/skills/vitest/): `antfu/skills`, Vitest testing conventions (mocking, coverage, fixtures)
 - [sentry-get-started](.agents/skills/sentry-get-started/): `getsentry/sentry-for-ai`, guided Sentry setup across React Native, Next.js, and Supabase Edge Functions
+- [posthog-instrumentation](.agents/skills/posthog-instrumentation/): `posthog/posthog-for-claude`, PostHog event tracking and feature flag instrumentation (web and mobile)
 
 MCP servers: sentry (recommended, official, OAuth at https://mcp.sentry.dev/mcp), thecocktaildb (recommended, community server wrapping TheCocktailDB's REST API)
 
@@ -83,5 +84,7 @@ MCP servers: sentry (recommended, official, OAuth at https://mcp.sentry.dev/mcp)
 - [apps/web/AGENTS.md](apps/web/AGENTS.md) (Next.js web app: stack, commands, conventions)
 - [apps/mobile/AGENTS.md](apps/mobile/AGENTS.md) (Expo/React Native mobile app: stack, commands, conventions)
 - [packages/shared/AGENTS.md](packages/shared/AGENTS.md) (shared types, Supabase client, pantry matching logic)
+- [packages/import-job/AGENTS.md](packages/import-job/AGENTS.md): TheCocktailDB and custom recipe catalog import job
+- [supabase/AGENTS.md](supabase/AGENTS.md): migrations, RLS, Postgres functions, and Edge Functions
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

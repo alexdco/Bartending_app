@@ -19,10 +19,10 @@ _Steps derived from spec 0031 acceptance criteria. `/check verify` runs these; `
 
 ## Commands
 
-- [ ] `pnpm --filter @bartendingapp/shared typecheck` → passes → build correctness (shared `shoppingList.ts` module)
-- [ ] `pnpm --filter web typecheck` → passes → build correctness (web hooks, pages, ingredient list)
-- [ ] `pnpm --filter mobile typecheck` → passes → build correctness (mobile hooks, screen, ingredient list)
-- [ ] `pnpm lint` → passes with no new errors → style/convention correctness
+- [x] `pnpm --filter @bartendingapp/shared typecheck` → passes → build correctness (shared `shoppingList.ts` module)
+- [x] `pnpm --filter web typecheck` → passes → build correctness (web hooks, pages, ingredient list)
+- [x] `pnpm --filter mobile typecheck` → passes → build correctness (mobile hooks, screen, ingredient list)
+- [x] `pnpm lint` → passes with no new errors → style/convention correctness
 - [ ] Two anonymous Supabase sessions: session A adds a shopping list item; from session B's client, attempt `select`/`delete` on that row and attempt `buy_shopping_list_item` for A's ingredient → all affect/return zero rows, never A's data → AC-11
 
 ## Acceptance-criteria coverage

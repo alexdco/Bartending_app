@@ -50,17 +50,6 @@ export default function LearnCategoryScreen() {
           <Text variant="display">{CATEGORY_LABELS[category]}</Text>
         </View>
 
-        {quiz && (
-          <TouchableOpacity
-            onPress={() => router.push(`/quizzes/${quiz.id}` as never)}
-            accessibilityRole="button"
-          >
-            <Card>
-              <Text variant="label">Take the quiz: {quiz.title}</Text>
-            </Card>
-          </TouchableOpacity>
-        )}
-
         {articlesQuery.error ? (
           <EmptyState
             title="Something went wrong"
@@ -89,6 +78,17 @@ export default function LearnCategoryScreen() {
               </TouchableOpacity>
             ))}
           </View>
+        )}
+
+        {quiz && (
+          <TouchableOpacity
+            onPress={() => router.push(`/quizzes/${quiz.id}` as never)}
+            accessibilityRole="button"
+          >
+            <Card>
+              <Text variant="label">Take the quiz: {quiz.title}</Text>
+            </Card>
+          </TouchableOpacity>
         )}
       </ScrollView>
     </SafeAreaView>

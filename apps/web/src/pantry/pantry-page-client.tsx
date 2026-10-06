@@ -12,6 +12,7 @@ import { useDrinkIdeas } from "@/drink-ideas/use-drink-ideas";
 import { useIngredientSearch } from "./use-ingredient-search";
 import { usePantry } from "./use-pantry";
 import { useAddPantryItem, useRemovePantryItem } from "./use-pantry-mutations";
+import { PantryShoppingSwitcher } from "./pantry-shopping-switcher";
 
 const DEBOUNCE_MS = 300;
 
@@ -41,9 +42,12 @@ export function PantryPageClient() {
   return (
     <div className="flex flex-col gap-four p-six">
       <BackButton />
-      <Text variant="display" as="h1">
-        Your pantry
-      </Text>
+      <div className="flex items-center gap-two">
+        <Text variant="display" as="h1">
+          Your pantry
+        </Text>
+        <PantryShoppingSwitcher />
+      </div>
 
       <div className="flex flex-col gap-two">
         <Input

@@ -8,6 +8,7 @@ import { Input } from "@/components/input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { useIngredientSearch } from "@/pantry/use-ingredient-search";
+import { PantryShoppingSwitcher } from "@/pantry/pantry-shopping-switcher";
 import { useShoppingList } from "./use-shopping-list";
 import {
   useAddShoppingListItem,
@@ -40,9 +41,12 @@ export function ShoppingListPageClient() {
   return (
     <div className="flex flex-col gap-four p-six">
       <BackButton />
-      <Text variant="display" as="h1">
-        Shopping list
-      </Text>
+      <div className="flex items-center gap-two">
+        <Text variant="display" as="h1">
+          Shopping list
+        </Text>
+        <PantryShoppingSwitcher />
+      </div>
 
       <div className="flex flex-col gap-two">
         <Input
