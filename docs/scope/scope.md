@@ -118,7 +118,7 @@ The thinnest real thread through the whole product: a user (signed in or guest) 
   - [x] Mobile Search tab and detail screen (pushed via Expo Router), satisfies AC-1 through AC-8
   - [x] Cross platform parity check (same query, same live data, both platforms), satisfies AC-9
 - [ ] Verify it: `/check verify recipe search and detail`
-- [ ] Test it: `/test recipe search and detail`
+- [x] Test it: `/test recipe search and detail` — closed on a layout only change to `RecipeDetailHeader` (centered `max-w-3xl` hero, `sizes` hint corrected to 768px); no new tests, since class names and image hints aren't durable assertions and `apps/web` has no component test setup yet
 Spec [0004](../specs/0004-recipe-search-and-detail/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Slice 2: Guest pantry

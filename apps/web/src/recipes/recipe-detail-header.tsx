@@ -29,12 +29,12 @@ export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
 
   return (
     <header className="flex flex-col gap-three">
-      <div className="relative aspect-video w-full overflow-hidden rounded-medium">
+      <div className="relative aspect-video mx-auto w-full max-w-3xl overflow-hidden rounded-medium">
         <Image
           src={recipe.imageUrl ?? "/recipe-placeholder.svg"}
           alt=""
           fill
-          sizes="100vw"
+          sizes="(min-width: 768px) 768px, 100vw"
           className="object-cover"
           priority
         />
