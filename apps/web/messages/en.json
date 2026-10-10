@@ -90,6 +90,6 @@
     "deletingYourData": "Deleting your data",
     "deletingYourDataBody": "If you have an account, you can delete it and its associated data at any time from the Account screen's delete account option.",
     "contact": "Contact",
-    "contactBody": "Questions about this policy or your data can be sent to {email}."
+    "contactBody": "Questions about this policy or your data can be sent to <email></email>."
   }
 }

@@ -14,7 +14,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | in-progress |
 | 3 | Data model | Foundation | done |
-| 4 | Design system & UI foundation | Foundation | in-progress |
+| 4 | Design system & UI foundation | Foundation | done |
 | 5 | Recipe search and detail (core loop) | Slice 1 | in-progress |
 | 6 | Guest pantry | Slice 2 | in-progress |
 | 7 | Drink ideas from pantry | Slice 3 | in-progress |
@@ -40,11 +40,25 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 27 | Recipe rating | Slice 21 | in-progress |
 | 28 | Learn section | Slice 22 | done |
 | 29 | Learn quizzes | Slice 23 | in-progress |
-| 30 | Recipe comments | Slice 24 | in-progress |
+| 30 | Recipe comments | Slice 24 | done |
 | 31 | Comment moderation admin UI | Slice 25 | in-progress |
 | 32 | Admin recipe management | Slice 26 | in-progress |
 | 33 | Shopping list | Slice 27 | in-progress |
 | 34 | Recipe comment photos | Slice 28 | in-progress |
+| 35 | Admin privilege escalation fix | Hardening | in-progress |
+| 36 | Privacy page crash and real contact | Hardening | planned |
+| 37 | Production site URL, canonicals, and crawl rules | Hardening | planned |
+| 38 | Locale aware links | Hardening | planned |
+| 39 | Learn article accuracy pass | Hardening | planned |
+| 40 | AI quota abuse via anonymous sessions | Hardening | planned |
+| 41 | Finish Spanish UI translation | Hardening | planned |
+| 42 | Batch calculator correctness | Hardening | planned |
+| 43 | Shopping list follow ups | Hardening | planned |
+| 44 | Recipe catalog cleanup | Hardening | planned |
+| 45 | Brand, metadata, and launch readiness | Hardening | planned |
+| 46 | Empty states, UX polish, and accessibility | Hardening | planned |
+| 47 | Recipe page performance | Hardening | planned |
+| 48 | Repo hygiene | Hardening | planned |
 
 ## Foundations
 
@@ -77,7 +91,7 @@ Core entities every feature builds on: recipes, ingredients, pantry items, users
 - [x] Test it: `/test data model` — 26 vitest tests in `packages/import-job/src/{transform,theCocktailDb}.test.ts` (AC-1, AC-5, AC-6 import side); AC-4 already covered by `packages/shared/src/pantryMatching.test.ts`; DB side AC-2/3/6/7 stay verified live (no local Postgres harness)
 Spec [0002](../specs/0002-data-model.md) · code in `supabase/migrations`, `packages/shared/src/database.types.ts`, `packages/import-job`
 
-### 4. Design system & UI foundation
+### 4. Design system & UI foundation · done
 Visual language, layout primitives, and base components shared by mobile and web so recipe cards, pantry chips, and detail pages feel cohesive and accessible (WCAG AA).
 **Done when:** `design.md` covers type/color/spacing/components, and base components handle focus and keyboard on web and touch targets on mobile.
 - [x] Design it (spec): `/architect design system & UI foundation`
@@ -88,7 +102,7 @@ Visual language, layout primitives, and base components shared by mobile and web
   - [x] Build the core component set (Button, Text, Card, Chip, Input, Spinner, EmptyState) on both platforms; web uses native elements plus Radix `Toggle` for Chip (a native `<button>` needs no Radix wrapper), mobile via `StyleSheet` with accessibility props and 44×44 minimum hit targets, satisfies AC-3, AC-4
   - [x] Document the finished component inventory (real props, states, bases) in `docs/design/design.md`, satisfies AC-6
 - [x] Verify it: `/check verify design system & UI foundation` — PASS. All 6 ACs met with live evidence (fresh typecheck/lint/test/build, a temporary live render of all 7 components on web and mobile). Mobile's full on-device visual/touch confirmation wasn't possible (no simulator in this environment); confirmed via compiled bundle content instead.
-- [ ] Test it: `/test design system & UI foundation`
+- [x] Test it: `/test design system & UI foundation` — 25 new vitest tests: `packages/shared/src/contrastRatio.test.ts` (WCAG math, AC-5), `tokens.test.ts` extended (theme key parity, hex validity, pair parity, scale ordering; AC-1, AC-2, AC-5), `apps/web/src/app/theme.generated.test.ts` (generated CSS matches tokens: dark default, light media query, `data-theme` overrides, `@theme` exposure; AC-1, AC-2). Components and theme hooks not covered, since there's no jsdom/Testing Library or React Native test setup yet
 Spec [0003](../specs/0003-design-system-ui-foundation/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `docs/design/design.md`
 
 ### 18. Green and charcoal rebrand
@@ -117,7 +131,8 @@ The thinnest real thread through the whole product: a user (signed in or guest) 
   - [x] Web search page (`/`) and detail page (`/recipes/[id]`), satisfies AC-1 through AC-8
   - [x] Mobile Search tab and detail screen (pushed via Expo Router), satisfies AC-1 through AC-8
   - [x] Cross platform parity check (same query, same live data, both platforms), satisfies AC-9
-- [ ] Verify it: `/check verify recipe search and detail`
+- [ ] Verify it: `/check verify recipe search and detail` · last run 2026-10-09: FAIL on AC-5 (web otherwise passes, mobile blocked with no emulator)
+  - [ ] Fix AC-5 ranking: `/debug recipe search ranking`. `search_recipes` gives every full text name match the same `ts_rank`, so ties fall to A to Z and "House Margarita" outranks "Margarita" (same for "gin")
 - [x] Test it: `/test recipe search and detail` — closed on a layout only change to `RecipeDetailHeader` (centered `max-w-3xl` hero, `sizes` hint corrected to 768px); no new tests, since class names and image hints aren't durable assertions and `apps/web` has no component test setup yet
 Spec [0004](../specs/0004-recipe-search-and-detail/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
@@ -478,7 +493,7 @@ Spec [0026](../specs/0026-learn-quizzes.md) · code in `supabase/migrations`, `p
 
 ## Slice 24: Recipe comments
 
-### 30. Recipe comments
+### 30. Recipe comments · done
 A signed in user can post, edit, and delete their own comments on a recipe's detail page (plain text, 1 to 1000 characters); anyone, signed in or guest, can read them. Comments are a flat list, newest first, paginated with stable keyset pagination so a comment posted mid scroll never shifts already loaded rows. No threading, rate limiting, or moderation in this first version.
 **Done when:** a signed in user can post, edit, and delete their own comments on a recipe, any viewer (guest or signed in) can read the full paginated comment list with a neutral zero state, a guest sees a sign in prompt instead of a working composer, and ownership/soft delete rules are enforced by the database, not only the UI.
 - [x] Design it (spec): [0027](../specs/0027-recipe-comments/index.md)
@@ -486,8 +501,8 @@ A signed in user can post, edit, and delete their own comments on a recipe's det
   - [x] `comments` table migration (trimmed length check constraint, keyset friendly index, conditional `updated_at` trigger, column level update grant, soft delete scoped RLS on select/insert/update, owner scoped RLS on update/delete) plus regenerated shared types, satisfies AC-1, AC-2, AC-3, AC-5, AC-6, AC-10, AC-11
   - [x] Shared `comments.ts` module (validation, error mapping) plus keyset paginated query and mutation hooks (optimistic update, refetch-on-zero-rows resolution), satisfies AC-1 through AC-4, AC-7, AC-10
   - [x] Comment list, composer, edit, and delete UI on the recipe detail page (web and mobile), plus cross platform parity check, satisfies AC-1 through AC-11
-- [ ] Verify it: `/check verify recipe comments`
-- [ ] Test it: `/test recipe comments`
+- [x] Verify it: `/check verify recipe comments`
+- [x] Test it: `/test recipe comments`
 Spec [0027](../specs/0027-recipe-comments/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web/src/comments`, `apps/mobile/src/comments`
 
 ## Slice 25: Comment moderation admin UI
@@ -546,12 +561,89 @@ A signed in user can attach up to 3 photos to a recipe comment, on web and mobil
   - [x] Web thread: picker, canvas processing (HEIC via `heic2any`), upload, post, edit, delete, thumbnails, and the full size viewer, satisfies AC-1, AC-3 to AC-6, AC-9, AC-10
   - [x] Mobile: `expo-image-picker` plus `expo-image-manipulator` (new dev client build) with the same flows, satisfies AC-1, AC-3 to AC-6, AC-9, AC-10, AC-15
   - [ ] Admin photo moderation, orphan sweep Edge Function and cron, `delete-account` folder cleanup, SEO guard, i18n strings, and parity check, satisfies AC-6, AC-11, AC-12, AC-14, AC-15
-- [ ] Verify it: `/check verify recipe comment photos`
-- [ ] Test it: `/test recipe comment photos`
+- [x] Verify it: `/check verify recipe comment photos`
+- [x] Test it: `/test recipe comment photos`
 Spec [0032](../specs/0032-recipe-comment-photos/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
+
+## Hardening: app review fixes (Oct 2026)
+
+Findings from the Cocktailist App Review (2026-10-08, production at cocktailist-five.vercel.app plus a code review at `bf23df8`), checked against the repo on 2026-10-09. The review's `review-fixes.patch` was never applied, so every item below is still open in code. Recommended to work this phase before finishing the remaining in-progress slices, in this order. The AC-5 search ranking fix sits on feature 5.
+
+### 35. Admin privilege escalation fix · GA
+Any visitor, including an anonymous session, can insert their own `user_preferences` row with `is_admin: true`, because only UPDATE is limited by column. That account then passes every admin policy (comment deletion, `admin_upsert_recipe`, `admin_delete_recipe`).
+**Done when:** no client role can set or change `is_admin` on insert or update (column limited INSERT grant plus a guard trigger, or a separate admins table with no client grants), and the live `is_admin = true` rows are audited (1 row on 2026-10-09, a signed in account, likely yours).
+- [x] Build it: `/develop admin privilege escalation fix`
+- code in `supabase/migrations/20261010120000_lock_down_is_admin.sql`
+
+### 36. Privacy page crash and real contact
+`/privacy` and `/en/privacy` return 500 (reproduced locally 2026-10-09). Likely cause: `t.rich("contactBody", { email: () => ... })` against a message that uses `{email}` as a plain argument. The page also lists `privacy@bartendingapp.example.com`, which can't receive mail.
+**Done when:** the privacy page renders in both locales, and it lists a contact address that really works (you supply it).
+- [x] Build it: `/develop privacy page crash fix` (crash fixed 2026-10-10: `contactBody` now uses an `<email></email>` rich tag; still owed: a real contact address to replace `privacy@bartendingapp.example.com`)
+- code in `apps/web/messages/en.json`, `apps/web/messages/es.json`, `apps/web/src/app/[locale]/privacy/page.tsx`
+
+### 37. Production site URL, canonicals, and crawl rules
+Canonicals, `og:url`, `sitemap.xml`, and `robots.txt` all point to `http://localhost:3000` because `NEXT_PUBLIC_SITE_URL` isn't set in Vercel (and is missing from `.env.example`). Recipe canonicals, `og:url`, and JSON-LD drop the locale prefix, so the Spanish canonical points to English. `robots.ts` rules lack the locale prefix, so `/en/pantry` stays crawlable. The sitemap has no Learn articles.
+**Done when:** production metadata, sitemap, and robots use the real domain; each locale's recipe page is canonical to itself; robots rules match `/*/pantry`, `/*/account`, `/*/auth`, `/*/shopping-list`, `/*/favorites`, `/*/admin`, `/*/service`; Learn articles are in the sitemap.
+- [ ] Build it: `/develop production site URL and crawl rules` (plus a manual step: set `NEXT_PUBLIC_SITE_URL` in Vercel Production and Preview)
+
+### 38. Locale aware links
+15 files import `next/link` instead of `Link` from `@/i18n/navigation` (site footer, logo, recipe card, carousel, Learn and Quizzes pages, favorites, consent banner, and others), so any recipe opened from `/es/...` lands on English.
+**Done when:** no web file imports `next/link` directly, an ESLint `no-restricted-imports` rule blocks it, and navigating from any `/es` page stays on `/es`.
+- [ ] Build it: `/develop locale aware links`
+
+### 39. Learn article accuracy pass
+Four of five articles checked had errors. Most urgent is a food safety error: "Simple Syrup… Explained" says syrup keeps indefinitely and never mentions refrigeration. Also: jigger (bitters with the 1 oz side, pouring in sequence), proof (US label rules, the water explanation, Negroni advice), oak barrels ("concentrated grain alcohol", char times), the grenadine ratio, and the "suggests complexity" sentence. Article pages reuse the site wide meta description, and the "Other" category reads "Learn about other for home bartending."
+**Done when:** every published article has been fact checked and corrected (simple syrup first), each article has its own meta description, and category descriptions read naturally.
+- [ ] Build it: `/develop learn article accuracy pass`
+
+### 40. AI quota abuse via anonymous sessions · needs a decision · GA
+The AI drink idea quota is per user, and anyone can mint fresh anonymous sessions for a fresh quota, running up Anthropic costs.
+**Done when:** creating new anonymous sessions no longer gets around the AI quota (e.g. CAPTCHA on anonymous sign in, or a per IP limit in the Edge Function), with the choice recorded in a spec.
+- [ ] Design it (spec): `/architect AI quota abuse via anonymous sessions`
+
+### 41. Finish Spanish UI translation
+Closes feature 23's unmet Done when. The web message catalog has 83 keys in only `common`, `nav`, `language`, `account`, `privacy`, and only 6 files call `useTranslations`/`getTranslations`. The hero, buttons, section headings, filter chips, footer, page titles, recipe page, batch panel, pantry, shopping list, and all of `/es/learn` stay English.
+**Done when:** every user facing web string comes from the message catalog with a Spanish translation, and `/es` pages (including recipe and Learn pages) read in Spanish apart from content not yet translated.
+- [ ] Build it: `/develop finish Spanish UI translation`
+
+### 42. Batch calculator correctness · needs a decision
+Dilution is computed on alcohol only, so batches come out under diluted (spec 0022 AC-6 itself needs changing). Common TheCocktailDB units don't parse (`shot`, `jigger`, `part`, `dl`, `Tblsp`, `1 ½ oz`), so lines show "not scaled" and recipes like Afterglow lose the batch panel. Tiny liter amounts show `0 l`. The batch units (oz / ml / liter) don't match the toggle (oz / ml / cl).
+**Done when:** dilution is based on a decided volume, the common units parse (with a decided value for shot and jigger), parts scale relative to a chosen total, tiny amounts never show as zero, unit choices are consistent, and the import job is rerun so existing recipes pick up the new rules.
+- [ ] Design it (spec): `/architect batch calculator correctness`
+
+### 43. Shopping list follow ups
+Review findings on feature 33: `fetch_shopping_list_items` has no `order by`, so items can shuffle; the add search doesn't mark ingredients already in the pantry; the first visit query runs before `ensureAnonymousSession` finishes and only recovers through retries (pantry has the same race); there are no tests for `shoppingList.ts` or its migration.
+**Done when:** items load in a stable order, the add search marks pantry items, the first query waits for a session (shopping list and pantry), and `shoppingList.ts` has tests.
+- [ ] Build it: `/develop shopping list follow ups`
+
+### 44. Recipe catalog cleanup · needs a decision
+Inherited TheCocktailDB data problems: duplicates and misspellings ("Cuba Libra" and "Cuba Libre", "Holloween Punch" and "Halloween Punch"), crude names that are indexed and searchable, instructions that mention unlisted ingredients (Americano's soda water), odd casing ("red Sweet Vermouth", "Highball Glass"), and ice (and probably water) offered as "Add to pantry".
+**Done when:** a decided policy for duplicates and crude names (keep, rename, or hide) is applied, a cleanup pass flags instructions naming unlisted ingredients, glass names are consistently cased, and ice and water are excluded from pantry and shopping list actions.
+- [ ] Design it (spec): `/architect recipe catalog cleanup`
+
+### 45. Brand, metadata, and launch readiness · needs a decision
+Most pages share the title "Bartending App" and one description while the header says "Cocktailist". There's no age gate or responsible drinking notice (alcohol apps usually need a 17+ rating) and no web app manifest.
+**Done when:** one product name is used everywhere, each page has its own title and description, an age confirmation (or a decided alternative) meets app store expectations, and a web manifest with icon and name is served.
+- [ ] Design it (spec): `/architect brand, metadata, and launch readiness`
+
+### 46. Empty states, UX polish, and accessibility · needs a decision
+New visitors hit thin pages: Popular says regions "haven't been tagged yet", Drink ideas shows only a heading, home pantry and recommendation sections are empty, and `/en/service` renders nothing. Rating stars show filled beside "No ratings yet". Back buttons need a fallback when there's no history. Recipe images have empty alt text, and the favorite button needs an `aria-label` and `aria-pressed`. Search defaults to A to Z ("A. J.", "A1", "ABC"); deciding on a popular first default is the open call.
+**Done when:** every empty page offers a next step (e.g. "Add a few ingredients to get ideas"), Service shows content or a clear state, ratings display reads correctly, Back always goes somewhere sensible, images and the favorite button are labeled for screen readers, and the search default order is decided and applied.
+- [ ] Design it (spec): `/architect empty states, UX polish, and accessibility`
+
+### 47. Recipe page performance
+Each recipe request fetches the recipe three times (`generateMetadata`, other locale alternates, the page). Hero images were requested at `w=3840`; commit `9bb462d` corrected the `sizes` hint, which still needs confirming in production.
+**Done when:** a recipe request fetches the recipe once per locale (`fetchRecipeDetail` wrapped in React `cache()`, only the other locale's slug fetched for alternates), and production hero images are requested at a phone sized width on phones.
+- [ ] Build it: `/develop recipe page performance`
+
+### 48. Repo hygiene
+Debug captures are committed at the repo root (`.home.html`, `.search.html`, `.negroni.html`, `.noimg.html`, `.noimg2.html`, `.popular.html`, `.404.html`, `.sitemap.xml`). Skills are duplicated in `.agents/skills/` and `.claude/skills/` and will drift. CI is still missing (tracked under feature 2).
+**Done when:** the captures are deleted and ignored, skills live in one place, and feature 2's CI workflow exists.
+- [ ] Build it: `/develop repo hygiene`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
+- **Self host recipe images**: images are hotlinked from TheCocktailDB, so their outage means no images; check their attribution and caching terms first (feature 47) · needs a decision · from the Oct 2026 app review
 - **Ads or subscription monetization**: no monetization in this build pass; revisit once there is usage · needs a decision
 - **User submitted recipes**: community recipe submission and moderation · needs a decision
 - **ML/collaborative recommendations**: usage based recommendation model once there is a real user base · needs a decision

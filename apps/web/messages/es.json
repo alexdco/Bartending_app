@@ -90,6 +90,6 @@
     "deletingYourData": "Eliminar tus datos",
     "deletingYourDataBody": "Si tienes una cuenta, puedes eliminarla junto con sus datos asociados en cualquier momento desde la opción de eliminar cuenta en la pantalla de Cuenta.",
     "contact": "Contacto",
-    "contactBody": "Las preguntas sobre esta política o tus datos pueden enviarse a {email}."
+    "contactBody": "Las preguntas sobre esta política o tus datos pueden enviarse a <email></email>."
   }
 }
