@@ -33,7 +33,15 @@
           "imageWidth": 76
         }
       ],
-      "expo-localization"
+      "expo-localization",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow access to your photos so you can attach them to recipe comments.",
+          "cameraPermission": "Allow camera access so you can take a photo for a recipe comment.",
+          "microphonePermission": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

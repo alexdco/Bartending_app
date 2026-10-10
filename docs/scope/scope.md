@@ -544,7 +544,7 @@ A signed in user can attach up to 3 photos to a recipe comment, on web and mobil
 - [ ] Build it: `/develop recipe comment photos`
   - [x] `comment_photos` migration (nullable body, storage bucket and policies, `post_comment`/`edit_comment`/`admin_delete_comment_photo` functions) plus the shared `commentPhotos.ts` module and `comments.ts` updates, satisfies AC-2, AC-4, AC-7, AC-8, AC-13
   - [x] Web thread: picker, canvas processing (HEIC via `heic2any`), upload, post, edit, delete, thumbnails, and the full size viewer, satisfies AC-1, AC-3 to AC-6, AC-9, AC-10
-  - [ ] Mobile: `expo-image-picker` plus `expo-image-manipulator` (new dev client build) with the same flows, satisfies AC-1, AC-3 to AC-6, AC-9, AC-10, AC-15
+  - [x] Mobile: `expo-image-picker` plus `expo-image-manipulator` (new dev client build) with the same flows, satisfies AC-1, AC-3 to AC-6, AC-9, AC-10, AC-15
   - [ ] Admin photo moderation, orphan sweep Edge Function and cron, `delete-account` folder cleanup, SEO guard, i18n strings, and parity check, satisfies AC-6, AC-11, AC-12, AC-14, AC-15
 - [ ] Verify it: `/check verify recipe comment photos`
 - [ ] Test it: `/test recipe comment photos`
