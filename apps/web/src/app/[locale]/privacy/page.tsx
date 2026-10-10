@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
+import { localizedPath, type Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
 import { Card } from "@/components/card";
@@ -13,7 +14,7 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("metaTitle"),
     description: t("metaDescription"),
-    alternates: { canonical: "/privacy" },
+    alternates: { canonical: localizedPath((await getLocale()) as Locale, "/privacy") },
   };
 }
 

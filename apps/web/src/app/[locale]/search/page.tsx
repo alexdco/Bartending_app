@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { getLocale } from "next-intl/server";
-import { searchRecipes, RECIPE_SEARCH_PAGE_SIZE, type Locale } from "@bartendingapp/shared";
+import {
+  localizedPath,
+  searchRecipes,
+  RECIPE_SEARCH_PAGE_SIZE,
+  type Locale,
+} from "@bartendingapp/shared";
 import { supabasePublic } from "@/lib/supabase-public";
 import { SearchPageClient } from "@/recipes/search-page-client";
 
@@ -25,7 +30,10 @@ export async function generateMetadata({
     openGraph: {
       title,
       description,
-      url: query ? `/search?q=${encodeURIComponent(query)}` : "/search",
+      url: localizedPath(
+        (await getLocale()) as Locale,
+        query ? `/search?q=${encodeURIComponent(query)}` : "/search",
+      ),
     },
   };
 }

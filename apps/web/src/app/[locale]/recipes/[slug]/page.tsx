@@ -53,7 +53,10 @@ export async function generateMetadata({
     return {};
   }
 
-  const canonicalPath = `/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`;
+  const canonicalPath = localizedPath(
+    locale,
+    `/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`,
+  );
   const ingredientNames = recipe.ingredients.map((ingredient) => ingredient.name).join(", ");
   const description = `${recipe.name}: made with ${ingredientNames}.`;
 
@@ -63,7 +66,7 @@ export async function generateMetadata({
   );
 
   const languages: Record<string, string> = {
-    [locale]: localizedPath(locale, canonicalPath),
+    [locale]: canonicalPath,
   };
   otherLocales.forEach((candidate, index) => {
     const otherSlug = otherSlugs[index];
@@ -108,7 +111,10 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
     permanentRedirect({ href: `/recipes/${canonicalSlugPath}`, locale });
   }
 
-  const jsonLd = buildRecipeJsonLd(recipe, siteAbsoluteUrl(`/recipes/${canonicalSlugPath}`));
+  const jsonLd = buildRecipeJsonLd(
+    recipe,
+    siteAbsoluteUrl(localizedPath(locale, `/recipes/${canonicalSlugPath}`)),
+  );
 
   return (
     <main className="flex flex-col gap-four p-six">

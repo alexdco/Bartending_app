@@ -1,19 +1,30 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { getLocale } from "next-intl/server";
+import { localizedPath, SUPPORTED_LOCALES, type Locale } from "@bartendingapp/shared";
 import { HomePageClient } from "@/homepage/home-page-client";
 
 const DEFAULT_DESCRIPTION =
   "Browse cocktail and mocktail recipes picked for you: drink ideas from your pantry, recommendations, and popular drinks by region.";
 
-export const metadata: Metadata = {
-  description: DEFAULT_DESCRIPTION,
-  alternates: { canonical: "/" },
-  openGraph: {
-    title: "Bartending App",
+export async function generateMetadata(): Promise<Metadata> {
+  const canonicalPath = localizedPath((await getLocale()) as Locale, "/");
+
+  return {
     description: DEFAULT_DESCRIPTION,
-    url: "/",
-  },
-};
+    alternates: {
+      canonical: canonicalPath,
+      languages: Object.fromEntries(
+        SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, "/")]),
+      ),
+    },
+    openGraph: {
+      title: "Bartending App",
+      description: DEFAULT_DESCRIPTION,
+      url: canonicalPath,
+    },
+  };
+}
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ q?: string }> }) {
   const { q } = await searchParams;

@@ -44,10 +44,11 @@ export async function generateMetadata({
 
   const title = `Popular drinks in ${region}`;
   const description = `Browse the most popular cocktail and mocktail recipes in ${region}.`;
-  const canonicalPath = `/popular/${regionSlug}`;
+  const regionPath = `/popular/${regionSlug}`;
+  const canonicalPath = localizedPath((await getLocale()) as Locale, regionPath);
 
   const languages = Object.fromEntries(
-    SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, canonicalPath)]),
+    SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, regionPath)]),
   );
 
   return {

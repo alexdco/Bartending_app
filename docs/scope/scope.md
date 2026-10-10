@@ -47,7 +47,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 34 | Recipe comment photos | Slice 28 | in-progress |
 | 35 | Admin privilege escalation fix | Hardening | in-progress |
 | 36 | Privacy page crash and real contact | Hardening | planned |
-| 37 | Production site URL, canonicals, and crawl rules | Hardening | planned |
+| 37 | Production site URL, canonicals, and crawl rules | Hardening | done |
 | 38 | Locale aware links | Hardening | planned |
 | 39 | Learn article accuracy pass | Hardening | planned |
 | 40 | AI quota abuse via anonymous sessions | Hardening | planned |
@@ -584,7 +584,8 @@ Any visitor, including an anonymous session, can insert their own `user_preferen
 ### 37. Production site URL, canonicals, and crawl rules
 Canonicals, `og:url`, `sitemap.xml`, and `robots.txt` all point to `http://localhost:3000` because `NEXT_PUBLIC_SITE_URL` isn't set in Vercel (and is missing from `.env.example`). Recipe canonicals, `og:url`, and JSON-LD drop the locale prefix, so the Spanish canonical points to English. `robots.ts` rules lack the locale prefix, so `/en/pantry` stays crawlable. The sitemap has no Learn articles.
 **Done when:** production metadata, sitemap, and robots use the real domain; each locale's recipe page is canonical to itself; robots rules match `/*/pantry`, `/*/account`, `/*/auth`, `/*/shopping-list`, `/*/favorites`, `/*/admin`, `/*/service`; Learn articles are in the sitemap.
-- [ ] Build it: `/develop production site URL and crawl rules` (plus a manual step: set `NEXT_PUBLIC_SITE_URL` in Vercel Production and Preview)
+- [x] Build it: `/develop production site URL and crawl rules` (built 2026-10-10; still owed, a manual step: set `NEXT_PUBLIC_SITE_URL` to the real domain in Vercel Production. Until then production falls back to Vercel's production domain, previews to their own deployment URL)
+- code in `packages/shared/src/seo.ts` (`resolveSiteUrl`, `localizedPath`), `packages/shared/src/learnArticles.ts`, `apps/web/src/lib/site-url.ts`, `apps/web/src/app/robots.ts`, `apps/web/src/app/sitemap.ts`, `apps/web/src/app/[locale]/` page metadata
 
 ### 38. Locale aware links
 15 files import `next/link` instead of `Link` from `@/i18n/navigation` (site footer, logo, recipe card, carousel, Learn and Quizzes pages, favorites, consent banner, and others), so any recipe opened from `/es/...` lands on English.

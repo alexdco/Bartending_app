@@ -49,6 +49,35 @@ export async function fetchArticlesByCategory(
   }));
 }
 
+export interface LearnArticleSitemapEntry {
+  id: string;
+  title: string;
+  category: LearnCategory;
+  updatedAt: string;
+}
+
+// Every published article in a known category, for the sitemap. RLS already
+// limits anonymous reads to published rows; the filters mirror that.
+export async function listPublishedLearnArticlesForSitemap(
+  client: SupabaseClient<Database>,
+): Promise<LearnArticleSitemapEntry[]> {
+  const { data, error } = await client
+    .from("learn_articles")
+    .select("id, title, category, updated_at")
+    .eq("status", "published")
+    .in("category", [...LEARN_CATEGORIES]);
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).flatMap((row) =>
+    isLearnCategory(row.category)
+      ? [{ id: row.id, title: row.title, category: row.category, updatedAt: row.updated_at }]
+      : [],
+  );
+}
+
 // Returns null on no match (unknown id, wrong category, or not published),
 // so the caller renders a not found state rather than distinguishing the
 // reason (AC-4, AC-5).

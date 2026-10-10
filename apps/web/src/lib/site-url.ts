@@ -1,6 +1,7 @@
-import { absoluteUrl } from "@bartendingapp/shared";
+import { absoluteUrl, resolveSiteUrl } from "@bartendingapp/shared";
+
+export const SITE_URL = resolveSiteUrl(process.env);
 
 export function siteAbsoluteUrl(path: string): string {
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000";
-  return absoluteUrl(siteUrl, path);
+  return absoluteUrl(SITE_URL, path);
 }
