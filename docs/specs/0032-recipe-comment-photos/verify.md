@@ -18,14 +18,14 @@ Before you start: the `comment_photos` migration is applied (it is, as of 2026-1
 - [ ] Load a comment list with photos on a throttled connection → thumbnail boxes hold their size before the images arrive, with no layout shift → AC-9
 - [ ] Go offline (DevTools) after picking 3 photos, then post → nothing is posted, the text and photos stay, failed photos show "Upload failed" with Retry and Remove; go online, press Retry → the comment posts with all 3 → AC-10
 - [ ] As the admin, open `/admin/comments` → photo thumbnails show under each comment; "Remove photo" on one of two photos removes just that one; on the only photo of a photo only comment it removes the comment too; files are gone from the bucket in both cases → AC-11
-- [ ] View the recipe page source → `og:image` and JSON-LD `image` are the recipe's own image, never a `comment-photos` URL → AC-14
+- [x] View the recipe page source → `og:image` and JSON-LD `image` are the recipe's own image, never a `comment-photos` URL → AC-14
 
 ## UI / manual (mobile)
 - [ ] Same post, edit, delete, failure, and viewer flows as above, from the library and from "Take photo" → matching behavior; the viewer closes with the Android back gesture → AC-15, AC-1, AC-5, AC-6, AC-9, AC-10
 - [ ] Deny camera permission, tap "Take photo" → "Allow camera access in Settings to take a photo." → AC-15
 
 ## Commands / SQL
-- [ ] As a guest (anonymous session), call `storage.from('comment-photos').upload('<uid>/<uuid>.jpg', …)` → 403; call `rpc('post_comment', …)` → `not_signed_in` → AC-7
+- [x] As a guest (anonymous session), call `storage.from('comment-photos').upload('<uid>/<uuid>.jpg', …)` → 403; call `rpc('post_comment', …)` → `not_signed_in` → AC-7
 - [ ] As user B, upload into user A's folder → 403; call `post_comment` with A's uploaded path → `invalid_photo` → AC-7
 - [ ] As the owner, `storage.from('comment-photos').remove([<path of an attached photo>])` → the file is still there (policy skips referenced files) → AC-7
 - [ ] Upload 30 files as one user, then a 31st → the 31st is rejected, and the composer shows "Daily photo limit reached" → AC-8
@@ -34,7 +34,7 @@ Before you start: the `comment_photos` migration is applied (it is, as of 2026-1
 - [ ] Soft delete a recipe that has a photo comment → `from('comment_photos').select()` returns none of its photos; `post_comment` on it → `recipe_unavailable` → AC-13
 - [ ] Upload a file and never attach it; 24+ hours later, after the 04:30 UTC cron run (or a manual POST with the service role key) → the file is gone; a file uploaded in the last 24 hours is kept → AC-12
 - [ ] `select jobname, schedule from cron.job` → `orphan-comment-photo-cleanup` at `30 4 * * *` → AC-12
-- [ ] POST to `cleanup-orphan-comment-photos` with a wrong bearer token → 401 (checked 2026-10-09) → AC-12
+- [x] POST to `cleanup-orphan-comment-photos` with a wrong bearer token → 401 (checked 2026-10-09) → AC-12
 - [ ] Delete an account that has comment photos via `delete-account` → its `comment-photos/<user_id>/` folder is empty right away → AC-12 (account deletion)
 
 ## Value sourcing

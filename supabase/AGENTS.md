@@ -12,6 +12,7 @@ The backend: Postgres schema, row level security, Postgres functions, scheduled 
 | `functions/generate-drink-idea/` | Quota checked Claude Haiku call for AI drink ideas (spec 0007) |
 | `functions/delete-account/` | Server side account deletion with the service role key (spec 0008) |
 | `functions/cleanup-anonymous-accounts/` | Weekly idle anonymous account sweep, triggered by pg_cron (spec 0017) |
+| `functions/cleanup-orphan-comment-photos/` | Daily sweep of `comment-photos` storage files no comment points to, triggered by pg_cron (spec 0032) |
 | `config.toml` | Local Supabase CLI stack config |
 
 ## Commands

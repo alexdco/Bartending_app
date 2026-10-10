@@ -50,6 +50,7 @@ pnpm --filter web run generate-theme
 - Folder by feature under `src/<feature>/` (e.g. `src/recipes/`, `src/pantry/`, `src/shopping-list/`); route files in `src/app/[locale]/` stay thin and render the feature's page client. Shared UI primitives live in `src/components/`. Not by technical layer.
 - Every user facing string goes through next-intl, with the key added to both `messages/en.json` and `messages/es.json`; links use the helpers in `src/i18n/navigation.ts` so the locale is kept.
 - Non UI logic (types, Supabase client, pantry matching) comes from `@bartendingapp/shared`, never duplicated here.
+- Every remote image host shown through `next/image` needs an entry in `next.config.ts` `images.remotePatterns` (today TheCocktailDB and the Supabase `comment-photos` bucket).
 - Server rendering / static generation used deliberately for public recipe pages to meet the SEO requirement (see `docs/specs/0001-stack-and-architecture.md`).
 
 ## Agent skills
