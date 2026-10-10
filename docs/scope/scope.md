@@ -13,7 +13,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 |---|---------|-------|--------|
 | 1 | Stack & architecture | Foundation | done |
 | 2 | Coding standards & tooling | Foundation | in-progress |
-| 3 | Data model | Foundation | in-progress |
+| 3 | Data model | Foundation | done |
 | 4 | Design system & UI foundation | Foundation | in-progress |
 | 5 | Recipe search and detail (core loop) | Slice 1 | in-progress |
 | 6 | Guest pantry | Slice 2 | in-progress |
@@ -64,7 +64,7 @@ Capture conventions, then install lint, format, and pre-commit enforcement from 
 - [ ] Check it runs clean: `/test`
 code in root `package.json`, `turbo.json`, `.prettierrc.json`, `.husky/`, plus per-package `eslint.config.*` and `typecheck` scripts
 
-### 3. Data model
+### 3. Data model · done
 Core entities every feature builds on: recipes, ingredients, pantry items, users (optional accounts), favorites, regions/tags. Recipes and ingredient reference data are sourced from a public cocktail API and cached locally.
 **Done when:** entities and relationships support search, pantry, generation, favorites, and region filtering without a breaking migration.
 - [x] Design it (spec): `/architect data model`
@@ -74,7 +74,7 @@ Core entities every feature builds on: recipes, ingredients, pantry items, users
   - [x] Generated TypeScript types in `packages/shared`, satisfies AC-1 through AC-5 — regenerated for real in `packages/shared/src/database.types.ts` from the live schema via the Supabase MCP type generator
   - [x] Import job (upsert, transactional, reconciliation via `deleted_at`), satisfies AC-6 — run twice against the live project (426 recipes, 293 ingredients, 60 tags, 1662 recipe_ingredients, 635 recipe_tags both times, confirming idempotent reimport); a within-recipe ingredient/tag name collision (two source names normalizing to the same canonical row) was hit on the first run and fixed in `20260907001512_import_catalog_dedupe_join_rows.sql` (`on conflict (recipe_id, ingredient_id) / (recipe_id, tag_id) do nothing`)
 - [x] Verify it: `/check verify data model` — PASS. All 7 ACs met live against BartendingAppWeb; reconciliation (AC-6) exercised end to end (soft delete + restore via real reimport); RLS/grants (AC-7) confirmed via live policy introspection. `region` browsing (part of AC-5) has no data yet, expected per spec's own Follow-up (tagging method deferred to the recipe search and detail feature).
-- [ ] Test it: `/test data model`
+- [x] Test it: `/test data model` — 26 vitest tests in `packages/import-job/src/{transform,theCocktailDb}.test.ts` (AC-1, AC-5, AC-6 import side); AC-4 already covered by `packages/shared/src/pantryMatching.test.ts`; DB side AC-2/3/6/7 stay verified live (no local Postgres harness)
 Spec [0002](../specs/0002-data-model.md) · code in `supabase/migrations`, `packages/shared/src/database.types.ts`, `packages/import-job`
 
 ### 4. Design system & UI foundation
