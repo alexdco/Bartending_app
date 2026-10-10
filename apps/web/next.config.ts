@@ -10,6 +10,12 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "www.thecocktaildb.com",
       },
+      {
+        // User comment photos (spec 0032), resized on the fly by next/image.
+        protocol: "https",
+        hostname: "ctuzjhhpnkkhooneporu.supabase.co",
+        pathname: "/storage/v1/object/public/comment-photos/**",
+      },
     ],
   },
 };
