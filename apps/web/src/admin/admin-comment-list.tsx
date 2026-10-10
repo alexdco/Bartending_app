@@ -1,14 +1,21 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { buildRecipeSlugPath, type AdminComment } from "@bartendingapp/shared";
+import Image from "next/image";
+import {
+  buildRecipeSlugPath,
+  commentPhotoLabel,
+  getCommentPhotoUrl,
+  type AdminComment,
+} from "@bartendingapp/shared";
+import { supabase } from "@/lib/supabase";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { useAdminComments } from "./use-admin-comments";
-import { useDeleteAdminComment } from "./use-admin-comment-mutations";
+import { useDeleteAdminComment, useDeleteAdminCommentPhoto } from "./use-admin-comment-mutations";
 
 const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
 
@@ -83,6 +90,7 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
         {comment.displayName ?? "Anonymous"}
       </Text>
       {comment.body && <Text variant="body">{comment.body}</Text>}
+      {comment.photos.length > 0 && <AdminCommentPhotos comment={comment} />}
       <div className="flex gap-two self-end">
         {isConfirmingDelete ? (
           <>
@@ -111,5 +119,79 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
         )}
       </div>
     </div>
+  );
+}
+
+const ADMIN_THUMBNAIL_HEIGHT = 96;
+
+/**
+ * The comment's photos with a remove control on each (spec 0032 AC-11), so
+ * one bad photo can go without deleting the useful text around it.
+ */
+function AdminCommentPhotos({ comment }: { comment: AdminComment }) {
+  const [confirmingPhotoId, setConfirmingPhotoId] = useState<string | null>(null);
+  const deletePhoto = useDeleteAdminCommentPhoto();
+
+  return (
+    <ul className="flex flex-wrap gap-three">
+      {comment.photos.map((photo) => {
+        const label = commentPhotoLabel(photo, comment.photos.length, comment.displayName);
+        const width = Math.round((photo.width / photo.height) * ADMIN_THUMBNAIL_HEIGHT);
+        const isOnlyContent = comment.body === null && comment.photos.length === 1;
+
+        return (
+          <li key={photo.id} className="flex flex-col gap-one">
+            <a
+              href={getCommentPhotoUrl(supabase, photo.storagePath)}
+              target="_blank"
+              rel="noreferrer"
+              className="block overflow-hidden rounded-small border border-border"
+              style={{ width, height: ADMIN_THUMBNAIL_HEIGHT }}
+            >
+              <Image
+                src={getCommentPhotoUrl(supabase, photo.storagePath)}
+                alt={label}
+                width={width}
+                height={ADMIN_THUMBNAIL_HEIGHT}
+                sizes={`${width}px`}
+                className="h-full w-full object-cover"
+              />
+            </a>
+            {confirmingPhotoId === photo.id ? (
+              <div className="flex flex-col gap-one">
+                <Text variant="bodySmall" muted>
+                  {isOnlyContent ? "Remove photo and its comment?" : "Remove this photo?"}
+                </Text>
+                <div className="flex gap-one">
+                  <Button
+                    variant="secondary"
+                    className="px-two py-one"
+                    onClick={() => setConfirmingPhotoId(null)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    className="px-two py-one"
+                    disabled={deletePhoto.isPending}
+                    onClick={() => deletePhoto.mutate({ commentId: comment.id, photoId: photo.id })}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <Button
+                variant="secondary"
+                className="px-two py-one"
+                onClick={() => setConfirmingPhotoId(photo.id)}
+                aria-label={`Remove ${label}`}
+              >
+                Remove photo
+              </Button>
+            )}
+          </li>
+        );
+      })}
+    </ul>
   );
 }
