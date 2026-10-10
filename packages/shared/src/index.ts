@@ -9,6 +9,7 @@ export * from "./shoppingList";
 export * from "./favorites";
 export * from "./ratings";
 export * from "./comments";
+export * from "./commentPhotos";
 export * from "./drinkIdeas";
 export * from "./generateDrinkIdea";
 export * from "./auth";

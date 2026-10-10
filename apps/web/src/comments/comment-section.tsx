@@ -97,7 +97,7 @@ function Composer({
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    const { trimmed, error: bodyError } = validateCommentBody(body);
+    const { error: bodyError } = validateCommentBody(body);
     if (bodyError) {
       setFormError(
         bodyError === "empty"
@@ -110,7 +110,7 @@ function Composer({
     setFormError(null);
 
     postComment.mutate(
-      { body: trimmed },
+      { body },
       {
         onSuccess: (result) => {
           if (result.data) {
@@ -157,7 +157,7 @@ function Composer({
 function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment }) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
-  const [draft, setDraft] = useState(comment.body);
+  const [draft, setDraft] = useState(comment.body ?? "");
   const editComment = useEditComment(recipeId);
   const deleteComment = useDeleteComment(recipeId);
   const { session } = useSession();
@@ -178,7 +178,7 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
             variant="secondary"
             onClick={() => {
               setIsEditing(false);
-              setDraft(comment.body);
+              setDraft(comment.body ?? "");
             }}
           >
             Cancel
@@ -187,7 +187,15 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
             disabled={editComment.isPending}
             onClick={() => {
               editComment.mutate(
-                { commentId: comment.id, body: draft },
+                {
+                  commentId: comment.id,
+                  body: draft,
+                  photos: comment.photos.map((photo) => ({
+                    kind: "existing" as const,
+                    id: photo.id,
+                    altText: photo.altText,
+                  })),
+                },
                 { onSuccess: (result) => result.data && setIsEditing(false) },
               );
             }}
@@ -208,7 +216,7 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
           {comment.edited ? " (edited)" : ""}
         </Text>
       </div>
-      <Text variant="body">{comment.body}</Text>
+      {comment.body && <Text variant="body">{comment.body}</Text>}
       {isOwn && (
         <div className="flex gap-two self-end">
           {isConfirmingDelete ? (
@@ -221,7 +229,12 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
               </Button>
               <Button
                 disabled={deleteComment.isPending}
-                onClick={() => deleteComment.mutate({ commentId: comment.id })}
+                onClick={() =>
+                  deleteComment.mutate({
+                    commentId: comment.id,
+                    photoPaths: comment.photos.map((photo) => photo.storagePath),
+                  })
+                }
               >
                 Delete
               </Button>

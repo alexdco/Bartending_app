@@ -44,6 +44,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 31 | Comment moderation admin UI | Slice 25 | in-progress |
 | 32 | Admin recipe management | Slice 26 | in-progress |
 | 33 | Shopping list | Slice 27 | in-progress |
+| 34 | Recipe comment photos | Slice 28 | in-progress |
 
 ## Foundations
 
@@ -534,6 +535,21 @@ A shopping list tab next to Pantry where a user keeps track of ingredients they 
 - [ ] Test it: `/test shopping list`
 Spec [0031](../specs/0031-shopping-list/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
+## Slice 28: Recipe comment photos
+
+### 34. Recipe comment photos
+A signed in user can attach up to 3 photos to a recipe comment, on web and mobile, and a comment can be text, photos, or both. Photos are resized, converted to JPEG, and stripped of metadata on the client, uploaded to a public `comment-photos` bucket under the user's own folder, and attached in one atomic Postgres function call. The admin can remove a single photo or a whole comment, and a daily sweep deletes stored files nothing points to.
+**Done when:** a user can post, edit (add, remove, replace, reorder, alt text), and delete comments with up to 3 photos on web and mobile, anyone can view them in a thumbnail row with a full size viewer, every limit and ownership rule is enforced by the database and storage policies, the admin can remove one photo from `/admin/comments`, and unreferenced files are cleaned up.
+- [x] Design it (spec): [0032](../specs/0032-recipe-comment-photos/index.md)
+- [ ] Build it: `/develop recipe comment photos`
+  - [x] `comment_photos` migration (nullable body, storage bucket and policies, `post_comment`/`edit_comment`/`admin_delete_comment_photo` functions) plus the shared `commentPhotos.ts` module and `comments.ts` updates, satisfies AC-2, AC-4, AC-7, AC-8, AC-13
+  - [ ] Web thread: picker, canvas processing (HEIC via `heic2any`), upload, post, edit, delete, thumbnails, and the full size viewer, satisfies AC-1, AC-3 to AC-6, AC-9, AC-10
+  - [ ] Mobile: `expo-image-picker` plus `expo-image-manipulator` (new dev client build) with the same flows, satisfies AC-1, AC-3 to AC-6, AC-9, AC-10, AC-15
+  - [ ] Admin photo moderation, orphan sweep Edge Function and cron, `delete-account` folder cleanup, SEO guard, i18n strings, and parity check, satisfies AC-6, AC-11, AC-12, AC-14, AC-15
+- [ ] Verify it: `/check verify recipe comment photos`
+- [ ] Test it: `/test recipe comment photos`
+Spec [0032](../specs/0032-recipe-comment-photos/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
+
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
 - **Ads or subscription monetization**: no monetization in this build pass; revisit once there is usage · needs a decision
@@ -541,6 +557,8 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **ML/collaborative recommendations**: usage based recommendation model once there is a real user base · needs a decision
 - **Ingredient substitution suggestions**: suggest a swap when an ingredient is 86'd (feature 26) · needs a decision · from spec 0023
 - **Shared "recently made" shift log**: a server persisted, all-staff-visible build history for a bar, beyond today's per-bartender client side recently viewed list (feature 26) · needs a decision · from spec 0023
+- **Automated comment photo screening**: e.g. Claude Haiku vision checks each uploaded photo and hides flagged ones until admin review (feature 34) · needs a decision · from spec 0032
+- **Report a comment or photo**: a viewer facing report button feeding the admin comments page (features 31, 34) · needs a decision · from spec 0032
 
 ## Legend
 

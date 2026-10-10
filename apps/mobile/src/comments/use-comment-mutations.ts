@@ -1,5 +1,12 @@
 import { useMutation, useQueryClient, type InfiniteData } from "@tanstack/react-query";
-import { postComment, editComment, deleteComment, type Comment } from "@bartendingapp/shared";
+import {
+  postComment,
+  editComment,
+  deleteComment,
+  type Comment,
+  type EditCommentPhotoInput,
+  type NewCommentPhoto,
+} from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { recipeCommentsQueryKey } from "./use-comments";
 
@@ -14,7 +21,8 @@ export function usePostComment(recipeId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ body }: { body: string }) => postComment(supabase, recipeId, body),
+    mutationFn: ({ body, photos = [] }: { body: string; photos?: NewCommentPhoto[] }) =>
+      postComment(supabase, recipeId, { body, photos }),
     onSuccess: (result) => {
       if (!result.data) return;
 
@@ -39,8 +47,15 @@ export function useEditComment(recipeId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId, body }: { commentId: string; body: string }) =>
-      editComment(supabase, commentId, body),
+    mutationFn: ({
+      commentId,
+      body,
+      photos,
+    }: {
+      commentId: string;
+      body: string;
+      photos: EditCommentPhotoInput[];
+    }) => editComment(supabase, commentId, { body, photos }),
     onSuccess: (result, { commentId }) => {
       if (!result.data) {
         queryClient.invalidateQueries({ queryKey: recipeCommentsQueryKey(recipeId) });
@@ -58,8 +73,9 @@ export function useEditComment(recipeId: string) {
                 ? {
                     ...comment,
                     body: result.data!.body,
+                    photos: result.data!.photos,
                     updatedAt: result.data!.updatedAt,
-                    edited: true,
+                    edited: result.data!.edited,
                   }
                 : comment,
             ),
@@ -74,7 +90,8 @@ export function useDeleteComment(recipeId: string) {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { commentId: string }) => deleteComment(supabase, commentId),
+    mutationFn: ({ commentId, photoPaths = [] }: { commentId: string; photoPaths?: string[] }) =>
+      deleteComment(supabase, commentId, photoPaths),
     onSuccess: (result, { commentId }) => {
       if (!result.data) {
         queryClient.invalidateQueries({ queryKey: recipeCommentsQueryKey(recipeId) });

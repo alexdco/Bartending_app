@@ -16,7 +16,8 @@ export function useDeleteAdminComment() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: ({ commentId }: { commentId: string }) => deleteComment(supabase, commentId),
+    mutationFn: ({ commentId, photoPaths = [] }: { commentId: string; photoPaths?: string[] }) =>
+      deleteComment(supabase, commentId, photoPaths),
     onSuccess: (result, { commentId }) => {
       if (!result.data) {
         queryClient.invalidateQueries({ queryKey: adminCommentsQueryKey() });

@@ -307,9 +307,53 @@ export type Database = {
         };
         Relationships: [];
       };
+      comment_photos: {
+        Row: {
+          alt_text: string | null;
+          comment_id: string;
+          created_at: string;
+          height: number;
+          id: string;
+          position: number;
+          storage_path: string;
+          user_id: string;
+          width: number;
+        };
+        Insert: {
+          alt_text?: string | null;
+          comment_id: string;
+          created_at?: string;
+          height: number;
+          id?: string;
+          position: number;
+          storage_path: string;
+          user_id: string;
+          width: number;
+        };
+        Update: {
+          alt_text?: string | null;
+          comment_id?: string;
+          created_at?: string;
+          height?: number;
+          id?: string;
+          position?: number;
+          storage_path?: string;
+          user_id?: string;
+          width?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "comment_photos_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       comments: {
         Row: {
-          body: string;
+          body: string | null;
           created_at: string;
           id: string;
           recipe_id: string;
@@ -317,7 +361,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
-          body: string;
+          body?: string | null;
           created_at?: string;
           id?: string;
           recipe_id: string;
@@ -325,7 +369,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
-          body?: string;
+          body?: string | null;
           created_at?: string;
           id?: string;
           recipe_id?: string;
@@ -1204,6 +1248,7 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      admin_delete_comment_photo: { Args: { p_photo_id: string }; Returns: Json };
       admin_delete_recipe: { Args: { p_recipe_id: string }; Returns: undefined };
       admin_upsert_recipe: {
         Args: {
@@ -1233,6 +1278,12 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      comment_photo_uploads_last_24h: { Args: never; Returns: number };
+      comment_with_photos_json: { Args: { p_comment_id: string }; Returns: Json };
+      edit_comment: {
+        Args: { p_body: string; p_comment_id: string; p_photos: Json };
+        Returns: Json;
       };
       fetch_bar_recipe_detail: {
         Args: { p_bar_recipe_id: string };
@@ -1313,12 +1364,23 @@ export type Database = {
       };
       import_catalog: { Args: { drinks: Json }; Returns: undefined };
       import_custom_recipes: { Args: { recipes: Json }; Returns: undefined };
+      insert_new_comment_photo: {
+        Args: {
+          p_comment_id: string;
+          p_item: Json;
+          p_position: number;
+          p_user_id: string;
+        };
+        Returns: undefined;
+      };
       is_bar_creator: { Args: { p_bar_id: string }; Returns: boolean };
       is_bar_member: {
         Args: { p_bar_id: string; p_required_role?: string };
         Returns: boolean;
       };
       is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
+      is_comment_photo_referenced: { Args: { p_name: string }; Returns: boolean };
+      is_current_user_admin: { Args: never; Returns: boolean };
       list_my_pending_invites: {
         Args: never;
         Returns: {
@@ -1332,6 +1394,7 @@ export type Database = {
           status: string;
         }[];
       };
+      list_orphan_comment_photos: { Args: { p_limit: number }; Returns: string[] };
       list_popular_regions: {
         Args: never;
         Returns: {
@@ -1354,6 +1417,8 @@ export type Database = {
           name: string;
         }[];
       };
+      normalize_comment_body: { Args: { p_body: string }; Returns: string };
+      normalize_comment_photo_alt: { Args: { p_item: Json }; Returns: string };
       popular_recipes_by_region: {
         Args: { locale?: string; region_filter: string };
         Returns: {
@@ -1363,6 +1428,10 @@ export type Database = {
           name: string;
           popularity_rank: number;
         }[];
+      };
+      post_comment: {
+        Args: { p_body?: string; p_photos?: Json; p_recipe_id: string };
+        Returns: Json;
       };
       recipe_rating_summary: {
         Args: { p_recipe_id: string };
@@ -1403,6 +1472,7 @@ export type Database = {
               score: number;
             }[];
           };
+      require_comment_author: { Args: never; Returns: string };
       reserve_ai_generation_quota: {
         Args: { p_day: string; p_limit: number; p_user_id: string };
         Returns: boolean;

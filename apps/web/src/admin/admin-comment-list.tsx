@@ -82,7 +82,7 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
       <Text variant="bodySmall" muted>
         {comment.displayName ?? "Anonymous"}
       </Text>
-      <Text variant="body">{comment.body}</Text>
+      {comment.body && <Text variant="body">{comment.body}</Text>}
       <div className="flex gap-two self-end">
         {isConfirmingDelete ? (
           <>
@@ -94,7 +94,12 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
             </Button>
             <Button
               disabled={deleteComment.isPending}
-              onClick={() => deleteComment.mutate({ commentId: comment.id })}
+              onClick={() =>
+                deleteComment.mutate({
+                  commentId: comment.id,
+                  photoPaths: comment.photos.map((photo) => photo.storagePath),
+                })
+              }
             >
               Delete
             </Button>
