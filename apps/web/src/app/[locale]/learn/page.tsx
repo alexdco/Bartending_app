@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { LEARN_CATEGORIES } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";

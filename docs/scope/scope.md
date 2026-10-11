@@ -48,7 +48,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 35 | Admin privilege escalation fix | Hardening | in-progress |
 | 36 | Privacy page crash and real contact | Hardening | planned |
 | 37 | Production site URL, canonicals, and crawl rules | Hardening | done |
-| 38 | Locale aware links | Hardening | planned |
+| 38 | Locale aware links | Hardening | in-progress |
 | 39 | Learn article accuracy pass | Hardening | planned |
 | 40 | AI quota abuse via anonymous sessions | Hardening | planned |
 | 41 | Finish Spanish UI translation | Hardening | planned |
@@ -590,7 +590,8 @@ Canonicals, `og:url`, `sitemap.xml`, and `robots.txt` all point to `http://local
 ### 38. Locale aware links
 15 files import `next/link` instead of `Link` from `@/i18n/navigation` (site footer, logo, recipe card, carousel, Learn and Quizzes pages, favorites, consent banner, and others), so any recipe opened from `/es/...` lands on English.
 **Done when:** no web file imports `next/link` directly, an ESLint `no-restricted-imports` rule blocks it, and navigating from any `/es` page stays on `/es`.
-- [ ] Build it: `/develop locale aware links`
+- [x] Build it: `/develop locale aware links` (built 2026-10-10: all 15 `next/link` imports, the 4 client `useRouter` calls, and the home and popular server redirects now go through `@/i18n/navigation`; ESLint blocks `next/link` and the locale unaware `next/navigation` helpers)
+- code in `apps/web/eslint.config.mjs`, `apps/web/src/i18n/navigation.ts` (helpers), and every former `next/link` call site under `apps/web/src/`
 
 ### 39. Learn article accuracy pass
 Four of five articles checked had errors. Most urgent is a food safety error: "Simple Syrup… Explained" says syrup keeps indefinitely and never mentions refrigeration. Also: jigger (bitters with the 1 oz side, pouring in sequence), proof (US label rules, the water explanation, Negroni advice), oak barrels ("concentrated grain alcohol", char times), the grenadine ratio, and the "suggests complexity" sentence. Article pages reuse the site wide meta description, and the "Other" category reads "Learn about other for home bartending."

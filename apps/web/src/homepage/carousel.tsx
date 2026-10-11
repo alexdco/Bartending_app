@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 
 const CARD_WIDTH = "w-[45vw] sm:w-[240px]";

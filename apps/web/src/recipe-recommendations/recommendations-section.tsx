@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";

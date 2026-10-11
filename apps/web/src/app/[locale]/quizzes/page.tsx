@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { buildQuizSlugPath, fetchQuizAttempt, fetchQuizzes } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";

@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from "react";
 import type { BartenderSearchResult, SearchResultTier } from "@bartendingapp/shared";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";

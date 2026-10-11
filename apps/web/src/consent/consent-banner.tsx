@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useSyncExternalStore } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 import { Button } from "@/components/button";
 import { acceptCookieConsent, getCookieConsent } from "./consent-storage";

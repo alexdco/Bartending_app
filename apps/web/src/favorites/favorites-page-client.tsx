@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";

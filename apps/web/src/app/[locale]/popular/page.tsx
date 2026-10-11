@@ -1,6 +1,7 @@
-import { permanentRedirect, redirect } from "next/navigation";
-import { listPopularRegions, slugify } from "@bartendingapp/shared";
+import { getLocale } from "next-intl/server";
+import { listPopularRegions, slugify, type Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
+import { permanentRedirect, redirect } from "@/i18n/navigation";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
@@ -12,11 +13,12 @@ export default async function PopularPage({
 }) {
   const { region } = await searchParams;
   const regions = await listPopularRegions(supabasePublic);
+  const locale = (await getLocale()) as Locale;
 
   if (region) {
     const matched = regions.find((candidate) => candidate === region);
     if (matched) {
-      permanentRedirect(`/popular/${slugify(matched, "region")}`);
+      permanentRedirect({ href: `/popular/${slugify(matched, "region")}`, locale });
     }
   }
 
@@ -36,5 +38,5 @@ export default async function PopularPage({
     );
   }
 
-  redirect(`/popular/${slugify(firstRegion, "region")}`);
+  redirect({ href: `/popular/${slugify(firstRegion, "region")}`, locale });
 }

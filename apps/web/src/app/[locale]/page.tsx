@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { redirect } from "next/navigation";
+import { redirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
 import { localizedPath, SUPPORTED_LOCALES, type Locale } from "@bartendingapp/shared";
 import { HomePageClient } from "@/homepage/home-page-client";
@@ -31,7 +31,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ q
   const query = q?.trim() ?? "";
 
   if (query) {
-    redirect(`/search?q=${encodeURIComponent(query)}`);
+    redirect({
+      href: `/search?q=${encodeURIComponent(query)}`,
+      locale: (await getLocale()) as Locale,
+    });
   }
 
   return (

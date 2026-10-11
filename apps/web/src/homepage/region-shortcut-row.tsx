@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { slugify } from "@bartendingapp/shared";
 
 export function RegionShortcutRow({ regions }: { regions: string[] }) {

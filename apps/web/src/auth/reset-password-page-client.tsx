@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { AuthError, completePasswordReset } from "@bartendingapp/shared";
 import { useMutation } from "@tanstack/react-query";
 import { BackButton } from "@/components/back-button";
