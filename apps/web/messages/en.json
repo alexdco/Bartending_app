@@ -544,6 +544,7 @@
     "tagName": "Tag name",
     "addTag": "Add tag",
     "saving": "Saving...",
-    "saveRecipe": "Save recipe"
+    "saveRecipe": "Save recipe",
+    "source": "{source, select, admin {Admin} other {Catalog}}"
   }
 }

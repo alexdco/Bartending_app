@@ -9,6 +9,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
+import { alcoholicStatusKey } from "@/recipes/format";
 import { useAdminRecipes } from "./use-admin-recipes";
 import { useDeleteAdminRecipe } from "./use-admin-recipe-mutations";
 
@@ -76,6 +77,7 @@ export function AdminRecipeList() {
 function AdminRecipeRow({ recipe }: { recipe: AdminRecipeSummary }) {
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
+  const tStatus = useTranslations("alcoholicStatus");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const deleteRecipe = useDeleteAdminRecipe();
 
@@ -85,11 +87,12 @@ function AdminRecipeRow({ recipe }: { recipe: AdminRecipeSummary }) {
         <div className="flex items-center gap-two">
           <Text variant="label">{recipe.name}</Text>
           <span className="rounded-small bg-surface-selected px-two py-0.5 text-body-small text-text-muted">
-            {recipe.source}
+            {t("source", { source: recipe.source })}
           </span>
         </div>
         <Text variant="bodySmall" muted>
-          {recipe.glass ?? t("noGlass")} &middot; {recipe.alcoholicStatus}
+          {recipe.glass ?? t("noGlass")} &middot;{" "}
+          {tStatus(alcoholicStatusKey(recipe.alcoholicStatus))}
         </Text>
       </div>
       <div className="flex gap-two">

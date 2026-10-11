@@ -544,6 +544,7 @@
     "tagName": "Nombre de la etiqueta",
     "addTag": "Agregar etiqueta",
     "saving": "Guardando...",
-    "saveRecipe": "Guardar receta"
+    "saveRecipe": "Guardar receta",
+    "source": "{source, select, admin {Admin} other {Catálogo}}"
   }
 }
