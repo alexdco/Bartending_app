@@ -8,6 +8,39 @@ export type Database = {
   };
   public: {
     Tables: {
+      ai_generation_daily_total: {
+        Row: {
+          day: string;
+          total_count: number;
+        };
+        Insert: {
+          day: string;
+          total_count?: number;
+        };
+        Update: {
+          day?: string;
+          total_count?: number;
+        };
+        Relationships: [];
+      };
+      ai_generation_ip_quota: {
+        Row: {
+          count: number;
+          day: string;
+          ip_hash: string;
+        };
+        Insert: {
+          count?: number;
+          day: string;
+          ip_hash: string;
+        };
+        Update: {
+          count?: number;
+          day?: string;
+          ip_hash?: string;
+        };
+        Relationships: [];
+      };
       ai_generation_quota: {
         Row: {
           count: number;
@@ -1248,7 +1281,10 @@ export type Database = {
           isSetofReturn: false;
         };
       };
-      admin_delete_comment_photo: { Args: { p_photo_id: string }; Returns: Json };
+      admin_delete_comment_photo: {
+        Args: { p_photo_id: string };
+        Returns: Json;
+      };
       admin_delete_recipe: { Args: { p_recipe_id: string }; Returns: undefined };
       admin_upsert_recipe: {
         Args: {
@@ -1280,7 +1316,10 @@ export type Database = {
         };
       };
       comment_photo_uploads_last_24h: { Args: never; Returns: number };
-      comment_with_photos_json: { Args: { p_comment_id: string }; Returns: Json };
+      comment_with_photos_json: {
+        Args: { p_comment_id: string };
+        Returns: Json;
+      };
       edit_comment: {
         Args: { p_body: string; p_comment_id: string; p_photos: Json };
         Returns: Json;
@@ -1379,7 +1418,10 @@ export type Database = {
         Returns: boolean;
       };
       is_candidate_still_idle: { Args: { p_user_id: string }; Returns: boolean };
-      is_comment_photo_referenced: { Args: { p_name: string }; Returns: boolean };
+      is_comment_photo_referenced: {
+        Args: { p_name: string };
+        Returns: boolean;
+      };
       is_current_user_admin: { Args: never; Returns: boolean };
       list_my_pending_invites: {
         Args: never;
@@ -1394,7 +1436,10 @@ export type Database = {
           status: string;
         }[];
       };
-      list_orphan_comment_photos: { Args: { p_limit: number }; Returns: string[] };
+      list_orphan_comment_photos: {
+        Args: { p_limit: number };
+        Returns: string[];
+      };
       list_popular_regions: {
         Args: never;
         Returns: {
@@ -1472,10 +1517,30 @@ export type Database = {
               score: number;
             }[];
           };
+      release_ai_generation_slot: {
+        Args: { p_day: string; p_ip_hash: string; p_user_id: string };
+        Returns: undefined;
+      };
       require_comment_author: { Args: never; Returns: string };
       reserve_ai_generation_quota: {
         Args: { p_day: string; p_limit: number; p_user_id: string };
         Returns: boolean;
+      };
+      reserve_ai_generation_slot: {
+        Args: {
+          p_anon_global_limit: number;
+          p_global_limit: number;
+          p_ip_hash: string;
+          p_ip_limit: number;
+          p_is_anonymous: boolean;
+          p_user_id: string;
+          p_user_limit: number;
+        };
+        Returns: {
+          day: string;
+          reason: string;
+          total_count: number;
+        }[];
       };
       search_bartender: {
         Args: { bar_id?: string; query: string; recent_recipe_ids?: string[] };
