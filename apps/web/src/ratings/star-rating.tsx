@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 
 export interface StarRatingProps {
   value: number;
@@ -12,6 +13,7 @@ export interface StarRatingProps {
 const SCORES = [1, 2, 3, 4, 5] as const;
 
 export function StarRating({ value, onRate, disabled = false, size = "large" }: StarRatingProps) {
+  const t = useTranslations("ratings");
   const [hovered, setHovered] = useState<number | null>(null);
   const interactive = Boolean(onRate) && !disabled;
   const displayValue = hovered ?? value;
@@ -20,7 +22,7 @@ export function StarRating({ value, onRate, disabled = false, size = "large" }: 
   return (
     <div
       role={interactive ? "radiogroup" : undefined}
-      aria-label="Rating"
+      aria-label={t("rating")}
       className="flex items-center gap-one"
       onMouseLeave={() => setHovered(null)}
     >
@@ -41,7 +43,7 @@ export function StarRating({ value, onRate, disabled = false, size = "large" }: 
             type="button"
             role="radio"
             aria-checked={score === value}
-            aria-label={`Rate ${score} star${score === 1 ? "" : "s"}`}
+            aria-label={t("rateStars", { count: score })}
             disabled={disabled}
             onMouseEnter={() => setHovered(score)}
             onFocus={() => setHovered(score)}

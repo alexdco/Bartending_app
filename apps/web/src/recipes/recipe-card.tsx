@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Card } from "@/components/card";
 import { Chip } from "@/components/chip";
@@ -6,10 +7,10 @@ import { Text } from "@/components/text";
 import { FavoriteToggle } from "@/favorites/favorite-toggle";
 import { useFavoriteRecipeIds } from "@/favorites/use-favorites";
 import { useToggleFavorite } from "@/favorites/use-favorite-mutations";
-import { alcoholicStatusLabel } from "./format";
+import { alcoholicStatusKey } from "./format";
 import {
   buildRecipeSlugPath,
-  formatMissingIngredients,
+  splitMissingIngredients,
   type RecipeSearchResult,
 } from "@bartendingapp/shared";
 
@@ -19,9 +20,16 @@ export interface RecipeCardProps {
 }
 
 export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) {
+  const t = useTranslations("recipe");
+  const tStatus = useTranslations("alcoholicStatus");
   const { data: favoriteIds } = useFavoriteRecipeIds();
   const { toggle, isPending } = useToggleFavorite();
   const isFavorited = favoriteIds?.includes(recipe.id) ?? false;
+
+  const missingText = (names: readonly string[]) => {
+    const { shown, remaining } = splitMissingIngredients(names);
+    return t("missingIngredients", { names: shown.join(", "), remaining });
+  };
 
   return (
     <Link href={`/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`} className="block">
@@ -44,10 +52,10 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
         <Text variant="subheading" as="h3">
           {recipe.name}
         </Text>
-        <Chip>{alcoholicStatusLabel(recipe.alcoholicStatus)}</Chip>
+        <Chip>{tStatus(alcoholicStatusKey(recipe.alcoholicStatus))}</Chip>
         {missingIngredientNames && missingIngredientNames.length > 0 && (
           <Text variant="bodySmall" muted>
-            Missing: {formatMissingIngredients(missingIngredientNames)}
+            {missingText(missingIngredientNames)}
           </Text>
         )}
       </Card>

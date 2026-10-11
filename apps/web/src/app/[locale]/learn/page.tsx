@@ -1,26 +1,21 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LEARN_CATEGORIES } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { Text } from "@/components/text";
 
-const CATEGORY_LABELS: Record<(typeof LEARN_CATEGORIES)[number], string> = {
-  tools: "Tools",
-  spirits: "Spirits",
-  wine: "Wine",
-  beer: "Beer",
-  other: "Other",
-};
-
 export default function LearnPage() {
+  const t = useTranslations("learn");
+
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
-        Learn
+        {t("title")}
       </Text>
       <Text variant="body" muted>
-        Short articles about bar tools, spirits, wine, and beer.
+        {t("intro")}
       </Text>
 
       <div className="grid grid-cols-2 gap-three sm:grid-cols-3">
@@ -28,7 +23,7 @@ export default function LearnPage() {
           <Link key={category} href={`/learn/${category}`}>
             <Card>
               <Text variant="subheading" as="h2">
-                {CATEGORY_LABELS[category]}
+                {t(`categories.${category}`)}
               </Text>
             </Card>
           </Link>
@@ -37,7 +32,7 @@ export default function LearnPage() {
 
       <Link href="/quizzes">
         <Card className="border-accent">
-          <Text variant="label">Take a quiz</Text>
+          <Text variant="label">{t("takeAQuiz")}</Text>
         </Card>
       </Link>
     </main>

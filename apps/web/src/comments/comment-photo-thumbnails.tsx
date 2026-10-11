@@ -2,9 +2,10 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { commentPhotoLabel, getCommentPhotoUrl, type CommentPhoto } from "@bartendingapp/shared";
+import { getCommentPhotoUrl, type CommentPhoto } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { CommentPhotoViewer } from "./comment-photo-viewer";
+import { useCommentPhotoLabel } from "./use-comment-photo-label";
 
 /** Thumbnail height in px; width follows the stored aspect ratio. */
 const THUMBNAIL_HEIGHT = 112;
@@ -21,6 +22,7 @@ export interface CommentPhotoThumbnailsProps {
  */
 export function CommentPhotoThumbnails({ photos, displayName }: CommentPhotoThumbnailsProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const commentPhotoLabel = useCommentPhotoLabel();
 
   if (photos.length === 0) return null;
 

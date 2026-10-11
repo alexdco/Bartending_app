@@ -1,6 +1,7 @@
 "use client";
 
 import { useRef } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import {
   COMMENT_PHOTO_ACCEPTED_TYPES,
@@ -17,30 +18,32 @@ import type { PhotoDraft, PhotoDraftFailure, usePhotoDrafts } from "./use-photo-
 const ACCEPT = [...COMMENT_PHOTO_ACCEPTED_TYPES, ".heic", ".heif"].join(",");
 const PREVIEW_SIZE = 96;
 
-export function photoFailureMessage(failure: PhotoDraftFailure): string {
+type CommentsTranslator = ReturnType<typeof useTranslations<"comments">>;
+
+function photoFailureMessage(t: CommentsTranslator, failure: PhotoDraftFailure): string {
   switch (failure.reason) {
     case "unsupported_type":
-      return "This file type isn't supported. Use JPEG, PNG, WebP, or HEIC.";
+      return t("photoUnsupportedType");
     case "original_too_large":
-      return "This photo is over 25 MB. Pick a smaller one.";
+      return t("photoOriginalTooLarge");
     case "processing_failed":
-      return "Couldn't process this photo.";
+      return t("photoProcessingFailed");
     case "too_large":
-      return "This photo is too large to upload.";
+      return t("photoTooLarge");
     case "wrong_type":
-      return "This photo couldn't be uploaded.";
+      return t("photoWrongType");
     case "daily_limit":
-      return `Daily photo limit reached (${COMMENT_PHOTO_DAILY_LIMIT} a day). Try again tomorrow.`;
+      return t("photoDailyLimit", { limit: COMMENT_PHOTO_DAILY_LIMIT });
     case "request_failed":
-      return "Upload failed. Check your connection and retry.";
+      return t("photoRequestFailed");
   }
 }
 
-function statusMessage(draft: PhotoDraft): string | null {
+function statusMessage(t: CommentsTranslator, draft: PhotoDraft): string | null {
   if (draft.kind === "existing") return null;
-  if (draft.failure) return photoFailureMessage(draft.failure);
-  if (draft.status === "processing") return "Preparing...";
-  if (draft.status === "uploading") return "Uploading...";
+  if (draft.failure) return photoFailureMessage(t, draft.failure);
+  if (draft.status === "processing") return t("photoPreparing");
+  if (draft.status === "uploading") return t("photoUploading");
   return null;
 }
 
@@ -63,6 +66,8 @@ export interface PhotoDraftFieldProps {
  * form.
  */
 export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: PhotoDraftFieldProps) {
+  const t = useTranslations("comments");
+  const tCommon = useTranslations("common");
   const addInputRef = useRef<HTMLInputElement>(null);
   const replaceInputRef = useRef<HTMLInputElement>(null);
   const replaceKeyRef = useRef<string | null>(null);
@@ -70,12 +75,12 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
   return (
     <div className="flex flex-col gap-two">
       {photos.drafts.length > 0 && (
-        <ol className="flex flex-col gap-two" aria-label="Attached photos">
+        <ol className="flex flex-col gap-two" aria-label={t("attachedPhotos")}>
           {photos.drafts.map((draft, index) => {
             const src = previewSrc(draft);
-            const message = statusMessage(draft);
+            const message = statusMessage(t, draft);
             const failure = draft.kind === "new" ? draft.failure : null;
-            const position = `photo ${index + 1}`;
+            const number = index + 1;
 
             return (
               <li
@@ -100,7 +105,7 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
                 <div className="flex min-w-0 flex-1 flex-col gap-one">
                   <label className="flex flex-col gap-one">
                     <span className="text-label font-medium text-text">
-                      Alt text for {position} (optional)
+                      {t("altTextLabel", { number })}
                     </span>
                     <input
                       type="text"
@@ -108,7 +113,7 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
                       maxLength={COMMENT_PHOTO_ALT_MAX_LENGTH}
                       disabled={disabled}
                       onChange={(event) => photos.setAltText(draft.key, event.target.value)}
-                      placeholder="Describe the photo"
+                      placeholder={t("altTextPlaceholder")}
                       className="rounded-small border border-border bg-surface px-three py-one text-body-small text-text placeholder:text-text-muted"
                     />
                   </label>
@@ -129,9 +134,9 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
                       className="px-two py-one"
                       disabled={disabled || index === 0}
                       onClick={() => photos.move(draft.key, -1)}
-                      aria-label={`Move ${position} left`}
+                      aria-label={t("moveLeftLabel", { number })}
                     >
-                      Move left
+                      {t("moveLeft")}
                     </Button>
                     <Button
                       type="button"
@@ -139,9 +144,9 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
                       className="px-two py-one"
                       disabled={disabled || index === photos.drafts.length - 1}
                       onClick={() => photos.move(draft.key, 1)}
-                      aria-label={`Move ${position} right`}
+                      aria-label={t("moveRightLabel", { number })}
                     >
-                      Move right
+                      {t("moveRight")}
                     </Button>
                     <Button
                       type="button"
@@ -152,9 +157,9 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
                         replaceKeyRef.current = draft.key;
                         replaceInputRef.current?.click();
                       }}
-                      aria-label={`Replace ${position}`}
+                      aria-label={t("replaceLabel", { number })}
                     >
-                      Replace
+                      {t("replace")}
                     </Button>
                     <Button
                       type="button"
@@ -162,9 +167,9 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
                       className="px-two py-one"
                       disabled={disabled}
                       onClick={() => photos.remove(draft.key)}
-                      aria-label={`Remove ${position}`}
+                      aria-label={t("removeLabel", { number })}
                     >
-                      Remove
+                      {tCommon("remove")}
                     </Button>
                     {failure &&
                       failure.reason !== "unsupported_type" &&
@@ -178,9 +183,9 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
                               ? photos.retryProcessing(draft.key)
                               : onRetryUpload()
                           }
-                          aria-label={`Retry ${position}`}
+                          aria-label={t("retryLabel", { number })}
                         >
-                          Retry
+                          {tCommon("retry")}
                         </Button>
                       )}
                   </div>
@@ -223,11 +228,11 @@ export function PhotoDraftField({ photos, disabled = false, onRetryUpload }: Pho
           disabled={disabled}
           onClick={() => addInputRef.current?.click()}
         >
-          Add photo ({photos.drafts.length}/{COMMENT_PHOTO_MAX_COUNT})
+          {t("addPhoto", { count: photos.drafts.length, max: COMMENT_PHOTO_MAX_COUNT })}
         </Button>
       ) : (
         <Text variant="bodySmall" muted>
-          {COMMENT_PHOTO_MAX_COUNT} photos max.
+          {t("photosMax", { max: COMMENT_PHOTO_MAX_COUNT })}
         </Text>
       )}
     </div>

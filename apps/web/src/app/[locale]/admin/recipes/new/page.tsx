@@ -1,4 +1,5 @@
 import { isAdmin } from "@bartendingapp/shared";
+import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { redirect } from "@/i18n/navigation";
 import { Text } from "@/components/text";
@@ -27,10 +28,12 @@ export default async function NewAdminRecipePage({
     redirect({ href: "/", locale });
   }
 
+  const t = await getTranslations("admin");
+
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
       <Text variant="display" as="h1">
-        Add recipe
+        {t("addRecipe")}
       </Text>
       <AdminNav />
       <AdminRecipeForm />

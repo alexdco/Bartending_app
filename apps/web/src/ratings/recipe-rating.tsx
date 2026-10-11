@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 import { useSession } from "@/auth/use-session";
@@ -13,6 +14,7 @@ export interface RecipeRatingProps {
 }
 
 export function RecipeRating({ recipeId }: RecipeRatingProps) {
+  const t = useTranslations("ratings");
   const { isLinked, isLoading } = useSession();
   const summary = useRatingSummary(recipeId);
   const myRating = useMyRating(recipeId, isLinked);
@@ -27,11 +29,11 @@ export function RecipeRating({ recipeId }: RecipeRatingProps) {
         <StarRating value={average ?? 0} size="small" />
         {count > 0 ? (
           <Text variant="bodySmall" muted>
-            {average!.toFixed(1)} ({count} rating{count === 1 ? "" : "s"})
+            {t("summary", { average: average!.toFixed(1), count })}
           </Text>
         ) : (
           <Text variant="bodySmall" muted>
-            No ratings yet
+            {t("none")}
           </Text>
         )}
       </div>
@@ -43,10 +45,13 @@ export function RecipeRating({ recipeId }: RecipeRatingProps) {
         />
       ) : !isLoading ? (
         <Text variant="bodySmall" muted>
-          <Link href="/account" className="underline">
-            Sign in
-          </Link>{" "}
-          to rate this recipe
+          {t.rich("signInToRate", {
+            link: (chunks) => (
+              <Link href="/account" className="underline">
+                {chunks}
+              </Link>
+            ),
+          })}
         </Text>
       ) : null}
     </div>

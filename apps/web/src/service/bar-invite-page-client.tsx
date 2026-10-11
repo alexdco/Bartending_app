@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -13,6 +14,7 @@ import { useInviteStaff } from "@/service/use-bar-mutations";
 // a staff member attempting to insert an invite is denied server side, so
 // this screen doesn't need its own role check beyond the empty state below.
 export function BarInvitePageClient() {
+  const t = useTranslations("service");
   const currentBar = useCurrentBar();
   const [email, setEmail] = useState("");
   const barId = currentBar.currentBar?.id;
@@ -22,21 +24,18 @@ export function BarInvitePageClient() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-four px-four py-six">
       <BackButton />
-      <Text variant="display">Invite staff</Text>
+      <Text variant="display">{t("inviteStaff")}</Text>
 
       {!isOwner ? (
-        <EmptyState
-          title="No bar selected"
-          description="Create or join a bar first, then invite staff by email."
-        />
+        <EmptyState title={t("noBarSelected")} description={t("noBarSelectedDescription")} />
       ) : (
         <div className="flex flex-col gap-two">
           <Text variant="body" muted>
-            {`Inviting to ${currentBar.currentBar?.name}`}
+            {t("invitingTo", { bar: currentBar.currentBar?.name ?? "" })}
           </Text>
           <Input
-            label="Email"
-            placeholder="staff@example.com"
+            label={t("email")}
+            placeholder={t("emailPlaceholder")}
             autoCapitalize="none"
             type="email"
             value={email}
@@ -46,15 +45,12 @@ export function BarInvitePageClient() {
             disabled={email.trim() === "" || inviteStaff.isPending}
             onClick={() => inviteStaff.mutate(email.trim(), { onSuccess: () => setEmail("") })}
           >
-            {inviteStaff.isPending ? "Sending..." : "Send invite"}
+            {inviteStaff.isPending ? t("sending") : t("sendInvite")}
           </Button>
-          {inviteStaff.isSuccess && (
-            <Text variant="bodySmall">Invite sent. It expires in 14 days if not accepted.</Text>
-          )}
+          {inviteStaff.isSuccess && <Text variant="bodySmall">{t("inviteSent")}</Text>}
           {inviteStaff.isError && (
             <Text variant="bodySmall" className="text-danger">
-              Couldn&apos;t send that invite. They may already have a pending invite to this bar, or
-              you may not be its owner.
+              {t("inviteFailed")}
             </Text>
           )}
         </div>

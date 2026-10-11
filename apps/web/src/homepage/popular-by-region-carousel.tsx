@@ -1,15 +1,17 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { HOMEPAGE_CAROUSEL_LIMIT, slugify } from "@bartendingapp/shared";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { Carousel, CarouselItem, CarouselSkeleton } from "./carousel";
 import { useHomePopularByRegion } from "./use-homepage-data";
 
 export function PopularByRegionCarousel({ region }: { region: string }) {
+  const t = useTranslations("home");
   const { data, error, isPending } = useHomePopularByRegion(region);
 
   if (isPending) {
-    return <CarouselSkeleton title={`Popular in ${region}`} />;
+    return <CarouselSkeleton title={t("popularIn", { region })} />;
   }
 
   if (error) {
@@ -25,7 +27,7 @@ export function PopularByRegionCarousel({ region }: { region: string }) {
   return (
     <div className="px-six">
       <Carousel
-        title={`Popular in ${region}`}
+        title={t("popularIn", { region })}
         seeMoreHref={`/popular/${slugify(region, "region")}`}
       >
         {recipes.map((recipe) => (

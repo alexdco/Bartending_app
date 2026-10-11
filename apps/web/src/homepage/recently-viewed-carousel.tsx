@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { HOMEPAGE_CAROUSEL_LIMIT } from "@bartendingapp/shared";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { Carousel, CarouselItem, CarouselSkeleton } from "./carousel";
 import { useHomeRecentlyViewed } from "./use-homepage-data";
 
 export function RecentlyViewedCarousel() {
+  const t = useTranslations("home");
   const { data, error, isPending, fetchStatus } = useHomeRecentlyViewed();
 
   useEffect(() => {
@@ -22,7 +24,7 @@ export function RecentlyViewedCarousel() {
   }
 
   if (isPending) {
-    return <CarouselSkeleton title="Recently viewed" />;
+    return <CarouselSkeleton title={t("recentlyViewed")} />;
   }
 
   if (error) {
@@ -37,7 +39,7 @@ export function RecentlyViewedCarousel() {
 
   return (
     <div className="px-six">
-      <Carousel title="Recently viewed">
+      <Carousel title={t("recentlyViewed")}>
         {recipes.map((recipe) => (
           <CarouselItem key={recipe.id}>
             <RecipeCard recipe={recipe} />

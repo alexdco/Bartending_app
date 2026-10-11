@@ -58,12 +58,16 @@ export async function fetchDrinkIdeaMatches(
 
 const MISSING_INGREDIENTS_DISPLAY_CAP = 3;
 
-export function formatMissingIngredients(names: string[]): string {
-  if (names.length <= MISSING_INGREDIENTS_DISPLAY_CAP) {
-    return names.join(", ");
-  }
-
+/** The names to show and how many more are hidden, so each app can word the rest. */
+export function splitMissingIngredients(names: readonly string[]): {
+  readonly shown: readonly string[];
+  readonly remaining: number;
+} {
   const shown = names.slice(0, MISSING_INGREDIENTS_DISPLAY_CAP);
-  const remaining = names.length - MISSING_INGREDIENTS_DISPLAY_CAP;
-  return `${shown.join(", ")} +${remaining} more`;
+  return { shown, remaining: names.length - shown.length };
+}
+
+export function formatMissingIngredients(names: string[]): string {
+  const { shown, remaining } = splitMissingIngredients(names);
+  return remaining === 0 ? shown.join(", ") : `${shown.join(", ")} +${remaining} more`;
 }

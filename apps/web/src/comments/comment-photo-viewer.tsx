@@ -1,11 +1,13 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
-import { commentPhotoLabel, getCommentPhotoUrl, type CommentPhoto } from "@bartendingapp/shared";
+import { getCommentPhotoUrl, type CommentPhoto } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/button";
 import { Text } from "@/components/text";
+import { useCommentPhotoLabel } from "./use-comment-photo-label";
 
 export interface CommentPhotoViewerProps {
   photos: readonly CommentPhoto[];
@@ -28,6 +30,8 @@ export function CommentPhotoViewer({
   onChangeIndex,
   onClose,
 }: CommentPhotoViewerProps) {
+  const t = useTranslations("comments");
+  const commentPhotoLabel = useCommentPhotoLabel();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const photo = openIndex === null ? undefined : photos[openIndex];
 
@@ -77,7 +81,7 @@ export function CommentPhotoViewer({
               {openIndex + 1} / {photos.length}
             </Text>
             <Button variant="secondary" onClick={onClose} autoFocus>
-              Close
+              {t("close")}
             </Button>
           </div>
           <div
@@ -104,14 +108,14 @@ export function CommentPhotoViewer({
                 disabled={!hasPrevious}
                 onClick={() => onChangeIndex(openIndex - 1)}
               >
-                Previous
+                {t("previous")}
               </Button>
               <Button
                 variant="secondary"
                 disabled={!hasNext}
                 onClick={() => onChangeIndex(openIndex + 1)}
               >
-                Next
+                {t("next")}
               </Button>
             </div>
           )}

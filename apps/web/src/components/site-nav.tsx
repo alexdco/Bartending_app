@@ -50,11 +50,16 @@ function CloseIcon() {
   );
 }
 
-const themeOptions: { value: ThemePreference; label: string }[] = [
-  { value: "light", label: "Light" },
-  { value: "dark", label: "Dark" },
-  { value: "system", label: "System" },
-];
+const themeOptions: { value: ThemePreference; key: "themeLight" | "themeDark" | "themeSystem" }[] =
+  [
+    { value: "light", key: "themeLight" },
+    { value: "dark", key: "themeDark" },
+    { value: "system", key: "themeSystem" },
+  ];
+
+function themeLabelKey(preference: ThemePreference) {
+  return themeOptions.find((option) => option.value === preference)?.key ?? "themeSystem";
+}
 
 const localeValues: Locale[] = ["en", "es"];
 
@@ -137,7 +142,7 @@ function NavBadge() {
     return (
       <DropdownMenu.Root>
         <DropdownMenu.Trigger asChild>
-          <button type="button" aria-label="Account menu" className="rounded-full">
+          <button type="button" aria-label={t("accountMenu")} className="rounded-full">
             <span
               className="flex items-center justify-center rounded-full bg-surface-selected text-text-muted"
               style={{ width: avatarSize.web, height: avatarSize.web }}
@@ -158,7 +163,7 @@ function NavBadge() {
                 className="block px-four py-two text-label outline-none hover:bg-surface-selected"
               >
                 <Text variant="label" as="span">
-                  Sign in
+                  {t("signIn")}
                 </Text>
               </Link>
             </DropdownMenu.Item>
@@ -185,7 +190,7 @@ function NavBadge() {
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
-        <button type="button" aria-label="Account menu" className="rounded-full">
+        <button type="button" aria-label={t("accountMenu")} className="rounded-full">
           <span
             className="flex items-center justify-center rounded-full bg-accent text-accent-text"
             style={{ width: avatarSize.web, height: avatarSize.web }}
@@ -208,7 +213,7 @@ function NavBadge() {
               className="block px-four py-two text-label outline-none hover:bg-surface-selected"
             >
               <Text variant="label" as="span">
-                Account
+                {t("account")}
               </Text>
             </Link>
           </DropdownMenu.Item>
@@ -226,10 +231,10 @@ function NavBadge() {
           <DropdownMenu.Sub>
             <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none hover:bg-surface-selected data-[state=open]:bg-surface-selected">
               <Text variant="label" as="span">
-                Theme
+                {t("theme")}
               </Text>
               <Text variant="label" as="span" className="text-text-muted">
-                {themeOptions.find((option) => option.value === preference)?.label}
+                {t(themeLabelKey(preference))}
               </Text>
             </DropdownMenu.SubTrigger>
             <DropdownMenu.Portal>
@@ -249,7 +254,7 @@ function NavBadge() {
                       className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
                     >
                       <Text variant="label" as="span">
-                        {option.label}
+                        {t(option.key)}
                       </Text>
                     </DropdownMenu.RadioItem>
                   ))}
@@ -269,7 +274,7 @@ function NavBadge() {
               {t("bartenderMode")}
             </Text>
             <Text variant="label" as="span" className="text-text-muted">
-              {(profile?.bartenderModeEnabled ?? true) ? "On" : "Off"}
+              {(profile?.bartenderModeEnabled ?? true) ? t("on") : t("off")}
             </Text>
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-two h-px bg-border" />
@@ -278,7 +283,7 @@ function NavBadge() {
             onSelect={() => signOut.mutate()}
           >
             <Text variant="label" as="span">
-              Sign out
+              {t("signOut")}
             </Text>
           </DropdownMenu.Item>
         </DropdownMenu.Content>
@@ -636,7 +641,7 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
           className="block rounded-medium px-three py-two hover:bg-surface-selected"
         >
           <Text variant="label" as="span">
-            Sign in
+            {t("signIn")}
           </Text>
         </Link>
         <Link
@@ -672,7 +677,7 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
         className="block rounded-medium px-three py-two hover:bg-surface-selected"
       >
         <Text variant="label" as="span">
-          Account
+          {t("account")}
         </Text>
       </Link>
       <Link
@@ -692,10 +697,10 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
           className="flex w-full items-center justify-between rounded-medium px-three py-two hover:bg-surface-selected"
         >
           <Text variant="label" as="span">
-            Theme
+            {t("theme")}
           </Text>
           <Text variant="label" as="span" className="text-text-muted">
-            {themeOptions.find((option) => option.value === preference)?.label}
+            {t(themeLabelKey(preference))}
           </Text>
         </button>
         {themeExpanded ? (
@@ -712,7 +717,7 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
                 }
               >
                 <Text variant="label" as="span">
-                  {option.label}
+                  {t(option.key)}
                 </Text>
               </button>
             ))}
@@ -728,7 +733,7 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
           {t("bartenderMode")}
         </Text>
         <Text variant="label" as="span" className="text-text-muted">
-          {(profile?.bartenderModeEnabled ?? true) ? "On" : "Off"}
+          {(profile?.bartenderModeEnabled ?? true) ? t("on") : t("off")}
         </Text>
       </button>
       <button
@@ -737,7 +742,7 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
         className="block rounded-medium px-three py-two text-left hover:bg-surface-selected"
       >
         <Text variant="label" as="span">
-          Sign out
+          {t("signOut")}
         </Text>
       </button>
     </div>
@@ -776,7 +781,7 @@ function MobileNavDrawer({
       <Dialog.Trigger asChild>
         <button
           type="button"
-          aria-label={open ? "Close navigation" : "Open navigation"}
+          aria-label={open ? t("closeNavigation") : t("openNavigation")}
           className="flex md:hidden items-center justify-center rounded-medium p-two"
         >
           {open ? <CloseIcon /> : <HamburgerIcon />}
@@ -786,7 +791,7 @@ function MobileNavDrawer({
         <Dialog.Overlay className="drawer-overlay fixed inset-0 z-50 bg-black/50" />
         <Dialog.Content className="drawer-content fixed inset-y-0 right-0 z-50 flex w-[min(320px,85vw)] flex-col overflow-y-auto rounded-l-large border-l border-border bg-surface p-four">
           <VisuallyHidden.Root asChild>
-            <Dialog.Title>Navigation</Dialog.Title>
+            <Dialog.Title>{t("navigation")}</Dialog.Title>
           </VisuallyHidden.Root>
           <div className="flex flex-col gap-one">
             {links.map(({ href, key }) => {

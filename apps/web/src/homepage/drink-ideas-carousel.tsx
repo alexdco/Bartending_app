@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { HOMEPAGE_CAROUSEL_LIMIT, isSessionError } from "@bartendingapp/shared";
 import { Text } from "@/components/text";
@@ -8,10 +9,11 @@ import { useDrinkIdeas } from "@/drink-ideas/use-drink-ideas";
 import { Carousel, CarouselItem, CarouselSkeleton } from "./carousel";
 
 export function DrinkIdeasCarousel({ onSessionError }: { onSessionError: () => void }) {
+  const t = useTranslations("home");
   const { data, error, isPending } = useDrinkIdeas();
 
   if (isPending) {
-    return <CarouselSkeleton title="Drink ideas from your pantry" />;
+    return <CarouselSkeleton title={t("drinkIdeasTitle")} />;
   }
 
   if (error) {
@@ -27,17 +29,17 @@ export function DrinkIdeasCarousel({ onSessionError }: { onSessionError: () => v
     return (
       <section className="flex flex-col gap-three px-six">
         <Text variant="heading" as="h2">
-          Drink ideas from your pantry
+          {t("drinkIdeasTitle")}
         </Text>
         <div className="flex flex-col items-start gap-two rounded-large border border-border bg-surface p-four">
           <Text variant="body" muted>
-            Add a few ingredients to your pantry and we&apos;ll show you what you can make.
+            {t("drinkIdeasEmpty")}
           </Text>
           <Link
             href="/pantry"
             className="inline-flex items-center justify-center gap-two rounded-medium bg-accent px-four py-two text-label font-medium text-accent-text transition-colors hover:opacity-90"
           >
-            Go to pantry
+            {t("goToPantry")}
           </Link>
         </div>
       </section>
@@ -46,7 +48,7 @@ export function DrinkIdeasCarousel({ onSessionError }: { onSessionError: () => v
 
   return (
     <div className="px-six">
-      <Carousel title="Drink ideas from your pantry" seeMoreHref="/drink-ideas">
+      <Carousel title={t("drinkIdeasTitle")} seeMoreHref="/drink-ideas">
         {matches.map((match) => (
           <CarouselItem key={match.id}>
             <RecipeCard

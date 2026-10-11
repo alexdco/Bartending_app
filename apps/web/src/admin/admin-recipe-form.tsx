@@ -1,6 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   ADMIN_ALCOHOLIC_STATUSES,
   saveAdminRecipe,
@@ -15,20 +16,17 @@ import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Text } from "@/components/text";
+import { alcoholicStatusKey } from "@/recipes/format";
 import {
   useAdminGlassNames,
   useAdminIngredientSuggestions,
   useAdminTagNames,
 } from "./use-admin-recipe-suggestions";
 
-const alcoholicStatusLabels: Record<AdminAlcoholicStatus, string> = {
-  alcoholic: "Alcoholic",
-  non_alcoholic: "Non alcoholic",
-  optional: "Optional",
-  unknown: "Unknown",
-};
+type AdminTranslator = ReturnType<typeof useTranslations<"admin">>;
 
 function errorFor(
+  t: AdminTranslator,
   errors: AdminRecipeValidationError[],
   field: AdminRecipeValidationError["field"],
 ): string | undefined {
@@ -38,15 +36,13 @@ function errorFor(
 
   switch (match.reason) {
     case "required":
-      return "This field is required.";
+      return t("errorRequired");
     case "too_long":
-      return field === "name"
-        ? "Name must be 200 characters or fewer."
-        : "Instructions must be 10,000 characters or fewer.";
+      return field === "name" ? t("errorNameTooLong") : t("errorInstructionsTooLong");
     case "invalid":
-      return "Choose a valid alcoholic status.";
+      return t("errorInvalidStatus");
     default:
-      return "Add at least one ingredient.";
+      return t("errorNoIngredients");
   }
 }
 
@@ -56,6 +52,9 @@ export interface AdminRecipeFormProps {
 }
 
 export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
+  const tStatus = useTranslations("alcoholicStatus");
   const router = useRouter();
   const [name, setName] = useState(existingRecipe?.name ?? "");
   const [instructions, setInstructions] = useState(existingRecipe?.instructions ?? "");
@@ -120,17 +119,17 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-four">
       <Input
-        label="Name"
+        label={t("name")}
         value={name}
         onChange={(event) => setName(event.target.value)}
-        error={errorFor(errors, "name")}
+        error={errorFor(t, errors, "name")}
         maxLength={200}
         required
       />
 
       <div className="flex flex-col gap-one">
         <label htmlFor="instructions" className="text-label font-medium text-text">
-          Instructions
+          {t("instructions")}
         </label>
         <textarea
           id="instructions"
@@ -140,24 +139,24 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
           rows={8}
           required
           className={`rounded-small border bg-surface px-three py-two text-body text-text placeholder:text-text-muted ${
-            errorFor(errors, "instructions") ? "border-danger" : "border-border"
+            errorFor(t, errors, "instructions") ? "border-danger" : "border-border"
           }`}
         />
-        {errorFor(errors, "instructions") && (
+        {errorFor(t, errors, "instructions") && (
           <span role="alert" className="text-body-small text-danger">
-            {errorFor(errors, "instructions")}
+            {errorFor(t, errors, "instructions")}
           </span>
         )}
       </div>
 
       <Input
-        label="Image URL"
+        label={t("imageUrl")}
         value={imageUrl}
         onChange={(event) => setImageUrl(event.target.value)}
       />
 
       <Input
-        label="Glass"
+        label={t("glass")}
         value={glass}
         onChange={(event) => setGlass(event.target.value)}
         list={glassListId}
@@ -171,42 +170,46 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
 
       <div className="flex flex-col gap-one">
         <label htmlFor="alcoholicStatus" className="text-label font-medium text-text">
-          Alcoholic status
+          {t("alcoholicStatus")}
         </label>
         <select
           id="alcoholicStatus"
           value={alcoholicStatus}
           onChange={(event) => setAlcoholicStatus(event.target.value as AdminAlcoholicStatus)}
           className={`rounded-small border bg-surface px-three py-two text-body text-text ${
-            errorFor(errors, "alcoholicStatus") ? "border-danger" : "border-border"
+            errorFor(t, errors, "alcoholicStatus") ? "border-danger" : "border-border"
           }`}
         >
           {ADMIN_ALCOHOLIC_STATUSES.map((status) => (
             <option key={status} value={status}>
-              {alcoholicStatusLabels[status]}
+              {tStatus(alcoholicStatusKey(status))}
             </option>
           ))}
         </select>
-        {errorFor(errors, "alcoholicStatus") && (
+        {errorFor(t, errors, "alcoholicStatus") && (
           <span role="alert" className="text-body-small text-danger">
-            {errorFor(errors, "alcoholicStatus")}
+            {errorFor(t, errors, "alcoholicStatus")}
           </span>
         )}
       </div>
 
-      <Input label="Region" value={region} onChange={(event) => setRegion(event.target.value)} />
+      <Input
+        label={t("region")}
+        value={region}
+        onChange={(event) => setRegion(event.target.value)}
+      />
 
       <div className="flex flex-col gap-two">
-        <Text variant="label">Ingredients</Text>
-        {errorFor(errors, "ingredients") && (
+        <Text variant="label">{t("ingredients")}</Text>
+        {errorFor(t, errors, "ingredients") && (
           <span role="alert" className="text-body-small text-danger">
-            {errorFor(errors, "ingredients")}
+            {errorFor(t, errors, "ingredients")}
           </span>
         )}
         {ingredients.map((ingredient, index) => (
           <div key={index} className="flex gap-two">
             <Input
-              label="Ingredient name"
+              label={t("ingredientName")}
               value={ingredient.name}
               list={ingredientListId}
               autoComplete="off"
@@ -219,7 +222,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
               className="flex-1"
             />
             <Input
-              label="Measure"
+              label={t("measure")}
               value={ingredient.measure ?? ""}
               onChange={(event) => {
                 const next = [...ingredients];
@@ -234,7 +237,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
               onClick={() => setIngredients(ingredients.filter((_, i) => i !== index))}
               disabled={ingredients.length === 1}
             >
-              Remove
+              {tCommon("remove")}
             </Button>
           </div>
         ))}
@@ -249,16 +252,16 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
           onClick={() => setIngredients([...ingredients, { name: "", measure: "" }])}
           className="self-start"
         >
-          Add ingredient
+          {t("addIngredient")}
         </Button>
       </div>
 
       <div className="flex flex-col gap-two">
-        <Text variant="label">Tags</Text>
+        <Text variant="label">{t("tags")}</Text>
         {tags.map((tag, index) => (
           <div key={index} className="flex gap-two">
             <Input
-              label="Tag name"
+              label={t("tagName")}
               value={tag.name}
               list={tagListId}
               autoComplete="off"
@@ -274,7 +277,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
               variant="secondary"
               onClick={() => setTags(tags.filter((_, i) => i !== index))}
             >
-              Remove
+              {tCommon("remove")}
             </Button>
           </div>
         ))}
@@ -289,7 +292,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
           onClick={() => setTags([...tags, { name: "" }])}
           className="self-start"
         >
-          Add tag
+          {t("addTag")}
         </Button>
       </div>
 
@@ -300,7 +303,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
       )}
 
       <Button type="submit" disabled={isSaving}>
-        {isSaving ? "Saving..." : "Save recipe"}
+        {isSaving ? t("saving") : t("saveRecipe")}
       </Button>
     </form>
   );

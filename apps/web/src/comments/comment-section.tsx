@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 import {
   COMMENT_MAX_LENGTH,
   COMMENT_PHOTO_DAILY_LIMIT,
@@ -27,9 +28,10 @@ export interface CommentSectionProps {
   recipeId: string;
 }
 
-const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
+type CommentsTranslator = ReturnType<typeof useTranslations<"comments">>;
 
 export function CommentSection({ recipeId }: CommentSectionProps) {
+  const t = useTranslations("comments");
   const { isLinked, isLoading: isSessionLoading } = useSession();
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useRecipeComments(recipeId);
@@ -39,24 +41,21 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
   return (
     <section className="flex flex-col gap-three">
       <Text variant="subheading" as="h2">
-        Comments
+        {t("title")}
       </Text>
 
       <Composer recipeId={recipeId} isLinked={isLinked} isSessionLoading={isSessionLoading} />
 
       {error ? (
         <Text variant="bodySmall" muted>
-          Couldn&apos;t load comments. Try again later.
+          {t("loadError")}
         </Text>
       ) : isPending ? (
         <div className="flex justify-center py-four">
-          <Spinner label="Loading comments" />
+          <Spinner label={t("loading")} />
         </div>
       ) : comments.length === 0 ? (
-        <EmptyState
-          title="No comments yet"
-          description="Be the first to share a tip or a variation."
-        />
+        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
         <>
           <ul className="flex flex-col gap-three">
@@ -73,7 +72,7 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
               disabled={isFetchingNextPage}
               className="self-center"
             >
-              {isFetchingNextPage ? "Loading..." : "Load more"}
+              {isFetchingNextPage ? t("loadingMore") : t("loadMore")}
             </Button>
           )}
         </>
@@ -84,28 +83,28 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
 
 type CommentWriteErrorReason = PostCommentError["reason"] | EditCommentError["reason"];
 
-function commentErrorMessage(reason: CommentWriteErrorReason): string {
+function commentErrorMessage(t: CommentsTranslator, reason: CommentWriteErrorReason): string {
   switch (reason) {
     case "empty":
     case "comment_empty":
-      return "Write something or add a photo before posting.";
+      return t("errorEmpty");
     case "too_long":
     case "comment_too_long":
-      return `Comments can be at most ${COMMENT_MAX_LENGTH} characters.`;
+      return t("errorTooLong", { max: COMMENT_MAX_LENGTH });
     case "no_session":
     case "anonymous_session":
     case "not_signed_in":
-      return "Sign in to leave a comment.";
+      return t("errorSignIn");
     case "too_many_photos":
-      return `A comment can have at most ${COMMENT_PHOTO_MAX_COUNT} photos.`;
+      return t("errorTooManyPhotos", { max: COMMENT_PHOTO_MAX_COUNT });
     case "invalid_photo":
-      return "A photo couldn't be attached. Remove it and add it again.";
+      return t("errorInvalidPhoto");
     case "recipe_unavailable":
-      return "This recipe is no longer available.";
+      return t("errorRecipeUnavailable");
     case "not_found_or_not_owner":
-      return "This comment no longer exists.";
+      return t("errorNotFound");
     default:
-      return "Couldn't save your comment. Try again.";
+      return t("errorGeneric");
   }
 }
 
@@ -115,17 +114,18 @@ function commentErrorMessage(reason: CommentWriteErrorReason): string {
  * when the comment must not be written (spec 0032 AC-10).
  */
 async function preparePhotos(
+  t: CommentsTranslator,
   body: string,
   photos: ReturnType<typeof usePhotoDrafts>,
   userId: string | undefined,
 ): Promise<{ photos: EditCommentPhotoInput[]; error: null } | { photos: null; error: string }> {
   const { error: bodyError } = validateCommentBody(body, { photoCount: photos.drafts.length });
-  if (bodyError) return { photos: null, error: commentErrorMessage(bodyError) };
+  if (bodyError) return { photos: null, error: commentErrorMessage(t, bodyError) };
 
-  if (!userId) return { photos: null, error: commentErrorMessage("no_session") };
+  if (!userId) return { photos: null, error: commentErrorMessage(t, "no_session") };
 
   if (photos.isProcessing) {
-    return { photos: null, error: "Wait for your photos to finish preparing." };
+    return { photos: null, error: t("errorPhotosPreparing") };
   }
 
   const upload = await photos.uploadPending(userId);
@@ -134,8 +134,8 @@ async function preparePhotos(
     return {
       photos: null,
       error: upload.dailyLimitReached
-        ? `Daily photo limit reached (${COMMENT_PHOTO_DAILY_LIMIT} a day). Remove the photos that didn't upload, or try again tomorrow.`
-        : "Some photos aren't ready. Retry or remove the ones marked below.",
+        ? t("errorDailyLimit", { limit: COMMENT_PHOTO_DAILY_LIMIT })
+        : t("errorPhotosNotReady"),
     };
   }
 
@@ -151,6 +151,7 @@ function Composer({
   isLinked: boolean;
   isSessionLoading: boolean;
 }) {
+  const t = useTranslations("comments");
   const { session } = useSession();
   const [body, setBody] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
@@ -161,10 +162,13 @@ function Composer({
   if (!isSessionLoading && !isLinked) {
     return (
       <Text variant="bodySmall" muted>
-        <Link href="/account" className="underline">
-          Sign in
-        </Link>{" "}
-        to leave a comment.
+        {t.rich("signInToComment", {
+          link: (chunks) => (
+            <Link href="/account" className="underline">
+              {chunks}
+            </Link>
+          ),
+        })}
       </Text>
     );
   }
@@ -174,7 +178,7 @@ function Composer({
   const submit = async () => {
     setFormError(null);
     setIsUploading(true);
-    const prepared = await preparePhotos(body, photos, session?.user.id);
+    const prepared = await preparePhotos(t, body, photos, session?.user.id);
     setIsUploading(false);
 
     if (prepared.error !== null) {
@@ -196,7 +200,7 @@ function Composer({
       return;
     }
 
-    setFormError(commentErrorMessage(result.error.reason));
+    setFormError(commentErrorMessage(t, result.error.reason));
   };
 
   return (
@@ -211,8 +215,8 @@ function Composer({
         value={body}
         onChange={(event) => setBody(event.target.value)}
         maxLength={COMMENT_MAX_LENGTH + 200}
-        placeholder="Share a tip, a variation, or your experience making it..."
-        aria-label="Comment"
+        placeholder={t("placeholder")}
+        aria-label={t("comment")}
         rows={3}
         className="rounded-small border border-border bg-surface px-three py-two text-body text-text placeholder:text-text-muted"
       />
@@ -223,11 +227,7 @@ function Composer({
         </Text>
       )}
       <Button type="submit" disabled={isBusy} className="self-end">
-        {isUploading
-          ? "Uploading photos..."
-          : postComment.isPending
-            ? "Posting..."
-            : "Post comment"}
+        {isUploading ? t("uploadingPhotos") : postComment.isPending ? t("posting") : t("post")}
       </Button>
     </form>
   );
@@ -242,6 +242,8 @@ function CommentEditForm({
   comment: Comment;
   onDone: () => void;
 }) {
+  const t = useTranslations("comments");
+  const tCommon = useTranslations("common");
   const { session } = useSession();
   const [draft, setDraft] = useState(comment.body ?? "");
   const [formError, setFormError] = useState<string | null>(null);
@@ -254,7 +256,7 @@ function CommentEditForm({
   const save = async () => {
     setFormError(null);
     setIsUploading(true);
-    const prepared = await preparePhotos(draft, photos, session?.user.id);
+    const prepared = await preparePhotos(t, draft, photos, session?.user.id);
     setIsUploading(false);
 
     if (prepared.error !== null) {
@@ -273,7 +275,7 @@ function CommentEditForm({
       return;
     }
 
-    setFormError(commentErrorMessage(result.error.reason));
+    setFormError(commentErrorMessage(t, result.error.reason));
   };
 
   return (
@@ -282,7 +284,7 @@ function CommentEditForm({
         value={draft}
         onChange={(event) => setDraft(event.target.value)}
         maxLength={COMMENT_MAX_LENGTH + 200}
-        aria-label="Edit comment"
+        aria-label={t("editComment")}
         rows={3}
         className="rounded-small border border-border bg-surface px-three py-two text-body text-text"
       />
@@ -294,10 +296,10 @@ function CommentEditForm({
       )}
       <div className="flex gap-two self-end">
         <Button variant="secondary" disabled={isBusy} onClick={onDone}>
-          Cancel
+          {tCommon("cancel")}
         </Button>
         <Button disabled={isBusy} onClick={() => void save()}>
-          {isUploading ? "Uploading photos..." : "Save"}
+          {isUploading ? t("uploadingPhotos") : tCommon("save")}
         </Button>
       </div>
     </div>
@@ -305,6 +307,9 @@ function CommentEditForm({
 }
 
 function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment }) {
+  const t = useTranslations("comments");
+  const tCommon = useTranslations("common");
+  const format = useFormatter();
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const deleteComment = useDeleteComment(recipeId);
@@ -322,10 +327,10 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
   return (
     <div className="flex flex-col gap-two rounded-medium border border-border p-three">
       <div className="flex items-center justify-between gap-two">
-        <Text variant="label">{comment.displayName ?? "Anonymous"}</Text>
+        <Text variant="label">{comment.displayName ?? t("anonymous")}</Text>
         <Text variant="bodySmall" muted>
-          {dateFormatter.format(new Date(comment.createdAt))}
-          {comment.edited ? " (edited)" : ""}
+          {format.dateTime(new Date(comment.createdAt), { dateStyle: "medium" })}
+          {comment.edited ? ` ${t("edited")}` : ""}
         </Text>
       </div>
       {comment.body && <Text variant="body">{comment.body}</Text>}
@@ -335,10 +340,10 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
           {isConfirmingDelete ? (
             <>
               <Text variant="bodySmall" muted>
-                Delete this comment?
+                {t("deleteConfirm")}
               </Text>
               <Button variant="secondary" onClick={() => setIsConfirmingDelete(false)}>
-                Cancel
+                {tCommon("cancel")}
               </Button>
               <Button
                 disabled={deleteComment.isPending}
@@ -349,16 +354,16 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
                   })
                 }
               >
-                Delete
+                {tCommon("delete")}
               </Button>
             </>
           ) : (
             <>
               <Button variant="secondary" onClick={() => setIsEditing(true)}>
-                Edit
+                {t("edit")}
               </Button>
               <Button variant="secondary" onClick={() => setIsConfirmingDelete(true)}>
-                Delete
+                {tCommon("delete")}
               </Button>
             </>
           )}

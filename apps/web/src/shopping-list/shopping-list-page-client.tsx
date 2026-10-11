@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -19,6 +20,8 @@ import {
 const DEBOUNCE_MS = 300;
 
 export function ShoppingListPageClient() {
+  const t = useTranslations("shoppingList");
+  const tCommon = useTranslations("common");
   const [inputValue, setInputValue] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
@@ -43,15 +46,15 @@ export function ShoppingListPageClient() {
       <BackButton />
       <div className="flex items-center gap-two">
         <Text variant="display" as="h1">
-          Shopping list
+          {t("title")}
         </Text>
         <PantryShoppingSwitcher />
       </div>
 
       <div className="flex flex-col gap-two">
         <Input
-          label="Add an ingredient"
-          placeholder="Lime, gin, simple syrup..."
+          label={t("addIngredient")}
+          placeholder={t("addIngredientPlaceholder")}
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
         />
@@ -59,11 +62,11 @@ export function ShoppingListPageClient() {
           <div className="flex flex-col gap-one rounded-medium border border-border bg-surface p-two">
             {ingredientSearch.isPending ? (
               <div className="flex justify-center py-two">
-                <Spinner label="Searching ingredients" />
+                <Spinner label={t("searchingIngredients")} />
               </div>
             ) : (ingredientSearch.data ?? []).length === 0 ? (
               <Text variant="bodySmall" muted>
-                No matching ingredients.
+                {t("noMatchingIngredients")}
               </Text>
             ) : (
               (ingredientSearch.data ?? []).map((ingredient) => {
@@ -84,7 +87,7 @@ export function ShoppingListPageClient() {
                         )
                       }
                     >
-                      {alreadyAdded ? "Added" : "Add"}
+                      {alreadyAdded ? tCommon("added") : tCommon("add")}
                     </Button>
                   </div>
                 );
@@ -96,36 +99,33 @@ export function ShoppingListPageClient() {
 
       {addShoppingListItem.isError && (
         <Text variant="bodySmall" className="text-danger" role="alert">
-          Couldn&apos;t add that ingredient. Check your connection and try again.
+          {t("addFailed")}
         </Text>
       )}
       {removeShoppingListItem.isError && (
         <Text variant="bodySmall" className="text-danger" role="alert">
-          Couldn&apos;t remove that ingredient. Check your connection and try again.
+          {t("removeFailed")}
         </Text>
       )}
       {buyShoppingListItem.isError && (
         <Text variant="bodySmall" className="text-danger" role="alert">
-          Couldn&apos;t mark that ingredient as bought. Check your connection and try again.
+          {t("buyFailed")}
         </Text>
       )}
 
       <section className="flex flex-col gap-two">
         {shoppingList.error ? (
           <EmptyState
-            title="Something went wrong"
-            description="We couldn't load your shopping list. Check your connection and try again."
-            action={<Button onClick={() => shoppingList.refetch()}>Retry</Button>}
+            title={tCommon("somethingWentWrong")}
+            description={t("loadError")}
+            action={<Button onClick={() => shoppingList.refetch()}>{tCommon("retry")}</Button>}
           />
         ) : shoppingList.isPending ? (
           <div className="flex justify-center py-six">
-            <Spinner label="Loading shopping list" />
+            <Spinner label={t("loading")} />
           </div>
         ) : (shoppingList.data ?? []).length === 0 ? (
-          <EmptyState
-            title="Your shopping list is empty"
-            description="Search for an ingredient above to add it to your shopping list."
-          />
+          <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
         ) : (
           <ul className="flex flex-col gap-one">
             {(shoppingList.data ?? []).map((item) => (
@@ -139,7 +139,7 @@ export function ShoppingListPageClient() {
                     variant="primary"
                     onClick={() => buyShoppingListItem.mutate({ ingredientId: item.ingredientId })}
                   >
-                    Bought
+                    {t("bought")}
                   </Button>
                   <Button
                     variant="secondary"
@@ -147,7 +147,7 @@ export function ShoppingListPageClient() {
                       removeShoppingListItem.mutate({ ingredientId: item.ingredientId })
                     }
                   >
-                    Remove
+                    {tCommon("remove")}
                   </Button>
                 </div>
               </li>

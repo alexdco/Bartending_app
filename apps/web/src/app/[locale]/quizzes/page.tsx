@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { buildQuizSlugPath, fetchQuizAttempt, fetchQuizzes } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
@@ -7,12 +8,13 @@ import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
 
-export const metadata: Metadata = {
-  title: "Quizzes",
-  description: "Test what you've learned with short quizzes on bartending topics and recipes.",
-};
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("quizzes");
+  return { title: t("title"), description: t("metaDescription") };
+}
 
 export default async function QuizzesPage() {
+  const t = await getTranslations("quizzes");
   const quizzes = await fetchQuizzes(supabasePublic);
   const bestScores = await Promise.all(
     quizzes.map((quiz) => fetchQuizAttempt(supabasePublic, quiz.id)),
@@ -22,17 +24,14 @@ export default async function QuizzesPage() {
     <main className="flex flex-1 flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
-        Quizzes
+        {t("title")}
       </Text>
       <Text variant="body" muted>
-        Short quizzes on Learn topics and recipes, so you can check what stuck.
+        {t("intro")}
       </Text>
 
       {quizzes.length === 0 ? (
-        <EmptyState
-          title="No quizzes yet"
-          description="Check back soon for quizzes to test your knowledge."
-        />
+        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
         <div className="flex flex-col gap-three">
           {quizzes.map((quiz, index) => {
@@ -45,7 +44,7 @@ export default async function QuizzesPage() {
                   </Text>
                   {bestScore && (
                     <Text variant="label" muted>
-                      Best: {bestScore.score}/{bestScore.total}
+                      {t("best", { score: bestScore.score, total: bestScore.total })}
                     </Text>
                   )}
                 </Card>

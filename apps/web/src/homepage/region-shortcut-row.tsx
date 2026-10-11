@@ -1,13 +1,16 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { slugify } from "@bartendingapp/shared";
 
 export function RegionShortcutRow({ regions }: { regions: string[] }) {
+  const t = useTranslations("home");
+
   if (regions.length === 0) {
     return null;
   }
 
   return (
-    <div className="flex flex-wrap gap-two px-six" role="group" aria-label="Popular by region">
+    <div className="flex flex-wrap gap-two px-six" role="group" aria-label={t("popularByRegion")}>
       {regions.map((region) => (
         <Link
           key={region}

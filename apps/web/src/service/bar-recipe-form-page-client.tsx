@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { RECOGNIZED_UNITS, type RecognizedUnit } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -23,14 +24,15 @@ interface DraftIngredient {
 }
 
 function AddIngredientRow({ onAdd }: { onAdd: (ingredient: DraftIngredient) => void }) {
+  const t = useTranslations("service");
   const [query, setQuery] = useState("");
   const ingredientSearch = useIngredientSearch(query.trim());
 
   return (
     <div className="flex flex-col gap-two">
       <Input
-        label="Add an ingredient"
-        placeholder="Bourbon, Aperol, lemon juice..."
+        label={t("addIngredient")}
+        placeholder={t("addIngredientPlaceholder")}
         value={query}
         onChange={(e) => setQuery(e.target.value)}
       />
@@ -65,6 +67,8 @@ function AddIngredientRow({ onAdd }: { onAdd: (ingredient: DraftIngredient) => v
 // override a catalog recipe, mirroring mobile's same deferred scope (see
 // spec 0023-bar-data-model.md's build plan step 6 note).
 export function BarRecipeFormPageClient() {
+  const t = useTranslations("service");
+  const tCommon = useTranslations("common");
   const currentBar = useCurrentBar();
   const barId = currentBar.currentBar?.id;
   const createBarRecipe = useCreateBarRecipe(barId ?? "");
@@ -115,66 +119,63 @@ export function BarRecipeFormPageClient() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
       <BackButton />
-      <Text variant="display">Add house recipe</Text>
+      <Text variant="display">{t("addHouseRecipe")}</Text>
 
       {!isOwner ? (
-        <EmptyState
-          title="No bar selected"
-          description="Create or select a bar first, then add a house recipe."
-        />
+        <EmptyState title={t("noBarSelected")} description={t("noBarForRecipeDescription")} />
       ) : (
         <div className="flex flex-col gap-three">
           <Input
-            label="Name"
-            placeholder="Paper Plane"
+            label={t("recipeName")}
+            placeholder={t("recipeNamePlaceholder")}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
           <Input
-            label="Method (optional)"
-            placeholder="Shake"
+            label={t("methodOptional")}
+            placeholder={t("methodPlaceholder")}
             value={method}
             onChange={(e) => setMethod(e.target.value)}
           />
           <Input
-            label="Straining (optional)"
-            placeholder="Double strain"
+            label={t("strainingOptional")}
+            placeholder={t("strainingPlaceholder")}
             value={straining}
             onChange={(e) => setStraining(e.target.value)}
           />
           <Input
-            label="Glass (optional)"
-            placeholder="Coupe"
+            label={t("glassOptional")}
+            placeholder={t("glassPlaceholder")}
             value={glass}
             onChange={(e) => setGlass(e.target.value)}
           />
           <Input
-            label="Ice (optional)"
-            placeholder="None"
+            label={t("iceOptional")}
+            placeholder={t("icePlaceholder")}
             value={ice}
             onChange={(e) => setIce(e.target.value)}
           />
           <Input
-            label="Garnish (optional)"
-            placeholder="Lemon twist"
+            label={t("garnishOptional")}
+            placeholder={t("garnishPlaceholder")}
             value={garnish}
             onChange={(e) => setGarnish(e.target.value)}
           />
 
-          <Text variant="subheading">Ingredients</Text>
+          <Text variant="subheading">{t("ingredients")}</Text>
           {ingredients.map((ingredient, index) => (
             <Card key={`${ingredient.ingredientId}-${index}`} className="flex flex-col gap-two">
               <Text variant="body" className="font-semibold">
                 {ingredient.name}
               </Text>
               <Input
-                label="Amount"
+                label={t("amount")}
                 inputMode="decimal"
                 value={ingredient.amountValue}
                 onChange={(e) => updateIngredient(index, { amountValue: e.target.value })}
                 className="max-w-32"
               />
-              <div className="flex flex-wrap gap-one" role="group" aria-label="Unit">
+              <div className="flex flex-wrap gap-one" role="group" aria-label={t("unit")}>
                 {UNITS.map((unit) => (
                   <Chip
                     key={unit}
@@ -186,7 +187,7 @@ export function BarRecipeFormPageClient() {
                 ))}
               </div>
               <Button variant="secondary" onClick={() => removeIngredient(index)}>
-                Remove
+                {tCommon("remove")}
               </Button>
             </Card>
           ))}
@@ -196,12 +197,11 @@ export function BarRecipeFormPageClient() {
           />
 
           <Button disabled={!canSave || createBarRecipe.isPending} onClick={handleSave}>
-            {createBarRecipe.isPending ? "Saving..." : "Save house recipe"}
+            {createBarRecipe.isPending ? t("saving") : t("saveHouseRecipe")}
           </Button>
           {createBarRecipe.isError && (
             <Text variant="bodySmall" className="text-danger">
-              Couldn&apos;t save that recipe. A house recipe with this name may already exist, or
-              you may not be this bar&apos;s owner.
+              {t("saveHouseRecipeFailed")}
             </Text>
           )}
         </div>

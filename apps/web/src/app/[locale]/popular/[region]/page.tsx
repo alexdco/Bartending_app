@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   buildQuizSlugPath,
   fetchPopularByRegion,
@@ -42,8 +42,9 @@ export async function generateMetadata({
     return {};
   }
 
-  const title = `Popular drinks in ${region}`;
-  const description = `Browse the most popular cocktail and mocktail recipes in ${region}.`;
+  const t = await getTranslations("popular");
+  const title = t("metaTitle", { region });
+  const description = t("metaDescription", { region });
   const regionPath = `/popular/${regionSlug}`;
   const canonicalPath = localizedPath((await getLocale()) as Locale, regionPath);
 
@@ -79,6 +80,7 @@ export default async function PopularRegionPage({
   }
 
   const locale = (await getLocale()) as Locale;
+  const t = await getTranslations("popular");
   const recipes = await fetchPopularByRegion(supabasePublic, region, locale);
   const quiz = await fetchQuizBySource(supabasePublic, "recipe_region", region);
 
@@ -86,7 +88,7 @@ export default async function PopularRegionPage({
     <div className="flex flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
-        Popular drinks by region
+        {t("title")}
       </Text>
 
       <PopularRegionPicker regions={regions} selectedRegion={region} />
@@ -94,16 +96,13 @@ export default async function PopularRegionPage({
       {quiz && (
         <Link href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}>
           <Card className="border-accent">
-            <Text variant="label">Take the quiz: {quiz.title}</Text>
+            <Text variant="label">{t("takeTheQuiz", { title: quiz.title })}</Text>
           </Card>
         </Link>
       )}
 
       {recipes.length === 0 ? (
-        <EmptyState
-          title="No popular drinks for this region yet"
-          description="Check back once more drinks have been ranked."
-        />
+        <EmptyState title={t("regionEmptyTitle")} description={t("regionEmptyDescription")} />
       ) : (
         <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
           {recipes.map((recipe) => (

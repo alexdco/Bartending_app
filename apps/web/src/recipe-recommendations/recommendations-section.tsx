@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -21,28 +22,30 @@ export function RecommendationsSection({
   recipeId: string;
   recipeName: string;
 }) {
+  const t = useTranslations("recommendations");
+  const tCommon = useTranslations("common");
   useRecordRecentlyViewedRecipe(recipeId);
   const { data, error, isPending, refetch } = useRecipeRecommendations(recipeId);
 
   return (
     <section className="flex flex-col gap-three">
       <Text variant="heading" as="h2">
-        You may also like
+        {t("title")}
       </Text>
 
       {error ? (
         <EmptyState
-          title="Something went wrong"
-          description="We couldn't load recommendations. Check your connection and try again."
-          action={<Button onClick={() => refetch()}>Retry</Button>}
+          title={tCommon("somethingWentWrong")}
+          description={t("loadError")}
+          action={<Button onClick={() => refetch()}>{tCommon("retry")}</Button>}
         />
       ) : isPending ? (
         <div className="flex justify-center py-six">
-          <Spinner label="Loading recommendations" />
+          <Spinner label={t("loading")} />
         </div>
       ) : data.length === 0 ? (
         <Text variant="body" muted>
-          No recommendations available right now.
+          {t("emptyInline")}
         </Text>
       ) : (
         <>
@@ -63,7 +66,7 @@ export function RecommendationsSection({
             href={`/recipes/${buildRecipeSlugPath(recipeId, recipeName)}/more-like-this`}
             className="text-label font-medium text-accent hover:underline"
           >
-            See more
+            {t("seeMore")}
           </Link>
         </>
       )}

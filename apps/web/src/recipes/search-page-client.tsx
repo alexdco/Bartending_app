@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -16,14 +17,11 @@ import {
   type RecipeSearchResult,
 } from "@bartendingapp/shared";
 import { track } from "@/analytics/posthog-client";
+import { alcoholicStatusKey } from "./format";
 import { RecipeCard } from "./recipe-card";
 import { useRecipeSearch } from "./use-recipe-search";
 
-const STATUS_FILTERS: { value: AlcoholicStatusFilter; label: string }[] = [
-  { value: "alcoholic", label: "Alcoholic" },
-  { value: "non_alcoholic", label: "Non alcoholic" },
-  { value: "optional", label: "Optional alcohol" },
-];
+const STATUS_FILTERS: readonly AlcoholicStatusFilter[] = ["alcoholic", "non_alcoholic", "optional"];
 
 const DEBOUNCE_MS = 300;
 
@@ -32,6 +30,8 @@ export interface SearchPageClientProps {
 }
 
 export function SearchPageClient({ initialResults }: SearchPageClientProps) {
+  const t = useTranslations("search");
+  const tStatus = useTranslations("alcoholicStatus");
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
@@ -108,38 +108,38 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
     <div className="flex flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
-        Find a recipe
+        {t("title")}
       </Text>
       <Input
-        label="Search by name or ingredient"
-        placeholder="Margarita, lime, gin..."
+        label={t("inputLabel")}
+        placeholder={t("inputPlaceholder")}
         value={inputValue}
         onChange={(event) => setInputValue(event.target.value)}
       />
-      <div className="flex flex-wrap gap-two" role="group" aria-label="Filter by alcoholic status">
+      <div className="flex flex-wrap gap-two" role="group" aria-label={t("filterByStatus")}>
         {STATUS_FILTERS.map((filter) => (
           <Chip
-            key={filter.value}
-            selected={statusFilter === filter.value}
-            onSelectedChange={(selected) => setStatusFilter(selected ? filter.value : null)}
+            key={filter}
+            selected={statusFilter === filter}
+            onSelectedChange={(selected) => setStatusFilter(selected ? filter : null)}
           >
-            {filter.label}
+            {tStatus(alcoholicStatusKey(filter))}
           </Chip>
         ))}
       </div>
 
       {error ? (
         <EmptyState
-          title="Something went wrong"
-          description="We couldn't load recipes. Check your connection and try again."
-          action={<Button onClick={() => refetch()}>Retry</Button>}
+          title={t("errorTitle")}
+          description={t("errorDescription")}
+          action={<Button onClick={() => refetch()}>{t("retry")}</Button>}
         />
       ) : isPending ? (
         <div className="flex justify-center py-six">
-          <Spinner label="Loading recipes" />
+          <Spinner label={t("loading")} />
         </div>
       ) : results.length === 0 ? (
-        <EmptyState title="No recipes found" description="Try a different search or filter." />
+        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
@@ -148,7 +148,7 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
             ))}
           </div>
           <div ref={sentinelRef} className="flex justify-center py-four">
-            {isFetchingNextPage && <Spinner label="Loading more recipes" />}
+            {isFetchingNextPage && <Spinner label={t("loadingMore")} />}
           </div>
         </>
       )}

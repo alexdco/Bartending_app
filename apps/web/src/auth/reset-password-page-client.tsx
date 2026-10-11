@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { AuthError, completePasswordReset } from "@bartendingapp/shared";
 import { useMutation } from "@tanstack/react-query";
@@ -12,6 +13,7 @@ import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
 
 export function ResetPasswordPageClient() {
+  const t = useTranslations("account");
   const router = useRouter();
   const [password, setPassword] = useState("");
   const completeReset = useMutation({
@@ -32,10 +34,10 @@ export function ResetPasswordPageClient() {
             }}
           >
             <Text variant="heading" as="h2">
-              Set a new password
+              {t("setNewPassword")}
             </Text>
             <Input
-              label="New password"
+              label={t("newPassword")}
               type="password"
               autoComplete="new-password"
               required
@@ -46,12 +48,12 @@ export function ResetPasswordPageClient() {
               <Text variant="bodySmall" className="text-danger" role="alert">
                 {completeReset.error instanceof AuthError &&
                 completeReset.error.reason === "weak_password"
-                  ? "Password must be at least 6 characters."
-                  : "Something went wrong. Check your connection and try again."}
+                  ? t("errorWeakPassword")
+                  : t("errorGeneric")}
               </Text>
             )}
             <Button type="submit" disabled={completeReset.isPending}>
-              {completeReset.isPending ? "Saving…" : "Save new password"}
+              {completeReset.isPending ? t("saving") : t("saveNewPassword")}
             </Button>
           </form>
         </Card>

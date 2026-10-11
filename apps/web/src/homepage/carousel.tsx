@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type ReactNode } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 
@@ -36,12 +37,14 @@ function CarouselArrow({
   onClick: () => void;
   disabled: boolean;
 }) {
+  const t = useTranslations("home");
+
   return (
     <button
       type="button"
       onClick={onClick}
       disabled={disabled}
-      aria-label={direction === "left" ? "Scroll left" : "Scroll right"}
+      aria-label={direction === "left" ? t("scrollLeft") : t("scrollRight")}
       className={`absolute top-1/2 z-10 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-surface text-text shadow-md disabled:pointer-events-none disabled:opacity-0 hover:bg-surface-selected ${
         direction === "left" ? "left-0 -translate-x-1/2" : "right-0 translate-x-1/2"
       }`}
@@ -52,6 +55,7 @@ function CarouselArrow({
 }
 
 export function Carousel({ title, seeMoreHref, children }: CarouselProps) {
+  const t = useTranslations("home");
   const trackRef = useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(false);
@@ -89,7 +93,7 @@ export function Carousel({ title, seeMoreHref, children }: CarouselProps) {
         {seeMoreHref && (
           <Link href={seeMoreHref}>
             <Text variant="label" as="span">
-              See more
+              {t("seeMore")}
             </Text>
           </Link>
         )}

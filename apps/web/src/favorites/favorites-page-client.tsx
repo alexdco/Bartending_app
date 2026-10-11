@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef } from "react";
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { EmptyState } from "@/components/empty-state";
@@ -11,6 +12,8 @@ import { Button } from "@/components/button";
 import { useFavoriteRecipes } from "./use-favorites";
 
 export function FavoritesPageClient() {
+  const t = useTranslations("favorites");
+  const tCommon = useTranslations("common");
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
     useFavoriteRecipes();
 
@@ -39,29 +42,29 @@ export function FavoritesPageClient() {
     <div className="flex flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
-        Favorites
+        {t("title")}
       </Text>
 
       {error ? (
         <EmptyState
-          title="Something went wrong"
-          description="We couldn't load your favorites. Check your connection and try again."
-          action={<Button onClick={() => refetch()}>Retry</Button>}
+          title={tCommon("somethingWentWrong")}
+          description={t("loadError")}
+          action={<Button onClick={() => refetch()}>{tCommon("retry")}</Button>}
         />
       ) : isPending ? (
         <div className="flex justify-center py-six">
-          <Spinner label="Loading favorites" />
+          <Spinner label={t("loading")} />
         </div>
       ) : recipes.length === 0 ? (
         <EmptyState
-          title="No favorites yet"
-          description="Favorite a recipe from its card or detail page to see it here."
+          title={t("emptyTitle")}
+          description={t("emptyDescription")}
           action={
             <Link
               href="/"
               className="inline-flex items-center justify-center gap-two rounded-medium bg-accent px-four py-two text-label font-medium text-accent-text transition-colors hover:opacity-90"
             >
-              Browse recipes
+              {t("browseRecipes")}
             </Link>
           }
         />
@@ -73,7 +76,7 @@ export function FavoritesPageClient() {
             ))}
           </div>
           <div ref={sentinelRef} className="flex justify-center py-four">
-            {isFetchingNextPage && <Spinner label="Loading more favorites" />}
+            {isFetchingNextPage && <Spinner label={t("loadingMore")} />}
           </div>
         </>
       )}

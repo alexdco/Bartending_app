@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslations } from "next-intl";
 import type { BartenderSearchResult, SearchResultTier } from "@bartendingapp/shared";
 import { useSearchParams } from "next/navigation";
 import { useRouter } from "@/i18n/navigation";
@@ -16,15 +17,15 @@ import { useBartenderSearch } from "@/service/use-bartender-search";
 const DEBOUNCE_MS = 200;
 const TIER_PREVIEW_COUNT = 5;
 
-const TIER_LABELS: Record<SearchResultTier, string> = {
-  1: "On the menu",
-  2: "House recipes",
-  3: "Pinned",
-  4: "Recently viewed",
-  5: "Exact match",
-  6: "Other matches",
-  7: "By ingredients",
-};
+const TIER_KEYS = {
+  1: "tierOnMenu",
+  2: "tierHouseRecipes",
+  3: "tierPinned",
+  4: "tierRecentlyViewed",
+  5: "tierExactMatch",
+  6: "tierOtherMatches",
+  7: "tierByIngredients",
+} as const satisfies Record<SearchResultTier, string>;
 
 function ResultRow({ result }: { result: BartenderSearchResult }) {
   const router = useRouter();
@@ -53,6 +54,7 @@ function TierSection({
   tier: SearchResultTier;
   results: BartenderSearchResult[];
 }) {
+  const t = useTranslations("service");
   const [expanded, setExpanded] = useState(false);
 
   if (results.length === 0) {
@@ -63,7 +65,7 @@ function TierSection({
 
   return (
     <div className="flex flex-col gap-two">
-      <Text variant="subheading">{TIER_LABELS[tier]}</Text>
+      <Text variant="subheading">{t(TIER_KEYS[tier])}</Text>
       <div className="flex flex-col gap-one">
         {visible.map((result) => (
           <ResultRow key={`${result.kind}-${result.id}`} result={result} />
@@ -71,7 +73,7 @@ function TierSection({
       </div>
       {!expanded && results.length > TIER_PREVIEW_COUNT && (
         <Button variant="secondary" onClick={() => setExpanded(true)}>
-          {`See ${results.length - TIER_PREVIEW_COUNT} more`}
+          {t("seeMoreCount", { count: results.length - TIER_PREVIEW_COUNT })}
         </Button>
       )}
     </div>
@@ -84,6 +86,8 @@ function TierSection({
 // query is kept in the URL (?q=) so browser back restores it, per the Quick
 // Build spec's AC-4 back-navigation resolution.
 export function BartenderSearchPageClient() {
+  const t = useTranslations("service");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
@@ -115,32 +119,29 @@ export function BartenderSearchPageClient() {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
       <BackButton />
-      <Text variant="display">Search</Text>
+      <Text variant="display">{t("search")}</Text>
       <Input
-        label="Cocktail name, shorthand, or ingredients"
-        placeholder="old f, marg, esp mart, gin campari vermouth..."
+        label={t("searchInputLabel")}
+        placeholder={t("searchInputPlaceholder")}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
         autoFocus
       />
 
       {debouncedQuery === "" ? (
-        <EmptyState
-          title="Start typing"
-          description='Try a full name, a shorthand like "esp mart", or a list of ingredients.'
-        />
+        <EmptyState title={t("startTyping")} description={t("startTypingDescription")} />
       ) : search.error ? (
         <EmptyState
-          title="Something went wrong"
-          description="Check your connection and try again."
-          action={<Button onClick={() => search.refetch()}>Retry</Button>}
+          title={tCommon("somethingWentWrong")}
+          description={t("checkConnection")}
+          action={<Button onClick={() => search.refetch()}>{tCommon("retry")}</Button>}
         />
       ) : search.isPending ? (
         <div className="flex items-center justify-center py-six">
-          <Spinner label="Searching" />
+          <Spinner label={t("searching")} />
         </div>
       ) : (search.data ?? []).length === 0 ? (
-        <EmptyState title="No matches" description="Try a different name or ingredient." />
+        <EmptyState title={t("noMatches")} description={t("noMatchesDescription")} />
       ) : (
         <div className="flex flex-col gap-four">
           {([1, 2, 3, 4, 5, 6, 7] as SearchResultTier[]).map((tier) => (

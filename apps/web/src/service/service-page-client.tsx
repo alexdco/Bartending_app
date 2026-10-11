@@ -24,8 +24,10 @@ function BarSwitcher({
   currentBarId: string | null;
   onSelect: (barId: string) => void;
 }) {
+  const t = useTranslations("service");
+
   return (
-    <div className="flex flex-wrap gap-two" role="group" aria-label="Select a bar">
+    <div className="flex flex-wrap gap-two" role="group" aria-label={t("selectBar")}>
       {bars.map((bar) => (
         <Button
           key={bar.id}
@@ -40,14 +42,15 @@ function BarSwitcher({
 }
 
 function CreateBarForm() {
+  const t = useTranslations("service");
   const [name, setName] = useState("");
   const createBar = useCreateBar();
 
   return (
     <div className="flex w-full flex-col gap-two">
       <Input
-        label="Bar name"
-        placeholder="Riverside Bar"
+        label={t("barName")}
+        placeholder={t("barNamePlaceholder")}
         value={name}
         onChange={(e) => setName(e.target.value)}
       />
@@ -55,11 +58,11 @@ function CreateBarForm() {
         disabled={name.trim() === "" || createBar.isPending}
         onClick={() => createBar.mutate(name.trim(), { onSuccess: () => setName("") })}
       >
-        {createBar.isPending ? "Creating..." : "Create bar"}
+        {createBar.isPending ? t("creating") : t("createBar")}
       </Button>
       {createBar.isError && (
         <Text variant="bodySmall" className="text-danger">
-          Couldn&apos;t create the bar. Check your connection and try again.
+          {t("createBarFailed")}
         </Text>
       )}
     </div>
@@ -67,26 +70,27 @@ function CreateBarForm() {
 }
 
 function WorkingSoloPanel({ isLinked }: { isLinked: boolean }) {
+  const t = useTranslations("service");
+
   return (
     <div className="flex flex-col gap-two">
-      <Text variant="subheading">Working solo</Text>
+      <Text variant="subheading">{t("workingSolo")}</Text>
       <Text variant="bodySmall" muted>
-        Search and pinned cocktails work fully on their own. Create or join a bar anytime to add a
-        shared menu and 86 list with a team.
+        {t("workingSoloDescription")}
       </Text>
       {isLinked ? (
         <div className="flex w-full flex-col gap-two">
           <CreateBarForm />
           <Link href="/service/invites">
             <Button variant="secondary" className="w-full">
-              I have an invite
+              {t("haveInvite")}
             </Button>
           </Link>
         </div>
       ) : (
         <Link href="/account">
           <Button variant="secondary" className="w-full">
-            Sign in to create or join a bar
+            {t("signInToCreateOrJoin")}
           </Button>
         </Link>
       )}
@@ -95,6 +99,8 @@ function WorkingSoloPanel({ isLinked }: { isLinked: boolean }) {
 }
 
 function CurrentMenuSection({ barId }: { barId: string }) {
+  const t = useTranslations("service");
+  const tCommon = useTranslations("common");
   const router = useRouter();
   const serviceData = useBarServiceData(barId);
   const toggleStock = useToggleStock(barId);
@@ -102,7 +108,7 @@ function CurrentMenuSection({ barId }: { barId: string }) {
   if (serviceData.isPending) {
     return (
       <div className="flex items-center justify-center py-six">
-        <Spinner label="Loading bar data" />
+        <Spinner label={t("loadingBar")} />
       </div>
     );
   }
@@ -110,9 +116,9 @@ function CurrentMenuSection({ barId }: { barId: string }) {
   if (serviceData.error) {
     return (
       <EmptyState
-        title="Couldn't load this bar"
-        description="Check your connection and try again."
-        action={<Button onClick={() => serviceData.refetch()}>Retry</Button>}
+        title={t("loadBarFailed")}
+        description={t("checkConnection")}
+        action={<Button onClick={() => serviceData.refetch()}>{tCommon("retry")}</Button>}
       />
     );
   }
@@ -128,19 +134,19 @@ function CurrentMenuSection({ barId }: { barId: string }) {
 
   return (
     <div className="flex flex-col gap-two">
-      <Text variant="subheading">Current menu</Text>
+      <Text variant="subheading">{t("currentMenu")}</Text>
       <div className="flex flex-wrap gap-two">
         <Link href="/service/recipes/new">
-          <Button variant="secondary">Add house recipe</Button>
+          <Button variant="secondary">{t("addHouseRecipe")}</Button>
         </Link>
         <Link href="/service/invite">
-          <Button variant="secondary">Invite staff</Button>
+          <Button variant="secondary">{t("inviteStaff")}</Button>
         </Link>
       </div>
 
       {data.menu.length === 0 ? (
         <Text variant="bodySmall" muted>
-          Nothing on the menu yet.
+          {t("menuEmpty")}
         </Text>
       ) : (
         <div className="flex flex-col gap-one">
@@ -166,10 +172,10 @@ function CurrentMenuSection({ barId }: { barId: string }) {
         </div>
       )}
 
-      <Text variant="subheading">86 list</Text>
+      <Text variant="subheading">{t("list86")}</Text>
       {data.houseRecipes.length === 0 ? (
         <Text variant="bodySmall" muted>
-          No house ingredients tracked yet.
+          {t("noHouseIngredients")}
         </Text>
       ) : (
         <div className="flex flex-col gap-one">
@@ -188,7 +194,7 @@ function CurrentMenuSection({ barId }: { barId: string }) {
                   variant={is86d ? "primary" : "secondary"}
                   onClick={() => toggleStock.mutate({ ingredientId, is86d: !is86d })}
                 >
-                  {is86d ? "86'd" : "In stock"}
+                  {is86d ? t("is86d") : t("inStock")}
                 </Button>
               </div>
             );
@@ -201,18 +207,19 @@ function CurrentMenuSection({ barId }: { barId: string }) {
 
 export function ServicePageClient() {
   const router = useRouter();
-  const t = useTranslations("nav");
+  const t = useTranslations("service");
+  const tNav = useTranslations("nav");
   const { isLinked } = useSession();
   const currentBar = useCurrentBar();
   const pinned = usePinnedRecipes();
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
-      <Text variant="display">{t("service")}</Text>
+      <Text variant="display">{tNav("service")}</Text>
 
       <Input
-        label="Search"
-        placeholder="old f, marg, esp mart..."
+        label={t("search")}
+        placeholder={t("searchPlaceholder")}
         onFocus={() => router.push("/service/search")}
         readOnly
       />
@@ -226,12 +233,12 @@ export function ServicePageClient() {
       )}
 
       <Card className="flex flex-col gap-two">
-        <Text variant="subheading">Pinned cocktails</Text>
+        <Text variant="subheading">{t("pinnedCocktails")}</Text>
         {pinned.isPending ? (
-          <Spinner label="Loading pinned cocktails" />
+          <Spinner label={t("loadingPinned")} />
         ) : (pinned.data ?? []).length === 0 ? (
           <Text variant="bodySmall" muted>
-            Pin a cocktail to see it here.
+            {t("pinnedEmpty")}
           </Text>
         ) : (
           <div className="flex flex-col gap-one">
@@ -248,7 +255,7 @@ export function ServicePageClient() {
                   )
                 }
               >
-                {pin.recipeId ? "Catalog cocktail" : "House cocktail"}
+                {pin.recipeId ? t("catalogCocktail") : t("houseCocktail")}
               </Button>
             ))}
           </div>

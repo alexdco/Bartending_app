@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -11,6 +12,8 @@ import { RECOMMENDATIONS_PAGE_SIZE, type RecommendedRecipe } from "@bartendingap
 import { useRecipeRecommendations } from "./use-recipe-recommendations";
 
 export function MoreLikeThisClient({ recipeId }: { recipeId: string }) {
+  const t = useTranslations("recommendations");
+  const tCommon = useTranslations("common");
   const [pages, setPages] = useState<RecommendedRecipe[][]>([]);
   const pageOffset = pages.length * RECOMMENDATIONS_PAGE_SIZE;
   const { data, error, isPending, isFetching, refetch } = useRecipeRecommendations(
@@ -25,24 +28,21 @@ export function MoreLikeThisClient({ recipeId }: { recipeId: string }) {
     <main className="flex flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
-        You may also like
+        {t("title")}
       </Text>
 
       {error ? (
         <EmptyState
-          title="Something went wrong"
-          description="We couldn't load recommendations. Check your connection and try again."
-          action={<Button onClick={() => refetch()}>Retry</Button>}
+          title={tCommon("somethingWentWrong")}
+          description={t("loadError")}
+          action={<Button onClick={() => refetch()}>{tCommon("retry")}</Button>}
         />
       ) : isPending && pages.length === 0 ? (
         <div className="flex justify-center py-six">
-          <Spinner label="Loading recommendations" />
+          <Spinner label={t("loading")} />
         </div>
       ) : allResults.length === 0 ? (
-        <EmptyState
-          title="No recommendations available"
-          description="We couldn't find any recommendations right now."
-        />
+        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
       ) : (
         <>
           <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
@@ -66,7 +66,7 @@ export function MoreLikeThisClient({ recipeId }: { recipeId: string }) {
                 disabled={isFetching}
                 onClick={() => setPages((prev) => [...prev, data ?? []])}
               >
-                {isFetching ? "Loading…" : "Load more"}
+                {isFetching ? t("loadingMore") : t("loadMore")}
               </Button>
             </div>
           )}

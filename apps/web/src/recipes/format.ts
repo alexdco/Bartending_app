@@ -1,12 +1,15 @@
-export function alcoholicStatusLabel(status: string): string {
+export type AlcoholicStatusKey = "alcoholic" | "nonAlcoholic" | "optional" | "unknown";
+
+/** The `alcoholicStatus` message key for a recipe's alcoholic status. */
+export function alcoholicStatusKey(status: string): AlcoholicStatusKey {
   switch (status) {
     case "alcoholic":
-      return "Alcoholic";
+      return "alcoholic";
     case "non_alcoholic":
-      return "Non alcoholic";
+      return "nonAlcoholic";
     case "optional":
-      return "Optional alcohol";
+      return "optional";
     default:
-      return "Unknown";
+      return "unknown";
   }
 }

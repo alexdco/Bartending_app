@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
-import { getLocale, getTranslations } from "next-intl/server";
+import { getFormatter, getLocale, getTranslations } from "next-intl/server";
 import { localizedPath, type Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
 import { Card } from "@/components/card";
 
-const EFFECTIVE_DATE = "September 7, 2026";
+const EFFECTIVE_DATE = new Date("2026-09-07T00:00:00Z");
 const CONTACT_EMAIL = "privacy@bartendingapp.example.com";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -20,6 +20,8 @@ export async function generateMetadata(): Promise<Metadata> {
 
 export default async function PrivacyPage() {
   const t = await getTranslations("privacy");
+  const format = await getFormatter();
+  const effectiveDate = format.dateTime(EFFECTIVE_DATE, { dateStyle: "long", timeZone: "UTC" });
 
   return (
     <main className="mx-auto flex max-w-2xl flex-1 flex-col gap-six px-six py-eight">
@@ -27,7 +29,7 @@ export default async function PrivacyPage() {
       <div className="flex flex-col gap-two">
         <Text variant="display">{t("title")}</Text>
         <Text variant="bodySmall" muted>
-          {t("effectiveDate", { date: EFFECTIVE_DATE })}
+          {t("effectiveDate", { date: effectiveDate })}
         </Text>
       </div>
 

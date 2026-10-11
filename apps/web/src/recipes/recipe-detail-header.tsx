@@ -1,13 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import Image from "next/image";
 import { Chip } from "@/components/chip";
 import { Text } from "@/components/text";
 import { FavoriteToggle } from "@/favorites/favorite-toggle";
 import { useAddFavorite, useRemoveFavorite } from "@/favorites/use-favorite-mutations";
 import { RecipeRating } from "@/ratings/recipe-rating";
-import { alcoholicStatusLabel } from "./format";
+import { alcoholicStatusKey } from "./format";
 import type { RecipeDetail } from "@bartendingapp/shared";
 
 export interface RecipeDetailHeaderProps {
@@ -15,6 +16,7 @@ export interface RecipeDetailHeaderProps {
 }
 
 export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
+  const tStatus = useTranslations("alcoholicStatus");
   const addFavorite = useAddFavorite();
   const removeFavorite = useRemoveFavorite();
   const [isFavorited, setIsFavorited] = useState(recipe.isFavorited);
@@ -49,7 +51,7 @@ export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
         {recipe.name}
       </Text>
       <div className="flex flex-wrap gap-two">
-        <Chip>{alcoholicStatusLabel(recipe.alcoholicStatus)}</Chip>
+        <Chip>{tStatus(alcoholicStatusKey(recipe.alcoholicStatus))}</Chip>
         {recipe.glass && <Chip>{recipe.glass}</Chip>}
       </div>
       <RecipeRating recipeId={recipe.id} />

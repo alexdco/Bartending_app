@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -23,37 +23,44 @@ import { GeneratedRecipeCard } from "./generated-recipe-card";
 
 const MIN_PANTRY_INGREDIENTS_FOR_GENERATION = 2;
 
-function generateErrorMessage(reason: GenerateDrinkIdeaError["reason"], resetsAt?: string): string {
+type DrinkIdeasTranslator = ReturnType<typeof useTranslations<"drinkIdeas">>;
+
+function generateErrorMessage(
+  t: DrinkIdeasTranslator,
+  locale: Locale,
+  reason: GenerateDrinkIdeaError["reason"],
+  resetsAt?: string,
+): string {
   switch (reason) {
     case "no_session":
-      return "We couldn't verify your session. Check your connection and try again.";
+      return t("errorNoSession");
     case "quota_exceeded":
       return resetsAt
-        ? `You've reached today's generation limit. Try again after ${new Date(resetsAt).toLocaleString()}.`
-        : "You've reached today's generation limit. Try again tomorrow.";
+        ? t("quotaExceededUntil", { time: new Date(resetsAt).toLocaleString(locale) })
+        : t("quotaExceeded");
     case "pantry_too_small":
-      return "Add a couple more pantry ingredients to generate an idea.";
+      return t("pantryTooSmall");
     default:
-      return "We couldn't generate a drink idea. Try again.";
+      return t("generateFailed");
   }
 }
 
-// This page has no translation support yet (feature 41), so its copy stays
-// English; the reset time still follows the app's locale (spec 0034 AC-6).
-const PAGE_COPY_LOCALE: Locale = "en";
-
-function generateErrorDescription(error: unknown, formatLocale: Locale): ReactNode {
+function generateErrorDescription(
+  t: DrinkIdeasTranslator,
+  error: unknown,
+  locale: Locale,
+): ReactNode {
   if (!(error instanceof GenerateDrinkIdeaError)) {
-    return generateErrorMessage("generation_failed");
+    return generateErrorMessage(t, locale, "generation_failed");
   }
 
   const limitMessage =
     error.reason === "quota_exceeded"
-      ? drinkIdeaLimitMessage(error, { copyLocale: PAGE_COPY_LOCALE, formatLocale })
+      ? drinkIdeaLimitMessage(error, { copyLocale: locale, formatLocale: locale })
       : null;
 
   if (!limitMessage) {
-    return generateErrorMessage(error.reason, error.resetsAt);
+    return generateErrorMessage(t, locale, error.reason, error.resetsAt);
   }
 
   return (
@@ -75,6 +82,8 @@ export function DrinkIdeasPageClient() {
   const { data: pantryItems } = usePantry();
   const generateDrinkIdea = useGenerateDrinkIdea();
   const locale = useLocale() as Locale;
+  const t = useTranslations("drinkIdeas");
+  const tCommon = useTranslations("common");
 
   const matches = useMemo(() => data?.pages.flat() ?? [], [data]);
   const canMakeNow = useMemo(() => matches.filter((match) => match.missingRatio === 0), [matches]);
@@ -120,15 +129,15 @@ export function DrinkIdeasPageClient() {
   const generateSection = canGenerate && (
     <section className="flex flex-col gap-three">
       <Text variant="heading" as="h2">
-        Something new
+        {t("somethingNew")}
       </Text>
       {generateDrinkIdea.data ? (
         <GeneratedRecipeCard idea={generateDrinkIdea.data} />
       ) : generateDrinkIdea.error ? (
         <EmptyState
-          title="Couldn't generate an idea"
-          description={generateErrorDescription(generateDrinkIdea.error, locale)}
-          action={<Button onClick={() => generateDrinkIdea.mutate()}>Retry</Button>}
+          title={t("generateErrorTitle")}
+          description={generateErrorDescription(t, generateDrinkIdea.error, locale)}
+          action={<Button onClick={() => generateDrinkIdea.mutate()}>{tCommon("retry")}</Button>}
         />
       ) : (
         <Button
@@ -136,7 +145,7 @@ export function DrinkIdeasPageClient() {
           onClick={() => generateDrinkIdea.mutate()}
           disabled={generateDrinkIdea.isPending}
         >
-          {generateDrinkIdea.isPending ? "Generating…" : "Generate a new idea"}
+          {generateDrinkIdea.isPending ? t("generating") : t("generate")}
         </Button>
       )}
     </section>
@@ -146,30 +155,30 @@ export function DrinkIdeasPageClient() {
     <div className="flex flex-col gap-four p-six">
       <BackButton />
       <Text variant="display" as="h1">
-        Drink ideas
+        {t("title")}
       </Text>
 
       {error ? (
         <EmptyState
-          title="Something went wrong"
-          description="We couldn't load your drink ideas. Check your connection and try again."
-          action={<Button onClick={() => refetch()}>Retry</Button>}
+          title={tCommon("somethingWentWrong")}
+          description={t("loadError")}
+          action={<Button onClick={() => refetch()}>{tCommon("retry")}</Button>}
         />
       ) : isPending ? (
         <div className="flex justify-center py-six">
-          <Spinner label="Loading drink ideas" />
+          <Spinner label={t("loading")} />
         </div>
       ) : matches.length === 0 ? (
         <>
           <EmptyState
-            title="No drink ideas yet"
-            description="Add a few ingredients to your pantry and we'll show you what you can make."
+            title={t("emptyTitle")}
+            description={t("emptyDescription")}
             action={
               <Link
                 href="/pantry"
                 className="inline-flex items-center justify-center gap-two rounded-medium bg-accent px-four py-two text-label font-medium text-accent-text transition-colors hover:opacity-90"
               >
-                Go to pantry
+                {t("goToPantry")}
               </Link>
             }
           />
@@ -180,7 +189,7 @@ export function DrinkIdeasPageClient() {
           {canMakeNow.length > 0 && (
             <section className="flex flex-col gap-three">
               <Text variant="heading" as="h2">
-                You can make now
+                {t("canMakeNow")}
               </Text>
               <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
                 {canMakeNow.map((match) => (
@@ -201,7 +210,7 @@ export function DrinkIdeasPageClient() {
           {almostThere.length > 0 && (
             <section className="flex flex-col gap-three">
               <Text variant="heading" as="h2">
-                Almost there
+                {t("almostThere")}
               </Text>
               <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
                 {almostThere.map((match) => (
@@ -225,7 +234,7 @@ export function DrinkIdeasPageClient() {
           {generateSection}
 
           <div ref={sentinelRef} className="flex justify-center py-four">
-            {isFetchingNextPage && <Spinner label="Loading more drink ideas" />}
+            {isFetchingNextPage && <Spinner label={t("loadingMore")} />}
           </div>
         </>
       )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { submitQuizAttempt, type QuizAttempt, type QuizDetail } from "@bartendingapp/shared";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
@@ -20,6 +21,7 @@ interface ScoredResult {
 }
 
 export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
+  const t = useTranslations("quizzes");
   const [answers, setAnswers] = useState<Record<string, number>>({});
   const [submitting, setSubmitting] = useState(false);
   const [result, setResult] = useState<ScoredResult | null>(null);
@@ -48,7 +50,7 @@ export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
     setResult({
       score,
       total,
-      saveNotice: outcome.saved ? null : "Your score could not be saved, but here's how you did.",
+      saveNotice: outcome.saved ? null : t("saveFailed"),
     });
     setSubmitting(false);
   }
@@ -58,7 +60,7 @@ export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
       <div className="flex flex-col gap-four">
         <Card className="flex flex-col gap-two">
           <Text variant="heading" as="h2">
-            Score: {result.score}/{result.total}
+            {t("score", { score: result.score, total: result.total })}
           </Text>
           {result.saveNotice && (
             <Text variant="label" className="text-danger">
@@ -67,7 +69,7 @@ export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
           )}
           {bestScore && (
             <Text variant="label" muted>
-              Best: {bestScore.score}/{bestScore.total}
+              {t("best", { score: bestScore.score, total: bestScore.total })}
             </Text>
           )}
         </Card>
@@ -79,18 +81,21 @@ export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
             return (
               <Card key={question.id} className="flex flex-col gap-two">
                 <Text variant="label" muted>
-                  Question {index + 1}
+                  {t("question", { number: index + 1 })}
                 </Text>
                 <Text variant="subheading" as="h3">
                   {question.prompt}
                 </Text>
                 <Text variant="body">
-                  Your answer: {question.options[userAnswerIndex]}{" "}
-                  {wasCorrect ? "(correct)" : "(incorrect)"}
+                  {wasCorrect
+                    ? t("yourAnswerCorrect", { answer: question.options[userAnswerIndex] ?? "" })
+                    : t("yourAnswerIncorrect", { answer: question.options[userAnswerIndex] ?? "" })}
                 </Text>
                 {!wasCorrect && (
                   <Text variant="body">
-                    Correct answer: {question.options[question.correctOptionIndex]}
+                    {t("correctAnswer", {
+                      answer: question.options[question.correctOptionIndex] ?? "",
+                    })}
                   </Text>
                 )}
                 {question.explanation && (
@@ -110,7 +115,7 @@ export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
     <div className="flex flex-col gap-four">
       {bestScore && (
         <Text variant="label" muted>
-          Best: {bestScore.score}/{bestScore.total}
+          {t("best", { score: bestScore.score, total: bestScore.total })}
         </Text>
       )}
 
@@ -118,7 +123,7 @@ export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
         {quiz.questions.map((question, index) => (
           <Card key={question.id} className="flex flex-col gap-two">
             <Text variant="label" muted>
-              Question {index + 1} of {quiz.questions.length}
+              {t("questionOf", { number: index + 1, total: quiz.questions.length })}
             </Text>
             <Text variant="subheading" as="h3">
               {question.prompt}
@@ -149,7 +154,7 @@ export function QuizPlayer({ quiz, initialBestScore }: QuizPlayerProps) {
         onClick={handleSubmit}
         className="self-start"
       >
-        {submitting ? "Submitting…" : "Submit"}
+        {submitting ? t("submitting") : t("submit")}
       </Button>
     </div>
   );

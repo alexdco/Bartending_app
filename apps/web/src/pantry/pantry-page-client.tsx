@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslations } from "next-intl";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -17,6 +18,8 @@ import { PantryShoppingSwitcher } from "./pantry-shopping-switcher";
 const DEBOUNCE_MS = 300;
 
 export function PantryPageClient() {
+  const t = useTranslations("pantry");
+  const tCommon = useTranslations("common");
   const [inputValue, setInputValue] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
 
@@ -44,15 +47,15 @@ export function PantryPageClient() {
       <BackButton />
       <div className="flex items-center gap-two">
         <Text variant="display" as="h1">
-          Your pantry
+          {t("title")}
         </Text>
         <PantryShoppingSwitcher />
       </div>
 
       <div className="flex flex-col gap-two">
         <Input
-          label="Add an ingredient"
-          placeholder="Lime, gin, simple syrup..."
+          label={t("addIngredient")}
+          placeholder={t("addIngredientPlaceholder")}
           value={inputValue}
           onChange={(event) => setInputValue(event.target.value)}
         />
@@ -60,11 +63,11 @@ export function PantryPageClient() {
           <div className="flex flex-col gap-one rounded-medium border border-border bg-surface p-two">
             {ingredientSearch.isPending ? (
               <div className="flex justify-center py-two">
-                <Spinner label="Searching ingredients" />
+                <Spinner label={t("searchingIngredients")} />
               </div>
             ) : (ingredientSearch.data ?? []).length === 0 ? (
               <Text variant="bodySmall" muted>
-                No matching ingredients.
+                {t("noMatchingIngredients")}
               </Text>
             ) : (
               (ingredientSearch.data ?? []).map((ingredient) => {
@@ -85,7 +88,7 @@ export function PantryPageClient() {
                         )
                       }
                     >
-                      {alreadyAdded ? "Added" : "Add"}
+                      {alreadyAdded ? tCommon("added") : tCommon("add")}
                     </Button>
                   </div>
                 );
@@ -97,35 +100,32 @@ export function PantryPageClient() {
 
       {addPantryItem.isError && (
         <Text variant="bodySmall" className="text-danger" role="alert">
-          Couldn&apos;t add that ingredient. Check your connection and try again.
+          {t("addFailed")}
         </Text>
       )}
       {removePantryItem.isError && (
         <Text variant="bodySmall" className="text-danger" role="alert">
-          Couldn&apos;t remove that ingredient. Check your connection and try again.
+          {t("removeFailed")}
         </Text>
       )}
 
       <section className="flex flex-col gap-two">
         <Text variant="heading" as="h2">
-          In your pantry
+          {t("inYourPantry")}
         </Text>
 
         {pantry.error ? (
           <EmptyState
-            title="Something went wrong"
-            description="We couldn't load your pantry. Check your connection and try again."
-            action={<Button onClick={() => pantry.refetch()}>Retry</Button>}
+            title={tCommon("somethingWentWrong")}
+            description={t("loadError")}
+            action={<Button onClick={() => pantry.refetch()}>{tCommon("retry")}</Button>}
           />
         ) : pantry.isPending ? (
           <div className="flex justify-center py-six">
-            <Spinner label="Loading pantry" />
+            <Spinner label={t("loading")} />
           </div>
         ) : (pantry.data ?? []).length === 0 ? (
-          <EmptyState
-            title="Your pantry is empty"
-            description="Search for an ingredient above to add it to your pantry."
-          />
+          <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
         ) : (
           <ul className="flex flex-col gap-one">
             {(pantry.data ?? []).map((item) => (
@@ -138,7 +138,7 @@ export function PantryPageClient() {
                   variant="secondary"
                   onClick={() => removePantryItem.mutate({ ingredientId: item.ingredientId })}
                 >
-                  Remove
+                  {tCommon("remove")}
                 </Button>
               </li>
             ))}
@@ -149,23 +149,23 @@ export function PantryPageClient() {
       {hasPantryItems && (
         <section className="flex flex-col gap-three">
           <Text variant="heading" as="h2">
-            Drink ideas
+            {t("drinkIdeas")}
           </Text>
 
           {drinkIdeas.error ? (
             <EmptyState
-              title="Something went wrong"
-              description="We couldn't load drink ideas. Check your connection and try again."
-              action={<Button onClick={() => drinkIdeas.refetch()}>Retry</Button>}
+              title={tCommon("somethingWentWrong")}
+              description={t("drinkIdeasLoadError")}
+              action={<Button onClick={() => drinkIdeas.refetch()}>{tCommon("retry")}</Button>}
             />
           ) : drinkIdeas.isPending ? (
             <div className="flex justify-center py-six">
-              <Spinner label="Loading drink ideas" />
+              <Spinner label={t("drinkIdeasLoading")} />
             </div>
           ) : drinkIdeaMatches.length === 0 ? (
             <EmptyState
-              title="No drink ideas yet"
-              description="Add a few more ingredients and we'll show you what you can make."
+              title={t("drinkIdeasEmptyTitle")}
+              description={t("drinkIdeasEmptyDescription")}
             />
           ) : (
             <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">

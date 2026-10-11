@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
 import { Text } from "@/components/text";
@@ -41,6 +41,7 @@ function displayAmount(
 }
 
 export function IngredientList({ ingredients }: IngredientListProps) {
+  const t = useTranslations("recipe");
   const locale = useLocale() as Locale;
   const pantry = usePantry();
   const addPantryItem = useAddPantryItem();
@@ -58,7 +59,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
   return (
     <div className="flex flex-col gap-two">
       {hasConvertible && (
-        <div className="flex gap-one" role="group" aria-label="Unit">
+        <div className="flex gap-one" role="group" aria-label={t("unit")}>
           {CONVERTIBLE_UNITS.map((candidate) => (
             <Chip
               key={candidate}
@@ -94,7 +95,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
                     })
                   }
                 >
-                  {inPantry ? "In pantry" : "Add to pantry"}
+                  {inPantry ? t("inPantry") : t("addToPantry")}
                 </Button>
                 {!inPantry && (
                   <Button
@@ -107,7 +108,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
                       })
                     }
                   >
-                    {onShoppingList ? "On list" : "Add to shopping list"}
+                    {onShoppingList ? t("onList") : t("addToShoppingList")}
                   </Button>
                 )}
               </div>
@@ -116,13 +117,12 @@ export function IngredientList({ ingredients }: IngredientListProps) {
         })}
         {addPantryItem.isError && (
           <Text variant="bodySmall" className="text-danger" role="alert">
-            Couldn&apos;t add that ingredient. Check your connection and try again.
+            {t("addPantryFailed")}
           </Text>
         )}
         {addShoppingListItem.isError && (
           <Text variant="bodySmall" className="text-danger" role="alert">
-            Couldn&apos;t add that ingredient to your shopping list. Check your connection and try
-            again.
+            {t("addShoppingListFailed")}
           </Text>
         )}
       </ul>

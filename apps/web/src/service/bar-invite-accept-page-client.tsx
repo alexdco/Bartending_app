@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslations } from "next-intl";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
@@ -16,6 +17,8 @@ import { useAcceptInvite } from "@/service/use-bar-mutations";
 // accept_bar_invite itself enforces the linked account requirement and the
 // email match; this screen only surfaces its error states.
 export function BarInviteAcceptPageClient() {
+  const t = useTranslations("service");
+  const tCommon = useTranslations("common");
   const { isLinked } = useSession();
   const pendingInvites = usePendingInvites();
   const acceptInvite = useAcceptInvite();
@@ -23,27 +26,24 @@ export function BarInviteAcceptPageClient() {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-four px-four py-six">
       <BackButton />
-      <Text variant="display">Join a bar</Text>
+      <Text variant="display">{t("joinBar")}</Text>
 
       {!isLinked ? (
         <Text variant="body" muted>
-          Sign in with a real account first, then come back to accept your invite.
+          {t("signInToAccept")}
         </Text>
       ) : pendingInvites.isPending ? (
         <div className="flex items-center justify-center py-six">
-          <Spinner label="Loading invites" />
+          <Spinner label={t("loadingInvites")} />
         </div>
       ) : pendingInvites.error ? (
         <EmptyState
-          title="Couldn't load invites"
-          description="Check your connection and try again."
-          action={<Button onClick={() => pendingInvites.refetch()}>Retry</Button>}
+          title={t("loadInvitesFailed")}
+          description={t("checkConnection")}
+          action={<Button onClick={() => pendingInvites.refetch()}>{tCommon("retry")}</Button>}
         />
       ) : (pendingInvites.data ?? []).length === 0 ? (
-        <EmptyState
-          title="No pending invites"
-          description="Ask a bar owner to invite you by the email address you're signed in with."
-        />
+        <EmptyState title={t("noPendingInvites")} description={t("noPendingInvitesDescription")} />
       ) : (
         <div className="flex flex-col gap-two">
           {(pendingInvites.data ?? []).map((invite) => (
@@ -53,21 +53,17 @@ export function BarInviteAcceptPageClient() {
                 disabled={acceptInvite.isPending}
                 onClick={() => acceptInvite.mutate(invite.id)}
               >
-                {acceptInvite.isPending ? "Joining..." : "Join"}
+                {acceptInvite.isPending ? t("joining") : t("join")}
               </Button>
             </Card>
           ))}
         </div>
       )}
 
-      {acceptInvite.isSuccess && (
-        <Text variant="bodySmall">
-          You&apos;re in. Head to Service to see this bar&apos;s menu.
-        </Text>
-      )}
+      {acceptInvite.isSuccess && <Text variant="bodySmall">{t("joined")}</Text>}
       {acceptInvite.isError && (
         <Text variant="bodySmall" className="text-danger">
-          That invite isn&apos;t valid anymore. It may have expired or already been accepted.
+          {t("inviteInvalid")}
         </Text>
       )}
     </div>

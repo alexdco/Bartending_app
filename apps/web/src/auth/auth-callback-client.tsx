@@ -2,18 +2,18 @@
 
 import { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { useRouter } from "@/i18n/navigation";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
 import { supabase } from "@/lib/supabase";
 
-const LINK_EXPIRED_MESSAGE = "This link is invalid or has expired.";
-
 export function AuthCallbackClient() {
+  const t = useTranslations("account");
   const router = useRouter();
   const searchParams = useSearchParams();
   const code = searchParams.get("code");
-  const [error, setError] = useState<string | null>(code ? null : LINK_EXPIRED_MESSAGE);
+  const [linkExpired, setLinkExpired] = useState(!code);
 
   useEffect(() => {
     if (!code) {
@@ -32,7 +32,7 @@ export function AuthCallbackClient() {
       .then(async ({ error: exchangeError }) => {
         if (exchangeError) {
           subscription.subscription.unsubscribe();
-          setError("This link is invalid or has expired.");
+          setLinkExpired(true);
           return;
         }
 
@@ -49,24 +49,24 @@ export function AuthCallbackClient() {
       })
       .catch(() => {
         subscription.subscription.unsubscribe();
-        setError("This link is invalid or has expired.");
+        setLinkExpired(true);
       });
 
     return () => subscription.subscription.unsubscribe();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [code]);
 
-  if (error) {
+  if (linkExpired) {
     return (
       <div className="flex flex-1 items-center justify-center p-six">
-        <EmptyState title="Link expired" description={error} />
+        <EmptyState title={t("linkExpiredTitle")} description={t("linkExpiredDescription")} />
       </div>
     );
   }
 
   return (
     <div className="flex flex-1 items-center justify-center p-six">
-      <Spinner label="Signing you in" />
+      <Spinner label={t("signingYouIn")} />
     </div>
   );
 }

@@ -1,13 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useFormatter, useTranslations } from "next-intl";
 import Image from "next/image";
-import {
-  buildRecipeSlugPath,
-  commentPhotoLabel,
-  getCommentPhotoUrl,
-  type AdminComment,
-} from "@bartendingapp/shared";
+import { buildRecipeSlugPath, getCommentPhotoUrl, type AdminComment } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/button";
@@ -16,10 +12,10 @@ import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { useAdminComments } from "./use-admin-comments";
 import { useDeleteAdminComment, useDeleteAdminCommentPhoto } from "./use-admin-comment-mutations";
-
-const dateFormatter = new Intl.DateTimeFormat(undefined, { dateStyle: "medium" });
+import { useCommentPhotoLabel } from "@/comments/use-comment-photo-label";
 
 export function AdminCommentList() {
+  const t = useTranslations("admin");
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useAdminComments();
 
@@ -28,7 +24,7 @@ export function AdminCommentList() {
   if (error) {
     return (
       <Text variant="bodySmall" muted>
-        Couldn&apos;t load comments. Try again later.
+        {t("loadCommentsFailed")}
       </Text>
     );
   }
@@ -36,13 +32,13 @@ export function AdminCommentList() {
   if (isPending) {
     return (
       <div className="flex justify-center py-four">
-        <Spinner label="Loading comments" />
+        <Spinner label={t("loadingComments")} />
       </div>
     );
   }
 
   if (comments.length === 0) {
-    return <EmptyState title="No comments yet" description="No comments have been posted." />;
+    return <EmptyState title={t("noComments")} description={t("noCommentsDescription")} />;
   }
 
   return (
@@ -61,7 +57,7 @@ export function AdminCommentList() {
           disabled={isFetchingNextPage}
           className="self-center"
         >
-          {isFetchingNextPage ? "Loading..." : "Load more"}
+          {isFetchingNextPage ? t("loadingMore") : t("loadMore")}
         </Button>
       )}
     </div>
@@ -69,6 +65,10 @@ export function AdminCommentList() {
 }
 
 function AdminCommentRow({ comment }: { comment: AdminComment }) {
+  const t = useTranslations("admin");
+  const tComments = useTranslations("comments");
+  const tCommon = useTranslations("common");
+  const format = useFormatter();
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const deleteComment = useDeleteAdminComment();
 
@@ -82,12 +82,12 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
           <Text variant="label">{comment.recipeName}</Text>
         </Link>
         <Text variant="bodySmall" muted>
-          {dateFormatter.format(new Date(comment.createdAt))}
-          {comment.edited ? " (edited)" : ""}
+          {format.dateTime(new Date(comment.createdAt), { dateStyle: "medium" })}
+          {comment.edited ? ` ${tComments("edited")}` : ""}
         </Text>
       </div>
       <Text variant="bodySmall" muted>
-        {comment.displayName ?? "Anonymous"}
+        {comment.displayName ?? tComments("anonymous")}
       </Text>
       {comment.body && <Text variant="body">{comment.body}</Text>}
       {comment.photos.length > 0 && <AdminCommentPhotos comment={comment} />}
@@ -95,10 +95,10 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
         {isConfirmingDelete ? (
           <>
             <Text variant="bodySmall" muted>
-              Delete this comment?
+              {t("deleteCommentConfirm")}
             </Text>
             <Button variant="secondary" onClick={() => setIsConfirmingDelete(false)}>
-              Cancel
+              {tCommon("cancel")}
             </Button>
             <Button
               disabled={deleteComment.isPending}
@@ -109,12 +109,12 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
                 })
               }
             >
-              Delete
+              {tCommon("delete")}
             </Button>
           </>
         ) : (
           <Button variant="secondary" onClick={() => setIsConfirmingDelete(true)}>
-            Delete
+            {tCommon("delete")}
           </Button>
         )}
       </div>
@@ -129,6 +129,9 @@ const ADMIN_THUMBNAIL_HEIGHT = 96;
  * one bad photo can go without deleting the useful text around it.
  */
 function AdminCommentPhotos({ comment }: { comment: AdminComment }) {
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
+  const commentPhotoLabel = useCommentPhotoLabel();
   const [confirmingPhotoId, setConfirmingPhotoId] = useState<string | null>(null);
   const deletePhoto = useDeleteAdminCommentPhoto();
 
@@ -160,7 +163,7 @@ function AdminCommentPhotos({ comment }: { comment: AdminComment }) {
             {confirmingPhotoId === photo.id ? (
               <div className="flex flex-col gap-one">
                 <Text variant="bodySmall" muted>
-                  {isOnlyContent ? "Remove photo and its comment?" : "Remove this photo?"}
+                  {isOnlyContent ? t("removePhotoAndCommentConfirm") : t("removePhotoConfirm")}
                 </Text>
                 <div className="flex gap-one">
                   <Button
@@ -168,14 +171,14 @@ function AdminCommentPhotos({ comment }: { comment: AdminComment }) {
                     className="px-two py-one"
                     onClick={() => setConfirmingPhotoId(null)}
                   >
-                    Cancel
+                    {tCommon("cancel")}
                   </Button>
                   <Button
                     className="px-two py-one"
                     disabled={deletePhoto.isPending}
                     onClick={() => deletePhoto.mutate({ commentId: comment.id, photoId: photo.id })}
                   >
-                    Remove
+                    {tCommon("remove")}
                   </Button>
                 </div>
               </div>
@@ -184,9 +187,9 @@ function AdminCommentPhotos({ comment }: { comment: AdminComment }) {
                 variant="secondary"
                 className="px-two py-one"
                 onClick={() => setConfirmingPhotoId(photo.id)}
-                aria-label={`Remove ${label}`}
+                aria-label={t("removePhotoLabel", { label })}
               >
-                Remove photo
+                {t("removePhoto")}
               </Button>
             )}
           </li>

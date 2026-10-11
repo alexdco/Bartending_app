@@ -1,5 +1,7 @@
 "use client";
 
+import { useTranslations } from "next-intl";
+
 export interface FavoriteToggleProps {
   isFavorited: boolean;
   onToggle: () => void;
@@ -13,11 +15,13 @@ export function FavoriteToggle({
   disabled,
   className = "",
 }: FavoriteToggleProps) {
+  const t = useTranslations("favorites");
+
   return (
     <button
       type="button"
       aria-pressed={isFavorited}
-      aria-label={isFavorited ? "Remove from favorites" : "Add to favorites"}
+      aria-label={isFavorited ? t("remove") : t("add")}
       disabled={disabled}
       onClick={(event) => {
         event.preventDefault();

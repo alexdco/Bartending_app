@@ -1,9 +1,12 @@
+import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Text } from "./text";
 
 export function SiteLogo() {
+  const t = useTranslations("nav");
+
   return (
-    <Link href="/" aria-label="Cocktailist home" className="flex items-center gap-two">
+    <Link href="/" aria-label={t("logoHome")} className="flex items-center gap-two">
       <svg
         width="24"
         height="24"

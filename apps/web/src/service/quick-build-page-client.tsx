@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslations } from "next-intl";
 import {
   computeParts,
   convertAmount,
@@ -134,6 +135,8 @@ export interface QuickBuildPageClientProps {
 }
 
 export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
+  const t = useTranslations("service");
+  const tCommon = useTranslations("common");
   const [unit, setUnit] = useState<QuickBuildUnit | null>(null);
   const wakeLock = useWakeLock();
   const pin = usePinForRecipe(kind, id);
@@ -160,7 +163,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
         <BackButton />
         <div className="flex flex-1 items-center justify-center py-six">
-          <Spinner label="Loading recipe" />
+          <Spinner label={t("loadingRecipe")} />
         </div>
       </div>
     );
@@ -173,13 +176,9 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
         <BackButton />
         <div className="flex flex-1 items-center justify-center py-six">
           <EmptyState
-            title={isOffline ? "Not available offline" : "Something went wrong"}
-            description={
-              isOffline
-                ? "This recipe hasn't been opened in this browser before, so it needs a connection the first time."
-                : "Check your connection and try again."
-            }
-            action={<Button onClick={() => recipe.refetch()}>Retry</Button>}
+            title={isOffline ? t("notAvailableOffline") : tCommon("somethingWentWrong")}
+            description={isOffline ? t("notAvailableOfflineDescription") : t("checkConnection")}
+            action={<Button onClick={() => recipe.refetch()}>{tCommon("retry")}</Button>}
           />
         </div>
       </div>
@@ -191,7 +190,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
         <BackButton />
         <div className="flex flex-1 items-center justify-center py-six">
-          <EmptyState title="Recipe not found" description="This recipe may have been removed." />
+          <EmptyState title={t("recipeNotFound")} description={t("recipeNotFoundDescription")} />
         </div>
       </div>
     );
@@ -204,7 +203,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
     if (unit === "parts") {
       const line = partsLines?.[index];
       return line?.state === "normal" && line.parts !== null
-        ? `${formatParts(line.parts)} pt`
+        ? t("partsAmount", { parts: formatParts(line.parts) })
         : (line?.measure ?? ingredient.measure ?? "");
     }
 
@@ -236,14 +235,14 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-six px-four py-six">
       <div className="flex items-center justify-between gap-three">
         <BackButton />
-        <div className="flex gap-one" role="group" aria-label="Unit">
+        <div className="flex gap-one" role="group" aria-label={t("unit")}>
           {UNITS.map((candidate) => (
             <Button
               key={candidate}
               variant={unit === candidate ? "primary" : "secondary"}
               onClick={() => selectUnit(candidate)}
             >
-              {candidate}
+              {candidate === "parts" ? t("unitParts") : candidate}
             </Button>
           ))}
         </div>
@@ -271,7 +270,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
       {instructions && (
         <div className="flex flex-col gap-one">
           <Text variant="subheading" muted>
-            Instructions
+            {t("instructions")}
           </Text>
           <Text variant="body">{instructions}</Text>
         </div>
@@ -280,17 +279,17 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
       <div className="flex flex-col gap-one">
         {data.glass && (
           <Text variant="subheading" muted>
-            {`Glass: ${data.glass}`}
+            {t("glass", { value: data.glass })}
           </Text>
         )}
         {data.kind === "bar_recipe" && data.ice && (
           <Text variant="subheading" muted>
-            {`Ice: ${data.ice}`}
+            {t("ice", { value: data.ice })}
           </Text>
         )}
         {data.kind === "bar_recipe" && data.garnish && (
           <Text variant="subheading" muted>
-            {`Garnish: ${data.garnish}`}
+            {t("garnish", { value: data.garnish })}
           </Text>
         )}
       </div>
@@ -301,7 +300,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
           disabled={pin.isPending}
           onClick={pin.toggle}
         >
-          {pin.isPinned ? "Pinned" : "Pin this cocktail"}
+          {pin.isPinned ? t("pinned") : t("pinThis")}
         </Button>
 
         <Button
@@ -309,11 +308,11 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
           disabled={!wakeLock.isSupported}
           onClick={wakeLock.toggle}
         >
-          {wakeLock.isOn ? "Keep awake: on" : "Keep awake: off"}
+          {wakeLock.isOn ? t("keepAwakeOn") : t("keepAwakeOff")}
         </Button>
         {!wakeLock.isSupported && (
           <Text variant="bodySmall" muted>
-            Not supported in this browser.
+            {t("keepAwakeUnsupported")}
           </Text>
         )}
       </div>

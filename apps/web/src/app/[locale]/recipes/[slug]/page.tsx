@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   buildRecipeSlugPath,
   extractIdFromRecipeSlug,
@@ -58,7 +58,8 @@ export async function generateMetadata({
     `/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`,
   );
   const ingredientNames = recipe.ingredients.map((ingredient) => ingredient.name).join(", ");
-  const description = `${recipe.name}: made with ${ingredientNames}.`;
+  const t = await getTranslations("recipe");
+  const description = t("metaDescription", { name: recipe.name, ingredients: ingredientNames });
 
   const otherLocales = SUPPORTED_LOCALES.filter((candidate) => candidate !== locale);
   const otherSlugs = await Promise.all(
@@ -100,6 +101,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
   }
 
   const locale = (await getLocale()) as Locale;
+  const t = await getTranslations("recipe");
   const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
 
   if (!recipe) {
@@ -130,14 +132,14 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
 
       <section className="flex flex-col gap-two">
         <Text variant="heading" as="h2">
-          Ingredients
+          {t("ingredients")}
         </Text>
         <IngredientList ingredients={recipe.ingredients} />
       </section>
 
       <section className="flex flex-col gap-two">
         <Text variant="heading" as="h2">
-          Instructions
+          {t("instructions")}
         </Text>
         <Text variant="body" className="whitespace-pre-line">
           {recipe.instructions}

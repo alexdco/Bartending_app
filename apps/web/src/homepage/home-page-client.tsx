@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Button } from "@/components/button";
 import { Hero } from "./hero";
 import { RegionShortcutRow } from "./region-shortcut-row";
@@ -11,6 +12,7 @@ import { PopularByRegionCarousel } from "./popular-by-region-carousel";
 import { useHomePopularRegions } from "./use-homepage-data";
 
 export function HomePageClient() {
+  const t = useTranslations("home");
   const [sessionErrorCount, setSessionErrorCount] = useState(0);
   const [dismissed, setDismissed] = useState(false);
   const { data: regions } = useHomePopularRegions();
@@ -23,7 +25,7 @@ export function HomePageClient() {
     <div className="flex flex-col gap-six pb-six">
       {showBanner && (
         <div className="mx-six flex items-center justify-between gap-three rounded-large border border-border bg-surface p-four">
-          <span className="text-body text-text">Something went wrong loading your homepage.</span>
+          <span className="text-body text-text">{t("loadError")}</span>
           <div className="flex items-center gap-two">
             <Button
               variant="secondary"
@@ -32,10 +34,10 @@ export function HomePageClient() {
                 window.location.reload();
               }}
             >
-              Retry
+              {t("retry")}
             </Button>
             <Button variant="secondary" onClick={() => setDismissed(true)}>
-              Dismiss
+              {t("dismiss")}
             </Button>
           </div>
         </div>

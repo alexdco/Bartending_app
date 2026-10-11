@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { fetchAdminRecipeDetail, isAdmin } from "@bartendingapp/shared";
+import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { redirect } from "@/i18n/navigation";
 import { Text } from "@/components/text";
@@ -35,10 +36,12 @@ export default async function EditAdminRecipePage({
     notFound();
   }
 
+  const t = await getTranslations("admin");
+
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
       <Text variant="display" as="h1">
-        Edit recipe
+        {t("editRecipe")}
       </Text>
       <AdminNav />
       <AdminRecipeForm existingRecipe={recipe} />

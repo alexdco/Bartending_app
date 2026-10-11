@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useLocale } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Card } from "@/components/card";
 import { Chip } from "@/components/chip";
 import { Input } from "@/components/input";
@@ -26,23 +26,22 @@ export interface BatchPanelProps {
   ingredients: RecipeIngredientDetail[];
 }
 
-const SCOPE_LABELS: Record<BatchScope, string> = {
-  everything: "Everything",
-  alcohol_only: "Alcohol only",
-  except_citrus: "Everything except citrus",
-  custom: "Custom selection",
-};
-
-const DILUTION_LABELS: Record<DilutionLevel, string> = {
-  none: "None",
-  "15": "15%",
-  "20": "20%",
-  "25": "25%",
-  custom: "Custom",
-};
+const SCOPE_KEYS = {
+  everything: "scopeEverything",
+  alcohol_only: "scopeAlcoholOnly",
+  except_citrus: "scopeExceptCitrus",
+  custom: "scopeCustom",
+} as const satisfies Record<BatchScope, string>;
 
 export function BatchPanel({ ingredients }: BatchPanelProps) {
+  const t = useTranslations("batch");
   const locale = useLocale() as Locale;
+
+  const dilutionLabel = (level: DilutionLevel) => {
+    if (level === "none") return t("dilutionNone");
+    if (level === "custom") return t("dilutionCustom");
+    return t("percent", { value: Number(level) });
+  };
 
   const [servingsInput, setServingsInput] = useState("");
   const [scope, setScope] = useState<BatchScope>("everything");
@@ -54,16 +53,13 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
   );
 
   const servings = servingsInput === "" ? null : validateServings(servingsInput);
-  const servingsError =
-    servingsInput !== "" && servings === null
-      ? "Enter a whole number of servings from 1 to 500."
-      : undefined;
+  const servingsError = servingsInput !== "" && servings === null ? t("servingsError") : undefined;
 
   const customDilutionPercent =
     customDilutionInput === "" ? null : validateCustomDilutionPercent(customDilutionInput);
   const customDilutionError =
     dilutionLevel === "custom" && customDilutionInput !== "" && customDilutionPercent === null
-      ? "Enter a percent from 0 to 50."
+      ? t("customDilutionError")
       : undefined;
 
   const canCompute =
@@ -121,28 +117,28 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
   return (
     <Card className="flex flex-col gap-three">
       <Text variant="heading" as="h2">
-        Batch this recipe
+        {t("title")}
       </Text>
 
       <Input
-        label="Servings"
+        label={t("servings")}
         inputMode="numeric"
         value={servingsInput}
         onChange={(e) => setServingsInput(e.target.value)}
         error={servingsError}
-        placeholder="e.g. 50"
+        placeholder={t("servingsPlaceholder")}
       />
 
       <div className="flex flex-col gap-one">
-        <Text variant="label">Scope</Text>
-        <div className="flex flex-wrap gap-one" role="group" aria-label="Scope">
+        <Text variant="label">{t("scope")}</Text>
+        <div className="flex flex-wrap gap-one" role="group" aria-label={t("scope")}>
           {BATCH_SCOPES.map((candidate) => (
             <Chip
               key={candidate}
               selected={scope === candidate}
               onSelectedChange={() => handleScopeChange(candidate)}
             >
-              {SCOPE_LABELS[candidate]}
+              {t(SCOPE_KEYS[candidate])}
             </Chip>
           ))}
         </div>
@@ -150,7 +146,7 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
 
       {scope === "custom" && (
         <div className="flex flex-col gap-one">
-          <Text variant="label">Include</Text>
+          <Text variant="label">{t("include")}</Text>
           <ul className="flex flex-col gap-one">
             {ingredients
               .filter((i) => i.amountValue !== null && i.amountUnit !== null)
@@ -169,8 +165,8 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
       )}
 
       <div className="flex flex-col gap-one">
-        <Text variant="label">Unit</Text>
-        <div className="flex gap-one" role="group" aria-label="Unit">
+        <Text variant="label">{t("unit")}</Text>
+        <div className="flex gap-one" role="group" aria-label={t("unit")}>
           {BATCH_UNITS.map((candidate) => (
             <Chip
               key={candidate}
@@ -184,26 +180,26 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
       </div>
 
       <div className="flex flex-col gap-one">
-        <Text variant="label">Dilution</Text>
-        <div className="flex flex-wrap gap-one" role="group" aria-label="Dilution">
+        <Text variant="label">{t("dilution")}</Text>
+        <div className="flex flex-wrap gap-one" role="group" aria-label={t("dilution")}>
           {DILUTION_LEVELS.map((candidate) => (
             <Chip
               key={candidate}
               selected={dilutionLevel === candidate}
               onSelectedChange={() => setDilutionLevel(candidate)}
             >
-              {DILUTION_LABELS[candidate]}
+              {dilutionLabel(candidate)}
             </Chip>
           ))}
         </div>
         {dilutionLevel === "custom" && (
           <Input
-            label="Custom dilution percent"
+            label={t("customDilutionLabel")}
             inputMode="decimal"
             value={customDilutionInput}
             onChange={(e) => setCustomDilutionInput(e.target.value)}
             error={customDilutionError}
-            placeholder="e.g. 18"
+            placeholder={t("customDilutionPlaceholder")}
           />
         )}
       </div>
@@ -222,12 +218,12 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
                     {line.state === "unscaled" ? line.measure : line.displayAmount}
                     {line.state === "unscaled" && (
                       <Text variant="bodySmall" as="span" muted className="ml-one">
-                        (not scaled, adjust manually)
+                        {t("notScaled")}
                       </Text>
                     )}
                     {line.state === "uncategorized" && (
                       <Text variant="bodySmall" as="span" muted className="ml-one">
-                        (uncategorized)
+                        {t("uncategorized")}
                       </Text>
                     )}
                   </Text>
@@ -236,7 +232,7 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
             })}
             {result.waterLine && (
               <li className="flex items-center justify-between gap-two">
-                <Text variant="body">Water</Text>
+                <Text variant="body">{t("water")}</Text>
                 <Text variant="body">{result.waterLine.displayAmount}</Text>
               </li>
             )}
@@ -244,12 +240,12 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
 
           {result.noAlcoholNote && (
             <Text variant="bodySmall" muted>
-              No alcohol in this batch, no dilution added.
+              {t("noAlcoholNote")}
             </Text>
           )}
 
           <div className="flex items-center justify-between gap-two border-t border-border pt-two">
-            <Text variant="label">Total</Text>
+            <Text variant="label">{t("total")}</Text>
             <Text variant="label">{result.totalDisplayAmount}</Text>
           </div>
         </div>

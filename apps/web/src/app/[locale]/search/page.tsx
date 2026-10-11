@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   localizedPath,
   searchRecipes,
@@ -18,10 +18,9 @@ export async function generateMetadata({
   const { q } = await searchParams;
   const query = q?.trim() ?? "";
 
-  const title = query ? `${query} recipes` : "Search recipes";
-  const description = query
-    ? `Recipes matching "${query}": find the drink you're looking for.`
-    : "Search cocktail and mocktail recipes by name or ingredient, with full instructions and images.";
+  const t = await getTranslations("search");
+  const title = query ? t("metaTitleQuery", { query }) : t("metaTitle");
+  const description = query ? t("metaDescriptionQuery", { query }) : t("metaDescription");
 
   return {
     title,

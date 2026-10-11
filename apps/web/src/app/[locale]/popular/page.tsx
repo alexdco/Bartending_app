@@ -1,4 +1,4 @@
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import { listPopularRegions, slugify, type Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { permanentRedirect, redirect } from "@/i18n/navigation";
@@ -24,16 +24,14 @@ export default async function PopularPage({
 
   const firstRegion = regions[0];
   if (!firstRegion) {
+    const t = await getTranslations("popular");
     return (
       <div className="flex flex-col gap-four p-six">
         <BackButton />
         <Text variant="display" as="h1">
-          Popular drinks by region
+          {t("title")}
         </Text>
-        <EmptyState
-          title="No popular drinks yet"
-          description="Regions haven't been tagged yet. Check back soon."
-        />
+        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
       </div>
     );
   }
