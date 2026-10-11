@@ -1,20 +1,29 @@
 // generate-drink-idea: turns a caller's pantry into a novel, AI generated drink idea.
 // Spec: docs/specs/0007-ai-generated-pantry-drink-ideas.md
+// Limits: docs/specs/0034-ai-quota-abuse-hardening/index.md
 //
 // - Never accepts a pantry ingredient list from the caller; always resolves the
-//   caller's own pantry server side via auth.uid() (AC-8).
-// - Quota is reserved atomically before the Claude call, not incremented after
-//   success, so two concurrent requests from the same user cannot both pass (AC-4).
+//   caller's own pantry server side via auth.uid() (0007 AC-8).
+// - The per user (tiered), per IP (guests only), and global daily limits are
+//   checked and claimed in one database transaction before the Claude call, so
+//   concurrent requests cannot push any counter past its limit (0034 AC-1 to AC-4).
+// - A generation that still fails after its retry gives its slots back (0034 AC-4b).
 // - One automatic retry on timeout, schema/pantry mismatch, or a 5xx from
-//   Anthropic; never on a 4xx (AC-7).
+//   Anthropic; never on a 4xx (0007 AC-7).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import Anthropic from "npm:@anthropic-ai/sdk@0.124.0";
 import { zodOutputFormat } from "npm:@anthropic-ai/sdk@0.124.0/helpers/zod";
-import { z } from "npm:zod@3";
+// The SDK zod helper needs the zod v4 API; plain `npm:zod@3` crashes it at runtime.
+import { z } from "npm:zod@3.25.76/v4";
 import * as Sentry from "npm:@sentry/deno@10";
+import { clientIpFromHeaders, hashIpBucket, ipBucket } from "../_shared/ip-bucket.ts";
 
 const MIN_PANTRY_INGREDIENTS = 2;
-const DAILY_QUOTA = 10;
+const ANON_DAILY_QUOTA = 5;
+const LINKED_DAILY_QUOTA = 10;
+const ANON_IP_DAILY_QUOTA = 20;
+const GLOBAL_DAILY_CAP = 2000;
+const ANON_GLOBAL_DAILY_CAP = 1600;
 const ANTHROPIC_TIMEOUT_MS = 15_000;
 
 const sentryDsn = Deno.env.get("SENTRY_DSN");
@@ -27,6 +36,38 @@ function reportError(error: unknown, context: Record<string, unknown>) {
   if (sentryDsn) {
     Sentry.captureException(error, { extra: context });
   }
+}
+
+function reportWarning(message: string, context: Record<string, unknown>) {
+  console.warn(message, context);
+  if (sentryDsn) {
+    Sentry.captureMessage(message, { level: "warning", extra: context });
+  }
+}
+
+type LimitReason = "user_limit" | "ip_limit" | "global_limit";
+
+type Reservation = {
+  readonly reason: LimitReason | null;
+  readonly day: string;
+  readonly total_count: number;
+};
+
+// Only the first 8 hex characters of an IP hash ever reach logs or Sentry.
+function hashPrefix(ipHash: string | null): string | null {
+  return ipHash === null ? null : ipHash.slice(0, 8);
+}
+
+// Guests only: the HMAC of the caller's IP bucket, from the edge set header.
+async function guestIpHash(headers: Headers, secret: string, userId: string): Promise<string> {
+  const clientIp = clientIpFromHeaders(headers);
+  if (clientIp === null) {
+    reportWarning("AI quota: client IP unknown, counting in the shared unknown bucket", {
+      userId,
+      stage: "ip_bucket",
+    });
+  }
+  return hashIpBucket(ipBucket(clientIp), secret);
 }
 
 const SUPPORTED_LOCALES = ["en", "es"] as const;
@@ -180,27 +221,79 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  const today = new Date().toISOString().slice(0, 10);
+  const isAnonymous = user.is_anonymous === true;
+  const ipHashSecret = Deno.env.get("IP_HASH_SECRET");
 
-  // A plain upsert cannot express "increment only under the limit" atomically
-  // via the JS client, so the reservation runs as a single SQL statement
-  // (insert ... on conflict ... where count < limit returning), closing the
-  // race a separate check-then-increment would leave open (AC-4).
-  const { data: reserved, error: reserveError } = await serviceRoleClient.rpc(
-    "reserve_ai_generation_quota",
-    { p_user_id: user.id, p_day: today, p_limit: DAILY_QUOTA },
-  );
+  // Fail closed for guests: without the secret there is no IP layer, and the
+  // IP layer must never be skipped (0034 AC-7). Signed in callers carry on.
+  if (isAnonymous && !ipHashSecret) {
+    reportError(new Error("IP_HASH_SECRET is not set"), {
+      userId: user.id,
+      stage: "ip_hash_secret",
+    });
+    return jsonResponse({ error: "temporarily unavailable" }, 503);
+  }
 
-  if (reserveError) {
+  const ipHash =
+    isAnonymous && ipHashSecret ? await guestIpHash(req.headers, ipHashSecret, user.id) : null;
+
+  // One transaction locks and checks the global, IP, and user rows, then
+  // claims all three or none (0034 AC-4). The day comes back from SQL so a
+  // later release hits the same rows.
+  const { data: reservation, error: reserveError } = await serviceRoleClient
+    .rpc("reserve_ai_generation_slot", {
+      p_user_id: user.id,
+      p_is_anonymous: isAnonymous,
+      p_ip_hash: ipHash,
+      p_user_limit: isAnonymous ? ANON_DAILY_QUOTA : LINKED_DAILY_QUOTA,
+      p_ip_limit: ANON_IP_DAILY_QUOTA,
+      p_global_limit: GLOBAL_DAILY_CAP,
+      p_anon_global_limit: ANON_GLOBAL_DAILY_CAP,
+    })
+    .single<Reservation>();
+
+  if (reserveError || !reservation) {
     reportError(reserveError, { userId: user.id, stage: "quota_reserve" });
     return jsonResponse({ error: "failed to check quota" }, 502);
   }
 
-  if (!reserved) {
+  if (reservation.reason !== null) {
+    if (reservation.reason === "ip_limit") {
+      const ipHashPrefix = hashPrefix(ipHash);
+      console.warn("AI quota: ip_limit refusal", { ipHashPrefix });
+      if (sentryDsn) {
+        Sentry.addBreadcrumb({
+          category: "ai-quota",
+          message: "ip_limit refusal",
+          level: "warning",
+          data: { ipHashPrefix },
+        });
+      }
+    }
+
     return jsonResponse(
-      { error: "daily generation limit reached", resetsAt: startOfNextUtcDay() },
+      {
+        error: "daily generation limit reached",
+        reason: reservation.reason,
+        resetsAt: startOfNextUtcDay(),
+        signInHelps: isAnonymous && reservation.total_count < GLOBAL_DAILY_CAP,
+      },
       429,
     );
+  }
+
+  // Exactly one successful reservation lands on each threshold per day (0034 AC-9).
+  if (reservation.total_count === ANON_GLOBAL_DAILY_CAP) {
+    reportWarning("AI quota: guests cut off for today", {
+      day: reservation.day,
+      totalCount: reservation.total_count,
+    });
+  }
+  if (reservation.total_count === GLOBAL_DAILY_CAP) {
+    reportWarning("AI quota: global cap reached", {
+      day: reservation.day,
+      totalCount: reservation.total_count,
+    });
   }
 
   const anthropic = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
@@ -221,6 +314,23 @@ Deno.serve(async (req) => {
 
   if (!idea) {
     reportError(lastError, { userId: user.id, stage: "claude_generate" });
+
+    // Give back every slot this request claimed, on the reserved day, so an
+    // Anthropic outage cannot use up the day's caps. A failed release is only
+    // reported; the caller still gets the 502 (0034 AC-4b).
+    const { error: releaseError } = await serviceRoleClient.rpc("release_ai_generation_slot", {
+      p_user_id: user.id,
+      p_ip_hash: ipHash,
+      p_day: reservation.day,
+    });
+    if (releaseError) {
+      reportError(releaseError, {
+        userId: user.id,
+        ipHashPrefix: hashPrefix(ipHash),
+        stage: "quota_release",
+      });
+    }
+
     return jsonResponse({ error: "generation failed" }, 502);
   }
 
