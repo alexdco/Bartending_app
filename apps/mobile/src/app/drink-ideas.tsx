@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef } from "react";
-import { SafeAreaView, StyleSheet, View } from "react-native";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { SafeAreaView, StyleSheet, Text as RNText, View } from "react-native";
 import { useRouter } from "expo-router";
 
 import { BackButton } from "@/components/back-button";
@@ -11,7 +11,13 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { usePantry } from "@/pantry/use-pantry";
-import { buildDrinkIdeaGeneratedEvent, GenerateDrinkIdeaError } from "@bartendingapp/shared";
+import {
+  buildDrinkIdeaGeneratedEvent,
+  drinkIdeaLimitMessage,
+  GenerateDrinkIdeaError,
+  type Locale,
+} from "@bartendingapp/shared";
+import { useActiveLocale } from "@/i18n";
 import { track } from "@/analytics/posthog-client";
 import { useDrinkIdeas } from "@/drink-ideas/use-drink-ideas";
 import { useGenerateDrinkIdea } from "@/drink-ideas/use-generate-drink-idea";
@@ -34,6 +40,41 @@ function generateErrorMessage(reason: GenerateDrinkIdeaError["reason"], resetsAt
   }
 }
 
+// This screen has no translation support yet (feature 41), so its copy stays
+// English; the reset time still follows the app's locale (spec 0034 AC-6).
+const SCREEN_COPY_LOCALE: Locale = "en";
+
+function generateErrorDescription(
+  error: unknown,
+  formatLocale: Locale,
+  onSignIn: () => void,
+): ReactNode {
+  if (!(error instanceof GenerateDrinkIdeaError)) {
+    return generateErrorMessage("generation_failed");
+  }
+
+  const limitMessage =
+    error.reason === "quota_exceeded"
+      ? drinkIdeaLimitMessage(error, { copyLocale: SCREEN_COPY_LOCALE, formatLocale })
+      : null;
+
+  if (!limitMessage) {
+    return generateErrorMessage(error.reason, error.resetsAt);
+  }
+
+  return (
+    <>
+      {limitMessage.before}
+      {limitMessage.signInText && (
+        <RNText accessibilityRole="link" onPress={onSignIn} style={styles.inlineLink}>
+          {limitMessage.signInText}
+        </RNText>
+      )}
+      {limitMessage.after}
+    </>
+  );
+}
+
 export default function DrinkIdeasScreen() {
   const theme = useTheme();
   const router = useRouter();
@@ -42,6 +83,7 @@ export default function DrinkIdeasScreen() {
     useDrinkIdeas();
   const { data: pantryItems } = usePantry();
   const generateDrinkIdea = useGenerateDrinkIdea();
+  const locale = useActiveLocale();
 
   const matches = useMemo(() => data?.pages.flat() ?? [], [data]);
   const canMakeNow = useMemo(() => matches.filter((match) => match.missingRatio === 0), [matches]);
@@ -73,14 +115,9 @@ export default function DrinkIdeasScreen() {
       ) : generateDrinkIdea.error ? (
         <EmptyState
           title="Couldn't generate an idea"
-          description={
-            generateDrinkIdea.error instanceof GenerateDrinkIdeaError
-              ? generateErrorMessage(
-                  generateDrinkIdea.error.reason,
-                  generateDrinkIdea.error.resetsAt,
-                )
-              : generateErrorMessage("generation_failed")
-          }
+          description={generateErrorDescription(generateDrinkIdea.error, locale, () =>
+            router.push("/account"),
+          )}
           action={<Button onPress={() => generateDrinkIdea.mutate()}>Retry</Button>}
         />
       ) : (
@@ -213,5 +250,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingVertical: Spacing.four,
+  },
+  inlineLink: {
+    textDecorationLine: "underline",
   },
 });

@@ -83,6 +83,7 @@
     "guestDataBody": "If you use the app without signing in, we create an anonymous session so your pantry and favorites still work and persist on your device.",
     "aiDataTitle": "AI generated drink idea data.",
     "aiDataBody": "When you ask for a drink idea from your pantry, your pantry contents and prompt are sent to Anthropic, our AI provider, to generate a suggestion.",
+    "aiIpHashBody": "When a guest (not signed in) asks for an AI drink idea, we keep a one way hash of their IP address for up to 8 days, only to limit abuse of that feature. The hash can't be turned back into your IP address, and it's deleted automatically.",
     "analyticsDataTitle": "Product analytics.",
     "analyticsDataBody": "On web, once you accept the cookie notice, and on the mobile app, we send PostHog, our analytics provider, events for actions like searching, adding a pantry item, and generating a drink idea, tied to your guest or signed in identity. A search event includes the text of your search query. We do not track page views, clicks, or session recordings.",
     "diagnosticDataTitle": "Error and diagnostic logging (planned, not yet collected).",

@@ -52,7 +52,7 @@ export default async function PrivacyPage() {
           </li>
           <li>
             <Text variant="body" as="span">
-              <strong>{t("aiDataTitle")}</strong> {t("aiDataBody")}
+              <strong>{t("aiDataTitle")}</strong> {t("aiDataBody")} {t("aiIpHashBody")}
             </Text>
           </li>
           <li>

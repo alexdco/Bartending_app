@@ -83,6 +83,7 @@
     "guestDataBody": "Si usas la aplicación sin iniciar sesión, creamos una sesión anónima para que tu despensa y favoritos sigan funcionando y persistan en tu dispositivo.",
     "aiDataTitle": "Datos de ideas de tragos generadas por IA.",
     "aiDataBody": "Cuando pides una idea de trago según tu despensa, el contenido de tu despensa y tu solicitud se envían a Anthropic, nuestro proveedor de IA, para generar una sugerencia.",
+    "aiIpHashBody": "Cuando un invitado (sin iniciar sesión) pide una idea de trago con IA, guardamos un hash irreversible de su dirección IP durante un máximo de 8 días, solo para limitar el abuso de esa función. El hash no se puede convertir de nuevo en tu dirección IP y se borra automáticamente.",
     "analyticsDataTitle": "Analítica del producto.",
     "analyticsDataBody": "En la web, una vez que aceptas el aviso de cookies, y en la aplicación móvil, enviamos a PostHog, nuestro proveedor de analítica, eventos de acciones como buscar, agregar un artículo a la despensa y generar una idea de trago, vinculados a tu identidad de invitado o con sesión iniciada. Un evento de búsqueda incluye el texto de tu consulta. No rastreamos vistas de página, clics ni grabaciones de sesión.",
     "diagnosticDataTitle": "Registro de errores y diagnóstico (planeado, aún no recopilado).",

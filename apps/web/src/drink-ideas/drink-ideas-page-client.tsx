@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
+import { useLocale } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -9,7 +10,12 @@ import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { usePantry } from "@/pantry/use-pantry";
-import { buildDrinkIdeaGeneratedEvent, GenerateDrinkIdeaError } from "@bartendingapp/shared";
+import {
+  buildDrinkIdeaGeneratedEvent,
+  drinkIdeaLimitMessage,
+  GenerateDrinkIdeaError,
+  type Locale,
+} from "@bartendingapp/shared";
 import { track } from "@/analytics/posthog-client";
 import { useDrinkIdeas } from "./use-drink-ideas";
 import { useGenerateDrinkIdea } from "./use-generate-drink-idea";
@@ -32,11 +38,43 @@ function generateErrorMessage(reason: GenerateDrinkIdeaError["reason"], resetsAt
   }
 }
 
+// This page has no translation support yet (feature 41), so its copy stays
+// English; the reset time still follows the app's locale (spec 0034 AC-6).
+const PAGE_COPY_LOCALE: Locale = "en";
+
+function generateErrorDescription(error: unknown, formatLocale: Locale): ReactNode {
+  if (!(error instanceof GenerateDrinkIdeaError)) {
+    return generateErrorMessage("generation_failed");
+  }
+
+  const limitMessage =
+    error.reason === "quota_exceeded"
+      ? drinkIdeaLimitMessage(error, { copyLocale: PAGE_COPY_LOCALE, formatLocale })
+      : null;
+
+  if (!limitMessage) {
+    return generateErrorMessage(error.reason, error.resetsAt);
+  }
+
+  return (
+    <>
+      {limitMessage.before}
+      {limitMessage.signInText && (
+        <Link href="/account" className="underline">
+          {limitMessage.signInText}
+        </Link>
+      )}
+      {limitMessage.after}
+    </>
+  );
+}
+
 export function DrinkIdeasPageClient() {
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
     useDrinkIdeas();
   const { data: pantryItems } = usePantry();
   const generateDrinkIdea = useGenerateDrinkIdea();
+  const locale = useLocale() as Locale;
 
   const matches = useMemo(() => data?.pages.flat() ?? [], [data]);
   const canMakeNow = useMemo(() => matches.filter((match) => match.missingRatio === 0), [matches]);
@@ -89,14 +127,7 @@ export function DrinkIdeasPageClient() {
       ) : generateDrinkIdea.error ? (
         <EmptyState
           title="Couldn't generate an idea"
-          description={
-            generateDrinkIdea.error instanceof GenerateDrinkIdeaError
-              ? generateErrorMessage(
-                  generateDrinkIdea.error.reason,
-                  generateDrinkIdea.error.resetsAt,
-                )
-              : generateErrorMessage("generation_failed")
-          }
+          description={generateErrorDescription(generateDrinkIdea.error, locale)}
           action={<Button onClick={() => generateDrinkIdea.mutate()}>Retry</Button>}
         />
       ) : (
