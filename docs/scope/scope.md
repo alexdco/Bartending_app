@@ -132,7 +132,7 @@ The thinnest real thread through the whole product: a user (signed in or guest) 
   - [x] Mobile Search tab and detail screen (pushed via Expo Router), satisfies AC-1 through AC-8
   - [x] Cross platform parity check (same query, same live data, both platforms), satisfies AC-9
 - [ ] Verify it: `/check verify recipe search and detail` · last run 2026-10-09: FAIL on AC-5 (web otherwise passes, mobile blocked with no emulator)
-  - [ ] Fix AC-5 ranking: `/debug recipe search ranking`. `search_recipes` gives every full text name match the same `ts_rank`, so ties fall to A to Z and "House Margarita" outranks "Margarita" (same for "gin")
+  - [ ] Fix AC-5 ranking: `/debug recipe search ranking`. `search_recipes` gives every full text name match the same `ts_rank`, so ties fall to A to Z and "House Margarita" outranks "Margarita" (same for "gin"). Fix written as `supabase/migrations/20261010140000_search_recipes_rank_fix.sql` (length normalized `ts_rank`, trigram fallback moved to its own bucket after full text) and verified against live data with a read only query; apply it in the SQL editor, then rerun `/check verify`
 - [x] Test it: `/test recipe search and detail` — closed on a layout only change to `RecipeDetailHeader` (centered `max-w-3xl` hero, `sizes` hint corrected to 768px); no new tests, since class names and image hints aren't durable assertions and `apps/web` has no component test setup yet
 Spec [0004](../specs/0004-recipe-search-and-detail/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
