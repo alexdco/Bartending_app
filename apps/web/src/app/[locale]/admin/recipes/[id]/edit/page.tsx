@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { fetchAdminRecipeDetail, isAdmin } from "@bartendingapp/shared";
 import { getTranslations } from "next-intl/server";
@@ -6,6 +7,11 @@ import { redirect } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 import { AdminNav } from "@/admin/admin-nav";
 import { AdminRecipeForm } from "@/admin/admin-recipe-form";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("admin");
+  return { title: t("editRecipeMetaTitle") };
+}
 
 export default async function EditAdminRecipePage({
   params,

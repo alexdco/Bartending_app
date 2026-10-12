@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { buildOpenGraph } from "@/lib/open-graph";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
 import {
@@ -47,7 +48,8 @@ export async function generateMetadata({
   }
 
   const articlePath = `/learn/${category}/${buildLearnArticleSlugPath(article.id, article.title)}`;
-  const canonicalPath = localizedPath((await getLocale()) as Locale, articlePath);
+  const locale = (await getLocale()) as Locale;
+  const canonicalPath = localizedPath(locale, articlePath);
 
   return {
     title: article.title,
@@ -57,7 +59,7 @@ export async function generateMetadata({
         SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, articlePath)]),
       ),
     },
-    openGraph: { title: article.title, url: canonicalPath },
+    openGraph: await buildOpenGraph(locale, { title: article.title, url: canonicalPath }),
   };
 }
 

@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { buildOpenGraph } from "@/lib/open-graph";
 import { Suspense } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
@@ -19,6 +20,7 @@ export async function generateMetadata({
   const query = q?.trim() ?? "";
 
   const t = await getTranslations("search");
+  const locale = (await getLocale()) as Locale;
   const title = query ? t("metaTitleQuery", { query }) : t("metaTitle");
   const description = query ? t("metaDescriptionQuery", { query }) : t("metaDescription");
 
@@ -26,14 +28,11 @@ export async function generateMetadata({
     title,
     description,
     robots: { index: false, follow: true },
-    openGraph: {
+    openGraph: await buildOpenGraph(locale, {
       title,
       description,
-      url: localizedPath(
-        (await getLocale()) as Locale,
-        query ? `/search?q=${encodeURIComponent(query)}` : "/search",
-      ),
-    },
+      url: localizedPath(locale, query ? `/search?q=${encodeURIComponent(query)}` : "/search"),
+    }),
   };
 }
 

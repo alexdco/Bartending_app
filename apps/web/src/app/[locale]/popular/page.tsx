@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { getLocale, getTranslations } from "next-intl/server";
 import { listPopularRegions, slugify, type Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
@@ -5,6 +6,11 @@ import { permanentRedirect, redirect } from "@/i18n/navigation";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("popular");
+  return { title: t("title"), description: t("indexMetaDescription") };
+}
 
 export default async function PopularPage({
   searchParams,

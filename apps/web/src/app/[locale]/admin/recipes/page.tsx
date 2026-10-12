@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { isAdmin } from "@bartendingapp/shared";
 import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
@@ -5,6 +6,11 @@ import { redirect } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 import { AdminNav } from "@/admin/admin-nav";
 import { AdminRecipeList } from "@/admin/admin-recipe-list";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("admin");
+  return { title: t("recipesMetaTitle") };
+}
 
 export default async function AdminRecipesPage({
   params,

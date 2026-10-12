@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { buildOpenGraph } from "@/lib/open-graph";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -46,7 +47,8 @@ export async function generateMetadata({
   const title = t("metaTitle", { region });
   const description = t("metaDescription", { region });
   const regionPath = `/popular/${regionSlug}`;
-  const canonicalPath = localizedPath((await getLocale()) as Locale, regionPath);
+  const locale = (await getLocale()) as Locale;
+  const canonicalPath = localizedPath(locale, regionPath);
 
   const languages = Object.fromEntries(
     SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, regionPath)]),
@@ -59,11 +61,11 @@ export async function generateMetadata({
       canonical: canonicalPath,
       languages,
     },
-    openGraph: {
+    openGraph: await buildOpenGraph(locale, {
       title,
       description,
       url: canonicalPath,
-    },
+    }),
   };
 }
 

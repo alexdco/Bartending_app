@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { getLocale } from "next-intl/server";
+import { getLocale, getTranslations } from "next-intl/server";
 import {
   buildQuizSlugPath,
   extractIdFromRecipeSlug,
@@ -38,7 +38,11 @@ export async function generateMetadata({
     return {};
   }
 
-  return { title: quiz.title };
+  const t = await getTranslations("quizzes");
+  return {
+    title: quiz.title,
+    description: t("detailMetaDescription", { title: quiz.title }),
+  };
 }
 
 export default async function QuizDetailPage({ params }: { params: Promise<QuizDetailParams> }) {

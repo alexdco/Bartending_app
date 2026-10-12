@@ -1,9 +1,16 @@
+import type { Metadata } from "next";
+import { getTranslations } from "next-intl/server";
 import { useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { LEARN_CATEGORIES } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { Text } from "@/components/text";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const t = await getTranslations("learn");
+  return { title: t("title"), description: t("metaDescription") };
+}
 
 export default function LearnPage() {
   const t = useTranslations("learn");

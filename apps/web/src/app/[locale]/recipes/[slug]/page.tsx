@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { buildOpenGraph } from "@/lib/open-graph";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
@@ -104,12 +105,12 @@ export async function generateMetadata({
       canonical: canonicalPath,
       languages,
     },
-    openGraph: {
+    openGraph: await buildOpenGraph(locale, {
       title: recipe.name,
       description,
       url: canonicalPath,
-      images: recipe.imageUrl ? [{ url: recipe.imageUrl }] : undefined,
-    },
+      ...(recipe.imageUrl ? { images: [{ url: recipe.imageUrl }] } : {}),
+    }),
   };
 }
 
