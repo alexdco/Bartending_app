@@ -1078,6 +1078,13 @@ export type Database = {
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "recipes_merged_into_recipe_id_fkey";
+            columns: ["merged_into_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
         ];
       };
       shopping_list_items: {
@@ -1559,7 +1566,10 @@ export type Database = {
           total_count: number;
         }[];
       };
-      resolve_recipe_redirect: { Args: { p_recipe_id: string }; Returns: string };
+      resolve_recipe_redirect: {
+        Args: { p_recipe_id: string };
+        Returns: string;
+      };
       search_bartender: {
         Args: { bar_id?: string; query: string; recent_recipe_ids?: string[] };
         Returns: {
