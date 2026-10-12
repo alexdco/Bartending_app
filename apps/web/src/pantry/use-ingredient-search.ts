@@ -5,15 +5,19 @@ import { useLocale } from "next-intl";
 import { searchIngredients, type Locale } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 
-export function ingredientSearchQueryKey(query: string, locale: Locale) {
-  return ["ingredients", "search", query, locale] as const;
+export function ingredientSearchQueryKey(query: string, locale: Locale, includeStaples: boolean) {
+  return ["ingredients", "search", query, locale, includeStaples] as const;
 }
 
-export function useIngredientSearch(query: string) {
+/**
+ * Staples (Ice, Water) are left out by default for the pantry and shopping
+ * list; recipe forms pass `includeStaples: true` (spec 0036, AC-10, AC-13).
+ */
+export function useIngredientSearch(query: string, { includeStaples = false } = {}) {
   const locale = useLocale() as Locale;
 
   return useQuery({
-    queryKey: ingredientSearchQueryKey(query, locale),
-    queryFn: () => searchIngredients(supabase, query, 20, locale),
+    queryKey: ingredientSearchQueryKey(query, locale, includeStaples),
+    queryFn: () => searchIngredients(supabase, query, 20, locale, { includeStaples }),
   });
 }

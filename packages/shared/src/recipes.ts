@@ -101,6 +101,8 @@ export interface RecipeIngredientDetail {
   amountUnit: RecognizedUnit | null;
   /** Null until the ingredient is Haiku classified (spec 0022, AC-4, AC-9). */
   category: IngredientCategory | null;
+  /** Always on hand (Ice, Water): no pantry or shopping list buttons (spec 0036, AC-10). */
+  isStaple: boolean;
 }
 
 export interface RecipeDetail {
@@ -122,6 +124,7 @@ interface RecipeDetailIngredientRow {
   amount_value: number | null;
   amount_unit: string | null;
   category: IngredientCategory | null;
+  is_staple?: boolean;
 }
 
 export async function fetchRecipeDetail(
@@ -150,6 +153,7 @@ export async function fetchRecipeDetail(
       amountValue: ri.amount_value,
       amountUnit: toRecognizedUnit(ri.amount_unit),
       category: ri.category,
+      isStaple: ri.is_staple ?? false,
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -189,4 +193,27 @@ export async function fetchRecipesByIds(
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
   }));
+}
+
+export type FetchRecipeRedirectResult =
+  | { data: string | null; error: null }
+  | { data: null; error: { reason: "request_failed"; message: string } };
+
+/**
+ * The kept recipe's id when `recipeId` is a hidden duplicate (spec 0036,
+ * AC-2), else null. One hop: callers never follow the result again.
+ */
+export async function fetchRecipeRedirect(
+  client: SupabaseClient<Database>,
+  recipeId: string,
+): Promise<FetchRecipeRedirectResult> {
+  const { data, error } = await client.rpc("resolve_recipe_redirect", {
+    p_recipe_id: recipeId,
+  });
+
+  if (error) {
+    return { data: null, error: { reason: "request_failed", message: error.message } };
+  }
+
+  return { data: data ?? null, error: null };
 }

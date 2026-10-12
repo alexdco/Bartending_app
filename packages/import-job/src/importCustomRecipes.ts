@@ -3,6 +3,7 @@ import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database, Json } from "@bartendingapp/shared";
+import { canonicalGlass, canonicalIngredientName } from "@bartendingapp/shared/catalog-names";
 import { parseMeasure } from "@bartendingapp/shared/units";
 import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
@@ -34,12 +35,14 @@ async function main(): Promise<void> {
     name: recipe.name,
     instructions: recipe.instructions,
     imageUrl: recipe.imageUrl,
-    glass: recipe.glass,
+    // Same casing as the catalog import and admin saves (spec 0036), so the
+    // shared ingredient rows never flip names between imports.
+    glass: canonicalGlass(recipe.glass),
     alcoholicStatus: recipe.alcoholicStatus,
     ingredients: recipe.ingredients.map((ingredient, index) => {
       const parsed = parseMeasure(ingredient.measure);
       return {
-        ingredientName: ingredient.ingredientName,
+        ingredientName: canonicalIngredientName(ingredient.ingredientName),
         measure: ingredient.measure,
         sortOrder: index + 1,
         amountValue: parsed?.value ?? null,

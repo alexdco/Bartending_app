@@ -501,6 +501,7 @@ export type Database = {
           created_at: string;
           id: string;
           image_url: string | null;
+          is_staple: boolean;
           name: string;
           normalized_name: string | null;
           updated_at: string;
@@ -511,6 +512,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           image_url?: string | null;
+          is_staple?: boolean;
           name: string;
           normalized_name?: string | null;
           updated_at?: string;
@@ -521,6 +523,7 @@ export type Database = {
           created_at?: string;
           id?: string;
           image_url?: string | null;
+          is_staple?: boolean;
           name?: string;
           normalized_name?: string | null;
           updated_at?: string;
@@ -1007,6 +1010,7 @@ export type Database = {
           id: string;
           image_url: string | null;
           instructions: string;
+          merged_into_recipe_id: string | null;
           method: string | null;
           method_source_name_hash: string | null;
           name: string;
@@ -1030,6 +1034,7 @@ export type Database = {
           id?: string;
           image_url?: string | null;
           instructions: string;
+          merged_into_recipe_id?: string | null;
           method?: string | null;
           method_source_name_hash?: string | null;
           name: string;
@@ -1053,6 +1058,7 @@ export type Database = {
           id?: string;
           image_url?: string | null;
           instructions?: string;
+          merged_into_recipe_id?: string | null;
           method?: string | null;
           method_source_name_hash?: string | null;
           name?: string;
@@ -1064,7 +1070,15 @@ export type Database = {
           straining?: string | null;
           updated_at?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "recipes_merged_into_recipe_id_fkey";
+            columns: ["merged_into_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       shopping_list_items: {
         Row: {
@@ -1401,7 +1415,10 @@ export type Database = {
           name: string;
         }[];
       };
-      import_catalog: { Args: { drinks: Json }; Returns: undefined };
+      import_catalog: {
+        Args: { drinks: Json; merges?: Json; staple_names?: string[] };
+        Returns: undefined;
+      };
       import_custom_recipes: { Args: { recipes: Json }; Returns: undefined };
       insert_new_comment_photo: {
         Args: {
@@ -1542,6 +1559,7 @@ export type Database = {
           total_count: number;
         }[];
       };
+      resolve_recipe_redirect: { Args: { p_recipe_id: string }; Returns: string };
       search_bartender: {
         Args: { bar_id?: string; query: string; recent_recipe_ids?: string[] };
         Returns: {
@@ -1553,7 +1571,12 @@ export type Database = {
         }[];
       };
       search_ingredients: {
-        Args: { locale?: string; query?: string; result_limit?: number };
+        Args: {
+          include_staples?: boolean;
+          locale?: string;
+          query?: string;
+          result_limit?: number;
+        };
         Returns: {
           id: string;
           name: string;

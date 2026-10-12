@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { parseMeasure, type RecognizedUnit } from "./units";
+import { canonicalGlass, canonicalIngredientName } from "./catalogNames";
 
 export const ADMIN_RECIPE_NAME_MAX_LENGTH = 200;
 export const ADMIN_RECIPE_INSTRUCTIONS_MAX_LENGTH = 10000;
@@ -243,7 +244,8 @@ export type AdminIngredientPayload = {
  * Builds the admin_upsert_recipe ingredient payload, parsing each trimmed
  * measure with the shared parser so an admin save keeps the recipe's unit
  * toggle and batch panel working (spec 0035 AC-8). An unparsed line sends
- * both amount fields as null.
+ * both amount fields as null. Names get the catalog casing rule, so an admin
+ * save never flips a shared ingredient's name back (spec 0036 AC-7).
  */
 export function toAdminIngredientPayload(
   ingredients: readonly AdminRecipeFormIngredient[],
@@ -252,7 +254,7 @@ export function toAdminIngredientPayload(
     const measure = ingredient.measure?.trim() || null;
     const parsed = parseMeasure(measure);
     return {
-      name: ingredient.name.trim(),
+      name: canonicalIngredientName(ingredient.name),
       measure,
       sortOrder: index,
       amount_value: parsed?.value ?? null,
@@ -288,7 +290,7 @@ export async function saveAdminRecipe(
     p_name: values.name.trim(),
     p_instructions: values.instructions.trim(),
     p_image_url: values.imageUrl?.trim() || null,
-    p_glass: values.glass?.trim() || null,
+    p_glass: canonicalGlass(values.glass),
     p_alcoholic_status: values.alcoholicStatus,
     p_region: values.region?.trim() || null,
     p_ingredients: toAdminIngredientPayload(nonEmptyIngredients),

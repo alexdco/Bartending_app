@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database, Json } from "@bartendingapp/shared";
@@ -5,6 +7,15 @@ import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
 import { fetchAllDrinks } from "./theCocktailDb";
 import { transformDrink } from "./transform";
+import { parseCatalogOverrides } from "./catalogOverridesSchema";
+import {
+  applyOverrides,
+  findUnknownStaples,
+  summarizeOverrides,
+  validateOverrides,
+} from "./overrides";
+
+const OVERRIDES_PATH = fileURLToPath(new URL("./catalogOverrides.json", import.meta.url));
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -14,21 +25,74 @@ function requireEnv(name: string): string {
   return value;
 }
 
+function failValidation(errors: readonly string[]): never {
+  throw new Error(
+    `catalogOverrides.json failed validation, nothing was written:\n  ${errors.join("\n  ")}`,
+  );
+}
+
 async function main(): Promise<void> {
   const supabaseUrl = requireEnv("SUPABASE_URL");
   const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
+  const dryRun = process.argv.includes("--dry-run");
 
   const supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });
 
+  const overrides = parseCatalogOverrides(JSON.parse(readFileSync(OVERRIDES_PATH, "utf-8")));
+
   const drinks = await fetchAllDrinks();
   const transformed = drinks.map(transformDrink);
 
-  const payload = transformed.map((drink) => ({
+  // Spec 0036 AC-12: every overrides rule is checked before any write.
+  const validation = validateOverrides(transformed, overrides);
+  validation.warnings.forEach((warning) => console.warn(`catalogOverrides.json: ${warning}`));
+  if (validation.errors.length > 0) {
+    failValidation(validation.errors);
+  }
+
+  const applied = applyOverrides(transformed, overrides);
+
+  const { data: liveIngredients, error: ingredientsError } = await supabase
+    .from("ingredients")
+    .select("name");
+  if (ingredientsError) {
+    throw new Error(`Could not read ingredients to check staples: ${ingredientsError.message}`);
+  }
+  const unknownStaples = findUnknownStaples(applied.stapleNames, [
+    ...(liveIngredients ?? []).map((row) => row.name),
+    ...applied.drinks.flatMap((drink) => drink.ingredients.map((i) => i.ingredientName)),
+  ]);
+  if (unknownStaples.length > 0) {
+    failValidation([`staples match no ingredient: ${unknownStaples.join(", ")}`]);
+  }
+
+  applied.unknownGlasses.forEach((glass) =>
+    console.warn(
+      `Unknown glass "${glass}" was sentence cased; add it to GLASS_MAP in packages/shared/src/catalogNames.ts`,
+    ),
+  );
+
+  if (dryRun) {
+    const summary = summarizeOverrides(transformed, applied);
+    console.log("Dry run, nothing written.");
+    console.log(`  source drinks:      ${transformed.length}`);
+    console.log(`  hidden:             ${summary.hidden}`);
+    console.log(`  merges:             ${summary.merges}`);
+    console.log(`  glass renames:      ${summary.glassRenames}`);
+    console.log(`  ingredient renames: ${summary.ingredientRenames}`);
+    console.log(`  recipe fixes:       ${summary.fixes}`);
+    console.log(`  unknown glasses:    ${summary.unknownGlasses.join(", ") || "none"}`);
+    console.log(`  staples:            ${applied.stapleNames.join(", ")}`);
+    return;
+  }
+
+  const payload = applied.drinks.map((drink) => ({
     sourceId: drink.recipe.sourceId,
     name: drink.recipe.name,
     instructions: drink.recipe.instructions,
+    instructionsOverride: drink.recipe.instructionsOverride,
     imageUrl: drink.recipe.imageUrl,
     glass: drink.recipe.glass,
     alcoholicStatus: drink.recipe.alcoholicStatus,
@@ -39,13 +103,17 @@ async function main(): Promise<void> {
 
   const { error } = await supabase.rpc("import_catalog", {
     drinks: payload as unknown as Json,
+    merges: applied.merges as unknown as Json,
+    staple_names: applied.stapleNames,
   });
 
   if (error) {
     throw new Error(`Import failed, no recipes were marked removed: ${error.message}`);
   }
 
-  console.log(`Imported ${transformed.length} recipes.`);
+  console.log(
+    `Imported ${payload.length} recipes (${transformed.length - payload.length} hidden, ${applied.merges.length} merged).`,
+  );
 
   const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicApiKey) {

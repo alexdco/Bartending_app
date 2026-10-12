@@ -1,0 +1,24 @@
+{
+  "hide": {
+    "13751": { "reason": "duplicate", "name": "Cuba Libra", "mergeInto": "11288" },
+    "12954": { "reason": "duplicate", "name": "Holloween Punch", "mergeInto": "178313" },
+    "178368": { "reason": "duplicate", "name": "Planter’s Punch", "mergeInto": "17191" },
+    "11002": { "reason": "duplicate", "name": "Long Island Tea", "mergeInto": "17204" },
+    "12460": { "reason": "duplicate", "name": "Vodka And Tonic", "mergeInto": "178364" },
+    "11872": { "reason": "crude", "name": "Orgasm" },
+    "17122": { "reason": "crude", "name": "Royal Bitch" },
+    "13535": { "reason": "crude", "name": "Pink Panty Pulldowns" },
+    "14466": { "reason": "crude", "name": "Dirty Nipple" }
+  },
+  "recipes": {
+    "15941": {
+      "name": "Americano",
+      "addIngredients": [{ "ingredientName": "Soda Water", "measure": "Splash" }]
+    }
+  },
+  "unlistedIngredientSynonyms": {
+    "soda": "Soda Water",
+    "simple syrup": "Sugar Syrup"
+  },
+  "staples": ["Ice", "Water"]
+}

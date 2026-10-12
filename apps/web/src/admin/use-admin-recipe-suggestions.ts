@@ -38,7 +38,10 @@ export function useAdminIngredientSuggestions(query: string) {
 
   return useQuery({
     queryKey: adminIngredientSuggestionsQueryKey(debouncedQuery),
-    queryFn: () => searchIngredients(supabase, debouncedQuery, INGREDIENT_SUGGESTION_LIMIT, "en"),
+    queryFn: () =>
+      searchIngredients(supabase, debouncedQuery, INGREDIENT_SUGGESTION_LIMIT, "en", {
+        includeStaples: true,
+      }),
     enabled: debouncedQuery.length >= 2,
     staleTime: 5 * 60 * 1000,
   });

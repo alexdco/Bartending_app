@@ -5,6 +5,7 @@ import {
   buildRecipeSlugPath,
   extractIdFromRecipeSlug,
   fetchRecipeDetail,
+  fetchRecipeRedirect,
   localizedPath,
   SUPPORTED_LOCALES,
   type Locale,
@@ -24,14 +25,39 @@ interface RecipePageParams {
   slug: string;
 }
 
+/**
+ * The live recipe for this slug. A hidden duplicate permanently redirects
+ * (308) to its kept recipe in the same locale, one hop only; anything else
+ * missing is a 404 (spec 0036, AC-2, AC-3).
+ */
 async function resolveRecipe(slugParam: string, locale: Locale) {
   const id = extractIdFromRecipeSlug(slugParam);
   if (!id) {
-    return null;
+    notFound();
   }
 
   const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
-  return recipe;
+  if (recipe) {
+    return recipe;
+  }
+
+  const redirectLookup = await fetchRecipeRedirect(supabasePublic, id);
+  if (redirectLookup.error) {
+    throw new Error(`Recipe redirect lookup failed: ${redirectLookup.error.message}`);
+  }
+
+  const target = redirectLookup.data
+    ? await fetchRecipeDetail(supabasePublic, redirectLookup.data, locale)
+    : null;
+  if (!target) {
+    notFound();
+  }
+
+  // Throws like Next's own permanentRedirect, but next-intl doesn't type it as never.
+  return permanentRedirect({
+    href: `/recipes/${buildRecipeSlugPath(target.id, target.name)}`,
+    locale,
+  }) as never;
 }
 
 async function resolveSlugForLocale(id: string, locale: Locale): Promise<string | null> {
@@ -47,10 +73,6 @@ export async function generateMetadata({
   const { slug } = await params;
   const locale = (await getLocale()) as Locale;
   const recipe = await resolveRecipe(slug, locale);
-
-  if (!recipe) {
-    return {};
-  }
 
   const canonicalPath = localizedPath(
     locale,
@@ -93,19 +115,9 @@ export async function generateMetadata({
 
 export default async function RecipeDetailPage({ params }: { params: Promise<RecipePageParams> }) {
   const { slug } = await params;
-  const id = extractIdFromRecipeSlug(slug);
-
-  if (!id) {
-    notFound();
-  }
-
   const locale = (await getLocale()) as Locale;
   const t = await getTranslations("recipe");
-  const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
-
-  if (!recipe) {
-    notFound();
-  }
+  const recipe = await resolveRecipe(slug, locale);
 
   const canonicalSlugPath = buildRecipeSlugPath(recipe.id, recipe.name);
   if (slug !== canonicalSlugPath) {

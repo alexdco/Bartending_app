@@ -22,7 +22,7 @@
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 1/2 oz" },
-      { "ingredientName": "Cranberry juice", "measure": "5 oz" },
+      { "ingredientName": "Cranberry Juice", "measure": "5 oz" },
       { "ingredientName": "Lime", "measure": "1 wedge" }
     ],
     "tags": ["Stirred"]
@@ -36,7 +36,7 @@
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 1/2 oz" },
-      { "ingredientName": "Lime juice", "measure": "1/2 oz" },
+      { "ingredientName": "Lime Juice", "measure": "1/2 oz" },
       { "ingredientName": "Lime", "measure": "1 wedge" }
     ],
     "tags": ["Strain"]
@@ -51,8 +51,8 @@
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1/2 oz" },
       { "ingredientName": "Peach Schnapps", "measure": "1 oz" },
-      { "ingredientName": "Orange juice", "measure": "2 oz" },
-      { "ingredientName": "Cranberry juice", "measure": "2 oz" }
+      { "ingredientName": "Orange Juice", "measure": "2 oz" },
+      { "ingredientName": "Cranberry Juice", "measure": "2 oz" }
     ],
     "tags": ["Stirred"]
   },
@@ -65,7 +65,7 @@
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 oz" },
-      { "ingredientName": "Orange juice", "measure": "To top" },
+      { "ingredientName": "Orange Juice", "measure": "To top" },
       { "ingredientName": "Midori", "measure": "1/2 oz" }
     ],
     "tags": ["Stirred"]
@@ -75,7 +75,7 @@
     "name": "Mind Eraser",
     "instructions": "Layer in a double shot glass and drink through a straw.",
     "imageUrl": null,
-    "glass": "Double Shot glass",
+    "glass": "Double shot glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Coffee Liqueur", "measure": "3/4 oz" },
@@ -89,7 +89,7 @@
     "name": "Mind Eraser",
     "instructions": "Layer in a double shot glass and drink through a straw.",
     "imageUrl": null,
-    "glass": "Double Shot glass",
+    "glass": "Double shot glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Coffee Liqueur", "measure": "3/4 oz" },
@@ -103,7 +103,7 @@
     "name": "Purest's Vodka Martini",
     "instructions": "Place the vermouth into a cocktail shaker filled with ice and add the vodka. Stir or shake. Strain into a chilled cocktail glass and garnish with the olive.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 3/4 oz" },
@@ -117,13 +117,13 @@
     "name": "The Dirty Spy",
     "instructions": "Add vodka, dry vermouth, and olive brine to a cocktail shaker filled with ice. Shake well until thoroughly chilled. Strain into a chilled cocktail or martini glass.Garnish with the pimento-stuffed green olive.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "2 1/4 oz" },
       { "ingredientName": "Dry Vermouth", "measure": "3/4 oz" },
       { "ingredientName": "Olive Brine", "measure": "1/4 oz" },
-      { "ingredientName": "Pimento-stuffed Green Olive", "measure": "1" }
+      { "ingredientName": "Pimento-Stuffed Green Olive", "measure": "1" }
     ],
     "tags": ["Stirred"]
   },
@@ -132,7 +132,7 @@
     "name": "Dry Vodka Martini",
     "instructions": "Add vodka, dry vermouth, and olive brine to a cocktail shaker filled with ice. Shake well until thoroughly chilled. Strain into a chilled cocktail or martini glass. Garnish with the pimento-stuffed green olive.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "3 oz" },
@@ -157,7 +157,7 @@
     "name": "Wet Vodka Martini",
     "instructions": "Add the vodka and dry vermouth to a mixing glass filled with ice. Stir for 20–30 seconds untilthoroughly chilled. Strain into a chilled martini or cocktail glass.Garnish with a lime twist.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "2 oz" },
@@ -181,7 +181,7 @@
     "name": "Perfect Vodka Martini",
     "instructions": "Add the vodka, dry vermouth, and sweet vermouth to a mixing glass filled with ice. Stir for 20–30 seconds until thoroughly chilled. Strain into a chilled martini or cocktail glass. Garnish with a lemon twist.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "2 oz" },
@@ -206,7 +206,7 @@
     "name": "McClure's Pickle Martini",
     "instructions": "Place the vodka and brine in a mixing glass and fill with ice. Stir until very cold, strain into a chilled cocktail glass, and garnish with the pickle slice.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "2 oz" },
@@ -229,7 +229,7 @@
     "name": "Vodka Martini Shooter",
     "instructions": "Place the vodka, vermouth, and olive brine in a cocktail shaker filled with ice and shake vigorously. Strain the resulting mixture into a shot glass and garnish by balancing an olive on a toothpick over the center of the glass..",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 oz" },
@@ -253,7 +253,7 @@
     "name": "Appletini",
     "instructions": "Add the vodka, Sour Apple Pucker, and triple sec to a cocktail shaker filled with ice. Shake vigorously for 10–15 seconds until well chilled. Strain into a chilled martini or cocktail glass. Garnish with 3 apple slices.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 1/2 oz" },
@@ -281,7 +281,7 @@
     "name": "Lycheetini",
     "instructions": "Add the vodka, Sour Apple Pucker, and triple sec to a cocktail shaker filled with ice. Shake vigorously for 10–15 seconds until well chilled. Strain into a chilled martini or cocktail glass. Garnish with 3 apple slices.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 1/2 oz" },
@@ -307,14 +307,14 @@
     "name": "French Martini De Nancy",
     "instructions": "Add the vodka, crème de pamplemousse rose, grapefruit juice, and a squeeze of lemon juice to a cocktail shaker filled with ice. Shake vigorously for 10–15 seconds until well chilled. Strain into a chilled martini or cocktail glass. Express the grapefruit zest over the drink and garnish with it.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "1 1/2 oz" },
-      { "ingredientName": "Giffard Creme De PampleMousse Rose", "measure": "1/2 oz" },
+      { "ingredientName": "Giffard Creme de Pamplemousse Rose", "measure": "1/2 oz" },
       { "ingredientName": "Grapefruit Juice", "measure": "2 oz" },
       { "ingredientName": "Lemon Juice", "measure": "1/4 oz" },
-      { "ingredientName": "Grapefruit Zest strip", "measure": "1" }
+      { "ingredientName": "Grapefruit Zest Strip", "measure": "1" }
     ],
     "tags": [
       "Vodka",
@@ -337,7 +337,7 @@
     "name": "Spicy Martini",
     "instructions": "Add the vodka, dry vermouth, and jalapeño pepper hot sauce to a cocktail shaker filled with ice.Shake vigorously for 10–15 seconds until well chilled.Strain into a chilled martini or cocktail glass.Skewer the 2 jalapeño-stuffed olives on a cocktail pick and garnish.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "2 oz" },
@@ -365,7 +365,7 @@
     "name": "Sour Cherry Martini",
     "instructions": "Add the vodka, cherry vodka, lime juice, and grenadine to a cocktail shaker filled with ice. Shake vigorously for 10–15 seconds until well chilled. Strain into a chilled martini or cocktail glass. Garnish with a lime wheel and maraschino cherry",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "3/4 oz" },
@@ -397,7 +397,7 @@
     "name": "Pickled Martini",
     "instructions": "Add the vodka, dry vermouth, and pickle juice to a mixing glass filled with ice. Stir for 20–30 seconds until thoroughly chilled. Strain into a chilled martini or cocktail glass. Skewer 1–2 cornichons on a cocktail pick and garnish.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "2 oz" },
@@ -426,7 +426,7 @@
     "name": "Pickled Martini",
     "instructions": "Add the vodka, dry vermouth, and pickle juice to a mixing glass filled with ice. Stir for 20–30 seconds until thoroughly chilled. Strain into a chilled martini or cocktail glass. Skewer 1–2 cornichons on a cocktail pick and garnish.",
     "imageUrl": null,
-    "glass": "cocktail glass",
+    "glass": "Cocktail glass",
     "alcoholicStatus": "alcoholic",
     "ingredients": [
       { "ingredientName": "Vodka", "measure": "2 oz" },

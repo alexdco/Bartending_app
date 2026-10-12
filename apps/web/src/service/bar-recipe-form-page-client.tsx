@@ -26,7 +26,7 @@ interface DraftIngredient {
 function AddIngredientRow({ onAdd }: { onAdd: (ingredient: DraftIngredient) => void }) {
   const t = useTranslations("service");
   const [query, setQuery] = useState("");
-  const ingredientSearch = useIngredientSearch(query.trim());
+  const ingredientSearch = useIngredientSearch(query.trim(), { includeStaples: true });
 
   return (
     <div className="flex flex-col gap-two">

@@ -78,34 +78,37 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
               {amount ? `${amount} ` : ""}
               {ingredient.name}
             </Text>
-            <View style={styles.actions}>
-              <Button
-                variant={inPantry ? "secondary" : "primary"}
-                disabled={inPantry}
-                onPress={() =>
-                  addPantryItem.mutate({
-                    ingredientId: ingredient.ingredientId,
-                    name: ingredient.name,
-                  })
-                }
-              >
-                {inPantry ? "In pantry" : "Add to pantry"}
-              </Button>
-              {!inPantry && (
+            {/* A staple (Ice, Water) is always on hand: no pantry or shopping list actions (spec 0036, AC-10). */}
+            {!ingredient.isStaple && (
+              <View style={styles.actions}>
                 <Button
-                  variant="secondary"
-                  disabled={onShoppingList}
+                  variant={inPantry ? "secondary" : "primary"}
+                  disabled={inPantry}
                   onPress={() =>
-                    addShoppingListItem.mutate({
+                    addPantryItem.mutate({
                       ingredientId: ingredient.ingredientId,
                       name: ingredient.name,
                     })
                   }
                 >
-                  {onShoppingList ? "On list" : "Add to shopping list"}
+                  {inPantry ? "In pantry" : "Add to pantry"}
                 </Button>
-              )}
-            </View>
+                {!inPantry && (
+                  <Button
+                    variant="secondary"
+                    disabled={onShoppingList}
+                    onPress={() =>
+                      addShoppingListItem.mutate({
+                        ingredientId: ingredient.ingredientId,
+                        name: ingredient.name,
+                      })
+                    }
+                  >
+                    {onShoppingList ? "On list" : "Add to shopping list"}
+                  </Button>
+                )}
+              </View>
+            )}
           </View>
         );
       })}

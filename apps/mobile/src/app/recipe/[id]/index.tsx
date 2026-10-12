@@ -1,4 +1,5 @@
-import { useLocalSearchParams } from "expo-router";
+import { useEffect } from "react";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
 
 import { BackButton } from "@/components/back-button";
@@ -12,14 +13,26 @@ import { CommentSection } from "@/comments/comment-section";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { RecipeMeasures } from "@/recipes/recipe-measures";
 import { useRecipeDetail } from "@/recipes/use-recipe-detail";
+import { useRecipeRedirect } from "@/recipes/use-recipe-redirect";
 import { RecommendationsSection } from "@/recipe-recommendations/recommendations-section";
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
+  const router = useRouter();
   const { data: recipe, error, isPending, refetch } = useRecipeDetail(id);
+  // A hidden duplicate opens its kept recipe instead (spec 0036, AC-2). One
+  // hop: the target is live, so its own lookup never redirects again.
+  const redirect = useRecipeRedirect(id, recipe === null);
+  const redirectTarget = redirect.data ?? null;
 
-  if (isPending) {
+  useEffect(() => {
+    if (redirectTarget) {
+      router.replace({ pathname: "/recipe/[id]", params: { id: redirectTarget } });
+    }
+  }, [redirectTarget, router]);
+
+  if (isPending || (recipe === null && (redirect.isPending || redirectTarget))) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
         <BackButton />
@@ -30,7 +43,7 @@ export default function RecipeDetailScreen() {
     );
   }
 
-  if (error) {
+  if (error || redirect.error) {
     return (
       <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
         <BackButton />
@@ -38,7 +51,7 @@ export default function RecipeDetailScreen() {
           <EmptyState
             title="Something went wrong"
             description="We couldn't load this recipe. Check your connection and try again."
-            action={<Button onPress={() => refetch()}>Retry</Button>}
+            action={<Button onPress={() => (error ? refetch() : redirect.refetch())}>Retry</Button>}
           />
         </View>
       </SafeAreaView>

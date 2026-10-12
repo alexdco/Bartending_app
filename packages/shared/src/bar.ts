@@ -572,6 +572,8 @@ export interface QuickBuildIngredient {
   measure: string | null;
   amountValue: number | null;
   amountUnit: RecognizedUnit | null;
+  /** Always on hand (Ice, Water); false for house recipes, whose detail RPC doesn't carry it (spec 0036). */
+  isStaple: boolean;
 }
 
 export interface QuickBuildRecipeDetail {
@@ -603,6 +605,7 @@ interface RawQuickBuildRecipeIngredientRow {
   measure: string | null;
   amount_value: number | null;
   amount_unit: string | null;
+  is_staple?: boolean;
 }
 
 export async function fetchQuickBuildRecipeDetail(
@@ -627,6 +630,7 @@ export async function fetchQuickBuildRecipeDetail(
     measure: ingredient.measure,
     amountValue: ingredient.amount_value,
     amountUnit: toRecognizedUnit(ingredient.amount_unit),
+    isStaple: ingredient.is_staple ?? false,
   }));
 
   return {
@@ -664,6 +668,7 @@ export async function fetchQuickBuildBarRecipeDetail(
     measure: ingredient.measure,
     amountValue: ingredient.amount_value,
     amountUnit: toBarFormUnit(ingredient.amount_unit),
+    isStaple: false,
   }));
 
   return {

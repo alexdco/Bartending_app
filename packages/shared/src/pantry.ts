@@ -67,16 +67,26 @@ export interface IngredientSearchResult {
   name: string;
 }
 
+export interface SearchIngredientsOptions {
+  /**
+   * Offer staples (Ice, Water). False for the pantry and shopping list,
+   * which never hold a staple; true for recipe forms (spec 0036, AC-10, AC-13).
+   */
+  includeStaples?: boolean;
+}
+
 export async function searchIngredients(
   client: SupabaseClient<Database>,
   query: string,
   resultLimit = 20,
   locale: Locale = DEFAULT_LOCALE,
+  { includeStaples = false }: SearchIngredientsOptions = {},
 ): Promise<IngredientSearchResult[]> {
   const { data, error } = await client.rpc("search_ingredients", {
     query,
     result_limit: resultLimit,
     locale,
+    include_staples: includeStaples,
   });
 
   if (error) {

@@ -81,34 +81,37 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
                 {amount ? `${amount} ` : ""}
                 {ingredient.name}
               </Text>
-              <div className="flex items-center gap-two">
-                <Button
-                  variant={inPantry ? "secondary" : "primary"}
-                  disabled={inPantry}
-                  onClick={() =>
-                    addPantryItem.mutate({
-                      ingredientId: ingredient.ingredientId,
-                      name: ingredient.name,
-                    })
-                  }
-                >
-                  {inPantry ? t("inPantry") : t("addToPantry")}
-                </Button>
-                {!inPantry && (
+              {/* A staple (Ice, Water) is always on hand: no pantry or shopping list actions (spec 0036, AC-10). */}
+              {!ingredient.isStaple && (
+                <div className="flex items-center gap-two">
                   <Button
-                    variant="secondary"
-                    disabled={onShoppingList}
+                    variant={inPantry ? "secondary" : "primary"}
+                    disabled={inPantry}
                     onClick={() =>
-                      addShoppingListItem.mutate({
+                      addPantryItem.mutate({
                         ingredientId: ingredient.ingredientId,
                         name: ingredient.name,
                       })
                     }
                   >
-                    {onShoppingList ? t("onList") : t("addToShoppingList")}
+                    {inPantry ? t("inPantry") : t("addToPantry")}
                   </Button>
-                )}
-              </div>
+                  {!inPantry && (
+                    <Button
+                      variant="secondary"
+                      disabled={onShoppingList}
+                      onClick={() =>
+                        addShoppingListItem.mutate({
+                          ingredientId: ingredient.ingredientId,
+                          name: ingredient.name,
+                        })
+                      }
+                    >
+                      {onShoppingList ? t("onList") : t("addToShoppingList")}
+                    </Button>
+                  )}
+                </div>
+              )}
             </li>
           );
         })}
