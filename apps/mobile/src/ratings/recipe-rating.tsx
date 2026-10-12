@@ -6,7 +6,9 @@ import { useSession } from "@/auth/use-session";
 import { useMyRating, useRatingSummary } from "./use-ratings";
 import { useSubmitRating } from "./use-rating-mutations";
 import { StarRating } from "./star-rating";
-import type { RatingScore } from "@bartendingapp/shared";
+import { useTranslation } from "react-i18next";
+import { RATING_AVERAGE_FORMAT, ratingDisplay, type RatingScore } from "@bartendingapp/shared";
+import { useActiveLocale } from "@/i18n";
 
 export interface RecipeRatingProps {
   recipeId: string;
@@ -18,19 +20,34 @@ export function RecipeRating({ recipeId }: RecipeRatingProps) {
   const myRating = useMyRating(recipeId, isLinked);
   const submitRating = useSubmitRating(recipeId);
 
-  const average = summary.data?.average ?? null;
-  const count = summary.data?.count ?? 0;
+  const { t } = useTranslation();
+  const locale = useActiveLocale();
+  const display = ratingDisplay(summary.data, (value) =>
+    new Intl.NumberFormat(locale, RATING_AVERAGE_FORMAT).format(value),
+  );
 
   return (
     <View style={styles.container}>
-      <View style={styles.summaryRow}>
-        <StarRating value={average ?? 0} size="small" />
+      {/* Spec 0038 AC-7: no display stars at zero; one announced summary otherwise. */}
+      {display.kind === "rated" ? (
+        <View
+          style={styles.summaryRow}
+          accessible
+          accessibilityLabel={t("ratings.starsLabel", {
+            average: display.average,
+            count: display.count,
+          })}
+        >
+          <StarRating value={summary.data?.average ?? 0} size="small" />
+          <Text variant="bodySmall" muted>
+            {t("ratings.summary", { average: display.average, count: display.count })}
+          </Text>
+        </View>
+      ) : (
         <Text variant="bodySmall" muted>
-          {count > 0
-            ? `${average!.toFixed(1)} (${count} rating${count === 1 ? "" : "s"})`
-            : "No ratings yet"}
+          {t("ratings.none")}
         </Text>
-      </View>
+      )}
       {!isLoading && isLinked ? (
         <StarRating
           value={myRating.data ?? 0}

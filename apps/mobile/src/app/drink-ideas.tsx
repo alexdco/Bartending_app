@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, type ReactNode } from "react";
 import { SafeAreaView, StyleSheet, Text as RNText, View } from "react-native";
 import { useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -79,9 +80,12 @@ export default function DrinkIdeasScreen() {
   const theme = useTheme();
   const router = useRouter();
 
+  const { t } = useTranslation();
+  const pantry = usePantry();
+  const pantryItems = pantry.data;
+  const pantryIsEmpty = pantry.isSuccess && pantry.data.length === 0;
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
-    useDrinkIdeas();
-  const { data: pantryItems } = usePantry();
+    useDrinkIdeas({ enabled: pantry.isSuccess && pantry.data.length > 0 });
   const generateDrinkIdea = useGenerateDrinkIdea();
   const locale = useActiveLocale();
 
@@ -139,13 +143,28 @@ export default function DrinkIdeasScreen() {
         <Text variant="display">Drink ideas</Text>
       </View>
 
-      {error ? (
+      {pantry.isError || error ? (
         <EmptyState
           title="Something went wrong"
           description="We couldn't load your drink ideas. Check your connection and try again."
-          action={<Button onPress={() => refetch()}>Retry</Button>}
+          action={
+            <Button onPress={() => (pantry.isError ? pantry.refetch() : refetch())}>Retry</Button>
+          }
         />
-      ) : isPending ? (
+      ) : pantryIsEmpty ? (
+        // Spec 0038 AC-5: no match query for an empty pantry, just the next step.
+        <View style={styles.list}>
+          <EmptyState
+            title={t("drinkIdeas.emptyPantryTitle")}
+            description={t("drinkIdeas.emptyPantryDescription")}
+            action={
+              <Button onPress={() => router.push("/pantry")}>
+                {t("drinkIdeas.addIngredients")}
+              </Button>
+            }
+          />
+        </View>
+      ) : pantry.isPending || isPending ? (
         <View style={styles.centered}>
           <Spinner label="Loading drink ideas" />
         </View>

@@ -6,6 +6,7 @@ import { Link } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
+import { LinkButton } from "@/components/link-button";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { RecipeCard } from "@/recipes/recipe-card";
@@ -77,9 +78,11 @@ function generateErrorDescription(
 }
 
 export function DrinkIdeasPageClient() {
+  const pantry = usePantry();
+  const pantryItems = pantry.data;
+  const pantryIsEmpty = pantry.isSuccess && pantry.data.length === 0;
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
-    useDrinkIdeas();
-  const { data: pantryItems } = usePantry();
+    useDrinkIdeas({ enabled: pantry.isSuccess && pantry.data.length > 0 });
   const generateDrinkIdea = useGenerateDrinkIdea();
   const locale = useLocale() as Locale;
   const t = useTranslations("drinkIdeas");
@@ -158,13 +161,24 @@ export function DrinkIdeasPageClient() {
         {t("title")}
       </Text>
 
-      {error ? (
+      {pantry.isError || error ? (
         <EmptyState
           title={tCommon("somethingWentWrong")}
           description={t("loadError")}
-          action={<Button onClick={() => refetch()}>{tCommon("retry")}</Button>}
+          action={
+            <Button onClick={() => (pantry.isError ? pantry.refetch() : refetch())}>
+              {tCommon("retry")}
+            </Button>
+          }
         />
-      ) : isPending ? (
+      ) : pantryIsEmpty ? (
+        // Spec 0038 AC-5: no match query for an empty pantry, just the next step.
+        <EmptyState
+          title={t("emptyPantryTitle")}
+          description={t("emptyPantryDescription")}
+          action={<LinkButton href="/pantry">{t("addIngredients")}</LinkButton>}
+        />
+      ) : pantry.isPending || isPending ? (
         <div className="flex justify-center py-six">
           <Spinner label={t("loading")} />
         </div>
@@ -173,14 +187,7 @@ export function DrinkIdeasPageClient() {
           <EmptyState
             title={t("emptyTitle")}
             description={t("emptyDescription")}
-            action={
-              <Link
-                href="/pantry"
-                className="inline-flex items-center justify-center gap-two rounded-medium bg-accent px-four py-two text-label font-medium text-accent-text transition-colors hover:opacity-90"
-              >
-                {t("goToPantry")}
-              </Link>
-            }
+            action={<LinkButton href="/pantry">{t("goToPantry")}</LinkButton>}
           />
           {generateSection}
         </>

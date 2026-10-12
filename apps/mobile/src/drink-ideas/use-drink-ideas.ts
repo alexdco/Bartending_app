@@ -9,7 +9,9 @@ export function drinkIdeasQueryKey(locale: Locale) {
   return [...drinkIdeasQueryKeyPrefix, locale] as const;
 }
 
-export function useDrinkIdeas() {
+// Spec 0038 AC-5: the Drink ideas screen enables this only once the pantry
+// loaded with at least one item, so an empty pantry sends no match query.
+export function useDrinkIdeas({ enabled = true }: { enabled?: boolean } = {}) {
   const locale = useActiveLocale();
 
   return useInfiniteQuery({
@@ -23,5 +25,6 @@ export function useDrinkIdeas() {
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < DRINK_IDEAS_PAGE_SIZE ? undefined : allPages.length * DRINK_IDEAS_PAGE_SIZE,
+    enabled,
   });
 }

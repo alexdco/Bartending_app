@@ -63,6 +63,7 @@ export function CommentPhotoViewer({
   const label = photo ? commentPhotoLabel(photo, photos.length, displayName) : "";
 
   return (
+    // eslint-disable-next-line jsx-a11y/no-noninteractive-element-interactions -- native modal <dialog>: ArrowLeft/Right page the photos and a backdrop click closes it; Escape and the buttons inside cover keyboard use.
     <dialog
       ref={dialogRef}
       aria-label={label}
@@ -80,7 +81,7 @@ export function CommentPhotoViewer({
             <Text variant="bodySmall" muted aria-live="polite">
               {openIndex + 1} / {photos.length}
             </Text>
-            <Button variant="secondary" onClick={onClose} autoFocus>
+            <Button variant="secondary" onClick={onClose}>
               {t("close")}
             </Button>
           </div>

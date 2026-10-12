@@ -9,14 +9,22 @@ export interface ChipProps {
   selected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
   disabled?: boolean;
+  /** "button" for single choice pickers (e.g. the Popular region picker, spec 0038 AC-13). */
+  accessibilityRole?: "togglebutton" | "button";
 }
 
-export function Chip({ children, selected = false, onSelectedChange, disabled }: ChipProps) {
+export function Chip({
+  children,
+  selected = false,
+  onSelectedChange,
+  disabled,
+  accessibilityRole = "togglebutton",
+}: ChipProps) {
   const theme = useTheme();
 
   return (
     <Pressable
-      accessibilityRole="togglebutton"
+      accessibilityRole={accessibilityRole}
       accessibilityState={{ selected, disabled }}
       disabled={disabled}
       hitSlop={8}

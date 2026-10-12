@@ -13,6 +13,7 @@ import { useSession } from "@/auth/use-session";
 import { webLocalStoragePersisterAdapter } from "@/service/local-storage-persister";
 import { useBarRemovalEviction } from "@/service/use-bar-removal-eviction";
 import { AgeGate } from "@/age-gate/age-gate";
+import { NavigationHistoryProvider } from "@/components/navigation-history-provider";
 import { APP_CONTENT_ID, useAgeGateState } from "@/age-gate/age-gate-store";
 
 // Bartender Mode's offline requirement (spec 0023-quick-build-mode.md,
@@ -65,7 +66,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   return (
     <>
       <div id={APP_CONTENT_ID} className="flex flex-1 flex-col">
-        {children}
+        <NavigationHistoryProvider>{children}</NavigationHistoryProvider>
       </div>
       <AgeGate />
       <GatedConsentBanner />

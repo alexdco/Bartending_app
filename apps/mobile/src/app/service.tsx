@@ -1,5 +1,6 @@
 import { useRouter } from "expo-router";
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Modal, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 
 import { Button } from "@/components/button";
@@ -14,7 +15,7 @@ import { useCurrentBar } from "@/service/use-current-bar";
 import { useBarServiceData } from "@/service/use-bar-service-data";
 import { useCreateBar, useToggleStock } from "@/service/use-bar-mutations";
 import { usePinnedRecipes } from "@/service/use-pinned-recipes";
-import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
+import { useBartenderModeGuardState } from "@/service/use-bartender-mode-guard";
 
 function BarSwitcher({
   bars,
@@ -221,12 +222,31 @@ export default function ServiceScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { isLinked } = useSession();
-  const currentBar = useCurrentBar();
+  const { t } = useTranslation();
+  // Spec 0038 AC-6: never blank; `retry: 1` so a failure shows within a second.
+  const currentBar = useCurrentBar({ retry: 1 });
   const pinned = usePinnedRecipes();
-  const bartenderModeAllowed = useBartenderModeGuard();
+  const guard = useBartenderModeGuardState({ retry: 1 });
 
-  if (!bartenderModeAllowed) {
-    return null;
+  if (guard.isError) {
+    return (
+      <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
+        <EmptyState
+          title={t("common.somethingWentWrong")}
+          description={t("service.loadFailed")}
+          action={<Button onPress={guard.refetch}>{t("common.retry")}</Button>}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // Loading, or about to redirect a user with bartender mode turned off.
+  if (!guard.allowed) {
+    return (
+      <SafeAreaView style={[styles.container, styles.centered, { backgroundColor: theme.bg }]}>
+        <Spinner label={t("service.loading")} />
+      </SafeAreaView>
+    );
   }
 
   return (
@@ -277,7 +297,17 @@ export default function ServiceScreen() {
 
         {!isLinked ? (
           <WorkingSoloPanel isLinked={false} />
-        ) : currentBar.isLoading ? null : currentBar.currentBar ? (
+        ) : currentBar.isError ? (
+          <EmptyState
+            title={t("service.loadBarFailed")}
+            description={t("service.checkConnection")}
+            action={<Button onPress={currentBar.refetch}>{t("common.retry")}</Button>}
+          />
+        ) : currentBar.isLoading ? (
+          <View style={styles.centered}>
+            <Spinner label={t("service.loadingBar")} />
+          </View>
+        ) : currentBar.currentBar ? (
           <CurrentMenuSection barId={currentBar.currentBar.id} />
         ) : (
           <WorkingSoloPanel isLinked />

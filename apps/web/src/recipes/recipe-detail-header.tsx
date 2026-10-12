@@ -34,13 +34,14 @@ export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
       <div className="relative aspect-video mx-auto w-full max-w-3xl overflow-hidden rounded-medium">
         <Image
           src={recipe.imageUrl ?? "/recipe-placeholder.svg"}
-          alt=""
+          alt={recipe.name}
           fill
           sizes="(min-width: 768px) 768px, 100vw"
           className="object-cover"
           priority
         />
         <FavoriteToggle
+          recipeName={recipe.name}
           isFavorited={isFavorited}
           disabled={addFavorite.isPending || removeFavorite.isPending}
           onToggle={handleToggle}

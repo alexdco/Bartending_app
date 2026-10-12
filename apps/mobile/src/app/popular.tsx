@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -31,6 +32,8 @@ export default function PopularScreen() {
   const recipes = recipesQuery.data ?? [];
   const quizQuery = useQuizBySource("recipe_region", selectedRegion);
   const quiz = quizQuery.data ?? null;
+  const { t } = useTranslation();
+  const browseAll = () => router.push("/search");
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -52,8 +55,9 @@ export default function PopularScreen() {
           </View>
         ) : regions.length === 0 ? (
           <EmptyState
-            title="No popular drinks yet"
-            description="Regions haven't been tagged yet. Check back soon."
+            title={t("popular.emptyTitle")}
+            description={t("popular.emptyDescription")}
+            action={<Button onPress={browseAll}>{t("popular.browseAll")}</Button>}
           />
         ) : (
           <>
@@ -61,6 +65,7 @@ export default function PopularScreen() {
               {regions.map((region) => (
                 <Chip
                   key={region}
+                  accessibilityRole="button"
                   selected={region === selectedRegion}
                   onSelectedChange={() => setExplicitRegion(region)}
                 >
@@ -92,8 +97,9 @@ export default function PopularScreen() {
               </View>
             ) : recipes.length === 0 ? (
               <EmptyState
-                title="No popular drinks for this region yet"
-                description="Check back once more drinks have been ranked."
+                title={t("popular.regionEmptyTitle")}
+                description={t("popular.regionEmptyDescription")}
+                action={<Button onPress={browseAll}>{t("popular.browseAll")}</Button>}
               />
             ) : (
               <View style={styles.grid}>

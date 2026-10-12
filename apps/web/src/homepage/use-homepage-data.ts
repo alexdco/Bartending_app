@@ -4,6 +4,8 @@ import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useLocale } from "next-intl";
 import {
+  CLASSICS_ROW_SIZE,
+  fetchClassicRecipes,
   fetchPopularByRegion,
   fetchRecipeRecommendations,
   fetchRecipesByIds,
@@ -54,5 +56,20 @@ export function useHomePopularByRegion(region: string | null) {
     queryKey: ["home", "popularByRegion", region, locale] as const,
     queryFn: () => fetchPopularByRegion(supabase, region as string, locale),
     enabled: region !== null,
+  });
+}
+
+const CLASSICS_STALE_TIME_MS = 10 * 60 * 1000;
+
+// Spec 0038 AC-4: mounted only once recommendations succeeded empty, so the
+// query is sent only then. Fame only changes on a tagging run, so a long
+// staleTime.
+export function useHomeClassics() {
+  const locale = useLocale() as Locale;
+
+  return useQuery({
+    queryKey: ["classic-recipes", locale] as const,
+    queryFn: () => fetchClassicRecipes(supabase, { locale, limit: CLASSICS_ROW_SIZE }),
+    staleTime: CLASSICS_STALE_TIME_MS,
   });
 }

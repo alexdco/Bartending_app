@@ -23,7 +23,7 @@ export function ResetPasswordPageClient() {
 
   return (
     <div className="flex flex-1 flex-col gap-four p-six">
-      <BackButton />
+      <BackButton fallbackHref="/account" />
       <div className="flex flex-1 items-center justify-center">
         <Card>
           <form

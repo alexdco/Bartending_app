@@ -118,13 +118,14 @@ export function BartenderSearchPageClient() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
-      <BackButton />
+      <BackButton fallbackHref="/service" />
       <Text variant="display">{t("search")}</Text>
       <Input
         label={t("searchInputLabel")}
         placeholder={t("searchInputPlaceholder")}
         value={inputValue}
         onChange={(e) => setInputValue(e.target.value)}
+        // eslint-disable-next-line jsx-a11y/no-autofocus -- this page is reached by focusing the Service search box, so typing must continue here without another tap.
         autoFocus
       />
 

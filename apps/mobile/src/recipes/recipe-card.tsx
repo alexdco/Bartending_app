@@ -23,35 +23,41 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
   const { toggle, isPending } = useToggleFavorite();
   const isFavorited = favoriteIds?.includes(recipe.id) ?? false;
 
+  // Spec 0038 AC-10: the favorite toggle is a sibling of the card pressable,
+  // never nested in it, so each is its own screen reader element and touch
+  // target; the toggle floats over the image corner.
   return (
-    <Pressable
-      onPress={() => router.push({ pathname: "/recipe/[id]", params: { id: recipe.id } })}
-      accessibilityRole="button"
-      accessibilityLabel={recipe.name}
-      style={styles.pressable}
-    >
-      <Card style={styles.card}>
-        <View style={styles.imageWrapper}>
-          <RecipeImage uri={recipe.imageUrl} style={styles.image} />
-          <View style={styles.toggleOverlay}>
-            <FavoriteToggle
-              isFavorited={isFavorited}
-              disabled={isPending}
-              onToggle={() => toggle(recipe.id, isFavorited)}
-            />
+    <View style={styles.pressable}>
+      <Pressable
+        onPress={() => router.push({ pathname: "/recipe/[id]", params: { id: recipe.id } })}
+        accessibilityRole="button"
+        accessibilityLabel={recipe.name}
+        style={styles.pressable}
+      >
+        <Card style={styles.card}>
+          <View style={styles.imageWrapper}>
+            <RecipeImage uri={recipe.imageUrl} style={styles.image} />
           </View>
-        </View>
-        <Text variant="subheading" numberOfLines={1}>
-          {recipe.name}
-        </Text>
-        <Chip>{alcoholicStatusLabel(recipe.alcoholicStatus)}</Chip>
-        {missingIngredientNames && missingIngredientNames.length > 0 && (
-          <Text variant="bodySmall" muted numberOfLines={1}>
-            Missing: {formatMissingIngredients(missingIngredientNames)}
+          <Text variant="subheading" numberOfLines={1}>
+            {recipe.name}
           </Text>
-        )}
-      </Card>
-    </Pressable>
+          <Chip>{alcoholicStatusLabel(recipe.alcoholicStatus)}</Chip>
+          {missingIngredientNames && missingIngredientNames.length > 0 && (
+            <Text variant="bodySmall" muted numberOfLines={1}>
+              Missing: {formatMissingIngredients(missingIngredientNames)}
+            </Text>
+          )}
+        </Card>
+      </Pressable>
+      <View style={styles.toggleOverlay}>
+        <FavoriteToggle
+          recipeName={recipe.name}
+          isFavorited={isFavorited}
+          disabled={isPending}
+          onToggle={() => toggle(recipe.id, isFavorited)}
+        />
+      </View>
+    </View>
   );
 }
 
@@ -70,9 +76,10 @@ const styles = StyleSheet.create({
     width: "100%",
     aspectRatio: 1,
   },
+  // Card padding (Spacing.four) plus the old inset over the image (Spacing.two).
   toggleOverlay: {
     position: "absolute",
-    top: Spacing.two,
-    right: Spacing.two,
+    top: Spacing.five,
+    right: Spacing.five,
   },
 });

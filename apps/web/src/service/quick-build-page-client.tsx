@@ -159,7 +159,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
   if (unit === null || recipe.isPending) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
-        <BackButton />
+        <BackButton fallbackHref="/service" />
         <div className="flex flex-1 items-center justify-center py-six">
           <Spinner label={t("loadingRecipe")} />
         </div>
@@ -171,7 +171,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
     const isOffline = !recipe.data;
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
-        <BackButton />
+        <BackButton fallbackHref="/service" />
         <div className="flex flex-1 items-center justify-center py-six">
           <EmptyState
             title={isOffline ? t("notAvailableOffline") : tCommon("somethingWentWrong")}
@@ -186,7 +186,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
   if (!recipe.data) {
     return (
       <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
-        <BackButton />
+        <BackButton fallbackHref="/service" />
         <div className="flex flex-1 items-center justify-center py-six">
           <EmptyState title={t("recipeNotFound")} description={t("recipeNotFoundDescription")} />
         </div>
@@ -224,7 +224,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-six px-four py-six">
       <div className="flex items-center justify-between gap-three">
-        <BackButton />
+        <BackButton fallbackHref="/service" />
         <div className="flex gap-one" role="group" aria-label={t("unit")}>
           {UNITS.map((candidate) => (
             <Button

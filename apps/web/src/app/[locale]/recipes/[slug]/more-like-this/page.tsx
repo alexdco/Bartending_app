@@ -35,5 +35,5 @@ export default async function MoreLikeThisPage({ params }: { params: Promise<{ s
     notFound();
   }
 
-  return <MoreLikeThisClient recipeId={id} />;
+  return <MoreLikeThisClient recipeId={id} recipeSlug={slug} />;
 }

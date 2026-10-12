@@ -55,7 +55,7 @@ export default async function LearnCategoryPage({
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
-      <BackButton />
+      <BackButton fallbackHref="/learn" />
       <Text variant="display" as="h1">
         {t(`categories.${category}`)}
       </Text>

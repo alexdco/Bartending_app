@@ -7,6 +7,16 @@ import { useTheme } from "@/hooks/use-theme";
 
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 };
 
+// Back when there is a screen behind this one, else home, so Back never
+// dead ends on a deep link (spec 0038 AC-8).
+export function goBackOrHome(router: ReturnType<typeof useRouter>): void {
+  if (router.canGoBack()) {
+    router.back();
+  } else {
+    router.replace("/");
+  }
+}
+
 export function BackButton() {
   const theme = useTheme();
   const router = useRouter();
@@ -18,7 +28,7 @@ export function BackButton() {
       accessibilityLabel={t("common.back")}
       hitSlop={HIT_SLOP}
       style={styles.touchTarget}
-      onPress={() => (router.canGoBack() ? router.back() : router.replace("/"))}
+      onPress={() => goBackOrHome(router)}
     >
       <SymbolView
         name={{ ios: "chevron.left", android: "arrow_back", web: "arrow_back" }}

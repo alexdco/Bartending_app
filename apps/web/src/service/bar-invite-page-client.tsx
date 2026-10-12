@@ -23,7 +23,7 @@ export function BarInvitePageClient() {
 
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-four px-four py-six">
-      <BackButton />
+      <BackButton fallbackHref="/service" />
       <Text variant="display">{t("inviteStaff")}</Text>
 
       {!isOwner ? (

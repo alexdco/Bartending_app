@@ -1,21 +1,31 @@
+import { useTranslation } from "react-i18next";
 import { Pressable, StyleSheet, Text } from "react-native";
 
 import { useTheme } from "@/hooks/use-theme";
 
 export interface FavoriteToggleProps {
+  /** Names the control: "Favorite {name}" (spec 0038 AC-10). */
+  recipeName: string;
   isFavorited: boolean;
   onToggle: () => void;
   disabled?: boolean;
 }
 
-export function FavoriteToggle({ isFavorited, onToggle, disabled }: FavoriteToggleProps) {
+export function FavoriteToggle({
+  recipeName,
+  isFavorited,
+  onToggle,
+  disabled,
+}: FavoriteToggleProps) {
   const theme = useTheme();
+  const { t } = useTranslation();
 
   return (
     <Pressable
       accessibilityRole="togglebutton"
-      accessibilityState={{ selected: isFavorited, disabled }}
-      accessibilityLabel={isFavorited ? "Remove from favorites" : "Add to favorites"}
+      // Fixed name; the on/off state lives only in checked (spec 0038 AC-10).
+      accessibilityState={{ checked: isFavorited, disabled }}
+      accessibilityLabel={t("favorites.toggleLabel", { name: recipeName })}
       disabled={disabled}
       hitSlop={8}
       onPress={onToggle}

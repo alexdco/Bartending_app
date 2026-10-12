@@ -16,6 +16,7 @@ import {
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
+import { LinkButton } from "@/components/link-button";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
 import { PopularRegionPicker } from "@/popular/popular-region-picker";
@@ -104,7 +105,11 @@ export default async function PopularRegionPage({
       )}
 
       {recipes.length === 0 ? (
-        <EmptyState title={t("regionEmptyTitle")} description={t("regionEmptyDescription")} />
+        <EmptyState
+          title={t("regionEmptyTitle")}
+          description={t("regionEmptyDescription")}
+          action={<LinkButton href="/search">{t("browseAll")}</LinkButton>}
+        />
       ) : (
         <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
           {recipes.map((recipe) => (

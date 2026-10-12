@@ -90,6 +90,8 @@ export function AgeGate() {
 
   return (
     <div
+      // The backdrop only hosts the Tab focus trap; the dialog semantics live on the Panel.
+      role="presentation"
       className="age-gate fixed inset-0 z-[60] items-center justify-center bg-black/60 px-four"
       onKeyDown={trapTab}
     >

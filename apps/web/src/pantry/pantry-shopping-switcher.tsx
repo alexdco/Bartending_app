@@ -54,8 +54,8 @@ export function PantryShoppingSwitcher() {
                 href={view.href}
                 className={
                   view.href === current.href
-                    ? "block px-four py-two text-label outline-none bg-surface-selected"
-                    : "block px-four py-two text-label outline-none hover:bg-surface-selected"
+                    ? "block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus bg-surface-selected"
+                    : "block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
                 }
               >
                 <Text variant="label" as="span">

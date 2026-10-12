@@ -63,7 +63,7 @@ export default async function QuizDetailPage({ params }: { params: Promise<QuizD
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
-      <BackButton />
+      <BackButton fallbackHref="/quizzes" />
       <Text variant="display" as="h1">
         {quiz.title}
       </Text>

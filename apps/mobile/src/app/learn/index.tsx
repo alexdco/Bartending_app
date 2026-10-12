@@ -35,9 +35,10 @@ export default function LearnScreen() {
           {LEARN_CATEGORIES.map((category) => (
             <TouchableOpacity
               key={category}
-              style={styles.gridItem}
+              style={[styles.gridItem, styles.row]}
               onPress={() => router.push(`/learn/${category}` as never)}
               accessibilityRole="button"
+              accessibilityLabel={CATEGORY_LABELS[category]}
             >
               <Card>
                 <Text variant="subheading">{CATEGORY_LABELS[category]}</Text>
@@ -60,6 +61,10 @@ export default function LearnScreen() {
 }
 
 const styles = StyleSheet.create({
+  // 44 point minimum touch target (spec 0038 AC-13).
+  row: {
+    minHeight: 44,
+  },
   container: {
     flex: 1,
   },

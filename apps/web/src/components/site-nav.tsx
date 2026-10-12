@@ -90,7 +90,7 @@ function LanguageSubmenu() {
 
   return (
     <DropdownMenu.Sub>
-      <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none hover:bg-surface-selected data-[state=open]:bg-surface-selected">
+      <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected data-[state=open]:bg-surface-selected">
         <Text variant="label" as="span">
           {t("label")}
         </Text>
@@ -112,7 +112,7 @@ function LanguageSubmenu() {
               <DropdownMenu.RadioItem
                 key={value}
                 value={value}
-                className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
+                className="block cursor-pointer px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
               >
                 <Text variant="label" as="span">
                   {t(value)}
@@ -160,7 +160,7 @@ function NavBadge() {
             <DropdownMenu.Item asChild>
               <Link
                 href="/account"
-                className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+                className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
               >
                 <Text variant="label" as="span">
                   {t("signIn")}
@@ -171,7 +171,7 @@ function NavBadge() {
             <DropdownMenu.Item asChild>
               <Link
                 href="/favorites"
-                className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+                className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
               >
                 <Text variant="label" as="span">
                   {t("favorites")}
@@ -210,7 +210,7 @@ function NavBadge() {
           <DropdownMenu.Item asChild>
             <Link
               href="/account"
-              className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+              className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
             >
               <Text variant="label" as="span">
                 {t("account")}
@@ -220,7 +220,7 @@ function NavBadge() {
           <DropdownMenu.Item asChild>
             <Link
               href="/favorites"
-              className="block px-four py-two text-label outline-none hover:bg-surface-selected"
+              className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
             >
               <Text variant="label" as="span">
                 {t("favorites")}
@@ -229,7 +229,7 @@ function NavBadge() {
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-two h-px bg-border" />
           <DropdownMenu.Sub>
-            <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none hover:bg-surface-selected data-[state=open]:bg-surface-selected">
+            <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected data-[state=open]:bg-surface-selected">
               <Text variant="label" as="span">
                 {t("theme")}
               </Text>
@@ -251,7 +251,7 @@ function NavBadge() {
                     <DropdownMenu.RadioItem
                       key={option.value}
                       value={option.value}
-                      className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
+                      className="block cursor-pointer px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
                     >
                       <Text variant="label" as="span">
                         {t(option.key)}
@@ -264,7 +264,7 @@ function NavBadge() {
           </DropdownMenu.Sub>
           <LanguageSubmenu />
           <DropdownMenu.Item
-            className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none hover:bg-surface-selected"
+            className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
             onSelect={(event) => {
               event.preventDefault();
               updateBartenderModeEnabled.mutate(!(profile?.bartenderModeEnabled ?? true));
@@ -279,7 +279,7 @@ function NavBadge() {
           </DropdownMenu.Item>
           <DropdownMenu.Separator className="my-two h-px bg-border" />
           <DropdownMenu.Item
-            className="block cursor-pointer px-four py-two text-label outline-none hover:bg-surface-selected"
+            className="block cursor-pointer px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
             onSelect={() => signOut.mutate()}
           >
             <Text variant="label" as="span">
@@ -349,8 +349,8 @@ function NavPantryDropdown({ isActive }: { isActive: boolean }) {
             type="button"
             className={
               isActive
-                ? "flex items-center gap-one rounded-medium bg-accent px-three py-one text-accent-text outline-none"
-                : "flex items-center gap-one rounded-medium px-three py-one outline-none"
+                ? "flex items-center gap-one rounded-medium bg-accent px-three py-one text-accent-text outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                : "flex items-center gap-one rounded-medium px-three py-one outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             }
           >
             <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
@@ -376,8 +376,8 @@ function NavPantryDropdown({ isActive }: { isActive: boolean }) {
                     href={link.href}
                     className={
                       linkIsActive
-                        ? "block px-four py-two text-label outline-none bg-surface-selected"
-                        : "block px-four py-two text-label outline-none hover:bg-surface-selected"
+                        ? "block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus bg-surface-selected"
+                        : "block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
                     }
                   >
                     <Text variant="label" as="span">
@@ -427,8 +427,8 @@ function NavLearnDropdown({ isActive }: { isActive: boolean }) {
             type="button"
             className={
               isActive
-                ? "flex items-center gap-one rounded-medium bg-accent px-three py-one text-accent-text outline-none"
-                : "flex items-center gap-one rounded-medium px-three py-one outline-none"
+                ? "flex items-center gap-one rounded-medium bg-accent px-three py-one text-accent-text outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
+                : "flex items-center gap-one rounded-medium px-three py-one outline-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-focus"
             }
           >
             <Text variant="label" as="span" className={isActive ? "text-accent-text" : undefined}>
@@ -454,8 +454,8 @@ function NavLearnDropdown({ isActive }: { isActive: boolean }) {
                     href={link.href}
                     className={
                       linkIsActive
-                        ? "block px-four py-two text-label outline-none bg-surface-selected"
-                        : "block px-four py-two text-label outline-none hover:bg-surface-selected"
+                        ? "block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus bg-surface-selected"
+                        : "block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
                     }
                   >
                     <Text variant="label" as="span">

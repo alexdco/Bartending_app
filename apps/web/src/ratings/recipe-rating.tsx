@@ -1,13 +1,13 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { useFormatter, useTranslations } from "next-intl";
 import { Link } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 import { useSession } from "@/auth/use-session";
 import { useMyRating, useRatingSummary } from "./use-ratings";
 import { useSubmitRating } from "./use-rating-mutations";
 import { StarRating } from "./star-rating";
-import type { RatingScore } from "@bartendingapp/shared";
+import { RATING_AVERAGE_FORMAT, ratingDisplay, type RatingScore } from "@bartendingapp/shared";
 
 export interface RecipeRatingProps {
   recipeId: string;
@@ -15,28 +15,35 @@ export interface RecipeRatingProps {
 
 export function RecipeRating({ recipeId }: RecipeRatingProps) {
   const t = useTranslations("ratings");
+  const format = useFormatter();
   const { isLinked, isLoading } = useSession();
   const summary = useRatingSummary(recipeId);
   const myRating = useMyRating(recipeId, isLinked);
   const submitRating = useSubmitRating(recipeId);
 
-  const average = summary.data?.average ?? null;
-  const count = summary.data?.count ?? 0;
+  const display = ratingDisplay(summary.data, (value) =>
+    format.number(value, RATING_AVERAGE_FORMAT),
+  );
 
   return (
     <div className="flex flex-col gap-one">
-      <div className="flex items-center gap-two">
-        <StarRating value={average ?? 0} size="small" />
-        {count > 0 ? (
-          <Text variant="bodySmall" muted>
-            {t("summary", { average: average!.toFixed(1), count })}
+      {/* Spec 0038 AC-7: no display stars at zero; one announced summary otherwise. */}
+      {display.kind === "rated" ? (
+        <div className="flex items-center gap-two">
+          <StarRating
+            value={summary.data?.average ?? 0}
+            size="small"
+            label={t("starsLabel", { average: display.average, count: display.count })}
+          />
+          <Text variant="bodySmall" muted aria-hidden="true">
+            {t("summary", { average: display.average, count: display.count })}
           </Text>
-        ) : (
-          <Text variant="bodySmall" muted>
-            {t("none")}
-          </Text>
-        )}
-      </div>
+        </div>
+      ) : (
+        <Text variant="bodySmall" muted>
+          {t("none")}
+        </Text>
+      )}
       {!isLoading && isLinked ? (
         <StarRating
           value={myRating.data ?? 0}

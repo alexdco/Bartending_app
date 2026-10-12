@@ -22,7 +22,7 @@ export default async function QuizzesPage() {
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
-      <BackButton />
+      <BackButton fallbackHref="/learn" />
       <Text variant="display" as="h1">
         {t("title")}
       </Text>

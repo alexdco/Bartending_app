@@ -1,5 +1,6 @@
 // One time tagging script for spec 0010 (popular drinks by region).
-// Proposes a region + fame score per recipe via Claude Haiku and appends the
+// Proposes an optional region + a fame score for every recipe (spec 0038
+// AC-1) via Claude Haiku and appends the
 // proposals to a review file. Never writes to the database itself; see
 // apply-regions.ts for the separate, explicit apply step (AC-7).
 //
@@ -13,23 +14,12 @@ import { z } from "zod/v4";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Database } from "../src/database.types";
+import { FIXED_REGIONS, type RegionProposal as Proposal } from "../src/regionProposals";
 
 const REVIEW_FILE_PATH = new URL(
   "./tagging/popular-by-region-proposals.json",
   import.meta.url,
 ).pathname.replace(/^\/([A-Za-z]:)/, "$1");
-
-const FIXED_REGIONS = [
-  "Mexican",
-  "Cuban",
-  "Caribbean",
-  "American",
-  "British",
-  "Italian",
-  "French",
-  "Asian",
-  "International/Global",
-] as const;
 
 const BATCH_SIZE = 25;
 const MAX_RETRIES = 3;
@@ -39,19 +29,11 @@ const ProposalSchema = z.object({
     z.object({
       id: z.string(),
       region: z.enum(FIXED_REGIONS).nullable(),
-      fame_score: z.number().int().min(0).max(100).nullable(),
+      fame_score: z.number().int().min(0).max(100),
       reasoning: z.string(),
     }),
   ),
 });
-
-interface Proposal {
-  id: string;
-  name: string;
-  region: string | null;
-  fame_score: number | null;
-  reasoning: string;
-}
 
 interface RecipeInput {
   id: string;
@@ -100,7 +82,8 @@ async function tagBatch(anthropic: Anthropic, batch: RecipeInput[]): Promise<Pro
           `${FIXED_REGIONS.join(", ")}. Use null if no region genuinely fits (e.g. a drink ` +
           `with no clear regional origin or association). Also give a fame_score from 0 to ` +
           `100 rating how famous/well known this specific drink is in general, real world ` +
-          `terms (0 = obscure, 100 = globally iconic); use null only if region is null. ` +
+          `terms (0 = obscure, 100 = globally iconic). Every recipe gets a fame_score, ` +
+          `including one whose region is null. ` +
           `Give a one sentence reasoning for each. Return one proposal per recipe, in the ` +
           `same order, referencing each by its id.\n\n${recipesText}`,
       },
@@ -167,7 +150,7 @@ async function main() {
     .is("deleted_at", null);
 
   if (!reprocessAll) {
-    query = query.is("region", null);
+    query = query.is("fame_score", null);
   }
 
   const { data: recipes, error } = await query;

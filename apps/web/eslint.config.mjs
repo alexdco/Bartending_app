@@ -1,6 +1,7 @@
 import { defineConfig, globalIgnores } from "eslint/config";
 import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 
 const eslintConfig = defineConfig([
   ...nextVitals,
@@ -27,6 +28,14 @@ const eslintConfig = defineConfig([
         },
       ],
     },
+  },
+  // Spec 0038 AC-14: jsx-a11y's recommended rules across apps/web/src.
+  // eslint-config-next already registers the jsx-a11y plugin, so only the
+  // rule set is added here. No rule is turned off globally; any
+  // eslint-disable for one of these rules needs an inline reason.
+  {
+    files: ["src/**/*.{js,jsx,ts,tsx}"],
+    rules: jsxA11y.flatConfigs.recommended.rules,
   },
   // Override default ignores of eslint-config-next.
   globalIgnores([

@@ -1,6 +1,8 @@
 {
   "common": {
-    "back": "Back"
+    "back": "Back",
+    "retry": "Retry",
+    "somethingWentWrong": "Something went wrong"
   },
   "nav": {
     "home": "Home",
@@ -82,5 +84,37 @@
     "blockedBody": "Cocktailist is for people of legal drinking age. Come back when you're of age.",
     "privacyLink": "Privacy Policy",
     "responsibleDrinking": "Please drink responsibly."
+  },
+  "home": {
+    "classicsTitle": "Classics to start with"
+  },
+  "popular": {
+    "emptyTitle": "No popular drinks yet",
+    "emptyDescription": "We're still picking the favorites for each region. In the meantime, browse every recipe.",
+    "regionEmptyTitle": "No popular drinks for this region yet",
+    "regionEmptyDescription": "No drinks for this region yet. Browse every recipe instead.",
+    "browseAll": "Browse all recipes"
+  },
+  "drinkIdeas": {
+    "emptyPantryTitle": "Add a few ingredients to get ideas",
+    "emptyPantryDescription": "Tell us what's in your bar and we'll show you what you can make.",
+    "addIngredients": "Add ingredients"
+  },
+  "service": {
+    "loading": "Loading Service",
+    "loadFailed": "We couldn't load Service. Check your connection and try again.",
+    "loadingBar": "Loading bar data",
+    "loadBarFailed": "Couldn't load this bar",
+    "checkConnection": "Check your connection and try again."
+  },
+  "ratings": {
+    "none": "No ratings yet. Be the first to rate it.",
+    "summary_one": "{{average}} ({{count}} rating)",
+    "summary_other": "{{average}} ({{count}} ratings)",
+    "starsLabel_one": "Rated {{average}} out of 5 from {{count}} rating",
+    "starsLabel_other": "Rated {{average}} out of 5 from {{count}} ratings"
+  },
+  "favorites": {
+    "toggleLabel": "Favorite {{name}}"
   }
 }

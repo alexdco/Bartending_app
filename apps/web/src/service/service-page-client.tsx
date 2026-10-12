@@ -209,8 +209,10 @@ export function ServicePageClient() {
   const router = useRouter();
   const t = useTranslations("service");
   const tNav = useTranslations("nav");
+  const tCommon = useTranslations("common");
   const { isLinked } = useSession();
-  const currentBar = useCurrentBar();
+  // Spec 0038 AC-6: fail fast so the bar error and Retry show within a second.
+  const currentBar = useCurrentBar({ retry: 1 });
   const pinned = usePinnedRecipes();
 
   return (
@@ -266,7 +268,19 @@ export function ServicePageClient() {
         <Card>
           <WorkingSoloPanel isLinked={false} />
         </Card>
-      ) : currentBar.isLoading ? null : currentBar.currentBar ? (
+      ) : currentBar.isError ? (
+        <Card>
+          <EmptyState
+            title={t("loadBarFailed")}
+            description={t("checkConnection")}
+            action={<Button onClick={currentBar.refetch}>{tCommon("retry")}</Button>}
+          />
+        </Card>
+      ) : currentBar.isLoading ? (
+        <div className="flex justify-center py-six">
+          <Spinner label={t("loadingBar")} />
+        </div>
+      ) : currentBar.currentBar ? (
         <Card>
           <CurrentMenuSection barId={currentBar.currentBar.id} />
         </Card>

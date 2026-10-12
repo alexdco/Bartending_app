@@ -12,7 +12,8 @@
     "loading": "Cargando",
     "notFoundTitle": "Página no encontrada",
     "notFoundBody": "No encontramos esa página.",
-    "goHome": "Ir al inicio"
+    "goHome": "Ir al inicio",
+    "skipToContent": "Saltar al contenido"
   },
   "nav": {
     "home": "Inicio",
@@ -154,6 +155,7 @@
     "popularByRegion": "Populares por región",
     "recentlyViewed": "Vistos recientemente",
     "recommendedForYou": "Recomendados para ti",
+    "classicsTitle": "Clásicos para empezar",
     "siteTitle": "Cocktailist: recetas de cócteles e ideas con tu despensa",
     "ogTagline": "Recetas de cócteles e ideas con tu despensa"
   },
@@ -277,12 +279,14 @@
     "aiGenerated": "Generado con IA",
     "ingredients": "Ingredientes",
     "steps": "Pasos",
-    "metaDescription": "Obtén ideas de cócteles con los ingredientes que ya tienes."
+    "metaDescription": "Obtén ideas de cócteles con los ingredientes que ya tienes.",
+    "emptyPantryTitle": "Agrega algunos ingredientes para ver ideas",
+    "emptyPantryDescription": "Cuéntanos qué tienes en tu bar y te mostraremos lo que puedes preparar.",
+    "addIngredients": "Agregar ingredientes"
   },
   "favorites": {
     "title": "Favoritos",
-    "add": "Agregar a favoritos",
-    "remove": "Quitar de favoritos",
+    "toggleLabel": "Marcar {name} como favorito",
     "loadError": "No pudimos cargar tus favoritos. Revisa tu conexión e inténtalo de nuevo.",
     "loading": "Cargando favoritos",
     "loadingMore": "Cargando más favoritos",
@@ -332,18 +336,20 @@
     "metaTitle": "Tragos populares en {region}",
     "metaDescription": "Explora las recetas de cócteles y mocktails más populares en {region}.",
     "emptyTitle": "Todavía no hay tragos populares",
-    "emptyDescription": "Aún no se etiquetaron regiones. Vuelve pronto.",
+    "emptyDescription": "Todavía estamos eligiendo los favoritos de cada región. Mientras tanto, explora todas las recetas.",
     "regionEmptyTitle": "Todavía no hay tragos populares para esta región",
-    "regionEmptyDescription": "Vuelve cuando se hayan clasificado más tragos.",
+    "regionEmptyDescription": "Todavía no hay tragos para esta región. Explora todas las recetas.",
+    "browseAll": "Ver todas las recetas",
     "takeTheQuiz": "Haz el cuestionario: {title}",
     "indexMetaDescription": "Descubre qué cócteles y mocktails son populares en cada región."
   },
   "ratings": {
     "summary": "{average} ({count, plural, one {# calificación} other {# calificaciones}})",
-    "none": "Todavía no hay calificaciones",
+    "none": "Todavía no hay calificaciones. Sé el primero en calificarla.",
     "signInToRate": "<link>Inicia sesión</link> para calificar esta receta",
     "rating": "Calificación",
-    "rateStars": "{count, plural, one {Calificar con # estrella} other {Calificar con # estrellas}}"
+    "rateStars": "{count, plural, one {Calificar con # estrella} other {Calificar con # estrellas}}",
+    "starsLabel": "Calificación de {average} de 5 según {count, plural, one {# calificación} other {# calificaciones}}"
   },
   "recommendations": {
     "title": "También te puede gustar",
@@ -522,7 +528,9 @@
     "buildMetaTitle": "Preparación rápida",
     "newRecipeMetaTitle": "Nueva receta de la casa",
     "inviteMetaTitle": "Unirse a un bar",
-    "invitesMetaTitle": "Invitaciones del bar"
+    "invitesMetaTitle": "Invitaciones del bar",
+    "loading": "Cargando Servicio",
+    "loadFailed": "No pudimos cargar Servicio. Revisa tu conexión e inténtalo de nuevo."
   },
   "admin": {
     "comments": "Comentarios",

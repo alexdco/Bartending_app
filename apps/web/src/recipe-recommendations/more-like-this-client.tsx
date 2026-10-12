@@ -11,7 +11,13 @@ import { RecipeCard } from "@/recipes/recipe-card";
 import { RECOMMENDATIONS_PAGE_SIZE, type RecommendedRecipe } from "@bartendingapp/shared";
 import { useRecipeRecommendations } from "./use-recipe-recommendations";
 
-export function MoreLikeThisClient({ recipeId }: { recipeId: string }) {
+export function MoreLikeThisClient({
+  recipeId,
+  recipeSlug,
+}: {
+  recipeId: string;
+  recipeSlug: string;
+}) {
   const t = useTranslations("recommendations");
   const tCommon = useTranslations("common");
   const [pages, setPages] = useState<RecommendedRecipe[][]>([]);
@@ -26,7 +32,7 @@ export function MoreLikeThisClient({ recipeId }: { recipeId: string }) {
 
   return (
     <main className="flex flex-col gap-four p-six">
-      <BackButton />
+      <BackButton fallbackHref={`/recipes/${recipeSlug}`} />
       <Text variant="display" as="h1">
         {t("title")}
       </Text>

@@ -31,34 +31,42 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
     return t("missingIngredients", { names: shown.join(", "), remaining });
   };
 
+  // Spec 0038 AC-10, stretched link: the title link's ::after covers the whole
+  // card so all of it stays clickable, and draws the card's focus ring. The
+  // favorite toggle is a sibling of the link (never inside it) and sits above
+  // the overlay with z-10; any other interactive child added later must too.
   return (
-    <Link href={`/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`} className="block">
-      <Card className="flex flex-col gap-two">
-        <div className="relative aspect-square w-full overflow-hidden rounded-small">
-          <Image
-            src={recipe.imageUrl ?? "/recipe-placeholder.svg"}
-            alt=""
-            fill
-            sizes="(min-width: 768px) 240px, 45vw"
-            className="object-cover"
-          />
-          <FavoriteToggle
-            isFavorited={isFavorited}
-            disabled={isPending}
-            onToggle={() => toggle(recipe.id, isFavorited)}
-            className="absolute right-two top-two"
-          />
-        </div>
-        <Text variant="subheading" as="h3">
+    <Card className="relative flex flex-col gap-two">
+      <div className="relative aspect-square w-full overflow-hidden rounded-small">
+        <Image
+          src={recipe.imageUrl ?? "/recipe-placeholder.svg"}
+          alt=""
+          fill
+          sizes="(min-width: 768px) 240px, 45vw"
+          className="object-cover"
+        />
+      </div>
+      <FavoriteToggle
+        recipeName={recipe.name}
+        isFavorited={isFavorited}
+        disabled={isPending}
+        onToggle={() => toggle(recipe.id, isFavorited)}
+        className="absolute right-five top-five z-10"
+      />
+      <Text variant="subheading" as="h3">
+        <Link
+          href={`/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`}
+          className="after:absolute after:inset-0 after:rounded-large after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-focus"
+        >
           {recipe.name}
+        </Link>
+      </Text>
+      <Chip>{tStatus(alcoholicStatusKey(recipe.alcoholicStatus))}</Chip>
+      {missingIngredientNames && missingIngredientNames.length > 0 && (
+        <Text variant="bodySmall" muted>
+          {missingText(missingIngredientNames)}
         </Text>
-        <Chip>{tStatus(alcoholicStatusKey(recipe.alcoholicStatus))}</Chip>
-        {missingIngredientNames && missingIngredientNames.length > 0 && (
-          <Text variant="bodySmall" muted>
-            {missingText(missingIngredientNames)}
-          </Text>
-        )}
-      </Card>
-    </Link>
+      )}
+    </Card>
   );
 }

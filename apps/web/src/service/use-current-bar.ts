@@ -7,6 +7,8 @@ export interface CurrentBarState {
   bars: BarMembership[];
   currentBar: BarMembership | null;
   isLoading: boolean;
+  isError: boolean;
+  refetch: () => void;
   showSwitcher: boolean;
   selectBar: (barId: string) => void;
 }
@@ -15,8 +17,8 @@ export interface CurrentBarState {
 // selected bar otherwise. Falls back to the earliest joined bar (bars sorted
 // by createdAt from fetchMyBars is a proxy for join order in the absence of
 // a dedicated bar_members.joined_at read path here) when nothing is stored.
-export function useCurrentBar(): CurrentBarState {
-  const myBars = useMyBars();
+export function useCurrentBar({ retry }: { retry?: number } = {}): CurrentBarState {
+  const myBars = useMyBars({ retry });
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [hasCheckedStorage, setHasCheckedStorage] = useState(false);
 
@@ -41,6 +43,8 @@ export function useCurrentBar(): CurrentBarState {
     bars,
     currentBar,
     isLoading: myBars.isPending || !hasCheckedStorage,
+    isError: myBars.isError,
+    refetch: () => void myBars.refetch(),
     showSwitcher: bars.length > 1,
     selectBar,
   };

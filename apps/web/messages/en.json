@@ -12,7 +12,8 @@
     "loading": "Loading",
     "notFoundTitle": "Page not found",
     "notFoundBody": "We couldn't find that page.",
-    "goHome": "Go home"
+    "goHome": "Go home",
+    "skipToContent": "Skip to content"
   },
   "nav": {
     "home": "Home",
@@ -154,6 +155,7 @@
     "popularByRegion": "Popular by region",
     "recentlyViewed": "Recently viewed",
     "recommendedForYou": "Recommended for you",
+    "classicsTitle": "Classics to start with",
     "siteTitle": "Cocktailist: cocktail recipes and pantry ideas",
     "ogTagline": "Cocktail recipes and pantry ideas"
   },
@@ -277,12 +279,14 @@
     "aiGenerated": "AI generated",
     "ingredients": "Ingredients",
     "steps": "Steps",
-    "metaDescription": "Get cocktail ideas from the ingredients you already have."
+    "metaDescription": "Get cocktail ideas from the ingredients you already have.",
+    "emptyPantryTitle": "Add a few ingredients to get ideas",
+    "emptyPantryDescription": "Tell us what's in your bar and we'll show you what you can make.",
+    "addIngredients": "Add ingredients"
   },
   "favorites": {
     "title": "Favorites",
-    "add": "Add to favorites",
-    "remove": "Remove from favorites",
+    "toggleLabel": "Favorite {name}",
     "loadError": "We couldn't load your favorites. Check your connection and try again.",
     "loading": "Loading favorites",
     "loadingMore": "Loading more favorites",
@@ -332,18 +336,20 @@
     "metaTitle": "Popular drinks in {region}",
     "metaDescription": "Browse the most popular cocktail and mocktail recipes in {region}.",
     "emptyTitle": "No popular drinks yet",
-    "emptyDescription": "Regions haven't been tagged yet. Check back soon.",
+    "emptyDescription": "We're still picking the favorites for each region. In the meantime, browse every recipe.",
     "regionEmptyTitle": "No popular drinks for this region yet",
-    "regionEmptyDescription": "Check back once more drinks have been ranked.",
+    "regionEmptyDescription": "No drinks for this region yet. Browse every recipe instead.",
+    "browseAll": "Browse all recipes",
     "takeTheQuiz": "Take the quiz: {title}",
     "indexMetaDescription": "See which cocktails and mocktails are popular in each region."
   },
   "ratings": {
     "summary": "{average} ({count, plural, one {# rating} other {# ratings}})",
-    "none": "No ratings yet",
+    "none": "No ratings yet. Be the first to rate it.",
     "signInToRate": "<link>Sign in</link> to rate this recipe",
     "rating": "Rating",
-    "rateStars": "{count, plural, one {Rate # star} other {Rate # stars}}"
+    "rateStars": "{count, plural, one {Rate # star} other {Rate # stars}}",
+    "starsLabel": "Rated {average} out of 5 from {count, plural, one {# rating} other {# ratings}}"
   },
   "recommendations": {
     "title": "You may also like",
@@ -522,7 +528,9 @@
     "buildMetaTitle": "Quick build",
     "newRecipeMetaTitle": "New house recipe",
     "inviteMetaTitle": "Join a bar",
-    "invitesMetaTitle": "Bar invites"
+    "invitesMetaTitle": "Bar invites",
+    "loading": "Loading Service",
+    "loadFailed": "We couldn't load Service. Check your connection and try again."
   },
   "admin": {
     "comments": "Comments",

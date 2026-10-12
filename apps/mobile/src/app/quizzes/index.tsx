@@ -48,6 +48,8 @@ export default function QuizzesScreen() {
                 key={quiz.id}
                 onPress={() => router.push(`/quizzes/${quiz.id}` as never)}
                 accessibilityRole="button"
+                accessibilityLabel={quiz.title}
+                style={styles.row}
               >
                 <Card>
                   <Text variant="subheading">{quiz.title}</Text>
@@ -62,6 +64,10 @@ export default function QuizzesScreen() {
 }
 
 const styles = StyleSheet.create({
+  // 44 point minimum touch target (spec 0038 AC-13).
+  row: {
+    minHeight: 44,
+  },
   container: {
     flex: 1,
   },

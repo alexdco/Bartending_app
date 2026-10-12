@@ -21,10 +21,13 @@ export function usePreferences() {
   });
 }
 
-export function useProfile() {
+// `retry` lets a page fail fast (Service uses 1, spec 0038 AC-6); unset keeps
+// the client default.
+export function useProfile({ retry }: { retry?: number } = {}) {
   return useQuery({
     queryKey: profileQueryKey,
     queryFn: () => fetchProfile(supabase),
+    ...(retry === undefined ? {} : { retry }),
   });
 }
 

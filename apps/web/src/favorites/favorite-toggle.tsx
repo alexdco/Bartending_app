@@ -3,6 +3,8 @@
 import { useTranslations } from "next-intl";
 
 export interface FavoriteToggleProps {
+  /** Names the control: "Favorite {name}" (spec 0038 AC-10). */
+  recipeName: string;
   isFavorited: boolean;
   onToggle: () => void;
   disabled?: boolean;
@@ -10,6 +12,7 @@ export interface FavoriteToggleProps {
 }
 
 export function FavoriteToggle({
+  recipeName,
   isFavorited,
   onToggle,
   disabled,
@@ -21,7 +24,8 @@ export function FavoriteToggle({
     <button
       type="button"
       aria-pressed={isFavorited}
-      aria-label={isFavorited ? t("remove") : t("add")}
+      // Fixed name; the on/off state lives only in aria-pressed (spec 0038 AC-10).
+      aria-label={t("toggleLabel", { name: recipeName })}
       disabled={disabled}
       onClick={(event) => {
         event.preventDefault();

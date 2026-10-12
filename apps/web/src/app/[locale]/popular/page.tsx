@@ -4,6 +4,7 @@ import { listPopularRegions, slugify, type Locale } from "@bartendingapp/shared"
 import { BackButton } from "@/components/back-button";
 import { permanentRedirect, redirect } from "@/i18n/navigation";
 import { EmptyState } from "@/components/empty-state";
+import { LinkButton } from "@/components/link-button";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
 
@@ -37,7 +38,11 @@ export default async function PopularPage({
         <Text variant="display" as="h1">
           {t("title")}
         </Text>
-        <EmptyState title={t("emptyTitle")} description={t("emptyDescription")} />
+        <EmptyState
+          title={t("emptyTitle")}
+          description={t("emptyDescription")}
+          action={<LinkButton href="/search">{t("browseAll")}</LinkButton>}
+        />
       </div>
     );
   }

@@ -16,6 +16,8 @@ import { SITE_URL } from "@/lib/site-url";
 import "../globals.css";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
+import { MAIN_CONTENT_ID } from "@/components/main-content";
+import { SkipLink } from "@/components/skip-link";
 import { Providers } from "./providers";
 
 const fraunces = Fraunces({
@@ -113,8 +115,14 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <body>
         <NextIntlClientProvider messages={messages}>
           <Providers>
+            <SkipLink />
             <SiteNav />
-            {children}
+            {/* Skip link target (spec 0038 AC-12). Pages render their own <main>,
+                so this is a plain wrapper; it is focused only programmatically,
+                never by Tab, so its outline is suppressed. */}
+            <div id={MAIN_CONTENT_ID} tabIndex={-1} className="flex flex-1 flex-col outline-none">
+              {children}
+            </div>
             <SiteFooter />
           </Providers>
         </NextIntlClientProvider>

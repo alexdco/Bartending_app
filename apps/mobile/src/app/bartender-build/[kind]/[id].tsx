@@ -9,7 +9,7 @@ import {
   formatQuickBuildInstructions,
 } from "@bartendingapp/shared";
 
-import { BackButton } from "@/components/back-button";
+import { BackButton, goBackOrHome } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
@@ -230,7 +230,7 @@ export default function QuickBuildModeScreen() {
           {keepAwakeOn ? "Keep awake: on" : "Keep awake: off"}
         </Button>
 
-        <Button variant="secondary" onPress={() => router.back()}>
+        <Button variant="secondary" onPress={() => goBackOrHome(router)}>
           Back to search
         </Button>
       </ScrollView>

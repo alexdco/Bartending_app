@@ -139,7 +139,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
         />
       ) : null}
 
-      <BackButton />
+      <BackButton fallbackHref="/search" />
       <RecipeDetailHeader recipe={recipe} />
 
       <RecipeMeasures

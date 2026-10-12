@@ -71,6 +71,8 @@ export default function LearnCategoryScreen() {
                 key={article.id}
                 onPress={() => router.push(`/learn/${category}/${article.id}` as never)}
                 accessibilityRole="button"
+                accessibilityLabel={article.title}
+                style={styles.row}
               >
                 <Card>
                   <Text variant="subheading">{article.title}</Text>
@@ -96,6 +98,10 @@ export default function LearnCategoryScreen() {
 }
 
 const styles = StyleSheet.create({
+  // 44 point minimum touch target (spec 0038 AC-13).
+  row: {
+    minHeight: 44,
+  },
   container: {
     flex: 1,
   },

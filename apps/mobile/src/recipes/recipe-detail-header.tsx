@@ -31,9 +31,10 @@ export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
   return (
     <View style={styles.container}>
       <View style={styles.imageWrapper}>
-        <RecipeImage uri={recipe.imageUrl} style={styles.image} />
+        <RecipeImage uri={recipe.imageUrl} style={styles.image} accessibilityLabel={recipe.name} />
         <View style={styles.toggleOverlay}>
           <FavoriteToggle
+            recipeName={recipe.name}
             isFavorited={isFavorited}
             disabled={addFavorite.isPending || removeFavorite.isPending}
             onToggle={handleToggle}

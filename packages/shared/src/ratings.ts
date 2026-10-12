@@ -12,6 +12,30 @@ export interface RatingSummary {
   count: number;
 }
 
+// One decimal, in the caller's locale (spec 0038 AC-7): "4.2" in en, "4,2" in es.
+export const RATING_AVERAGE_FORMAT = {
+  minimumFractionDigits: 1,
+  maximumFractionDigits: 1,
+} as const;
+
+export type RatingDisplay =
+  | { readonly kind: "none" }
+  | { readonly kind: "rated"; readonly average: string; readonly count: number };
+
+// Decides how the rating summary reads (spec 0038 AC-7): zero ratings show
+// no display stars, only the "no ratings yet" copy; otherwise stars plus the
+// locale formatted average and count. `formatAverage` is the app's locale
+// number formatter applied with RATING_AVERAGE_FORMAT.
+export function ratingDisplay(
+  summary: RatingSummary | undefined,
+  formatAverage: (average: number) => string,
+): RatingDisplay {
+  if (!summary || summary.count === 0 || summary.average === null) {
+    return { kind: "none" };
+  }
+  return { kind: "rated", average: formatAverage(summary.average), count: summary.count };
+}
+
 export async function fetchRatingSummary(
   client: SupabaseClient<Database>,
   recipeId: string,

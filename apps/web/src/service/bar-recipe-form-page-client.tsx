@@ -118,7 +118,7 @@ export function BarRecipeFormPageClient() {
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
-      <BackButton />
+      <BackButton fallbackHref="/service" />
       <Text variant="display">{t("addHouseRecipe")}</Text>
 
       {!isOwner ? (

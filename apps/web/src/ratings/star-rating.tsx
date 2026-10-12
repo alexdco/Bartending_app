@@ -8,11 +8,19 @@ export interface StarRatingProps {
   onRate?: (score: 1 | 2 | 3 | 4 | 5) => void;
   disabled?: boolean;
   size?: "small" | "large";
+  /** Display mode only: the one sentence the stars are announced as (spec 0038 AC-7). */
+  label?: string;
 }
 
 const SCORES = [1, 2, 3, 4, 5] as const;
 
-export function StarRating({ value, onRate, disabled = false, size = "large" }: StarRatingProps) {
+export function StarRating({
+  value,
+  onRate,
+  disabled = false,
+  size = "large",
+  label,
+}: StarRatingProps) {
   const t = useTranslations("ratings");
   const [hovered, setHovered] = useState<number | null>(null);
   const interactive = Boolean(onRate) && !disabled;
@@ -21,8 +29,8 @@ export function StarRating({ value, onRate, disabled = false, size = "large" }: 
 
   return (
     <div
-      role={interactive ? "radiogroup" : undefined}
-      aria-label={t("rating")}
+      role={interactive ? "radiogroup" : "img"}
+      aria-label={interactive ? t("rating") : (label ?? t("rating"))}
       className="flex items-center gap-one"
       onMouseLeave={() => setHovered(null)}
     >

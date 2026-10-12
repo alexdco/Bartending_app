@@ -1336,6 +1336,15 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      classic_recipes: {
+        Args: { locale?: string; page_limit?: number };
+        Returns: {
+          alcoholic_status: string;
+          id: string;
+          image_url: string;
+          name: string;
+        }[];
+      };
       comment_photo_uploads_last_24h: { Args: never; Returns: number };
       comment_with_photos_json: {
         Args: { p_comment_id: string };

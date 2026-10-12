@@ -88,7 +88,7 @@ export default async function LearnArticlePage({
 
   return (
     <article className="flex flex-1 flex-col gap-four p-six">
-      <BackButton />
+      <BackButton fallbackHref={`/learn/${category}`} />
       <Text variant="display" as="h1">
         {article.title}
       </Text>
