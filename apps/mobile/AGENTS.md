@@ -38,6 +38,7 @@ pnpm --filter mobile lint
 - Folder by feature under `src/<feature>/` (e.g. `src/recipes/`, `src/pantry/`, `src/shopping-list/`) for hooks and components; Expo Router screens in `src/app/` stay thin. Shared UI primitives live in `src/components/`. Not by technical layer.
 - Every user facing string goes through i18next, with the key added to both `src/i18n/locales/en.json` and `es.json`.
 - Non UI logic (types, Supabase client, pantry matching) comes from `@bartendingapp/shared`, never duplicated here.
+- Queries for owner scoped rows (pantry, shopping list) pass `enabled: session !== null` from `useSession()`, so the first visit waits for the guest session bootstrap instead of failing and retrying.
 - Native module access goes through Expo config plugins (managed workflow with a custom dev client), not bare React Native ejection.
 - Pantry local cache uses Expo SQLite (or AsyncStorage) as a thin cache; Postgres via Supabase remains the source of truth.
 

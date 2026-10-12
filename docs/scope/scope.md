@@ -49,11 +49,11 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 36 | Privacy page crash and real contact | Hardening | planned |
 | 37 | Production site URL, canonicals, and crawl rules | Hardening | done |
 | 38 | Locale aware links | Hardening | in-progress |
-| 39 | Learn article accuracy pass | Hardening | planned |
-| 40 | AI quota abuse via anonymous sessions | Hardening | planned |
-| 41 | Finish Spanish UI translation | Hardening | planned |
+| 39 | Learn article accuracy pass | Hardening | in-progress |
+| 40 | AI quota abuse via anonymous sessions | Hardening | in-progress |
+| 41 | Finish Spanish UI translation | Hardening | in-progress |
 | 42 | Batch calculator correctness | Hardening | in-progress |
-| 43 | Shopping list follow ups | Hardening | planned |
+| 43 | Shopping list follow ups | Hardening | done |
 | 44 | Recipe catalog cleanup | Hardening | planned |
 | 45 | Brand, metadata, and launch readiness | Hardening | planned |
 | 46 | Empty states, UX polish, and accessibility | Hardening | planned |
@@ -547,7 +547,7 @@ A shopping list tab next to Pantry where a user keeps track of ingredients they 
   - [x] Dedicated shopping list tab/page (mobile and web), reusing the pantry ingredient search picker and empty state, with a buy action per item, satisfies AC-1, AC-2, AC-3, AC-4, AC-8
   - [x] Recipe detail "add to shopping list" button next to "add to pantry," shown only for missing ingredients and reflecting on list state, plus cross platform parity check, satisfies AC-5, AC-6, AC-7
 - [ ] Verify it: `/check verify shopping list`
-- [ ] Test it: `/test shopping list`
+- [x] Test it: `/test shopping list`
 Spec [0031](../specs/0031-shopping-list/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Slice 28: Recipe comment photos
@@ -596,17 +596,37 @@ Canonicals, `og:url`, `sitemap.xml`, and `robots.txt` all point to `http://local
 ### 39. Learn article accuracy pass
 Four of five articles checked had errors. Most urgent is a food safety error: "Simple Syrup… Explained" says syrup keeps indefinitely and never mentions refrigeration. Also: jigger (bitters with the 1 oz side, pouring in sequence), proof (US label rules, the water explanation, Negroni advice), oak barrels ("concentrated grain alcohol", char times), the grenadine ratio, and the "suggests complexity" sentence. Article pages reuse the site wide meta description, and the "Other" category reads "Learn about other for home bartending."
 **Done when:** every published article has been fact checked and corrected (simple syrup first), each article has its own meta description, and category descriptions read naturally.
+- [x] Design it (spec): `/architect learn article accuracy pass`
 - [ ] Build it: `/develop learn article accuracy pass`
+  - [ ] Slice 1: simple syrup fact check, sourced and approved, shipped as its own migration (after locating every known finding in live bodies), satisfies AC-1, AC-2, AC-3
+  - [ ] Slice 2: required `summary` column with backfill, shared types and fetch layer, article metadata, summary subtitles on web and mobile, generator summary and accuracy prompt, satisfies AC-5, AC-6, AC-7, AC-9, AC-10
+  - [ ] Catalog titles and descriptions for the Learn landing and category pages (en and es), satisfies AC-8
+  - [ ] Slice 3: fact check the remaining published articles, one corrections migration, md5 and snapshot checks, satisfies AC-2, AC-3, AC-4, AC-11
+- [ ] Verify it: `/check verify learn article accuracy pass`
+- [ ] Test it: `/test learn article accuracy pass`
+Spec [0033](../specs/0033-learn-article-accuracy-pass.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`, `docs/reviews`
 
-### 40. AI quota abuse via anonymous sessions · needs a decision · GA
+### 40. AI quota abuse via anonymous sessions · GA
 The AI drink idea quota is per user, and anyone can mint fresh anonymous sessions for a fresh quota, running up Anthropic costs.
 **Done when:** creating new anonymous sessions no longer gets around the AI quota (e.g. CAPTCHA on anonymous sign in, or a per IP limit in the Edge Function), with the choice recorded in a spec.
-- [ ] Design it (spec): `/architect AI quota abuse via anonymous sessions`
+- [x] Design it (spec): `/architect AI quota abuse via anonymous sessions`
+- [ ] Build it: `/develop AI quota abuse via anonymous sessions`
+  - [x] Trusted IP header probe on the live project (gate: no trustworthy header means back to `/architect`), satisfies AC-8. Probed 2026-10-11: `cf-connecting-ip` is the only trusted source (a forged one is rejected by Cloudflare), the `x-forwarded-for` fallback was dropped; recorded as the IP source note in spec 0034; second network check still open; delete the `debug-ip-headers` function in the dashboard
+  - [x] Counter tables plus reserve and release Postgres functions, hand run SQL checks recorded here, satisfies AC-1, AC-2, AC-3, AC-4, AC-4b, AC-11. Applied 2026-10-11 to `BartendingAppWeb` via `supabase/migrations/20261011120000_ai_quota_abuse_limits.sql` and `20261011120100_register_ai_quota_cleanup_cron.sql`; types regenerated; security advisor clean for the new objects (only the expected `rls_enabled_no_policy` info). Hand run checks (`supabase/tests/ai_quota_limits_check.sql`, 2026-10-11): 20 of 20 PASS covering tier limits, IP limit, guest cutoff at 1600, full cap at 2000, all or nothing, precedence, release and its zero floor, bad input, permissions, and the cleanup job. Concurrency still to check with parallel calls against the deployed function
+  - [x] IP bucket helpers with vitest, and the Edge Function wired to the new limits, release on failure, 429 reasons, and Sentry signals (`IP_HASH_SECRET` set first), satisfies AC-1 to AC-5, AC-7, AC-8, AC-9. `supabase/functions/_shared/ip-bucket.ts` (17 vitest cases) and `generate-drink-idea` deployed as version 5 on 2026-10-11 with `IP_HASH_SECRET` and `ANTHROPIC_API_KEY` set; also fixed a runtime crash where the SDK zod helper needed the zod v4 API (`npm:zod@3.25.76/v4`). Live checks 2026-10-11: guest gets 5 then 429 `user_limit` with `signInHelps: true`; a forged `X-Forwarded-For` and `True-Client-IP` stayed in the caller's one IP bucket; two parallel calls for a last slot gave exactly one 200 and one 429; every failed generation released its user, IP, and total slots back to 0. Not exercised live: the 503 without the secret and the Sentry threshold warnings
+  - [x] Shared wrapper plus reason specific messages on web and mobile, satisfies AC-5, AC-6. Code in `packages/shared/src/generateDrinkIdea.ts`, `packages/shared/src/drinkIdeaLimitMessage.ts`, web `drink-ideas-page-client.tsx`, mobile `drink-ideas.tsx`; English copy on both screens until feature 41 translates them
+  - [ ] Retention cron, privacy page copy, dashboard settings (anonymous sign in 10/hour, Anthropic spend limit), then drop the old reservation function, satisfies AC-4, AC-10, AC-12, AC-13
+- [ ] Verify it: `/check verify AI quota abuse via anonymous sessions`
+- [ ] Test it: `/test AI quota abuse via anonymous sessions`
+- [ ] Review it (fresh model): `/check review AI quota abuse via anonymous sessions`
+- [ ] Document it: `/document AI quota abuse via anonymous sessions`
+Spec [0034](../specs/0034-ai-quota-abuse-hardening/index.md) · code in `supabase/functions`, `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ### 41. Finish Spanish UI translation
 Closes feature 23's unmet Done when. The web message catalog has 83 keys in only `common`, `nav`, `language`, `account`, `privacy`, and only 6 files call `useTranslations`/`getTranslations`. The hero, buttons, section headings, filter chips, footer, page titles, recipe page, batch panel, pantry, shopping list, and all of `/es/learn` stay English.
 **Done when:** every user facing web string comes from the message catalog with a Spanish translation, and `/es` pages (including recipe and Learn pages) read in Spanish apart from content not yet translated.
-- [ ] Build it: `/develop finish Spanish UI translation`
+- [x] Build it: `/develop finish Spanish UI translation` (built 2026-10-11: every web screen, including admin, now reads its copy from `messages/en.json` and `messages/es.json` (497 keys each, 24 namespaces); page metadata is translated; `src/i18n/messages.d.ts` types every key so a missing key fails typecheck; the drink idea limit message now follows the page locale. Catalog content (recipe and ingredient names, Learn article bodies, quiz titles, region names) is unchanged and stays English until translated)
+- code in `apps/web/messages/`, `apps/web/src/i18n/messages.d.ts`, and every screen under `apps/web/src/`; `splitMissingIngredients` in `packages/shared/src/drinkIdeas.ts`
 
 ### 42. Batch calculator correctness
 Dilution is computed on alcohol only, so batches come out under diluted (spec 0022 AC-6 itself needs changing). Common TheCocktailDB units don't parse (`shot`, `jigger`, `part`, `dl`, `Tblsp`, `1 ½ oz`), so lines show "not scaled" and recipes like Afterglow lose the batch panel. Tiny liter amounts show `0 l`. The batch units (oz / ml / liter) don't match the toggle (oz / ml / cl).
@@ -622,10 +642,11 @@ Dilution is computed on alcohol only, so batches come out under diluted (spec 00
 - [ ] Test it: `/test batch calculator correctness`
 Spec [0035](../specs/0035-batch-calculator-correctness/index.md) · code in `packages/shared`, `packages/import-job`, `supabase/migrations`, `apps/web`, `apps/mobile`
 
-### 43. Shopping list follow ups
+### 43. Shopping list follow ups · done
 Review findings on feature 33: `fetch_shopping_list_items` has no `order by`, so items can shuffle; the add search doesn't mark ingredients already in the pantry; the first visit query runs before `ensureAnonymousSession` finishes and only recovers through retries (pantry has the same race); there are no tests for `shoppingList.ts` or its migration.
 **Done when:** items load in a stable order, the add search marks pantry items, the first query waits for a session (shopping list and pantry), and `shoppingList.ts` has tests.
-- [ ] Build it: `/develop shopping list follow ups`
+- [x] Build it: `/develop shopping list follow ups` (built 2026-10-11 on `feat/shopping-list-follow-ups`: stable oldest first order in `fetch_shopping_list_items`, "In your pantry" marker in the add search on web and mobile, pantry and shopping list queries wait for a session, 12 vitest cases for `shoppingList.ts`. `supabase/migrations/20261011150000_shopping_list_stable_order.sql` is live on `BartendingAppWeb`, checked 2026-10-11)
+- code in `supabase/migrations/20261011150000_shopping_list_stable_order.sql`, `packages/shared/src/shoppingList.test.ts`, `apps/web/src/shopping-list/`, `apps/web/src/pantry/use-pantry.ts`, `apps/mobile/src/app/shopping-list.tsx`, `apps/mobile/src/shopping-list/`, `apps/mobile/src/pantry/use-pantry.ts`
 
 ### 44. Recipe catalog cleanup · needs a decision
 Inherited TheCocktailDB data problems: duplicates and misspellings ("Cuba Libra" and "Cuba Libre", "Holloween Punch" and "Halloween Punch"), crude names that are indexed and searchable, instructions that mention unlisted ingredients (Americano's soda water), odd casing ("red Sweet Vermouth", "Highball Glass"), and ice (and probably water) offered as "Add to pantry".
@@ -662,6 +683,8 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Shared "recently made" shift log**: a server persisted, all-staff-visible build history for a bar, beyond today's per-bartender client side recently viewed list (feature 26) · needs a decision · from spec 0023
 - **Automated comment photo screening**: e.g. Claude Haiku vision checks each uploaded photo and hides flagged ones until admin review (feature 34) · needs a decision · from spec 0032
 - **Report a comment or photo**: a viewer facing report button feeding the admin comments page (features 31, 34) · needs a decision · from spec 0032
+- **Learn route caching**: spec 0025 promised `revalidate = 60` on the Learn routes but the code has none; decide timed revalidation or dynamic render (feature 28) · needs a decision · from spec 0033
+- **Learn articles as repo files**: move article source of truth to markdown files plus a sync script if editing bodies in SQL migrations proves painful (feature 28) · needs a decision · from spec 0033
 - **Scale counted lines in batches**: `2 dashes` × 25 shows `50 dashes` (feature 42) · needs a decision · from spec 0035
 - **Batch range measures**: batch `2-3 oz` using `amount_max_value` (feature 42) · needs a decision · from spec 0035
 - **Method based dilution default**: stirred, shaken, and built drinks get different default dilution (feature 42) · needs a decision · from spec 0035
