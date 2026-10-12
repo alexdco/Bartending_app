@@ -12,12 +12,14 @@
     "web": "turbo run dev --filter=web",
     "mobile": "turbo run start --filter=mobile",
     "prepare": "husky",
-    "reparse-measures": "pnpm --filter @bartendingapp/shared reparse-measures"
+    "reparse-measures": "pnpm --filter @bartendingapp/shared reparse-measures",
+    "icons": "node scripts/generate-icons.mjs"
   },
   "devDependencies": {
     "husky": "^9.1.7",
     "lint-staged": "^15.5.0",
     "prettier": "^3.9.6",
+    "sharp": "0.35.4",
     "turbo": "^2.5.0",
     "vitest": "^5.0.0"
   },
