@@ -14,6 +14,451 @@
     "15941": {
       "name": "Americano",
       "addIngredients": [{ "ingredientName": "Soda Water", "measure": "Splash" }]
+    },
+    "15266": {
+      "name": "Avalon",
+      "addIngredients": [
+        { "ingredientName": "Cucumber", "measure": "Spiralled skin, to garnish" },
+        { "ingredientName": "Cherry", "measure": "1, to garnish" }
+      ]
+    },
+    "17180": {
+      "name": "Aviation",
+      "addIngredients": [{ "ingredientName": "Cherry", "measure": "1, to garnish" }]
+    },
+    "17210": {
+      "name": "Bramble",
+      "addIngredients": [{ "ingredientName": "Blackberries", "measure": "2, to garnish" }]
+    },
+    "12572": {
+      "name": "Bora Bora",
+      "addIngredients": [{ "ingredientName": "Cherry", "measure": "1, to garnish" }]
+    },
+    "178311": {
+      "name": "Broadside",
+      "instructions": "Half fill the glass with ice cubes. Crush the wormwood and add to ice. Pour rum, scotch and bitters, then serve!",
+      "note": "Fixes the source typo \"butters\"."
+    },
+    "17267": {
+      "name": "Bahama Mama",
+      "addIngredients": [{ "ingredientName": "Club Soda", "measure": "2 parts" }]
+    },
+    "11339": {
+      "name": "English Rose Cocktail",
+      "addIngredients": [{ "ingredientName": "Powdered Sugar", "measure": "For the rim" }],
+      "reviewed": true,
+      "note": "\"sugar-rimmed\" is the same powdered sugar."
+    },
+    "178344": {
+      "name": "Figgy Thyme",
+      "addIngredients": [{ "ingredientName": "Lemon Juice", "measure": null }]
+    },
+    "17213": {
+      "name": "French Martini",
+      "addIngredients": [{ "ingredientName": "Lemon Peel", "measure": "Twist, to garnish" }]
+    },
+    "17239": {
+      "name": "Hunter's Moon",
+      "addIngredients": [{ "ingredientName": "Orange", "measure": "1 wedge, to garnish" }]
+    },
+    "178313": {
+      "name": "Halloween Punch",
+      "addIngredients": [{ "ingredientName": "Cinnamon", "measure": "Sticks" }]
+    },
+    "11580": {
+      "name": "John Collins",
+      "addIngredients": [{ "ingredientName": "Angostura Bitters", "measure": "1 dash" }]
+    },
+    "16951": {
+      "name": "Kioki Coffee",
+      "addIngredients": [{ "ingredientName": "Whipped Cream", "measure": "To top" }]
+    },
+    "12776": {
+      "name": "Melya",
+      "addIngredients": [{ "ingredientName": "Cream", "measure": "To serve" }],
+      "reviewed": true,
+      "note": "\"dark chocolate sauce\" and \"coffee brews\" describe the result, not ingredients."
+    },
+    "178343": {
+      "name": "Michelada",
+      "addIngredients": [{ "ingredientName": "Salt", "measure": "For the rim" }]
+    },
+    "178358": {
+      "name": "Mango Mojito",
+      "addIngredients": [{ "ingredientName": "Sugar", "measure": "1 tsp per glass" }]
+    },
+    "13204": {
+      "name": "New York Lemonade",
+      "addIngredients": [{ "ingredientName": "Sugar", "measure": "For the rim" }]
+    },
+    "17827": {
+      "name": "Old Pal",
+      "addIngredients": [{ "ingredientName": "Lemon Peel", "measure": "Twist, to garnish" }]
+    },
+    "178371": {
+      "name": "Old Cuban",
+      "addIngredients": [{ "ingredientName": "Mint", "measure": "Handful" }]
+    },
+    "11001": {
+      "name": "Old Fashioned",
+      "addIngredients": [
+        { "ingredientName": "Orange Peel", "measure": "Twist, to garnish" },
+        { "ingredientName": "Cherry", "measure": "1, to garnish" }
+      ],
+      "reviewed": true,
+      "note": "\"whiskey\" is the listed Bourbon."
+    },
+    "13499": {
+      "name": "Oreo Mudslide",
+      "addIngredients": [
+        { "ingredientName": "Whipped Cream", "measure": "To garnish" },
+        { "ingredientName": "Cherry", "measure": "1, to garnish" }
+      ]
+    },
+    "14586": {
+      "name": "Orange Push-up",
+      "addIngredients": [{ "ingredientName": "Cherry", "measure": "1, to garnish" }]
+    },
+    "13214": {
+      "name": "Pisco Sour",
+      "addIngredients": [{ "ingredientName": "Angostura Bitters", "measure": "Dash, to garnish" }]
+    },
+    "13072": {
+      "name": "Popped cherry",
+      "addIngredients": [{ "ingredientName": "Cherry", "measure": "1, to garnish" }],
+      "reviewed": true,
+      "note": "\"cherries\" is the same garnish."
+    },
+    "17191": {
+      "name": "Planter's Punch",
+      "addIngredients": [
+        { "ingredientName": "Angostura Bitters", "measure": "Dash, on top" },
+        { "ingredientName": "Cherry", "measure": "1, to garnish" }
+      ]
+    },
+    "17211": {
+      "name": "Dark and Stormy",
+      "addIngredients": [{ "ingredientName": "Lime", "measure": "1 wedge, to garnish" }]
+    },
+    "178327": {
+      "name": "Pineapple Paloma",
+      "addIngredients": [{ "ingredientName": "Salt", "measure": "For the rim" }],
+      "reviewed": true,
+      "note": "\"pineapple soda\" is the listed Pineapple juice."
+    },
+    "17245": {
+      "name": "Rosemary Blue",
+      "addIngredients": [{ "ingredientName": "Lemon", "measure": "1 wedge" }]
+    },
+    "17214": {
+      "name": "Russian Spring Punch",
+      "addIngredients": [{ "ingredientName": "Champagne", "measure": "Top up" }],
+      "reviewed": true,
+      "note": "\"sparkling wine\" is the added Champagne."
+    },
+    "13377": {
+      "name": "Sea breeze",
+      "addIngredients": [{ "ingredientName": "Lime", "measure": "1 wedge, to garnish" }]
+    },
+    "17828": {
+      "name": "Tipperary",
+      "addIngredients": [{ "ingredientName": "Orange Peel", "measure": "1 wide strip" }]
+    },
+    "12420": {
+      "name": "Tuxedo Cocktail",
+      "addIngredients": [{ "ingredientName": "Lemon Peel", "measure": "Twist, to garnish" }]
+    },
+    "17826": {
+      "name": "The Jimmy Conway",
+      "addIngredients": [{ "ingredientName": "Lemon", "measure": "1 slice, to garnish" }]
+    },
+    "17218": {
+      "name": "Vesper",
+      "addIngredients": [{ "ingredientName": "Lemon Peel", "measure": "Thin slice, to garnish" }]
+    },
+    "17217": {
+      "name": "Vampiro",
+      "addIngredients": [{ "ingredientName": "Lemon-Lime Soda", "measure": "To fill" }]
+    },
+    "15801": {
+      "name": "Zimadori Zinger",
+      "addIngredients": [{ "ingredientName": "Cherry", "measure": "1, to garnish" }]
+    },
+    "14366": {
+      "name": "Lemon Drop",
+      "addIngredients": [{ "ingredientName": "Sugar", "measure": "For the rim" }]
+    },
+    "15328": {
+      "name": "Zorro",
+      "addIngredients": [
+        { "ingredientName": "Coffee", "measure": "To top" },
+        { "ingredientName": "Whipped Cream", "measure": "To top" }
+      ]
+    },
+    "16963": {
+      "name": "Zorbatini",
+      "addIngredients": [{ "ingredientName": "Olive", "measure": "1, to garnish" }]
+    },
+
+    "13501": { "name": "ABC", "reviewed": true, "note": "Nutmeg is optional." },
+    "11005": {
+      "name": "Dry Martini",
+      "reviewed": true,
+      "note": "Lemon peel is an alternative to the listed olive."
+    },
+    "11728": {
+      "name": "Martini",
+      "reviewed": true,
+      "note": "Lemon peel is an alternative to the listed olive."
+    },
+    "17195": {
+      "name": "Bellini",
+      "reviewed": true,
+      "note": "\"sparkling wine\" is the listed Champagne."
+    },
+    "17209": {
+      "name": "Barracuda",
+      "reviewed": true,
+      "note": "\"sparkling wine\" is the listed Prosecco."
+    },
+    "17035": { "name": "Buccaneer", "reviewed": true, "note": "\"beer\" is the listed Corona." },
+    "17120": {
+      "name": "Brain Fart",
+      "reviewed": true,
+      "note": "\"soda's\" are the listed Mountain Dew and Surge."
+    },
+    "17185": {
+      "name": "Casino",
+      "reviewed": true,
+      "note": "\"maraschino cherry\" is the listed Cherry."
+    },
+    "13206": {
+      "name": "Caipirissima",
+      "reviewed": true,
+      "note": "Cachaca is named only as what this drink replaces."
+    },
+    "16047": { "name": "Campari Beer", "reviewed": true, "note": "\"beer\" is the listed Lager." },
+    "12800": {
+      "name": "Coffee-Vodka",
+      "reviewed": true,
+      "note": "The sugar syrup is made from the listed sugar and water."
+    },
+    "12910": {
+      "name": "Egg Nog #4",
+      "reviewed": true,
+      "note": "Whipped cream is made from the listed whipping cream; \"lemon colored\" is a color."
+    },
+    "11338": {
+      "name": "English Highball",
+      "reviewed": true,
+      "note": "Ginger ale is an optional substitute."
+    },
+    "12914": {
+      "name": "Egg-Nog - Classic Cooked",
+      "reviewed": true,
+      "note": "Every flagged item is an optional stir in."
+    },
+    "17246": {
+      "name": "Empellón Cocina's Fat-Washed Mezcal",
+      "reviewed": true,
+      "note": "Flagged items belong to the pork fat marinade, not the cocktail."
+    },
+    "12670": {
+      "name": "Fruit Cooler",
+      "reviewed": true,
+      "note": "Lemon juice comes from the listed lemon."
+    },
+    "11410": {
+      "name": "Gin Fizz",
+      "reviewed": true,
+      "note": "\"soda water\" is the listed Carbonated water."
+    },
+    "12944": {
+      "name": "Gluehwein",
+      "reviewed": true,
+      "note": "Lemon or orange juice is optional."
+    },
+    "178366": {
+      "name": "Gin Lemon",
+      "reviewed": true,
+      "note": "The instructions use lemonade where the source lists Lemon juice, and mint is optional. Replacing a listed ingredient needs a remove override this file doesn't support yet."
+    },
+    "17230": {
+      "name": "Gin Rickey",
+      "reviewed": true,
+      "note": "\"lime or lemon juice\" is the listed lemon juice."
+    },
+    "16262": { "name": "H.D.", "reviewed": true, "note": "\"beer-glass\" is the glass." },
+    "178345": {
+      "name": "Hot Toddy",
+      "reviewed": true,
+      "note": "Lemon juice comes from the listed lemon; \"whisky\" is the listed Whiskey."
+    },
+    "15813": {
+      "name": "Herbal flame",
+      "reviewed": true,
+      "note": "A cinnamon stick is an optional stirrer."
+    },
+    "12766": {
+      "name": "Happy Skipper",
+      "reviewed": true,
+      "note": "\"cream soda\" is a taste comparison."
+    },
+    "12738": {
+      "name": "Hot Chocolate to Die for",
+      "reviewed": true,
+      "note": "\"the cream\" is the listed Half-and-Half."
+    },
+    "14095": {
+      "name": "Jamaica Kiss",
+      "reviewed": true,
+      "note": "Tia Maria is the listed Coffee liqueur."
+    },
+    "17203": { "name": "Kir", "reviewed": true, "note": "\"wine\" is the listed Champagne." },
+    "14456": {
+      "name": "Kurant Tea",
+      "reviewed": true,
+      "note": "\"apple tea\" is the listed Turkish apple tea."
+    },
+    "178359": {
+      "name": "Kiwi Martini",
+      "reviewed": true,
+      "note": "\"fresh fruit\" is the listed kiwi."
+    },
+    "12694": {
+      "name": "Lassi Raita",
+      "reviewed": true,
+      "note": "Lemon is optional, beside the listed lime."
+    },
+    "12702": {
+      "name": "Lemouroudji",
+      "reviewed": true,
+      "note": "Lemon juice comes from the listed lemons."
+    },
+    "12698": {
+      "name": "Lassi - Mango",
+      "reviewed": true,
+      "note": "Other fruits are optional variations."
+    },
+    "15086": {
+      "name": "Limona Corona",
+      "reviewed": true,
+      "note": "\"beer\" is the listed Corona and \"rum\" the listed Bacardi Limon."
+    },
+    "178335": {
+      "name": "Lazy Coconut Paloma",
+      "reviewed": true,
+      "note": "Tequila is mentioned only as a preference."
+    },
+    "17204": {
+      "name": "Long Island Iced Tea",
+      "reviewed": true,
+      "note": "A lime twist is an alternative to the listed lemon peel."
+    },
+    "11000": {
+      "name": "Mojito",
+      "reviewed": true,
+      "note": "Lime juice comes from the listed lime."
+    },
+    "11009": {
+      "name": "Moscow Mule",
+      "reviewed": true,
+      "note": "The instructions use ginger beer where the source lists Ginger ale. Replacing a listed ingredient needs a remove override this file doesn't support yet."
+    },
+    "12988": {
+      "name": "Mulled Wine",
+      "reviewed": true,
+      "note": "\"coffee temperature\" is a temperature."
+    },
+    "14842": {
+      "name": "Midnight Mint",
+      "reviewed": true,
+      "note": "The sugar syrup and chocolate rim is optional (\"if available\")."
+    },
+    "11844": {
+      "name": "New York Sour",
+      "reviewed": true,
+      "note": "\"powdered sugar\" is the listed Sugar."
+    },
+    "12748": {
+      "name": "Orange Scented Hot Chocolate",
+      "reviewed": true,
+      "note": "\"hot chocolate\" is the finished drink."
+    },
+    "13024": {
+      "name": "Sweet Sangria",
+      "reviewed": true,
+      "note": "The sugar syrup is made from the listed sugar and water; \"fruit\" is the listed citrus."
+    },
+    "15761": {
+      "name": "Quick-sand",
+      "reviewed": true,
+      "note": "\"fruit pulp\" describes the listed orange juice."
+    },
+    "14610": { "name": "ACID", "reviewed": true, "note": "Dr Pepper is an optional chaser." },
+    "16031": { "name": "Radler", "reviewed": true, "note": "Sprite is an optional substitute." },
+    "12127": {
+      "name": "Sazerac",
+      "reviewed": true,
+      "note": "The absinthe rinse is the listed Ricard."
+    },
+    "178322": { "name": "Spice 75", "reviewed": true, "note": "\"coffee filter\" is a tool." },
+    "12107": { "name": "Salty Dog", "reviewed": true, "note": "Vodka is an optional substitute." },
+    "17824": {
+      "name": "The Laverstoke",
+      "reviewed": true,
+      "note": "The instructions top with ginger ale where the source lists Tonic water. Replacing a listed ingredient needs a remove override this file doesn't support yet."
+    },
+    "12784": {
+      "name": "Thai Iced Coffee",
+      "reviewed": true,
+      "note": "\"the milk\" is the listed cream."
+    },
+    "178363": {
+      "name": "Vodka Lemon",
+      "reviewed": true,
+      "note": "The instructions use lemonade where the source lists Lemon juice, and mint is optional. Replacing a listed ingredient needs a remove override this file doesn't support yet."
+    },
+    "178362": { "name": "Vodka Slime", "reviewed": true, "note": "\"7-up\" is the listed Sprite." },
+    "178364": {
+      "name": "Vodka Tonic",
+      "reviewed": true,
+      "note": "Lime is an alternative to the listed lemon."
+    },
+    "178326": {
+      "name": "White Wine Sangria",
+      "reviewed": true,
+      "note": "\"other fruits\" are the listed strawberries and apple."
+    },
+    "14594": {
+      "name": "Zizi Coin-coin",
+      "reviewed": true,
+      "note": "Lime is an alternative to the listed lemon."
+    },
+    "12704": {
+      "name": "Limeade",
+      "reviewed": true,
+      "note": "Lime juice comes from the listed lime."
+    },
+    "12752": {
+      "name": "Lemon Shot",
+      "reviewed": true,
+      "note": "\"light rum\" means set the rum alight; \"lemonade\" is a taste comparison."
+    },
+    "14065": {
+      "name": "Zippy's Revenge",
+      "reviewed": true,
+      "note": "The sugar is in the listed Kool-Aid."
+    },
+    "14482": {
+      "name": "Darkwood Sling",
+      "reviewed": true,
+      "note": "\"cherry liqueurs\" is the listed Cherry Heering."
+    },
+    "17241": {
+      "name": "Zombie",
+      "reviewed": true,
+      "note": "Donn's mix (grapefruit juice, cinnamon syrup) is missing from the source list entirely; needs a fuller recipe rewrite than this file supports."
     }
   },
   "unlistedIngredientSynonyms": {

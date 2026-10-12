@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@bartendingapp/shared";
+import { GLASS_MAP } from "@bartendingapp/shared/catalog-names";
 import { parseCatalogOverrides } from "./catalogOverridesSchema";
 import { findUnlistedIngredients, type ReportRecipe } from "./unlistedIngredients";
 
@@ -59,6 +60,8 @@ async function main(): Promise<void> {
     ingredientsResult.data.map((row) => row.name),
     overrides.unlistedIngredientSynonyms,
     overrides.staples,
+    // Glass names ("whiskey sour glass", "coffee mug") aren't ingredients.
+    [...Object.keys(GLASS_MAP), ...Object.values(GLASS_MAP)],
   ).sort((a, b) => a.recipeName.localeCompare(b.recipeName));
 
   if (findings.length === 0) {

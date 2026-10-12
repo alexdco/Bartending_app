@@ -69,6 +69,46 @@ describe("findUnlistedIngredients", () => {
     expect(findUnlistedIngredients([recipe], catalogNames, {}, [])).toEqual([]);
   });
 
+  it("lets a synonym win over an ingredient spelled the same way", () => {
+    const recipe: ReportRecipe = {
+      sourceId: "5",
+      name: "Bramble",
+      instructions: "Build gin and simple syrup over crushed ice.",
+      ingredientNames: ["Gin", "Sugar Syrup"],
+    };
+    expect(
+      findUnlistedIngredients(
+        [recipe],
+        ["Gin", "Simple Syrup", "Sugar Syrup"],
+        {
+          "simple syrup": "Sugar Syrup",
+        },
+        [],
+      ),
+    ).toEqual([]);
+  });
+
+  it("consumes ignored phrases such as glass names without a finding", () => {
+    const recipe: ReportRecipe = {
+      sourceId: "6",
+      name: "Stone Sour",
+      instructions: "Strain into a chilled whiskey sour glass.",
+      ingredientNames: ["Apricot Brandy"],
+    };
+    expect(
+      findUnlistedIngredients(
+        [recipe],
+        ["Whiskey", "Apricot Brandy"],
+        {},
+        [],
+        ["whiskey sour glass"],
+      ),
+    ).toEqual([]);
+    expect(findUnlistedIngredients([recipe], ["Whiskey", "Apricot Brandy"], {}, [])).toHaveLength(
+      1,
+    );
+  });
+
   it("never reports a staple, even through a synonym", () => {
     const recipe: ReportRecipe = {
       sourceId: "4",
