@@ -10,6 +10,7 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useIngredientSearch } from "@/pantry/use-ingredient-search";
+import { usePantry } from "@/pantry/use-pantry";
 import { useShoppingList } from "@/shopping-list/use-shopping-list";
 import {
   useAddShoppingListItem,
@@ -36,6 +37,10 @@ export default function ShoppingListScreen() {
   const buyShoppingListItem = useBuyShoppingListItem();
 
   const shoppingListIds = new Set((shoppingList.data ?? []).map((item) => item.ingredientId));
+
+  // AC-8: pantry items stay addable here; the marker is information only.
+  const pantry = usePantry();
+  const pantryIds = new Set((pantry.data ?? []).map((item) => item.ingredientId));
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -68,7 +73,14 @@ export default function ShoppingListScreen() {
                 const alreadyAdded = shoppingListIds.has(ingredient.id);
                 return (
                   <View key={ingredient.id} style={styles.row}>
-                    <Text variant="body">{ingredient.name}</Text>
+                    <View>
+                      <Text variant="body">{ingredient.name}</Text>
+                      {pantryIds.has(ingredient.id) && (
+                        <Text variant="bodySmall" muted>
+                          In your pantry
+                        </Text>
+                      )}
+                    </View>
                     <Button
                       variant="secondary"
                       disabled={alreadyAdded}

@@ -242,7 +242,8 @@
     "loading": "Cargando lista de compras",
     "emptyTitle": "Tu lista de compras está vacía",
     "emptyDescription": "Busca un ingrediente arriba para agregarlo a tu lista de compras.",
-    "bought": "Comprado"
+    "bought": "Comprado",
+    "inPantry": "En tu despensa"
   },
   "drinkIdeas": {
     "title": "Ideas de tragos",

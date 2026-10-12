@@ -242,7 +242,8 @@
     "loading": "Loading shopping list",
     "emptyTitle": "Your shopping list is empty",
     "emptyDescription": "Search for an ingredient above to add it to your shopping list.",
-    "bought": "Bought"
+    "bought": "Bought",
+    "inPantry": "In your pantry"
   },
   "drinkIdeas": {
     "title": "Drink ideas",

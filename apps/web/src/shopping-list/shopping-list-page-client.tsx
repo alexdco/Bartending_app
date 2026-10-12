@@ -10,6 +10,7 @@ import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { useIngredientSearch } from "@/pantry/use-ingredient-search";
 import { PantryShoppingSwitcher } from "@/pantry/pantry-shopping-switcher";
+import { usePantry } from "@/pantry/use-pantry";
 import { useShoppingList } from "./use-shopping-list";
 import {
   useAddShoppingListItem,
@@ -39,6 +40,13 @@ export function ShoppingListPageClient() {
   const shoppingListIds = useMemo(
     () => new Set((shoppingList.data ?? []).map((item) => item.ingredientId)),
     [shoppingList.data],
+  );
+
+  // AC-8: pantry items stay addable here; the marker is information only.
+  const pantry = usePantry();
+  const pantryIds = useMemo(
+    () => new Set((pantry.data ?? []).map((item) => item.ingredientId)),
+    [pantry.data],
   );
 
   return (
@@ -76,7 +84,14 @@ export function ShoppingListPageClient() {
                     key={ingredient.id}
                     className="flex items-center justify-between gap-two px-two py-one"
                   >
-                    <Text variant="body">{ingredient.name}</Text>
+                    <div className="flex flex-col">
+                      <Text variant="body">{ingredient.name}</Text>
+                      {pantryIds.has(ingredient.id) && (
+                        <Text variant="bodySmall" muted>
+                          {t("inPantry")}
+                        </Text>
+                      )}
+                    </div>
                     <Button
                       variant="secondary"
                       disabled={alreadyAdded}
