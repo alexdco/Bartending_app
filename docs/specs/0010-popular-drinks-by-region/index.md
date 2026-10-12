@@ -80,7 +80,7 @@ A one time script asks Claude, once per recipe, for a region (from a fixed list,
 | Entity | Field added | Type | Constraint |
 |---|---|---|---|
 | `recipes` | `popularity_rank` | integer, nullable | Unique per `(region, popularity_rank)` where both are not null (partial unique index); null means this recipe is not in its region's top ten |
-| `recipes` | `fame_score` | smallint, nullable | `check (fame_score between 0 and 100)`; the raw LLM judgment `popularity_rank` is computed from, kept so a re-rank (e.g. after adding a recipe to a region) never needs another LLM call, just a recompute |
+| `recipes` | `fame_score` | smallint, nullable | `check (fame_score between 0 and 100)`; the raw LLM judgment `popularity_rank` is computed from, kept so a re-rank (e.g. after adding a recipe to a region) never needs another LLM call, just a recompute. Amended by [spec 0038](../0038-empty-states-ux-accessibility/index.md): every recipe gets a fame score, with or without a region, and the score also drives the default search order |
 
 `recipes.region` already exists (spec 0002, currently empty for every row) and is populated by this feature's tagging script. To close the gap the cross check raised (an LLM near miss like `"Mexico"` or `"mexican "` silently fragmenting the picker), `region` also gets a `check` constraint restricting it to the fixed value set: `Mexican`, `Cuban`, `Caribbean`, `American`, `British`, `Italian`, `French`, `Asian`, `International/Global`, or `null`. The apply step validates against this same list before writing, so a constraint violation there means the script itself produced a bad value, not a race with some other writer.
 
