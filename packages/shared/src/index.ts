@@ -34,3 +34,5 @@ export * from "./learnArticles";
 export * from "./quizzes";
 export * from "./adminRecipes";
 export * from "./catalogNames";
+export * from "./brand";
+export * from "./ageGate";

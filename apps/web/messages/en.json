@@ -9,7 +9,10 @@
     "cancel": "Cancel",
     "save": "Save",
     "delete": "Delete",
-    "loading": "Loading"
+    "loading": "Loading",
+    "notFoundTitle": "Page not found",
+    "notFoundBody": "We couldn't find that page.",
+    "goHome": "Go home"
   },
   "nav": {
     "home": "Home",
@@ -95,15 +98,18 @@
     "saveNewPassword": "Save new password",
     "linkExpiredTitle": "Link expired",
     "linkExpiredDescription": "This link is invalid or has expired.",
-    "signingYouIn": "Signing you in"
+    "signingYouIn": "Signing you in",
+    "metaTitle": "Account",
+    "resetPasswordMetaTitle": "Reset password",
+    "callbackMetaTitle": "Signing you in"
   },
   "privacy": {
     "metaTitle": "Privacy Policy",
-    "metaDescription": "What Bartending App collects, why, and how to request it be deleted.",
+    "metaDescription": "What Cocktailist collects, why, and how to request it be deleted.",
     "title": "Privacy Policy",
     "effectiveDate": "Effective date: {date}",
     "whatWeCollect": "What we collect",
-    "collectIntro": "Bartending App collects the following categories of data:",
+    "collectIntro": "Cocktailist collects the following categories of data:",
     "accountDataTitle": "Account and authentication data.",
     "accountDataBody": "If you create an account, we store the email and credentials Supabase (our authentication provider) needs to sign you in.",
     "pantryDataTitle": "Pantry and favorites data.",
@@ -120,14 +126,16 @@
     "deletingYourData": "Deleting your data",
     "deletingYourDataBody": "If you have an account, you can delete it and its associated data at any time from the Account screen's delete account option.",
     "contact": "Contact",
-    "contactBody": "Questions about this policy or your data can be sent to <email></email>."
+    "contactBody": "Questions about this policy or your data can be sent to <email></email>.",
+    "ageGateBody": "The age confirmation answer is stored only on your device."
   },
   "footer": {
-    "privacyPolicy": "Privacy Policy"
+    "privacyPolicy": "Privacy Policy",
+    "responsibleDrinking": "Please drink responsibly."
   },
   "home": {
-    "siteName": "Bartending App",
-    "siteDescription": "Recipes and pantry ideas for home bartenders.",
+    "siteName": "Cocktailist",
+    "siteDescription": "Cocktail recipes, drink ideas from what's in your pantry, and bartending know how for home bartenders.",
     "metaDescription": "Browse cocktail and mocktail recipes picked for you: drink ideas from your pantry, recommendations, and popular drinks by region.",
     "heroTitle": "What are you drinking tonight?",
     "heroSubtitle": "Drink ideas from your pantry, recommendations, and popular drinks by region.",
@@ -145,7 +153,9 @@
     "popularIn": "Popular in {region}",
     "popularByRegion": "Popular by region",
     "recentlyViewed": "Recently viewed",
-    "recommendedForYou": "Recommended for you"
+    "recommendedForYou": "Recommended for you",
+    "siteTitle": "Cocktailist: cocktail recipes and pantry ideas",
+    "ogTagline": "Cocktail recipes and pantry ideas"
   },
   "alcoholicStatus": {
     "alcoholic": "Alcoholic",
@@ -266,7 +276,8 @@
     "almostThere": "Almost there",
     "aiGenerated": "AI generated",
     "ingredients": "Ingredients",
-    "steps": "Steps"
+    "steps": "Steps",
+    "metaDescription": "Get cocktail ideas from the ingredients you already have."
   },
   "favorites": {
     "title": "Favorites",
@@ -294,7 +305,8 @@
     "categoryMetaDescription": "Learn about {label} for home bartending.",
     "emptyTitle": "No articles yet",
     "emptyDescription": "Check back soon for articles in this category.",
-    "takeTheQuiz": "Take the quiz: {title}"
+    "takeTheQuiz": "Take the quiz: {title}",
+    "metaDescription": "Short guides to spirits, techniques, and tools for home bartenders."
   },
   "quizzes": {
     "title": "Quizzes",
@@ -311,7 +323,8 @@
     "yourAnswerIncorrect": "Your answer: {answer} (incorrect)",
     "correctAnswer": "Correct answer: {answer}",
     "submit": "Submit",
-    "submitting": "Submitting…"
+    "submitting": "Submitting…",
+    "detailMetaDescription": "Take the {title} quiz and test your bartending knowledge."
   },
   "popular": {
     "title": "Popular drinks by region",
@@ -322,7 +335,8 @@
     "emptyDescription": "Regions haven't been tagged yet. Check back soon.",
     "regionEmptyTitle": "No popular drinks for this region yet",
     "regionEmptyDescription": "Check back once more drinks have been ranked.",
-    "takeTheQuiz": "Take the quiz: {title}"
+    "takeTheQuiz": "Take the quiz: {title}",
+    "indexMetaDescription": "See which cocktails and mocktails are popular in each region."
   },
   "ratings": {
     "summary": "{average} ({count, plural, one {# rating} other {# ratings}})",
@@ -502,7 +516,13 @@
     "amount": "Amount",
     "saving": "Saving...",
     "saveHouseRecipe": "Save house recipe",
-    "saveHouseRecipeFailed": "Couldn't save that recipe. A house recipe with this name may already exist, or you may not be this bar's owner."
+    "saveHouseRecipeFailed": "Couldn't save that recipe. A house recipe with this name may already exist, or you may not be this bar's owner.",
+    "metaTitle": "Service",
+    "searchMetaTitle": "Service search",
+    "buildMetaTitle": "Quick build",
+    "newRecipeMetaTitle": "New house recipe",
+    "inviteMetaTitle": "Join a bar",
+    "invitesMetaTitle": "Bar invites"
   },
   "admin": {
     "comments": "Comments",
@@ -548,6 +568,24 @@
     "addTag": "Add tag",
     "saving": "Saving...",
     "saveRecipe": "Save recipe",
-    "source": "{source, select, admin {Admin} other {Catalog}}"
+    "source": "{source, select, admin {Admin} other {Catalog}}",
+    "commentsMetaTitle": "Comment moderation",
+    "recipesMetaTitle": "Manage recipes",
+    "newRecipeMetaTitle": "New recipe",
+    "editRecipeMetaTitle": "Edit recipe"
+  },
+  "ageGate": {
+    "title": "Before you come in",
+    "question": "Are you of legal drinking age where you live?",
+    "yes": "Yes, I am",
+    "no": "No",
+    "blockedTitle": "Come back later",
+    "blockedBody": "Cocktailist is for people of legal drinking age. Come back when you're of age.",
+    "privacyLink": "Privacy Policy",
+    "responsibleDrinking": "Please drink responsibly."
+  },
+  "moreLikeThis": {
+    "metaTitle": "More like {name}",
+    "metaDescription": "Cocktails and mocktails similar to {name}."
   }
 }

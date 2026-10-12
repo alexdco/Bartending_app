@@ -2,7 +2,10 @@ import PostHog from "posthog-react-native";
 
 let client: PostHog | null = null;
 
-function tryInit(): void {
+// Called by the root layout only once the age gate is confirmed, so no
+// event and no identify can be sent before that (spec 0037, AC-15). Until
+// then client stays null and every helper below is a no op.
+export function initAnalytics(): void {
   if (client) return;
 
   const apiKey = process.env.EXPO_PUBLIC_POSTHOG_KEY;
@@ -22,8 +25,6 @@ function tryInit(): void {
     console.error("Failed to initialize PostHog", error);
   }
 }
-
-tryInit();
 
 let identifiedId: string | null = null;
 

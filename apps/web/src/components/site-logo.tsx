@@ -1,4 +1,5 @@
 import { useTranslations } from "next-intl";
+import { BRAND_NAME } from "@bartendingapp/shared";
 import { Link } from "@/i18n/navigation";
 import { Text } from "./text";
 
@@ -22,7 +23,7 @@ export function SiteLogo() {
         <path d="M7.5 6h9" stroke="var(--color-bg)" strokeWidth="1.25" strokeLinecap="round" />
       </svg>
       <Text variant="subheading" as="span" className="font-display tracking-tight">
-        Cocktailist
+        {BRAND_NAME}
       </Text>
     </Link>
   );

@@ -70,6 +70,17 @@
     "errorInvalidCredentials": "Correo electrónico o contraseña incorrectos.",
     "errorEmailAlreadyRegistered": "Revisa tu correo para terminar de crear tu cuenta, o inicia sesión si ya tienes una.",
     "errorNoSession": "No pudimos verificar tu sesión. Revisa tu conexión e inténtalo de nuevo.",
-    "errorGeneric": "Algo salió mal. Revisa tu conexión e inténtalo de nuevo."
+    "errorGeneric": "Algo salió mal. Revisa tu conexión e inténtalo de nuevo.",
+    "responsibleDrinking": "Bebe con responsabilidad."
+  },
+  "ageGate": {
+    "title": "Antes de entrar",
+    "question": "¿Tienes la edad legal para beber donde vives?",
+    "yes": "Sí, la tengo",
+    "no": "No",
+    "blockedTitle": "Vuelve más adelante",
+    "blockedBody": "Cocktailist es para personas con la edad legal para beber. Vuelve cuando la tengas.",
+    "privacyLink": "Política de privacidad",
+    "responsibleDrinking": "Bebe con responsabilidad."
   }
 }

@@ -1,3 +1,4 @@
+import type { Ref } from "react";
 import { Text as RNText, type TextProps as RNTextProps } from "react-native";
 
 import { Fonts, TypeScale } from "@/constants/theme";
@@ -6,6 +7,7 @@ import { useTheme } from "@/hooks/use-theme";
 type Variant = "display" | "heading" | "subheading" | "body" | "bodySmall" | "label";
 
 export interface TextProps extends RNTextProps {
+  ref?: Ref<RNText>;
   variant?: Variant;
   muted?: boolean;
 }

@@ -12,6 +12,8 @@ import { identify, initAnalyticsIfConsented } from "@/analytics/posthog-client";
 import { useSession } from "@/auth/use-session";
 import { webLocalStoragePersisterAdapter } from "@/service/local-storage-persister";
 import { useBarRemovalEviction } from "@/service/use-bar-removal-eviction";
+import { AgeGate } from "@/age-gate/age-gate";
+import { APP_CONTENT_ID, useAgeGateState } from "@/age-gate/age-gate-store";
 
 // Bartender Mode's offline requirement (spec 0023-quick-build-mode.md,
 // AC-6): a bartender's already opened recipes must render with no network
@@ -47,6 +49,28 @@ const PERSIST_OPTIONS = {
 function BarRemovalEvictionRunner() {
   useBarRemovalEviction();
   return null;
+}
+
+// The cookie consent banner waits until the age gate is confirmed (or the
+// route is exempt), so an under age visitor is never asked to opt in to
+// analytics (spec 0037, AC-15).
+function GatedConsentBanner() {
+  const state = useAgeGateState();
+  return state === "confirmed" || state === "exempt" ? <ConsentBanner /> : null;
+}
+
+// Every page part sits inside #app-content so the age gate can make it
+// inert; the gate itself renders after it, outside the inert subtree.
+function AppContent({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <div id={APP_CONTENT_ID} className="flex flex-1 flex-col">
+        {children}
+      </div>
+      <AgeGate />
+      <GatedConsentBanner />
+    </>
+  );
 }
 
 function subscribeNever() {
@@ -196,8 +220,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   if (!hasMounted) {
     return (
       <QueryClientProvider client={queryClient}>
-        {children}
-        <ConsentBanner />
+        <AppContent>{children}</AppContent>
       </QueryClientProvider>
     );
   }
@@ -205,8 +228,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <PersistQueryClientProvider client={queryClient} persistOptions={PERSIST_OPTIONS}>
       <BarRemovalEvictionRunner />
-      {children}
-      <ConsentBanner />
+      <AppContent>{children}</AppContent>
     </PersistQueryClientProvider>
   );
 }

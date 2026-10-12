@@ -10,6 +10,7 @@ export async function generateMetadata(): Promise<Metadata> {
   const description = t("metaDescription");
 
   return {
+    title: { absolute: t("siteTitle") },
     description,
     alternates: {
       canonical: canonicalPath,
@@ -18,7 +19,7 @@ export async function generateMetadata(): Promise<Metadata> {
       ),
     },
     openGraph: {
-      title: t("siteName"),
+      title: t("siteTitle"),
       description,
       url: canonicalPath,
     },

@@ -93,3 +93,29 @@
     text-decoration: underline;
   }
 }
+
+/* Age gate (spec 0037). The inline head script sets html[data-age] before
+   paint; these rules are unlayered so they win over Tailwind utilities. The
+   page stays visible under the scrim, never display: none or visibility:
+   hidden; pointer-events covers the gap before hydration sets `inert`. */
+.age-gate,
+html:not([data-age="denied"]) .age-gate-blocked,
+html[data-age="denied"] .age-gate-ask {
+  display: none;
+}
+
+html[data-age="ask"] .age-gate,
+html[data-age="denied"] .age-gate {
+  display: flex;
+}
+
+html[data-age="ask"] #app-content,
+html[data-age="denied"] #app-content {
+  pointer-events: none;
+  user-select: none;
+}
+
+html[data-age="ask"] body,
+html[data-age="denied"] body {
+  overflow: hidden;
+}

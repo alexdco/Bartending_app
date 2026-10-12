@@ -398,6 +398,10 @@ export default function AccountScreen() {
             <Text variant="body">{t("account.privacyPolicy")}</Text>
           </ExternalLink>
         </Card>
+
+        <Text variant="bodySmall" muted style={styles.notice}>
+          {t("account.responsibleDrinking")}
+        </Text>
       </ScrollView>
     </SafeAreaView>
   );
@@ -406,6 +410,9 @@ export default function AccountScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  notice: {
+    textAlign: "center",
   },
   content: {
     gap: Spacing.four,

@@ -49,7 +49,7 @@ export default async function PrivacyPage() {
           </li>
           <li>
             <Text variant="body" as="span">
-              <strong>{t("guestDataTitle")}</strong> {t("guestDataBody")}
+              <strong>{t("guestDataTitle")}</strong> {t("guestDataBody")} {t("ageGateBody")}
             </Text>
           </li>
           <li>

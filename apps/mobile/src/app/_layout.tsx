@@ -13,7 +13,9 @@ import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import AppTabs from "@/components/app-tabs";
 import { supabase } from "@/lib/supabase";
 import { useSession } from "@/auth/use-session";
-import { identify } from "@/analytics/posthog-client";
+import { identify, initAnalytics } from "@/analytics/posthog-client";
+import { AgeGateOverlay } from "@/age-gate/age-gate-overlay";
+import { useAgeGate } from "@/age-gate/use-age-gate";
 import { i18n, initI18n } from "@/i18n";
 import { useBarRemovalEviction } from "@/service/use-bar-removal-eviction";
 
@@ -60,16 +62,21 @@ export default function TabLayout() {
   const colorScheme = useColorScheme();
   const { session } = useSession();
   const [i18nReady, setI18nReady] = useState(false);
+  const ageGate = useAgeGate();
+  const ageConfirmed = ageGate.state === "confirmed";
 
   useEffect(() => {
     initI18n().then(() => setI18nReady(true));
   }, []);
 
+  // Analytics start only after the age gate is confirmed (spec 0037, AC-15).
   useEffect(() => {
+    if (!ageConfirmed) return;
+    initAnalytics();
     if (session?.user.id) {
       identify(session.user.id);
     }
-  }, [session?.user.id]);
+  }, [ageConfirmed, session?.user.id]);
 
   useEffect(() => {
     ensureAnonymousSession(supabase).catch((error) => {
@@ -98,7 +105,8 @@ export default function TabLayout() {
     return () => subscription.subscription.unsubscribe();
   }, []);
 
-  if (!i18nReady) {
+  // The gate read runs alongside i18n setup, so it adds no splash time.
+  if (!i18nReady || !ageGate.ready) {
     return null;
   }
 
@@ -109,6 +117,7 @@ export default function TabLayout() {
         <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
           <AnimatedSplashOverlay />
           <AppTabs />
+          <AgeGateOverlay state={ageGate.state} onConfirm={ageGate.confirm} onDeny={ageGate.deny} />
         </ThemeProvider>
       </PersistQueryClientProvider>
     </I18nextProvider>

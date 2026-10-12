@@ -9,7 +9,10 @@
     "cancel": "Cancelar",
     "save": "Guardar",
     "delete": "Eliminar",
-    "loading": "Cargando"
+    "loading": "Cargando",
+    "notFoundTitle": "Página no encontrada",
+    "notFoundBody": "No encontramos esa página.",
+    "goHome": "Ir al inicio"
   },
   "nav": {
     "home": "Inicio",
@@ -95,15 +98,18 @@
     "saveNewPassword": "Guardar nueva contraseña",
     "linkExpiredTitle": "Enlace vencido",
     "linkExpiredDescription": "Este enlace no es válido o ya venció.",
-    "signingYouIn": "Iniciando sesión"
+    "signingYouIn": "Iniciando sesión",
+    "metaTitle": "Cuenta",
+    "resetPasswordMetaTitle": "Restablecer contraseña",
+    "callbackMetaTitle": "Iniciando sesión"
   },
   "privacy": {
     "metaTitle": "Política de privacidad",
-    "metaDescription": "Qué datos recopila Bartending App, por qué, y cómo solicitar su eliminación.",
+    "metaDescription": "Qué datos recopila Cocktailist, por qué, y cómo solicitar su eliminación.",
     "title": "Política de privacidad",
     "effectiveDate": "Fecha de vigencia: {date}",
     "whatWeCollect": "Qué recopilamos",
-    "collectIntro": "Bartending App recopila las siguientes categorías de datos:",
+    "collectIntro": "Cocktailist recopila las siguientes categorías de datos:",
     "accountDataTitle": "Datos de cuenta y autenticación.",
     "accountDataBody": "Si creas una cuenta, almacenamos el correo electrónico y las credenciales que Supabase (nuestro proveedor de autenticación) necesita para iniciar tu sesión.",
     "pantryDataTitle": "Datos de despensa y favoritos.",
@@ -120,14 +126,16 @@
     "deletingYourData": "Eliminar tus datos",
     "deletingYourDataBody": "Si tienes una cuenta, puedes eliminarla junto con sus datos asociados en cualquier momento desde la opción de eliminar cuenta en la pantalla de Cuenta.",
     "contact": "Contacto",
-    "contactBody": "Las preguntas sobre esta política o tus datos pueden enviarse a <email></email>."
+    "contactBody": "Las preguntas sobre esta política o tus datos pueden enviarse a <email></email>.",
+    "ageGateBody": "La respuesta a la confirmación de edad se guarda solo en tu dispositivo."
   },
   "footer": {
-    "privacyPolicy": "Política de privacidad"
+    "privacyPolicy": "Política de privacidad",
+    "responsibleDrinking": "Bebe con responsabilidad."
   },
   "home": {
-    "siteName": "Bartending App",
-    "siteDescription": "Recetas e ideas desde tu despensa para bartenders caseros.",
+    "siteName": "Cocktailist",
+    "siteDescription": "Recetas de cócteles, ideas de bebidas con lo que tienes en tu despensa y conocimientos de coctelería para bartenders en casa.",
     "metaDescription": "Explora recetas de cócteles y mocktails elegidas para ti: ideas de tragos desde tu despensa, recomendaciones y tragos populares por región.",
     "heroTitle": "¿Qué vas a tomar esta noche?",
     "heroSubtitle": "Ideas de tragos desde tu despensa, recomendaciones y tragos populares por región.",
@@ -145,7 +153,9 @@
     "popularIn": "Populares en {region}",
     "popularByRegion": "Populares por región",
     "recentlyViewed": "Vistos recientemente",
-    "recommendedForYou": "Recomendados para ti"
+    "recommendedForYou": "Recomendados para ti",
+    "siteTitle": "Cocktailist: recetas de cócteles e ideas con tu despensa",
+    "ogTagline": "Recetas de cócteles e ideas con tu despensa"
   },
   "alcoholicStatus": {
     "alcoholic": "Con alcohol",
@@ -266,7 +276,8 @@
     "almostThere": "Casi listos",
     "aiGenerated": "Generado con IA",
     "ingredients": "Ingredientes",
-    "steps": "Pasos"
+    "steps": "Pasos",
+    "metaDescription": "Obtén ideas de cócteles con los ingredientes que ya tienes."
   },
   "favorites": {
     "title": "Favoritos",
@@ -294,7 +305,8 @@
     "categoryMetaDescription": "Aprende sobre {label} para preparar tragos en casa.",
     "emptyTitle": "Todavía no hay artículos",
     "emptyDescription": "Vuelve pronto para ver artículos de esta categoría.",
-    "takeTheQuiz": "Haz el cuestionario: {title}"
+    "takeTheQuiz": "Haz el cuestionario: {title}",
+    "metaDescription": "Guías breves sobre destilados, técnicas y herramientas para bartenders en casa."
   },
   "quizzes": {
     "title": "Cuestionarios",
@@ -311,7 +323,8 @@
     "yourAnswerIncorrect": "Tu respuesta: {answer} (incorrecta)",
     "correctAnswer": "Respuesta correcta: {answer}",
     "submit": "Enviar",
-    "submitting": "Enviando…"
+    "submitting": "Enviando…",
+    "detailMetaDescription": "Haz el cuestionario {title} y pon a prueba lo que sabes de coctelería."
   },
   "popular": {
     "title": "Tragos populares por región",
@@ -322,7 +335,8 @@
     "emptyDescription": "Aún no se etiquetaron regiones. Vuelve pronto.",
     "regionEmptyTitle": "Todavía no hay tragos populares para esta región",
     "regionEmptyDescription": "Vuelve cuando se hayan clasificado más tragos.",
-    "takeTheQuiz": "Haz el cuestionario: {title}"
+    "takeTheQuiz": "Haz el cuestionario: {title}",
+    "indexMetaDescription": "Descubre qué cócteles y mocktails son populares en cada región."
   },
   "ratings": {
     "summary": "{average} ({count, plural, one {# calificación} other {# calificaciones}})",
@@ -502,7 +516,13 @@
     "amount": "Cantidad",
     "saving": "Guardando...",
     "saveHouseRecipe": "Guardar receta de la casa",
-    "saveHouseRecipeFailed": "No pudimos guardar esa receta. Puede que ya exista una receta de la casa con este nombre, o que no seas el dueño de este bar."
+    "saveHouseRecipeFailed": "No pudimos guardar esa receta. Puede que ya exista una receta de la casa con este nombre, o que no seas el dueño de este bar.",
+    "metaTitle": "Servicio",
+    "searchMetaTitle": "Búsqueda de servicio",
+    "buildMetaTitle": "Preparación rápida",
+    "newRecipeMetaTitle": "Nueva receta de la casa",
+    "inviteMetaTitle": "Unirse a un bar",
+    "invitesMetaTitle": "Invitaciones del bar"
   },
   "admin": {
     "comments": "Comentarios",
@@ -548,6 +568,24 @@
     "addTag": "Agregar etiqueta",
     "saving": "Guardando...",
     "saveRecipe": "Guardar receta",
-    "source": "{source, select, admin {Admin} other {Catálogo}}"
+    "source": "{source, select, admin {Admin} other {Catálogo}}",
+    "commentsMetaTitle": "Moderación de comentarios",
+    "recipesMetaTitle": "Gestionar recetas",
+    "newRecipeMetaTitle": "Nueva receta",
+    "editRecipeMetaTitle": "Editar receta"
+  },
+  "ageGate": {
+    "title": "Antes de entrar",
+    "question": "¿Tienes la edad legal para beber donde vives?",
+    "yes": "Sí, la tengo",
+    "no": "No",
+    "blockedTitle": "Vuelve más adelante",
+    "blockedBody": "Cocktailist es para personas con la edad legal para beber. Vuelve cuando la tengas.",
+    "privacyLink": "Política de privacidad",
+    "responsibleDrinking": "Bebe con responsabilidad."
+  },
+  "moreLikeThis": {
+    "metaTitle": "Más como {name}",
+    "metaDescription": "Cócteles y mocktails parecidos a {name}."
   }
 }
