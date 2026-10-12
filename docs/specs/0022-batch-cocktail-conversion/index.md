@@ -2,6 +2,7 @@
 
 **Date**: 2026-09-15
 **Status**: In Progress
+**Amended by**: [0035](../0035-batch-calculator-correctness/index.md) (AC-1 visibility, AC-2 units and rounding, AC-6 dilution base)
 
 ## Summary
 

@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { StyleSheet, View } from "react-native";
 
@@ -9,8 +8,8 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import {
   CONVERTIBLE_UNITS,
-  convertAmount,
-  formatConvertedAmount,
+  formatAmountInUnit,
+  hasVolumeIngredient,
   isSupportedLocale,
   unitLabel,
   type ConvertibleUnit,
@@ -23,9 +22,12 @@ import { useAddShoppingListItem } from "@/shopping-list/use-shopping-list-mutati
 
 export interface IngredientListProps {
   ingredients: RecipeIngredientDetail[];
+  /** The single serving toggle unit, held by the recipe screen so the batch panel can follow it (spec 0035 AC-6). */
+  unit: ConvertibleUnit;
+  onUnitChange: (unit: ConvertibleUnit) => void;
 }
 
-export function IngredientList({ ingredients }: IngredientListProps) {
+export function IngredientList({ ingredients, unit, onUnitChange }: IngredientListProps) {
   const theme = useTheme();
   const { i18n } = useTranslation();
   const locale = isSupportedLocale(i18n.language) ? i18n.language : "en";
@@ -36,25 +38,19 @@ export function IngredientList({ ingredients }: IngredientListProps) {
   const addShoppingListItem = useAddShoppingListItem();
   const shoppingListIds = new Set((shoppingList.data ?? []).map((item) => item.ingredientId));
 
-  // Defaults to oz on every mount, no persistence across visits or recipes (AC-4).
-  const [unit, setUnit] = useState<ConvertibleUnit>("oz");
-  const hasConvertible = ingredients.some(
-    (ingredient) => ingredient.amountValue !== null && ingredient.amountUnit !== null,
-  );
+  // A recipe written only in parts has nothing to convert, so no toggle (spec 0035 AC-4).
+  const hasConvertible = hasVolumeIngredient(ingredients);
 
   function amountFor(ingredient: RecipeIngredientDetail): string | null {
-    if (ingredient.amountValue === null || ingredient.amountUnit === null) {
-      // Falls back to the already coalesced (possibly translated) measure
-      // text for any unparseable line, unaffected by the toggle (AC-3).
-      return ingredient.measure;
-    }
     // oz selected and the source is already oz: show the original measure
-    // text verbatim (preserves "1 1/2" exactly), never re-derived (AC-2).
+    // text verbatim (preserves "1 1/2" exactly), never re-derived (spec 0021 AC-2).
     if (unit === "oz" && ingredient.amountUnit === "oz") {
       return ingredient.measure;
     }
-    const converted = convertAmount(ingredient.amountValue, ingredient.amountUnit, unit);
-    return `${formatConvertedAmount(converted, unit)} ${unitLabel(unit, locale)}`;
+    // Falls back to the already coalesced (possibly translated) measure
+    // text for any unparseable or part line, unaffected by the toggle.
+    const amount = formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit);
+    return amount === null ? ingredient.measure : `${amount} ${unitLabel(unit, locale)}`;
   }
 
   return (
@@ -65,7 +61,7 @@ export function IngredientList({ ingredients }: IngredientListProps) {
             <Chip
               key={candidate}
               selected={unit === candidate}
-              onSelectedChange={() => setUnit(candidate)}
+              onSelectedChange={() => onUnitChange(candidate)}
             >
               {unitLabel(candidate, locale)}
             </Chip>

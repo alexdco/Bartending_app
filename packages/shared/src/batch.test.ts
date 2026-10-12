@@ -1,7 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
   computeBatch,
+  convertPartSize,
+  formatBatchAmount,
   hasConvertibleIngredient,
+  hasPartIngredient,
+  hasVolumeIngredient,
+  partSizeInputForUnit,
+  partSizeUnitFor,
+  validatePartSize,
   validateCustomDilutionPercent,
   validateServings,
   type BatchIngredientInput,
@@ -161,28 +168,72 @@ describe("computeBatch", () => {
     expect(byId.lime.state).toBe("excluded");
   });
 
-  it("adds a dilution water line computed from the included alcohol base (AC-6, AC-7)", () => {
-    const result = computeBatch(
-      [ingredient({ ingredientId: "rum", amountValue: 100, amountUnit: "oz", category: "spirit" })],
-      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "20" },
-    );
+  it("bases dilution on every included line, not only alcohol (spec 0035 AC-5)", () => {
+    const lines = [
+      ingredient({ ingredientId: "rum", amountValue: 60, amountUnit: "oz", category: "spirit" }),
+      ingredient({
+        ingredientId: "lime",
+        name: "Lime",
+        amountValue: 30,
+        amountUnit: "oz",
+        category: "citrus",
+      }),
+    ];
 
-    expect(result.waterLine?.displayAmount).toBe("20 oz");
-    expect(result.totalDisplayAmount).toBe("120 oz");
-    expect(result.noAlcoholNote).toBe(false);
+    const everything = computeBatch(lines, {
+      servings: 1,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "20",
+    });
+    expect(everything.waterLine?.displayAmount).toBe("18 oz");
+    expect(everything.totalDisplayAmount).toBe("108 oz");
+    expect(everything.nothingToDiluteNote).toBe(false);
+
+    const alcoholOnly = computeBatch(lines, {
+      servings: 1,
+      scope: "alcohol_only",
+      unit: "oz",
+      dilutionLevel: "20",
+    });
+    expect(alcoholOnly.waterLine?.displayAmount).toBe("12 oz");
   });
 
-  it("adds no water line and a note when no alcohol is in the current scope/selection (AC-6)", () => {
+  it("shows the nothing to dilute note when every line is unchecked (spec 0035 AC-5)", () => {
     const result = computeBatch([ingredient({ ingredientId: "rum", category: "spirit" })], {
       servings: 1,
       scope: "custom",
       unit: "oz",
       dilutionLevel: "20",
-      customSelectedIds: new Set(), // rum unchecked
+      customSelectedIds: new Set(),
     });
 
     expect(result.waterLine).toBeNull();
-    expect(result.noAlcoholNote).toBe(true);
+    expect(result.nothingToDiluteNote).toBe(true);
+    expect(result.totalDisplayAmount).toBeNull();
+  });
+
+  it("dilutes a batch with no alcohol at all (spec 0035 AC-5)", () => {
+    const result = computeBatch(
+      [ingredient({ ingredientId: "juice", amountValue: 10, amountUnit: "oz", category: "other" })],
+      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "15" },
+    );
+
+    expect(result.waterLine?.displayAmount).toBe("1.5 oz");
+    expect(result.nothingToDiluteNote).toBe(false);
+  });
+
+  it("adds no water line for a custom 0 percent dilution", () => {
+    const result = computeBatch([ingredient()], {
+      servings: 1,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "custom",
+      customDilutionPercent: 0,
+    });
+
+    expect(result.waterLine).toBeNull();
+    expect(result.nothingToDiluteNote).toBe(false);
   });
 
   it("computes the total from unrounded ml, not the sum of already rounded per line displays (AC-7)", () => {
@@ -201,5 +252,163 @@ describe("computeBatch", () => {
     expect(result.lines[0].displayAmount).toBe("0.4 oz");
     expect(result.lines[1].displayAmount).toBe("0.4 oz");
     expect(result.totalDisplayAmount).toBe("0.7 oz");
+  });
+});
+
+describe("parts (spec 0035 AC-3, AC-4)", () => {
+  const part = (ingredientId: string, amountValue: number): BatchIngredientInput =>
+    ingredient({
+      ingredientId,
+      name: ingredientId,
+      measure: `${amountValue} parts`,
+      amountValue,
+      amountUnit: "part",
+      category: "other",
+    });
+  const afterglow = [part("grenadine", 1), part("orange", 4), part("pineapple", 1)];
+
+  it("scales part lines by part size and servings", () => {
+    const result = computeBatch(afterglow, {
+      servings: 10,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "none",
+      partSize: { value: 1, unit: "oz" },
+    });
+
+    expect(result.lines.map((l) => l.displayAmount)).toEqual(["10 oz", "40 oz", "10 oz"]);
+    expect(result.totalDisplayAmount).toBe("60 oz");
+  });
+
+  it("uses a ml part size and includes part lines in the dilution base", () => {
+    const result = computeBatch(afterglow, {
+      servings: 1,
+      scope: "everything",
+      unit: "ml",
+      dilutionLevel: "20",
+      partSize: { value: 30, unit: "ml" },
+    });
+
+    expect(result.lines.map((l) => l.displayAmount)).toEqual(["30 ml", "120 ml", "30 ml"]);
+    expect(result.waterLine?.displayAmount).toBe("36 ml");
+  });
+
+  it("leaves part lines unscaled when no part size is given", () => {
+    const result = computeBatch(afterglow, {
+      servings: 1,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "none",
+    });
+
+    expect(result.lines.every((l) => l.state === "unscaled")).toBe(true);
+  });
+
+  it("follows scope presets by category like volume lines", () => {
+    const result = computeBatch(
+      [
+        ingredient({ ingredientId: "gin", amountValue: 2, amountUnit: "part", category: "spirit" }),
+        ingredient({
+          ingredientId: "lime",
+          amountValue: 1,
+          amountUnit: "part",
+          category: "citrus",
+        }),
+      ],
+      {
+        servings: 1,
+        scope: "except_citrus",
+        unit: "oz",
+        dilutionLevel: "none",
+        partSize: { value: 1, unit: "oz" },
+      },
+    );
+
+    expect(result.lines.map((l) => l.state)).toEqual(["normal", "excluded"]);
+  });
+
+  it("validates the part size range per unit family", () => {
+    expect(validatePartSize("1", "oz")).toBe(1);
+    expect(validatePartSize("0.25", "oz")).toBe(0.25);
+    expect(validatePartSize("4", "oz")).toBe(4);
+    expect(validatePartSize("5", "oz")).toBeNull();
+    expect(validatePartSize("0.2", "oz")).toBeNull();
+    expect(validatePartSize("30", "ml")).toBe(30);
+    expect(validatePartSize("4", "ml")).toBeNull();
+    expect(validatePartSize("121", "ml")).toBeNull();
+    expect(validatePartSize("", "ml")).toBeNull();
+    expect(validatePartSize("abc", "oz")).toBeNull();
+  });
+
+  it("converts a part size between families with pourable rounding and clamping", () => {
+    expect(convertPartSize(1, "oz", "ml")).toBe(30);
+    expect(convertPartSize(1.5, "oz", "ml")).toBe(44);
+    expect(convertPartSize(30, "ml", "oz")).toBe(1);
+    expect(convertPartSize(44, "ml", "oz")).toBe(1.5);
+    expect(convertPartSize(5, "ml", "oz")).toBe(0.25);
+    expect(convertPartSize(120, "ml", "oz")).toBe(4);
+    expect(convertPartSize(4, "oz", "ml")).toBe(118);
+    expect(convertPartSize(2, "oz", "oz")).toBe(2);
+  });
+
+  it("carries the part size input across a family switch, resetting an invalid value", () => {
+    expect(partSizeInputForUnit("1", "oz", "ml")).toBe("30");
+    expect(partSizeInputForUnit("30", "ml", "oz")).toBe("1");
+    expect(partSizeInputForUnit("abc", "oz", "ml")).toBe("30");
+    expect(partSizeInputForUnit("9", "oz", "ml")).toBe("30");
+    expect(partSizeInputForUnit("", "ml", "oz")).toBe("1");
+    expect(partSizeInputForUnit("2.5", "oz", "oz")).toBe("2.5");
+  });
+
+  it("picks the part size family from the batch unit", () => {
+    expect(partSizeUnitFor("oz")).toBe("oz");
+    expect(partSizeUnitFor("ml")).toBe("ml");
+    expect(partSizeUnitFor("cl")).toBe("ml");
+    expect(partSizeUnitFor("l")).toBe("ml");
+  });
+
+  it("shows the batch control for a parts only recipe but no toggle", () => {
+    expect(hasConvertibleIngredient(afterglow)).toBe(true);
+    expect(hasVolumeIngredient(afterglow)).toBe(false);
+    expect(hasPartIngredient(afterglow)).toBe(true);
+    expect(hasVolumeIngredient([...afterglow, ingredient()])).toBe(true);
+    expect(hasPartIngredient([ingredient()])).toBe(false);
+  });
+});
+
+describe("formatBatchAmount (spec 0035 AC-6, AC-7)", () => {
+  it("rounds oz, ml, and cl to the tenth and l to the thousandth, trimming zeros", () => {
+    expect(formatBatchAmount(29.5735 * 2.5, "oz")).toBe("2.5 oz");
+    expect(formatBatchAmount(44.36025, "ml")).toBe("44.4 ml");
+    expect(formatBatchAmount(44.36025, "cl")).toBe("4.4 cl");
+    expect(formatBatchAmount(2500, "l")).toBe("2.5 l");
+    expect(formatBatchAmount(1000, "l")).toBe("1 l");
+    expect(formatBatchAmount(1234.56, "l")).toBe("1.235 l");
+  });
+
+  it("never shows a nonzero amount as 0", () => {
+    expect(formatBatchAmount(0.616115, "l")).toBe("0.001 l");
+    expect(formatBatchAmount(0.2, "l")).toBe("< 0.001 l");
+    expect(formatBatchAmount(0.04, "ml")).toBe("< 0.1 ml");
+    expect(formatBatchAmount(0.4, "cl")).toBe("< 0.1 cl");
+    expect(formatBatchAmount(1, "oz")).toBe("< 0.1 oz");
+  });
+
+  it("batches a 1/8 tsp line and a 1 L line in liters", () => {
+    const result = computeBatch(
+      [
+        ingredient({
+          ingredientId: "salt",
+          amountValue: 0.125,
+          amountUnit: "tsp",
+          category: "other",
+        }),
+        ingredient({ ingredientId: "soda", amountValue: 1, amountUnit: "l", category: "other" }),
+      ],
+      { servings: 1, scope: "everything", unit: "l", dilutionLevel: "none" },
+    );
+
+    expect(result.lines.map((l) => l.displayAmount)).toEqual(["0.001 l", "1 l"]);
+    expect(result.totalDisplayAmount).toBe("1.001 l");
   });
 });

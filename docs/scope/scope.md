@@ -52,7 +52,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 39 | Learn article accuracy pass | Hardening | planned |
 | 40 | AI quota abuse via anonymous sessions | Hardening | planned |
 | 41 | Finish Spanish UI translation | Hardening | planned |
-| 42 | Batch calculator correctness | Hardening | planned |
+| 42 | Batch calculator correctness | Hardening | in-progress |
 | 43 | Shopping list follow ups | Hardening | planned |
 | 44 | Recipe catalog cleanup | Hardening | planned |
 | 45 | Brand, metadata, and launch readiness | Hardening | planned |
@@ -608,10 +608,19 @@ Closes feature 23's unmet Done when. The web message catalog has 83 keys in only
 **Done when:** every user facing web string comes from the message catalog with a Spanish translation, and `/es` pages (including recipe and Learn pages) read in Spanish apart from content not yet translated.
 - [ ] Build it: `/develop finish Spanish UI translation`
 
-### 42. Batch calculator correctness · needs a decision
+### 42. Batch calculator correctness
 Dilution is computed on alcohol only, so batches come out under diluted (spec 0022 AC-6 itself needs changing). Common TheCocktailDB units don't parse (`shot`, `jigger`, `part`, `dl`, `Tblsp`, `1 ½ oz`), so lines show "not scaled" and recipes like Afterglow lose the batch panel. Tiny liter amounts show `0 l`. The batch units (oz / ml / liter) don't match the toggle (oz / ml / cl).
 **Done when:** dilution is based on a decided volume, the common units parse (with a decided value for shot and jigger), parts scale relative to a chosen total, tiny amounts never show as zero, unit choices are consistent, and the import job is rerun so existing recipes pick up the new rules.
-- [ ] Design it (spec): `/architect batch calculator correctness`
+- [x] Design it (spec): [0035](../specs/0035-batch-calculator-correctness/index.md)
+- [ ] Build it: `/develop batch calculator correctness`
+  - [ ] Shot thread end to end: widened unit check plus pair check migration, unit type split and `toRecognizedUnit` guard at every cast site, shot and jigger parsing, `reparse-measures` script (AC-1, AC-2, AC-9, AC-12)
+  - [x] Remaining parser forms and range guards: dl, l, tblsp, pint, qt, gal, `1 ½`, unit then extra words (AC-1, AC-2, AC-11)
+  - [x] Batch math and panel, web and mobile: parts with part size input, dilution on all included lines, oz/ml/cl/l with the `<` floor, batch unit follows the toggle, new copy in the message catalog (AC-3 to AC-7, AC-13)
+  - [ ] Admin save parses measures, and Quick Build parts view (AC-8, AC-10)
+  - [ ] Live rollout: migrations, deploy web and mobile, reparse dry run then real run, confirm 0 changes on rerun (AC-9)
+- [ ] Verify it: `/check verify batch calculator correctness`
+- [ ] Test it: `/test batch calculator correctness`
+Spec [0035](../specs/0035-batch-calculator-correctness/index.md) · code in `packages/shared`, `packages/import-job`, `supabase/migrations`, `apps/web`, `apps/mobile`
 
 ### 43. Shopping list follow ups
 Review findings on feature 33: `fetch_shopping_list_items` has no `order by`, so items can shuffle; the add search doesn't mark ingredients already in the pantry; the first visit query runs before `ensureAnonymousSession` finishes and only recovers through retries (pantry has the same race); there are no tests for `shoppingList.ts` or its migration.
@@ -653,6 +662,10 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Shared "recently made" shift log**: a server persisted, all-staff-visible build history for a bar, beyond today's per-bartender client side recently viewed list (feature 26) · needs a decision · from spec 0023
 - **Automated comment photo screening**: e.g. Claude Haiku vision checks each uploaded photo and hides flagged ones until admin review (feature 34) · needs a decision · from spec 0032
 - **Report a comment or photo**: a viewer facing report button feeding the admin comments page (features 31, 34) · needs a decision · from spec 0032
+- **Scale counted lines in batches**: `2 dashes` × 25 shows `50 dashes` (feature 42) · needs a decision · from spec 0035
+- **Batch range measures**: batch `2-3 oz` using `amount_max_value` (feature 42) · needs a decision · from spec 0035
+- **Method based dilution default**: stirred, shaken, and built drinks get different default dilution (feature 42) · needs a decision · from spec 0035
+- **Import job vs admin edits**: the catalog import can overwrite admin edits to a catalog recipe; decide which wins (feature 42) · needs a decision · from spec 0035
 
 ## Legend
 

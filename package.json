@@ -11,7 +11,8 @@
     "test": "vitest run",
     "web": "turbo run dev --filter=web",
     "mobile": "turbo run start --filter=mobile",
-    "prepare": "husky"
+    "prepare": "husky",
+    "reparse-measures": "pnpm --filter @bartendingapp/shared reparse-measures"
   },
   "devDependencies": {
     "husky": "^9.1.7",

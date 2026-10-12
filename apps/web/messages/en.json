@@ -202,10 +202,12 @@
     "customDilutionLabel": "Custom dilution percent",
     "customDilutionPlaceholder": "e.g. 18",
     "customDilutionError": "Enter a percent from 0 to 50.",
+    "partSize": "Size of 1 part ({unit})",
+    "partSizeError": "Enter a part size from {min} to {max} {unit}.",
     "notScaled": "(not scaled, adjust manually)",
     "uncategorized": "(uncategorized)",
     "water": "Water",
-    "noAlcoholNote": "No alcohol in this batch, no dilution added.",
+    "nothingToDiluteNote": "Nothing to dilute in this batch.",
     "total": "Total"
   },
   "pantry": {

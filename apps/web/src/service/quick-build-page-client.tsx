@@ -4,11 +4,9 @@ import { useEffect, useRef, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   computeParts,
-  convertAmount,
-  formatConvertedAmount,
+  formatAmountInUnit,
   formatParts,
   formatQuickBuildInstructions,
-  type ConvertibleUnit,
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -207,17 +205,9 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
         : (line?.measure ?? ingredient.measure ?? "");
     }
 
-    const hasParsedAmount = ingredient.amountValue !== null && ingredient.amountUnit !== null;
-    return hasParsedAmount
-      ? `${formatConvertedAmount(
-          convertAmount(
-            ingredient.amountValue as number,
-            ingredient.amountUnit as ConvertibleUnit,
-            unit as ConvertibleUnit,
-          ),
-          unit as ConvertibleUnit,
-        )} ${unit}`
-      : (ingredient.measure ?? "");
+    // Unparsed and part lines show their measure text (spec 0035 AC-10).
+    const amount = formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit);
+    return amount !== null ? `${amount} ${unit}` : (ingredient.measure ?? "");
   });
 
   const instructions = formatQuickBuildInstructions({

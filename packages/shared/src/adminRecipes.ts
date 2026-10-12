@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { parseMeasure, type RecognizedUnit } from "./units";
 
 export const ADMIN_RECIPE_NAME_MAX_LENGTH = 200;
 export const ADMIN_RECIPE_INSTRUCTIONS_MAX_LENGTH = 10000;
@@ -229,6 +230,37 @@ export type SaveAdminRecipeError =
 export type SaveAdminRecipeResult =
   { data: { id: string }; error: null } | { data: null; error: SaveAdminRecipeError };
 
+// A type alias, not an interface, so it stays assignable to the RPC's Json arg.
+export type AdminIngredientPayload = {
+  name: string;
+  measure: string | null;
+  sortOrder: number;
+  amount_value: number | null;
+  amount_unit: RecognizedUnit | null;
+};
+
+/**
+ * Builds the admin_upsert_recipe ingredient payload, parsing each trimmed
+ * measure with the shared parser so an admin save keeps the recipe's unit
+ * toggle and batch panel working (spec 0035 AC-8). An unparsed line sends
+ * both amount fields as null.
+ */
+export function toAdminIngredientPayload(
+  ingredients: readonly AdminRecipeFormIngredient[],
+): AdminIngredientPayload[] {
+  return ingredients.map((ingredient, index) => {
+    const measure = ingredient.measure?.trim() || null;
+    const parsed = parseMeasure(measure);
+    return {
+      name: ingredient.name.trim(),
+      measure,
+      sortOrder: index,
+      amount_value: parsed?.value ?? null,
+      amount_unit: parsed?.unit ?? null,
+    };
+  });
+}
+
 /**
  * Thin wrapper over the admin_upsert_recipe RPC (spec 0030): resolves or
  * creates each ingredient/tag by normalized name and replaces the recipe's
@@ -259,11 +291,7 @@ export async function saveAdminRecipe(
     p_glass: values.glass?.trim() || null,
     p_alcoholic_status: values.alcoholicStatus,
     p_region: values.region?.trim() || null,
-    p_ingredients: nonEmptyIngredients.map((ingredient, index) => ({
-      name: ingredient.name.trim(),
-      measure: ingredient.measure?.trim() || null,
-      sortOrder: index,
-    })),
+    p_ingredients: toAdminIngredientPayload(nonEmptyIngredients),
     p_tags: nonEmptyTags.map((tag) => ({ name: tag.name.trim() })),
   } as Database["public"]["Functions"]["admin_upsert_recipe"]["Args"]);
 

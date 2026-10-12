@@ -9,21 +9,31 @@ import { Text } from "@/components/text";
 import {
   BATCH_SCOPES,
   BATCH_UNITS,
+  DEFAULT_PART_SIZE,
   DILUTION_LEVELS,
+  PART_SIZE_RANGE,
   batchUnitLabel,
   computeBatch,
   hasConvertibleIngredient,
+  hasPartIngredient,
+  partSizeInputForUnit,
+  partSizeUnitFor,
   validateCustomDilutionPercent,
+  validatePartSize,
   validateServings,
   type BatchScope,
   type BatchUnit,
   type DilutionLevel,
   type Locale,
+  type PartSizeUnit,
   type RecipeIngredientDetail,
 } from "@bartendingapp/shared";
 
 export interface BatchPanelProps {
   ingredients: RecipeIngredientDetail[];
+  /** Follows the single serving toggle until the bartender picks one (spec 0035 AC-6). */
+  unit: BatchUnit;
+  onUnitChange: (unit: BatchUnit) => void;
 }
 
 const SCOPE_KEYS = {
@@ -33,7 +43,7 @@ const SCOPE_KEYS = {
   custom: "scopeCustom",
 } as const satisfies Record<BatchScope, string>;
 
-export function BatchPanel({ ingredients }: BatchPanelProps) {
+export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps) {
   const t = useTranslations("batch");
   const locale = useLocale() as Locale;
 
@@ -45,12 +55,29 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
 
   const [servingsInput, setServingsInput] = useState("");
   const [scope, setScope] = useState<BatchScope>("everything");
-  const [unit, setUnit] = useState<BatchUnit>("oz");
   const [dilutionLevel, setDilutionLevel] = useState<DilutionLevel>("none");
   const [customDilutionInput, setCustomDilutionInput] = useState("");
   const [customSelectedIds, setCustomSelectedIds] = useState<Set<string>>(
     () => new Set(ingredients.map((i) => i.ingredientId)),
   );
+
+  // The part size input's unit family follows the batch unit; when the
+  // family switches, a valid value converts and an invalid one resets
+  // (spec 0035 AC-3). Adjusted during render, React's pattern for state
+  // derived from a changing prop.
+  const partSizeUnit = partSizeUnitFor(unit);
+  const [partSize, setPartSize] = useState<{ input: string; unit: PartSizeUnit }>(() => ({
+    input: String(DEFAULT_PART_SIZE[partSizeUnit]),
+    unit: partSizeUnit,
+  }));
+  if (partSize.unit !== partSizeUnit) {
+    setPartSize({
+      input: partSizeInputForUnit(partSize.input, partSize.unit, partSizeUnit),
+      unit: partSizeUnit,
+    });
+  }
+
+  const hasParts = hasPartIngredient(ingredients);
 
   const servings = servingsInput === "" ? null : validateServings(servingsInput);
   const servingsError = servingsInput !== "" && servings === null ? t("servingsError") : undefined;
@@ -62,8 +89,16 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
       ? t("customDilutionError")
       : undefined;
 
+  const partSizeValue = hasParts ? validatePartSize(partSize.input, partSize.unit) : null;
+  const partSizeError =
+    hasParts && partSizeValue === null
+      ? t("partSizeError", { ...PART_SIZE_RANGE[partSize.unit], unit: partSize.unit })
+      : undefined;
+
   const canCompute =
-    servings !== null && (dilutionLevel !== "custom" || customDilutionPercent !== null);
+    servings !== null &&
+    (dilutionLevel !== "custom" || customDilutionPercent !== null) &&
+    (!hasParts || partSizeValue !== null);
 
   const result = useMemo(() => {
     if (!canCompute || servings === null) {
@@ -85,11 +120,23 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
         dilutionLevel,
         customDilutionPercent,
         customSelectedIds,
+        partSize: partSizeValue === null ? null : { value: partSizeValue, unit: partSize.unit },
         locale,
       },
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [canCompute, servings, scope, unit, dilutionLevel, customDilutionPercent, customSelectedIds]);
+  }, [
+    canCompute,
+    ingredients,
+    servings,
+    scope,
+    unit,
+    dilutionLevel,
+    customDilutionPercent,
+    customSelectedIds,
+    partSizeValue,
+    partSize.unit,
+    locale,
+  ]);
 
   if (!hasConvertibleIngredient(ingredients)) {
     return null;
@@ -171,13 +218,23 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
             <Chip
               key={candidate}
               selected={unit === candidate}
-              onSelectedChange={() => setUnit(candidate)}
+              onSelectedChange={() => onUnitChange(candidate)}
             >
               {batchUnitLabel(candidate, locale)}
             </Chip>
           ))}
         </div>
       </div>
+
+      {hasParts && (
+        <Input
+          label={t("partSize", { unit: partSize.unit })}
+          inputMode="decimal"
+          value={partSize.input}
+          onChange={(e) => setPartSize({ input: e.target.value, unit: partSize.unit })}
+          error={partSizeError}
+        />
+      )}
 
       <div className="flex flex-col gap-one">
         <Text variant="label">{t("dilution")}</Text>
@@ -238,16 +295,18 @@ export function BatchPanel({ ingredients }: BatchPanelProps) {
             )}
           </ul>
 
-          {result.noAlcoholNote && (
+          {result.nothingToDiluteNote && (
             <Text variant="bodySmall" muted>
-              {t("noAlcoholNote")}
+              {t("nothingToDiluteNote")}
             </Text>
           )}
 
-          <div className="flex items-center justify-between gap-two border-t border-border pt-two">
-            <Text variant="label">{t("total")}</Text>
-            <Text variant="label">{result.totalDisplayAmount}</Text>
-          </div>
+          {result.totalDisplayAmount !== null && (
+            <div className="flex items-center justify-between gap-two border-t border-border pt-two">
+              <Text variant="label">{t("total")}</Text>
+              <Text variant="label">{result.totalDisplayAmount}</Text>
+            </div>
+          )}
         </div>
       )}
     </Card>

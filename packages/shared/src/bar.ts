@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
-import type { RecognizedUnit } from "./units";
+import { toBarFormUnit, toRecognizedUnit, type BarFormUnit, type RecognizedUnit } from "./units";
 
 export interface Bar {
   id: string;
@@ -31,7 +31,7 @@ export interface BarRecipeIngredient {
   ingredientId: string;
   name: string;
   amountValue: number | null;
-  amountUnit: string | null;
+  amountUnit: BarFormUnit | null;
   sortOrder: number;
 }
 
@@ -314,7 +314,7 @@ function mapHouseRecipes(raw: unknown): BarRecipe[] {
           ingredientId: ingredient.ingredient_id,
           name: ingredient.name,
           amountValue: ingredient.amount_value,
-          amountUnit: ingredient.amount_unit,
+          amountUnit: toBarFormUnit(ingredient.amount_unit),
           sortOrder: ingredient.sort_order,
         }))
       : [],
@@ -363,7 +363,7 @@ export interface CreateBarRecipeInput {
   ingredients: {
     ingredientId: string;
     amountValue: number | null;
-    amountUnit: string | null;
+    amountUnit: BarFormUnit | null;
     sortOrder: number;
   }[];
 }
@@ -626,7 +626,7 @@ export async function fetchQuickBuildRecipeDetail(
     name: ingredient.name,
     measure: ingredient.measure,
     amountValue: ingredient.amount_value,
-    amountUnit: ingredient.amount_unit as RecognizedUnit | null,
+    amountUnit: toRecognizedUnit(ingredient.amount_unit),
   }));
 
   return {
@@ -663,7 +663,7 @@ export async function fetchQuickBuildBarRecipeDetail(
     name: ingredient.name,
     measure: ingredient.measure,
     amountValue: ingredient.amount_value,
-    amountUnit: ingredient.amount_unit as RecognizedUnit | null,
+    amountUnit: toBarFormUnit(ingredient.amount_unit),
   }));
 
   return {

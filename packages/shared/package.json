@@ -25,7 +25,8 @@
     "classify-method-and-aliases": "tsx scripts/classify-method-and-aliases.ts",
     "generate-learn-article": "tsx scripts/generate-learn-article.ts",
     "generate-learn-category-quiz": "tsx scripts/generate-learn-category-quiz.ts",
-    "generate-recipe-quiz": "tsx scripts/generate-recipe-quiz.ts"
+    "generate-recipe-quiz": "tsx scripts/generate-recipe-quiz.ts",
+    "reparse-measures": "tsx scripts/reparse-measures.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

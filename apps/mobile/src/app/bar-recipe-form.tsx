@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
-import { RECOGNIZED_UNITS, type RecognizedUnit } from "@bartendingapp/shared";
+import { BAR_FORM_UNITS, type BarFormUnit } from "@bartendingapp/shared";
 
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -14,13 +14,13 @@ import { useCurrentBar } from "@/service/use-current-bar";
 import { useCreateBarRecipe } from "@/service/use-bar-mutations";
 import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
 
-const UNITS = RECOGNIZED_UNITS;
+const UNITS = BAR_FORM_UNITS;
 
 interface DraftIngredient {
   ingredientId: string;
   name: string;
   amountValue: string;
-  amountUnit: RecognizedUnit;
+  amountUnit: BarFormUnit;
 }
 
 function AddIngredientRow({ onAdd }: { onAdd: (ingredient: DraftIngredient) => void }) {

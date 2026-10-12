@@ -2,6 +2,7 @@
 
 **Date**: 2026-09-14
 **Status**: In Progress
+**Amended by**: [0035](../0035-batch-calculator-correctness/index.md) (parsing rules, recognized units, toggle visibility)
 
 ## Summary
 

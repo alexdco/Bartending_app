@@ -14,10 +14,9 @@ import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
 import { siteAbsoluteUrl } from "@/lib/site-url";
 import { permanentRedirect } from "@/i18n/navigation";
-import { BatchPanel } from "@/recipes/batch-panel";
 import { CommentSection } from "@/comments/comment-section";
-import { IngredientList } from "@/recipes/ingredient-list";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
+import { RecipeMeasures } from "@/recipes/recipe-measures";
 import { buildRecipeJsonLd } from "@/recipes/recipe-json-ld";
 import { RecommendationsSection } from "@/recipe-recommendations/recommendations-section";
 
@@ -130,23 +129,21 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
       <BackButton />
       <RecipeDetailHeader recipe={recipe} />
 
-      <section className="flex flex-col gap-two">
-        <Text variant="heading" as="h2">
-          {t("ingredients")}
-        </Text>
-        <IngredientList ingredients={recipe.ingredients} />
-      </section>
-
-      <section className="flex flex-col gap-two">
-        <Text variant="heading" as="h2">
-          {t("instructions")}
-        </Text>
-        <Text variant="body" className="whitespace-pre-line">
-          {recipe.instructions}
-        </Text>
-      </section>
-
-      <BatchPanel ingredients={recipe.ingredients} />
+      <RecipeMeasures
+        key={recipe.id}
+        ingredients={recipe.ingredients}
+        ingredientsHeading={t("ingredients")}
+        instructions={
+          <section className="flex flex-col gap-two">
+            <Text variant="heading" as="h2">
+              {t("instructions")}
+            </Text>
+            <Text variant="body" className="whitespace-pre-line">
+              {recipe.instructions}
+            </Text>
+          </section>
+        }
+      />
 
       <RecommendationsSection recipeId={recipe.id} recipeName={recipe.name} />
 

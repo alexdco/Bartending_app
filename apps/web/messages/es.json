@@ -202,10 +202,12 @@
     "customDilutionLabel": "Porcentaje de dilución personalizado",
     "customDilutionPlaceholder": "p. ej. 18",
     "customDilutionError": "Ingresa un porcentaje entre 0 y 50.",
+    "partSize": "Tamaño de 1 parte ({unit})",
+    "partSizeError": "Ingresa un tamaño de parte entre {min} y {max} {unit}.",
     "notScaled": "(sin escalar, ajústalo a mano)",
     "uncategorized": "(sin categoría)",
     "water": "Agua",
-    "noAlcoholNote": "Este lote no lleva alcohol, así que no se agrega dilución.",
+    "nothingToDiluteNote": "No hay nada que diluir en este lote.",
     "total": "Total"
   },
   "pantry": {
