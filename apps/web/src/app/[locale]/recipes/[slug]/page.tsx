@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { cache } from "react";
 import { buildOpenGraph } from "@/lib/open-graph";
 import { notFound } from "next/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
@@ -7,6 +8,7 @@ import {
   extractIdFromRecipeSlug,
   fetchRecipeDetail,
   fetchRecipeRedirect,
+  fetchRecipesByIds,
   localizedPath,
   SUPPORTED_LOCALES,
   type Locale,
@@ -27,6 +29,14 @@ interface RecipePageParams {
 }
 
 /**
+ * One detail fetch per recipe and locale per request: `generateMetadata` and
+ * the page share it. The Supabase RPC is a POST, which Next doesn't memoize.
+ */
+const getRecipeDetail = cache((id: string, locale: Locale) =>
+  fetchRecipeDetail(supabasePublic, id, locale),
+);
+
+/**
  * The live recipe for this slug. A hidden duplicate permanently redirects
  * (308) to its kept recipe in the same locale, one hop only; anything else
  * missing is a 404 (spec 0036, AC-2, AC-3).
@@ -37,7 +47,7 @@ async function resolveRecipe(slugParam: string, locale: Locale) {
     notFound();
   }
 
-  const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
+  const recipe = await getRecipeDetail(id, locale);
   if (recipe) {
     return recipe;
   }
@@ -47,9 +57,7 @@ async function resolveRecipe(slugParam: string, locale: Locale) {
     throw new Error(`Recipe redirect lookup failed: ${redirectLookup.error.message}`);
   }
 
-  const target = redirectLookup.data
-    ? await fetchRecipeDetail(supabasePublic, redirectLookup.data, locale)
-    : null;
+  const target = redirectLookup.data ? await getRecipeDetail(redirectLookup.data, locale) : null;
   if (!target) {
     notFound();
   }
@@ -61,8 +69,9 @@ async function resolveRecipe(slugParam: string, locale: Locale) {
   }) as never;
 }
 
+/** The slug in another locale, from the light name lookup rather than a full detail fetch. */
 async function resolveSlugForLocale(id: string, locale: Locale): Promise<string | null> {
-  const recipe = await fetchRecipeDetail(supabasePublic, id, locale);
+  const [recipe] = await fetchRecipesByIds(supabasePublic, [id], locale);
   return recipe ? buildRecipeSlugPath(recipe.id, recipe.name) : null;
 }
 
