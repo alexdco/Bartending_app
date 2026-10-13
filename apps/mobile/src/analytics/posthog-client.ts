@@ -1,4 +1,7 @@
+import * as Updates from "expo-updates";
 import PostHog from "posthog-react-native";
+
+import { resolveAppChannel } from "./app-channel";
 
 let client: PostHog | null = null;
 
@@ -20,6 +23,10 @@ export function initAnalytics(): void {
       host: apiHost,
       captureAppLifecycleEvents: false,
       personProfiles: "identified_only",
+    });
+    // Tags every event with the build's update channel (spec 0040, AC-9).
+    client.register({ app_channel: resolveAppChannel(Updates.channel) }).catch((error) => {
+      console.error("Failed to register the app channel", error);
     });
   } catch (error) {
     console.error("Failed to initialize PostHog", error);

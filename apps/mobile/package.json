@@ -15,6 +15,7 @@
     "expo": "~57.0.20",
     "expo-constants": "~57.0.17",
     "expo-crypto": "~57.0.3",
+    "expo-dev-client": "~57.0.20",
     "expo-device": "~57.0.1",
     "expo-font": "~57.0.3",
     "expo-glass-effect": "~57.0.1",
@@ -29,6 +30,7 @@
     "expo-status-bar": "~57.0.1",
     "expo-symbols": "~57.0.2",
     "expo-system-ui": "~57.0.3",
+    "expo-updates": "~57.0.26",
     "expo-web-browser": "~57.0.2",
     "i18next": "^26.4.2",
     "posthog-react-native": "^4.67.0",
@@ -51,13 +53,21 @@
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
+    "start": "expo start --dev-client",
     "reset-project": "node ./scripts/reset-project.js",
     "android": "expo start --android",
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "eas-build-post-install": "node scripts/check-public-env.mjs",
+    "build:dev": "eas build --profile development --platform all",
+    "build:dev:sim": "eas build --profile development-simulator --platform ios",
+    "build:preview": "eas build --profile preview --platform all",
+    "build:preview:android": "eas build --profile preview --platform android",
+    "build:prod": "eas build --profile production --platform all --auto-submit",
+    "update:preview": "eas env:exec preview \"node scripts/check-public-env.mjs\" && eas update --channel preview --environment preview",
+    "update:prod": "eas env:exec production \"node scripts/check-public-env.mjs\" && eas update --channel production --environment production"
   },
   "private": true
 }

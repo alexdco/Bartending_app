@@ -4,8 +4,13 @@ packages:
 overrides:
   "@supabase/supabase-js": "^2.45.0"
 allowBuilds:
-  '@parcel/watcher': true
-  '@swc/core': true
+  "@parcel/watcher": true
+  "@swc/core": true
   core-js: true
   esbuild: true
   unrs-resolver: true
+minimumReleaseAgeExclude:
+  - expo-dev-client@57.0.20
+  - expo-dev-launcher@57.0.21
+  - expo-dev-menu@57.0.20
+  - expo-updates@57.0.26

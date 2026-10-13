@@ -7,3 +7,7 @@ dist/
 .DS_Store
 *.log
 .idea/
+
+# EAS signing and store keys live in EAS, never in the repo (spec 0040, AC-12)
+credentials.json
+apps/mobile/credentials/
