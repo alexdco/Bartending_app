@@ -54,11 +54,12 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 41 | Finish Spanish UI translation | Hardening | in-progress |
 | 42 | Batch calculator correctness | Hardening | in-progress |
 | 43 | Shopping list follow ups | Hardening | done |
-| 44 | Recipe catalog cleanup | Hardening | planned |
-| 45 | Brand, metadata, and launch readiness | Hardening | planned |
-| 46 | Empty states, UX polish, and accessibility | Hardening | planned |
-| 47 | Recipe page performance | Hardening | planned |
-| 48 | Repo hygiene | Hardening | planned |
+| 44 | Recipe catalog cleanup | Hardening | in-progress |
+| 45 | Brand, metadata, and launch readiness | Hardening | in-progress |
+| 46 | Empty states, UX polish, and accessibility | Hardening | in-progress |
+| 47 | Recipe page performance | Hardening | in-progress |
+| 48 | Repo hygiene | Hardening | in-progress |
+| 49 | EAS build and submit setup | Hardening | in-progress |
 
 ## Foundations
 
@@ -648,30 +649,79 @@ Review findings on feature 33: `fetch_shopping_list_items` has no `order by`, so
 - [x] Build it: `/develop shopping list follow ups` (built 2026-10-11 on `feat/shopping-list-follow-ups`: stable oldest first order in `fetch_shopping_list_items`, "In your pantry" marker in the add search on web and mobile, pantry and shopping list queries wait for a session, 12 vitest cases for `shoppingList.ts`. `supabase/migrations/20261011150000_shopping_list_stable_order.sql` is live on `BartendingAppWeb`, checked 2026-10-11)
 - code in `supabase/migrations/20261011150000_shopping_list_stable_order.sql`, `packages/shared/src/shoppingList.test.ts`, `apps/web/src/shopping-list/`, `apps/web/src/pantry/use-pantry.ts`, `apps/mobile/src/app/shopping-list.tsx`, `apps/mobile/src/shopping-list/`, `apps/mobile/src/pantry/use-pantry.ts`
 
-### 44. Recipe catalog cleanup · needs a decision
+### 44. Recipe catalog cleanup · in-progress
 Inherited TheCocktailDB data problems: duplicates and misspellings ("Cuba Libra" and "Cuba Libre", "Holloween Punch" and "Halloween Punch"), crude names that are indexed and searchable, instructions that mention unlisted ingredients (Americano's soda water), odd casing ("red Sweet Vermouth", "Highball Glass"), and ice (and probably water) offered as "Add to pantry".
 **Done when:** a decided policy for duplicates and crude names (keep, rename, or hide) is applied, a cleanup pass flags instructions naming unlisted ingredients, glass names are consistently cased, and ice and water are excluded from pantry and shopping list actions.
-- [ ] Design it (spec): `/architect recipe catalog cleanup`
+- [x] Design it (spec): `/architect recipe catalog cleanup`
+- [ ] Build it: `/develop recipe catalog cleanup` (code built 2026-10-12 on `feat/recipe-catalog-cleanup`; migration `20261012120000_catalog_cleanup.sql` live on `BartendingAppWeb`, checked 2026-10-12; fix pass drafted in `catalogOverrides.json`; `supabase/tests/catalog_cleanup_check.sql` all 12 PASS on 2026-10-12; waiting on deploy, live import, and rerun)
+  - [ ] Migration plus overrides file, import validation and dry run, and the web redirect proven end to end on Cuba Libra, satisfies AC-1, AC-2, AC-4, AC-12
+  - [ ] All 10 hides, the soft delete checklist, favorites and pins moved, and the mobile redirect, satisfies AC-1, AC-2, AC-3, AC-5
+  - [x] Shared glass and ingredient casing applied in the catalog import, the custom recipes import, and admin saves, satisfies AC-4, AC-6, AC-7
+  - [ ] Ice and Water as staples: flag, matching, hidden buttons, `includeStaples` search option, satisfies AC-10, AC-11, AC-13
+  - [ ] Unlisted ingredient report, fix pass, and live rollout ending with a rerun that changes nothing, satisfies AC-4, AC-8, AC-9
+- [ ] Verify it: `/check verify recipe catalog cleanup`
+- [ ] Test it: `/test recipe catalog cleanup`
+Spec [0036](../specs/0036-recipe-catalog-cleanup/index.md) · code in `supabase/migrations`, `packages/import-job`, `packages/shared`, `apps/web`, `apps/mobile`
 
-### 45. Brand, metadata, and launch readiness · needs a decision
+### 45. Brand, metadata, and launch readiness · in-progress
 Most pages share the title "Bartending App" and one description while the header says "Cocktailist". There's no age gate or responsible drinking notice (alcohol apps usually need a 17+ rating) and no web app manifest.
 **Done when:** one product name is used everywhere, each page has its own title and description, an age confirmation (or a decided alternative) meets app store expectations, and a web manifest with icon and name is served.
-- [ ] Design it (spec): `/architect brand, metadata, and launch readiness`
+- [x] Design it (spec): `/architect brand, metadata, and launch readiness`
+- [x] Build it: `/develop brand, metadata, and launch readiness` (built 2026-10-12 on `feat/brand-metadata-launch-readiness`; web gate proven in Chromium on dev and a production build, 29 checks; every route titled in en and es; manifest installable in Chrome. Mobile typechecks and Expo resolves the new config, but the gate, splash, and `cocktailist://` reset link have not run on a device yet. The learn article description waits on spec 0033's `summary` column)
+  - [x] Thin thread: shared brand and age gate modules, title template, the Cocktailist swap, `#app-content` wrapper and gate store, and a minimal gate on web and mobile, satisfies AC-1, AC-2, AC-9, AC-10, AC-11, AC-13
+  - [x] Gate hardening: exempt routes, storage fallback, consent banner and mobile PostHog held until confirmed, accessibility, responsible drinking notices, en/es copy, satisfies AC-11, AC-12, AC-14, AC-15, AC-16, AC-17
+  - [x] Icon pipeline and mobile identity: `pnpm icons` from one SVG, every web and Expo asset, bundle ID, scheme, splash, template asset cleanup, satisfies AC-7, AC-8
+  - [x] Manifest, share card, and metadata coverage: `manifest.ts`, `opengraph-image.tsx`, `buildOpenGraph`, a title on every route and a description on every indexable one, satisfies AC-1, AC-2, AC-3, AC-4, AC-5, AC-6
+- [ ] Verify it: `/check verify brand, metadata, and launch readiness`
+- [ ] Test it: `/test brand, metadata, and launch readiness`
+Spec [0037](../specs/0037-brand-metadata-launch-readiness/index.md) · code in `packages/shared`, `apps/web`, `apps/mobile`, `assets/brand`, `scripts/generate-icons.mjs`, `scripts/brand.test.ts` · manual launch steps in the spec's _Launch checklist_
 
-### 46. Empty states, UX polish, and accessibility · needs a decision
+### 46. Empty states, UX polish, and accessibility · in-progress
 New visitors hit thin pages: Popular says regions "haven't been tagged yet", Drink ideas shows only a heading, home pantry and recommendation sections are empty, and `/en/service` renders nothing. Rating stars show filled beside "No ratings yet". Back buttons need a fallback when there's no history. Recipe images have empty alt text, and the favorite button needs an `aria-label` and `aria-pressed`. Search defaults to A to Z ("A. J.", "A1", "ABC"); deciding on a popular first default is the open call.
 **Done when:** every empty page offers a next step (e.g. "Add a few ingredients to get ideas"), Service shows content or a clear state, ratings display reads correctly, Back always goes somewhere sensible, images and the favorite button are labeled for screen readers, and the search default order is decided and applied.
-- [ ] Design it (spec): `/architect empty states, UX polish, and accessibility`
+- [x] Design it (spec): `/architect empty states, UX polish, and accessibility`
+- [ ] Build it: `/develop empty states, UX polish, and accessibility`
+  - [ ] Thin thread on fame data: popularity migration (codify columns, `search_recipes` fame order, `classic_recipes`, locked down `apply_region_proposals`), fame for every recipe in the tagging scripts, tagging run and top 50 spot check, classics row on web and mobile, Popular empty states, satisfies AC-1, AC-2, AC-3, AC-4, AC-15
+  - [x] Empty and loading states: Drink ideas skips matching on an empty pantry, Service spinner and error with Retry, zero ratings without stars and a single rating label, satisfies AC-5, AC-6, AC-7, AC-15
+  - [x] Back fallback on web (depth counter of real history pushes, per page parent routes) and the mobile Bartender build fallback, satisfies AC-8
+  - [x] Labels, card structure, and keyboard: hero alt, favorite beside the card link with a fixed name, mobile row labels, skip link, nav focus styles, jsx-a11y lint, satisfies AC-9, AC-10, AC-11, AC-12, AC-13, AC-14, AC-15
+- [ ] Verify it: `/check verify empty states, UX polish, and accessibility`
+- [ ] Test it: `/test empty states, UX polish, and accessibility`
+Spec [0038](../specs/0038-empty-states-ux-accessibility/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
-### 47. Recipe page performance
+### 47. Recipe page performance · in-progress
 Each recipe request fetches the recipe three times (`generateMetadata`, other locale alternates, the page). Hero images were requested at `w=3840`; commit `9bb462d` corrected the `sizes` hint, which still needs confirming in production.
 **Done when:** a recipe request fetches the recipe once per locale (`fetchRecipeDetail` wrapped in React `cache()`, only the other locale's slug fetched for alternates), and production hero images are requested at a phone sized width on phones.
-- [ ] Build it: `/develop recipe page performance`
+- [ ] Build it: `/develop recipe page performance` (built 2026-10-12 on `feat/recipe-page-performance`; in dev a recipe request now makes one `fetch_recipe_detail` call plus one light `fetch_recipes_by_ids` name lookup for the other locale, down from three detail calls, in en and es. Hero `sizes` checked locally (a 3x phone picks 1200w); still owes a check on the production site)
+  - [x] `getRecipeDetail` wrapped in React `cache()`, shared by `generateMetadata` and the page; alternates use the light name lookup
+  - [ ] Production hero images requested at a phone sized width on phones
+- code in `apps/web/src/app/[locale]/recipes/[slug]/page.tsx`, `apps/web/src/recipes/recipe-detail-header.tsx`
 
-### 48. Repo hygiene
+### 48. Repo hygiene · in-progress
 Debug captures are committed at the repo root (`.home.html`, `.search.html`, `.negroni.html`, `.noimg.html`, `.noimg2.html`, `.popular.html`, `.404.html`, `.sitemap.xml`). Skills are duplicated in `.agents/skills/` and `.claude/skills/` and will drift. CI is still missing (tracked under feature 2).
 **Done when:** the captures are deleted and ignored, skills live in one place, and feature 2's CI workflow exists.
+- [x] Design it (spec): `/architect repo hygiene`
 - [ ] Build it: `/develop repo hygiene`
+  - [ ] Base branch and CI: `main` created at `7200f44` and made the GitHub default (manual), clean checkout dry run, `.nvmrc` 24, and a green `ci.yml` that goes red on failure, satisfies AC-6, AC-7, AC-8, AC-9
+  - [ ] Captures removed and `.debug/` plus root dot html and xml ignored, satisfies AC-1, AC-2
+  - [ ] Skills consolidated in `.claude/skills/`, `.agents/` ignored, and the four `AGENTS.md` link sets repointed via `/sync`, satisfies AC-3, AC-4, AC-5
+- [ ] Verify it: `/check verify repo hygiene`
+- [ ] Test it: `/test repo hygiene`
+Spec [0039](../specs/0039-repo-hygiene.md) · code in `.github/workflows/`, `.gitignore`, `.nvmrc`, `package.json`, `.claude/skills/`
+
+### 49. EAS build and submit setup · in-progress · from spec 0037
+The mobile app has no `eas.json`, so no store build can be made. Needs development, preview, and production profiles, version auto increment, and an EAS project linked to the `cocktailist` slug from feature 45.
+**Done when:** `eas build --profile production` produces signed iOS and Android builds, and `eas submit` can upload them.
+- [x] Design it (spec): `/architect EAS build and submit setup`
+- [ ] Build it: `/develop EAS build and submit setup` (repo side built 2026-10-12 on `feat/eas-build-submit-setup`: `eas.json` with all four profiles and channels, `expo-updates` with the fingerprint runtime, `expo-dev-client`, the `check-public-env.mjs` build hook, gitignore backstops, the `app_channel` super property, and the build and update scripts; typecheck and 508 tests green. Waiting on the Expo account steps: org, `eas init`, `eas env:create`, `eas update:configure`, and the first builds on a phone)
+  - [ ] Android tracer with no store accounts: Expo org and `eas init`, `eas.json` preview and production profiles, EAS environment variables plus `eas env:pull`, the build hook env check, gitignore backstops, and a working preview APK plus incrementing production `versionCode`, satisfies AC-1, AC-3a, AC-4, AC-5, AC-6, AC-10, AC-12
+  - [ ] Over the air updates: `expo-updates` with fingerprint runtime and per profile channels, a preview update landing on device, and the `app_channel` PostHog super property, satisfies AC-7, AC-8, AC-9
+  - [ ] Development client: `expo-dev-client`, `development` and `development-simulator` profiles, `start` on `--dev-client`, satisfies AC-2
+  - [ ] iOS and store submit: both store accounts and app records, first iOS builds, manual first Play upload, service account and App Store Connect API key in EAS, `build:prod` auto submitting to TestFlight and Play internal, store forms answered, satisfies AC-2, AC-3b, AC-4, AC-11, AC-14
+  - [x] `build:*` and `update:*` scripts in `apps/mobile/package.json` (plus `build:preview:android`, since `eas` rejects a second `--platform`), satisfies AC-6, AC-13
+- [ ] Verify it: `/check verify EAS build and submit setup`
+- [ ] Test it: `/test EAS build and submit setup`
+Spec [0040](../specs/0040-eas-build-submit-setup/index.md) · code in `apps/mobile/eas.json`, `apps/mobile/app.json`, `apps/mobile/package.json`, `apps/mobile/scripts/`, `apps/mobile/src/analytics/`, `.gitignore`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
@@ -689,6 +739,15 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Batch range measures**: batch `2-3 oz` using `amount_max_value` (feature 42) · needs a decision · from spec 0035
 - **Method based dilution default**: stirred, shaken, and built drinks get different default dilution (feature 42) · needs a decision · from spec 0035
 - **Import job vs admin edits**: the catalog import can overwrite admin edits to a catalog recipe; decide which wins (feature 42) · needs a decision · from spec 0035
+- **Staples in AI drink ideas**: tell the drink ideas prompt that Ice and Water are always on hand (feature 44) · needs a decision · from spec 0036
+- **Aliases for merged duplicates**: add a hidden duplicate's name (e.g. "Long Island Tea") as a `recipe_aliases` entry on the kept recipe for bartender search (feature 44) · needs a decision · from spec 0036
+- **Store listing copy**: store title, subtitle, keywords, and description in English and Spanish (feature 45) · from spec 0037
+- **Designed app icon**: a commissioned icon plus an iOS Icon Composer `.icon`, dropped in as `assets/brand/mark.svg` (feature 45) · from spec 0037
+- **Fame scores for new recipes**: catalog imports and admin adds arrive with no fame score and sort last; flag them or run `tag-regions` periodically (feature 46) · needs a decision · from spec 0038
+- **Search sort control**: a "Popular / A to Z" toggle if people miss alphabetical browsing (feature 46) · needs a decision · from spec 0038
+- **Automated accessibility checks**: Playwright plus `@axe-core/playwright` on key pages once CI exists (features 2, 46) · needs a decision · from spec 0038
+- **Mobile accessibility lint**: no jsx-a11y equivalent runs on mobile; revisit if a maintained React Native plugin fits Expo's config (feature 46) · needs a decision · from spec 0038
+- **Mocktails only mode**: let under age visitors in with alcoholic recipes hidden everywhere, if the age gate's drop off proves costly (feature 45) · needs a decision · from spec 0037
 
 ## Legend
 
