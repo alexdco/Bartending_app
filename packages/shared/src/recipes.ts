@@ -119,6 +119,8 @@ export interface RecipeDetail {
    */
   flavorProfile: string[];
   isFavorited: boolean;
+  /** Imported from TheCocktailDB (not custom or admin): show its credit (spec 0041 AC-14). */
+  isCocktailDbRecipe: boolean;
 }
 
 interface RecipeDetailIngredientRow {
@@ -172,6 +174,7 @@ export async function fetchRecipeDetail(
     ingredients,
     flavorProfile: data.taste_tags ?? [],
     isFavorited: data.is_favorited,
+    isCocktailDbRecipe: data.is_cocktaildb_recipe,
   };
 }
 

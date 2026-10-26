@@ -1421,6 +1421,7 @@ export type Database = {
           image_url: string;
           ingredients: Json;
           instructions: string;
+          is_cocktaildb_recipe: boolean;
           is_favorited: boolean;
           method: string;
           name: string;

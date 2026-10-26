@@ -116,5 +116,8 @@
   },
   "favorites": {
     "toggleLabel": "Marcar {{name}} como favorito"
+  },
+  "recipe": {
+    "cocktailDbCredit": "Receta e imagen de TheCocktailDB"
   }
 }

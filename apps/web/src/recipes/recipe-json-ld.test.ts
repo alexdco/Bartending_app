@@ -16,6 +16,7 @@ const recipe: RecipeDetail = {
   ingredients: [],
   flavorProfile: [],
   isFavorited: false,
+  isCocktailDbRecipe: true,
 };
 
 describe("buildRecipeJsonLd", () => {

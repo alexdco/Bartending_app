@@ -170,6 +170,7 @@
     "ingredients": "Ingredients",
     "instructions": "Instructions",
     "flavorProfile": "Flavor profile",
+    "cocktailDbCredit": "Recipe and image from TheCocktailDB",
     "unit": "Unit",
     "missingIngredients": "{remaining, plural, =0 {Missing: {names}} other {Missing: {names} +# more}}",
     "inPantry": "In pantry",

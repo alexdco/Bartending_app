@@ -9,7 +9,7 @@ import { FavoriteToggle } from "@/favorites/favorite-toggle";
 import { useAddFavorite, useRemoveFavorite } from "@/favorites/use-favorite-mutations";
 import { RecipeRating } from "@/ratings/recipe-rating";
 import { alcoholicStatusKey } from "./format";
-import type { RecipeDetail } from "@bartendingapp/shared";
+import { THECOCKTAILDB_CREDIT_URL, type RecipeDetail } from "@bartendingapp/shared";
 
 export interface RecipeDetailHeaderProps {
   recipe: RecipeDetail;
@@ -17,6 +17,7 @@ export interface RecipeDetailHeaderProps {
 
 export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
   const tStatus = useTranslations("alcoholicStatus");
+  const tRecipe = useTranslations("recipe");
   const addFavorite = useAddFavorite();
   const removeFavorite = useRemoveFavorite();
   const [isFavorited, setIsFavorited] = useState(recipe.isFavorited);
@@ -56,6 +57,18 @@ export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
         {recipe.glass && <Chip>{recipe.glass}</Chip>}
       </div>
       <RecipeRating recipeId={recipe.id} />
+      {recipe.isCocktailDbRecipe && (
+        <Text variant="bodySmall" muted>
+          <a
+            href={THECOCKTAILDB_CREDIT_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="underline hover:text-text"
+          >
+            {tRecipe("cocktailDbCredit")}
+          </a>
+        </Text>
+      )}
     </header>
   );
 }
