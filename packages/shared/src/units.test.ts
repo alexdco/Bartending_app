@@ -3,6 +3,8 @@ import {
   convertAmount,
   formatOunces,
   parseMeasure,
+  splitIngredientLine,
+  splitIngredientLines,
   toBarFormUnit,
   toMl,
   toRecognizedUnit,
@@ -100,5 +102,40 @@ describe("toRecognizedUnit (spec 0035 AC-12)", () => {
     expect(toBarFormUnit("cup")).toBe("cup");
     expect(toBarFormUnit("part")).toBeNull();
     expect(toBarFormUnit("shot")).toBeNull();
+  });
+});
+
+describe("splitIngredientLine", () => {
+  it.each([
+    ["½ oz RumChata", "½ oz", "RumChata"],
+    ["1 1/2 oz Gin", "1 1/2 oz", "Gin"],
+    ["1½ oz Vanilla Vodka", "1½ oz", "Vanilla Vodka"],
+    ["30 ml Lime juice", "30 ml", "Lime juice"],
+    ["1 fl oz Cream", "1 fl oz", "Cream"],
+    ["2 dashes Angostura bitters", "2 dashes", "Angostura bitters"],
+    ["1 oz of gin", "1 oz", "gin"],
+    ["- 2 oz Bourbon", "2 oz", "Bourbon"],
+    ["2 Eggs", "2", "Eggs"],
+  ])("splits %j", (line, measure, name) => {
+    expect(splitIngredientLine(line)).toEqual({ measure, name });
+  });
+
+  it("keeps a line with no leading number as the name", () => {
+    expect(splitIngredientLine("Soda water, to top")).toEqual({
+      measure: null,
+      name: "Soda water, to top",
+    });
+  });
+});
+
+describe("splitIngredientLines", () => {
+  it("splits pasted text into one entry per non blank line", () => {
+    const pasted =
+      "½ oz RumChata\r\n\r\n½ oz Domaine de Canton Ginger Liqueur\n\n½ oz Vanilla Vodka\n";
+    expect(splitIngredientLines(pasted)).toEqual([
+      { measure: "½ oz", name: "RumChata" },
+      { measure: "½ oz", name: "Domaine de Canton Ginger Liqueur" },
+      { measure: "½ oz", name: "Vanilla Vodka" },
+    ]);
   });
 });

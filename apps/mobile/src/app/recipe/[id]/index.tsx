@@ -10,6 +10,7 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { CommentSection } from "@/comments/comment-section";
+import { FlavorProfileSection } from "@/recipes/flavor-profile-section";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { RecipeMeasures } from "@/recipes/recipe-measures";
 import { useRecipeDetail } from "@/recipes/use-recipe-detail";
@@ -74,6 +75,8 @@ export default function RecipeDetailScreen() {
       <ScrollView contentContainerStyle={styles.content}>
         <BackButton />
         <RecipeDetailHeader recipe={recipe} />
+
+        <FlavorProfileSection flavors={recipe.flavorProfile} />
 
         <RecipeMeasures key={recipe.id} ingredients={recipe.ingredients} />
 

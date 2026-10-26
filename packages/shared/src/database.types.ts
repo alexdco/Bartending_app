@@ -1005,6 +1005,7 @@ export type Database = {
           difficulty: string | null;
           difficulty_source_name_hash: string | null;
           fame_score: number | null;
+          flavor_profile_locked: boolean;
           glass: string | null;
           iba: string | null;
           id: string;
@@ -1029,6 +1030,7 @@ export type Database = {
           difficulty?: string | null;
           difficulty_source_name_hash?: string | null;
           fame_score?: number | null;
+          flavor_profile_locked?: boolean;
           glass?: string | null;
           iba?: string | null;
           id?: string;
@@ -1053,6 +1055,7 @@ export type Database = {
           difficulty?: string | null;
           difficulty_source_name_hash?: string | null;
           fame_score?: number | null;
+          flavor_profile_locked?: boolean;
           glass?: string | null;
           iba?: string | null;
           id?: string;
@@ -1310,6 +1313,7 @@ export type Database = {
       admin_upsert_recipe: {
         Args: {
           p_alcoholic_status: string;
+          p_flavor_profile?: string[];
           p_glass: string;
           p_image_url: string;
           p_ingredients: Json;

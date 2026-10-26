@@ -2,7 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { fetchAdminGlassNames, fetchAdminTagNames, searchIngredients } from "@bartendingapp/shared";
+import {
+  fetchAdminFlavorNames,
+  fetchAdminGlassNames,
+  fetchAdminTagNames,
+  searchIngredients,
+} from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 
 const INGREDIENT_SUGGESTION_LIMIT = 10;
@@ -15,6 +20,8 @@ export function adminIngredientSuggestionsQueryKey(query: string) {
 export const adminGlassNamesQueryKey = ["recipes", "admin-glass-names"] as const;
 
 export const adminTagNamesQueryKey = ["tags", "admin-names"] as const;
+
+export const adminFlavorNamesQueryKey = ["tags", "admin-flavor-names"] as const;
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -59,6 +66,14 @@ export function useAdminTagNames() {
   return useQuery({
     queryKey: adminTagNamesQueryKey,
     queryFn: () => fetchAdminTagNames(supabase),
+    staleTime: 5 * 60 * 1000,
+  });
+}
+
+export function useAdminFlavorNames() {
+  return useQuery({
+    queryKey: adminFlavorNamesQueryKey,
+    queryFn: () => fetchAdminFlavorNames(supabase),
     staleTime: 5 * 60 * 1000,
   });
 }

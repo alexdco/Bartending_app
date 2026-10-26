@@ -107,7 +107,9 @@ export function Carousel({ title, seeMoreHref, children }: CarouselProps) {
         <div
           ref={trackRef}
           onScroll={updateScrollState}
-          className="no-scrollbar flex snap-x snap-mandatory gap-three overflow-x-auto"
+          // overflow-x-auto clips both axes, so the padding (cancelled by the
+          // negative margin) leaves room for a hover grown RecipeCard.
+          className="no-scrollbar -mx-three -my-three flex snap-x snap-mandatory scroll-px-three gap-three overflow-x-auto px-three py-three"
         >
           {children}
         </div>

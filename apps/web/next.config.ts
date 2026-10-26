@@ -16,6 +16,18 @@ const nextConfig: NextConfig = {
         hostname: "ctuzjhhpnkkhooneporu.supabase.co",
         pathname: "/storage/v1/object/public/comment-photos/**",
       },
+      {
+        protocol: "https",
+        hostname: "imgur.com",
+        port: "",
+        pathname: "/**",
+      },
+      {
+        protocol: "https",
+        hostname: "i.imgur.com",
+        port: "",
+        pathname: "/**",
+      },
     ],
   },
 };

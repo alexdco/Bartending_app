@@ -113,6 +113,11 @@ export interface RecipeDetail {
   alcoholicStatus: string;
   glass: string | null;
   ingredients: RecipeIngredientDetail[];
+  /**
+   * Flavor profile: the recipe's taste tags (tags.kind = 'taste'), already
+   * localized and sorted by the RPC. Empty until classify-recipes has run.
+   */
+  flavorProfile: string[];
   isFavorited: boolean;
 }
 
@@ -165,6 +170,7 @@ export async function fetchRecipeDetail(
     alcoholicStatus: data.alcoholic_status,
     glass: data.glass,
     ingredients,
+    flavorProfile: data.taste_tags ?? [],
     isFavorited: data.is_favorited,
   };
 }

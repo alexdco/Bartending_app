@@ -35,8 +35,11 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
   // card so all of it stays clickable, and draws the card's focus ring. The
   // favorite toggle is a sibling of the link (never inside it) and sits above
   // the overlay with z-10; any other interactive child added later must too.
+  // Hover grow: scales up and lifts above its neighbours (z-20). Tailwind's
+  // hover variant only fires on hover capable pointers, and motion-safe skips
+  // it under prefers-reduced-motion. Keyboard focus gets the same lift.
   return (
-    <Card className="relative flex flex-col gap-two">
+    <Card className="relative flex flex-col gap-two transition-[transform,box-shadow] duration-200 ease-out motion-safe:hover:z-20 motion-safe:hover:scale-105 motion-safe:hover:shadow-xl motion-safe:focus-within:z-20 motion-safe:focus-within:scale-105 motion-safe:focus-within:shadow-xl">
       <div className="relative aspect-square w-full overflow-hidden rounded-small">
         <Image
           src={recipe.imageUrl ?? "/recipe-placeholder.svg"}

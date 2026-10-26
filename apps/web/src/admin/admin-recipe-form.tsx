@@ -5,6 +5,8 @@ import { useTranslations } from "next-intl";
 import {
   ADMIN_ALCOHOLIC_STATUSES,
   saveAdminRecipe,
+  splitIngredientLines,
+  splitNameList,
   type AdminAlcoholicStatus,
   type AdminRecipeDetail,
   type AdminRecipeFormIngredient,
@@ -18,6 +20,7 @@ import { Input } from "@/components/input";
 import { Text } from "@/components/text";
 import { alcoholicStatusKey } from "@/recipes/format";
 import {
+  useAdminFlavorNames,
   useAdminGlassNames,
   useAdminIngredientSuggestions,
   useAdminTagNames,
@@ -46,6 +49,18 @@ function errorFor(
   }
 }
 
+function flavorKey(flavors: readonly AdminRecipeFormTag[]): string {
+  const names = flavors.map((f) => f.name.trim().toLowerCase()).filter((n) => n.length > 0);
+  return [...new Set(names)].sort().join("|");
+}
+
+function sameFlavorNames(
+  a: readonly AdminRecipeFormTag[],
+  b: readonly AdminRecipeFormTag[],
+): boolean {
+  return flavorKey(a) === flavorKey(b);
+}
+
 export interface AdminRecipeFormProps {
   /** Pass an existing recipe to pre fill the form for editing; omit to create. */
   existingRecipe?: AdminRecipeDetail;
@@ -70,6 +85,9 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   const [tags, setTags] = useState<AdminRecipeFormTag[]>(
     existingRecipe?.tags.length ? existingRecipe.tags : [{ name: "" }],
   );
+  const [flavorProfile, setFlavorProfile] = useState<AdminRecipeFormTag[]>(
+    existingRecipe?.flavorProfile.length ? existingRecipe.flavorProfile : [{ name: "" }],
+  );
   const [errors, setErrors] = useState<AdminRecipeValidationError[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -78,11 +96,58 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   const ingredientListId = useId();
   const glassListId = useId();
   const tagListId = useId();
+  const flavorListId = useId();
   const activeIngredientQuery =
     activeIngredientIndex === null ? "" : (ingredients[activeIngredientIndex]?.name ?? "");
   const { data: ingredientSuggestions = [] } = useAdminIngredientSuggestions(activeIngredientQuery);
   const { data: glassNames = [] } = useAdminGlassNames();
   const { data: tagNames = [] } = useAdminTagNames();
+  const { data: flavorNames = [] } = useAdminFlavorNames();
+
+  /**
+   * Pasting a list ("½ oz RumChata" per line) fills one row per line,
+   * replacing the row pasted into. A single line fills that row's name and
+   * measure only when it has both; anything else pastes as plain text.
+   */
+  function handleIngredientPaste(index: number, event: React.ClipboardEvent<HTMLInputElement>) {
+    const lines = splitIngredientLines(event.clipboardData.getData("text"));
+    const fillsRows =
+      lines.length > 1 ||
+      (lines.length === 1 && lines[0].measure !== null && lines[0].name.length > 0);
+
+    if (!fillsRows) return;
+
+    event.preventDefault();
+    const pasted = lines.map((line) => ({ name: line.name, measure: line.measure ?? "" }));
+    setIngredients((current) => [
+      ...current.slice(0, index),
+      ...pasted,
+      ...current.slice(index + 1),
+    ]);
+  }
+
+  /**
+   * Pasting a list of names (one per line or comma separated) into a tag or
+   * flavor field fills one row per name, replacing the row pasted into. A
+   * single name pastes as plain text.
+   */
+  function handleNameListPaste(
+    rows: AdminRecipeFormTag[],
+    setRows: (next: AdminRecipeFormTag[]) => void,
+    index: number,
+    event: React.ClipboardEvent<HTMLInputElement>,
+  ) {
+    const names = splitNameList(event.clipboardData.getData("text"));
+
+    if (names.length < 2) return;
+
+    event.preventDefault();
+    setRows([
+      ...rows.slice(0, index),
+      ...names.map((name) => ({ name })),
+      ...rows.slice(index + 1),
+    ]);
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -99,6 +164,11 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
       region: region || null,
       ingredients,
       tags,
+      // Unchanged means "leave it to the classifier": null doesn't replace or
+      // lock the recipe's flavor profile.
+      flavorProfile: sameFlavorNames(flavorProfile, existingRecipe?.flavorProfile ?? [])
+        ? null
+        : flavorProfile,
     });
 
     setIsSaving(false);
@@ -201,6 +271,9 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
 
       <div className="flex flex-col gap-two">
         <Text variant="label">{t("ingredients")}</Text>
+        <Text variant="bodySmall" muted>
+          {t("ingredientsPasteHint")}
+        </Text>
         {errorFor(t, errors, "ingredients") && (
           <span role="alert" className="text-body-small text-danger">
             {errorFor(t, errors, "ingredients")}
@@ -214,6 +287,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
               list={ingredientListId}
               autoComplete="off"
               onFocus={() => setActiveIngredientIndex(index)}
+              onPaste={(event) => handleIngredientPaste(index, event)}
               onChange={(event) => {
                 const next = [...ingredients];
                 next[index] = { ...next[index], name: event.target.value };
@@ -224,6 +298,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
             <Input
               label={t("measure")}
               value={ingredient.measure ?? ""}
+              onPaste={(event) => handleIngredientPaste(index, event)}
               onChange={(event) => {
                 const next = [...ingredients];
                 next[index] = { ...next[index], measure: event.target.value };
@@ -257,13 +332,63 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
       </div>
 
       <div className="flex flex-col gap-two">
+        <Text variant="label">{t("flavorProfile")}</Text>
+        <Text variant="bodySmall" muted>
+          {t("flavorProfileHint")}
+        </Text>
+        {flavorProfile.map((flavor, index) => (
+          <div key={index} className="flex gap-two">
+            <Input
+              label={t("flavorName")}
+              value={flavor.name}
+              list={flavorListId}
+              onPaste={(event) =>
+                handleNameListPaste(flavorProfile, setFlavorProfile, index, event)
+              }
+              autoComplete="off"
+              onChange={(event) => {
+                const next = [...flavorProfile];
+                next[index] = { name: event.target.value };
+                setFlavorProfile(next);
+              }}
+              className="flex-1"
+            />
+            <Button
+              type="button"
+              variant="secondary"
+              onClick={() => setFlavorProfile(flavorProfile.filter((_, i) => i !== index))}
+            >
+              {tCommon("remove")}
+            </Button>
+          </div>
+        ))}
+        <datalist id={flavorListId}>
+          {flavorNames.map((flavorName) => (
+            <option key={flavorName} value={flavorName} />
+          ))}
+        </datalist>
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={() => setFlavorProfile([...flavorProfile, { name: "" }])}
+          className="self-start"
+        >
+          {t("addFlavor")}
+        </Button>
+      </div>
+
+      <div className="flex flex-col gap-two">
         <Text variant="label">{t("tags")}</Text>
+        <Text variant="bodySmall" muted>
+          {t("namesPasteHint")}
+        </Text>
         {tags.map((tag, index) => (
           <div key={index} className="flex gap-two">
             <Input
               label={t("tagName")}
               value={tag.name}
               list={tagListId}
+              onPaste={(event) => handleNameListPaste(tags, setTags, index, event)}
               autoComplete="off"
               onChange={(event) => {
                 const next = [...tags];

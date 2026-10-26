@@ -115,7 +115,10 @@ export interface AdminRecipeDetail {
   region: string | null;
   source: string;
   ingredients: AdminRecipeIngredient[];
+  /** Catalog tags only; taste tags are in flavorProfile. */
   tags: AdminRecipeTag[];
+  /** Taste tags (tags.kind = 'taste'), sorted by name. */
+  flavorProfile: AdminRecipeTag[];
 }
 
 /**
@@ -133,7 +136,7 @@ export async function fetchAdminRecipeDetail(
     .select(
       `id, name, instructions, image_url, glass, alcoholic_status, region, source,
        recipe_ingredients ( measure, sort_order, ingredients ( name ) ),
-       recipe_tags ( tags ( name ) )`,
+       recipe_tags ( tags ( name, kind ) )`,
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -151,7 +154,14 @@ export async function fetchAdminRecipeDetail(
     .sort((a, b) => a.sort_order - b.sort_order)
     .map((ri) => ({ name: ri.ingredients.name, measure: ri.measure }));
 
-  const tags = data.recipe_tags.map((rt) => ({ name: rt.tags.name }));
+  const tags = data.recipe_tags
+    .filter((rt) => rt.tags.kind === "catalog")
+    .map((rt) => ({ name: rt.tags.name }));
+
+  const flavorProfile = data.recipe_tags
+    .filter((rt) => rt.tags.kind === "taste")
+    .map((rt) => ({ name: rt.tags.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
 
   return {
     id: data.id,
@@ -164,6 +174,7 @@ export async function fetchAdminRecipeDetail(
     source: data.source,
     ingredients,
     tags,
+    flavorProfile,
   };
 }
 
@@ -180,6 +191,12 @@ export interface AdminRecipeFormValues {
   region: string | null;
   ingredients: AdminRecipeFormIngredient[];
   tags: AdminRecipeFormTag[];
+  /**
+   * Null leaves the recipe's flavor profile as it is (a new recipe then gets
+   * classify-recipes' tags). An array replaces it and locks it against
+   * reclassification, so send one only when the admin touched the picker.
+   */
+  flavorProfile: AdminRecipeFormTag[] | null;
 }
 
 export type AdminRecipeValidationError =
@@ -264,8 +281,25 @@ export function toAdminIngredientPayload(
 }
 
 /**
+ * Splits pasted text into tag or flavor names for the admin form's paste to
+ * fill: one name per line or comma separated item, trimmed, with a leading
+ * list bullet dropped, blanks skipped, and case insensitive repeats removed.
+ */
+export function splitNameList(text: string): string[] {
+  const names = text
+    .split(/[\r\n,]+/)
+    .map((item) => item.trim().replace(/^[-*•·–]\s*/, ""))
+    .filter((item) => item.length > 0);
+
+  return names.filter(
+    (name, index) =>
+      names.findIndex((other) => other.toLowerCase() === name.toLowerCase()) === index,
+  );
+}
+
+/**
  * Thin wrapper over the admin_upsert_recipe RPC (spec 0030): resolves or
- * creates each ingredient/tag by normalized name and replaces the recipe's
+ * creates each ingredient/tag/flavor by normalized name and replaces the recipe's
  * join rows in one transaction, so a save either fully succeeds or fully
  * fails (AC-8).
  */
@@ -281,6 +315,9 @@ export async function saveAdminRecipe(
 
   const nonEmptyIngredients = values.ingredients.filter((i) => i.name.trim().length > 0);
   const nonEmptyTags = values.tags.filter((t) => t.name.trim().length > 0);
+  const flavorNames = values.flavorProfile
+    ? [...new Set(values.flavorProfile.map((f) => f.name.trim()).filter((n) => n.length > 0))]
+    : null;
 
   // The generated RPC Args type marks these text params non-nullable (a
   // Supabase type generator limitation for plpgsql functions), but the
@@ -295,6 +332,7 @@ export async function saveAdminRecipe(
     p_region: values.region?.trim() || null,
     p_ingredients: toAdminIngredientPayload(nonEmptyIngredients),
     p_tags: nonEmptyTags.map((tag) => ({ name: tag.name.trim() })),
+    p_flavor_profile: flavorNames,
   } as Database["public"]["Functions"]["admin_upsert_recipe"]["Args"]);
 
   if (error) {
@@ -349,13 +387,36 @@ export async function fetchAdminGlassNames(client: SupabaseClient<Database>): Pr
 }
 
 /**
- * Every existing tag name (catalog and taste kinds), sorted, for the admin
- * form's tag autocomplete. admin_upsert_recipe resolves tags by normalized
- * name regardless of kind, so reusing an existing spelling links the
- * existing tag instead of creating a near duplicate.
+ * Every existing catalog tag name, sorted, for the admin form's tag
+ * autocomplete. admin_upsert_recipe resolves tags by normalized name, so
+ * reusing an existing spelling links the existing tag instead of creating a
+ * near duplicate. Taste tags are left out: the Flavor profile picker owns them.
  */
 export async function fetchAdminTagNames(client: SupabaseClient<Database>): Promise<string[]> {
-  const { data, error } = await client.from("tags").select("name").order("name");
+  const { data, error } = await client
+    .from("tags")
+    .select("name")
+    .eq("kind", "catalog")
+    .order("name");
+
+  if (error) {
+    throw error;
+  }
+
+  return (data ?? []).map((row) => row.name);
+}
+
+/**
+ * Every existing flavor profile name (taste tags), sorted, for the admin
+ * form's flavor autocomplete. A name that isn't listed is created as a new
+ * taste tag on save.
+ */
+export async function fetchAdminFlavorNames(client: SupabaseClient<Database>): Promise<string[]> {
+  const { data, error } = await client
+    .from("tags")
+    .select("name")
+    .eq("kind", "taste")
+    .order("name");
 
   if (error) {
     throw error;

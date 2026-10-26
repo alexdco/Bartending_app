@@ -262,6 +262,88 @@ export function parseMeasure(measure: string | null | undefined): ParsedMeasure 
   return { value: leading.value, unit: read.unit };
 }
 
+// Counted or non volume words that still belong to the measure when a line
+// is split into measure and name ("2 dashes Angostura bitters").
+const COUNTED_MEASURE_WORDS: ReadonlySet<string> = new Set([
+  "dash",
+  "dashes",
+  "drop",
+  "drops",
+  "splash",
+  "splashes",
+  "pinch",
+  "pinches",
+  "barspoon",
+  "barspoons",
+  "sprig",
+  "sprigs",
+  "leaf",
+  "leaves",
+  "slice",
+  "slices",
+  "wedge",
+  "wedges",
+  "twist",
+  "twists",
+  "piece",
+  "pieces",
+  "cube",
+  "cubes",
+]);
+
+export interface IngredientLine {
+  name: string;
+  measure: string | null;
+}
+
+/**
+ * Splits one pasted recipe line into its measure and ingredient name:
+ * "½ oz RumChata" -> { measure: "½ oz", name: "RumChata" }. The measure is a
+ * leading number plus a unit word ("fl oz" too) or a counted word ("dashes");
+ * a number with neither keeps just the number ("2 Eggs"). A line with no
+ * leading number is all name ("Soda water, to top"). A leading list bullet
+ * and an "of" after the measure ("1 oz of gin") are dropped.
+ */
+export function splitIngredientLine(line: string): IngredientLine {
+  const text = line.trim().replace(/^[-*•·–]\s*/, "");
+  const leading = parseLeadingNumber(text);
+  if (!leading || leading.rest.length === 0) {
+    return { name: text, measure: null };
+  }
+
+  const numberText = text.slice(0, text.length - leading.rest.length).trim();
+  const tokens = leading.rest.split(/\s+/);
+  const first = normalizeToken(tokens[0] ?? "");
+  const second = normalizeToken(tokens[1] ?? "");
+  const measureWordCount =
+    first === "fl" && second === "oz"
+      ? 2
+      : unitFromToken(tokens[0]) || COUNTED_MEASURE_WORDS.has(first)
+        ? 1
+        : 0;
+
+  const measure = [numberText, ...tokens.slice(0, measureWordCount)].join(" ");
+  const name = tokens
+    .slice(measureWordCount)
+    .join(" ")
+    .replace(/^of\s+/i, "");
+
+  return { name, measure };
+}
+
+/**
+ * Splits pasted multi line text into ingredient lines, one per non blank
+ * line, for the admin form's paste to fill (blank lines between entries are
+ * common when copying from a recipe site).
+ */
+export function splitIngredientLines(text: string): IngredientLine[] {
+  return text
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0)
+    .map(splitIngredientLine);
+}
+
 const ML_PER_OZ = 29.5735;
 const OZ_PER_ML = 1 / ML_PER_OZ;
 const ML_PER_CL = 10;

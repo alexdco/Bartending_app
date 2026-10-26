@@ -14,6 +14,7 @@ const recipe: RecipeDetail = {
   alcoholicStatus: "alcoholic",
   glass: "Coupe",
   ingredients: [],
+  flavorProfile: [],
   isFavorited: false,
 };
 

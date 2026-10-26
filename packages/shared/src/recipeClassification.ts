@@ -16,6 +16,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod/v4";
 import { createHash } from "node:crypto";
 import type { Database } from "./database.types";
+import { TASTE_TAGS, type TasteTag } from "./flavorProfile";
 
 const BATCH_SIZE = 10;
 const MAX_RETRIES = 3;
@@ -23,17 +24,7 @@ const MAX_RETRIES = 3;
 const DIFFICULTIES = ["easy", "medium", "hard"] as const;
 export type RecipeDifficulty = (typeof DIFFICULTIES)[number];
 
-export const TASTE_TAGS = [
-  "sweet",
-  "sour",
-  "bitter",
-  "boozy",
-  "refreshing",
-  "fruity",
-  "spicy",
-  "creamy",
-] as const;
-export type TasteTag = (typeof TASTE_TAGS)[number];
+export { TASTE_TAGS, type TasteTag };
 
 function sourceNameHash(instructions: string): string {
   return createHash("sha256").update(instructions).digest("hex");
@@ -142,7 +133,8 @@ export interface ClassifyRecipesOptions {
 // matches its current instructions (or every row, with reprocessAll) into a
 // difficulty and a taste profile. Difficulty is written to recipes directly;
 // taste tags are upserted into tags (kind = 'taste') and linked via
-// recipe_tags, replacing any taste tags the recipe previously had.
+// recipe_tags, replacing any taste tags the recipe previously had, unless an
+// admin has saved the recipe's flavor profile (flavor_profile_locked).
 export async function classifyRecipes(
   supabase: SupabaseClient<Database>,
   anthropic: Anthropic,
@@ -152,7 +144,7 @@ export async function classifyRecipes(
 
   const { data: recipes, error } = await supabase
     .from("recipes")
-    .select("id, name, instructions, difficulty_source_name_hash")
+    .select("id, name, instructions, difficulty_source_name_hash, flavor_profile_locked")
     .is("deleted_at", null);
 
   if (error) {
@@ -171,6 +163,10 @@ export async function classifyRecipes(
     .map(({ id, name, instructions, hash }) => ({ id, name, instructions, hash }));
 
   console.log(`Classifying ${inputs.length} recipes in batches of ${BATCH_SIZE}...`);
+
+  const lockedIds = new Set(
+    (recipes ?? []).filter((r) => r.flavor_profile_locked).map((r) => r.id),
+  );
 
   let classified = 0;
   let skipped = 0;
@@ -205,6 +201,12 @@ export async function classifyRecipes(
       if (updateError) {
         console.error(`Failed to update recipe ${item.id}'s difficulty:`, updateError);
         skipped += 1;
+        continue;
+      }
+
+      // An admin chose this recipe's flavor profile; difficulty only.
+      if (lockedIds.has(item.id)) {
+        classified += 1;
         continue;
       }
 

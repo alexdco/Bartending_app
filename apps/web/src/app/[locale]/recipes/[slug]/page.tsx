@@ -19,6 +19,7 @@ import { supabasePublic } from "@/lib/supabase-public";
 import { siteAbsoluteUrl } from "@/lib/site-url";
 import { permanentRedirect } from "@/i18n/navigation";
 import { CommentSection } from "@/comments/comment-section";
+import { FlavorProfileSection } from "@/recipes/flavor-profile-section";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { RecipeMeasures } from "@/recipes/recipe-measures";
 import { buildRecipeJsonLd } from "@/recipes/recipe-json-ld";
@@ -150,6 +151,8 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
 
       <BackButton fallbackHref="/search" />
       <RecipeDetailHeader recipe={recipe} />
+
+      <FlavorProfileSection heading={t("flavorProfile")} flavors={recipe.flavorProfile} />
 
       <RecipeMeasures
         key={recipe.id}

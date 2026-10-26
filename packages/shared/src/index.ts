@@ -33,6 +33,7 @@ export * from "./quickBuildInstructions";
 export * from "./learnArticles";
 export * from "./quizzes";
 export * from "./adminRecipes";
+export * from "./flavorProfile";
 export * from "./catalogNames";
 export * from "./brand";
 export * from "./ageGate";
