@@ -1469,6 +1469,10 @@ export type Database = {
         Returns: boolean;
       };
       is_current_user_admin: { Args: never; Returns: boolean };
+      is_recipe_image_referenced: {
+        Args: { p_name: string };
+        Returns: boolean;
+      };
       list_my_pending_invites: {
         Args: never;
         Returns: {
@@ -1483,6 +1487,10 @@ export type Database = {
         }[];
       };
       list_orphan_comment_photos: {
+        Args: { p_limit: number };
+        Returns: string[];
+      };
+      list_orphan_recipe_images: {
         Args: { p_limit: number };
         Returns: string[];
       };

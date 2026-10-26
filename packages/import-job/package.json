@@ -8,6 +8,7 @@
   "scripts": {
     "import": "tsx src/index.ts",
     "import:custom": "tsx src/importCustomRecipes.ts",
+    "migrate:images": "tsx src/migrateImages.ts",
     "report:unlisted": "tsx src/reportUnlistedIngredients.ts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit"
