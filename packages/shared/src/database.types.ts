@@ -1009,6 +1009,8 @@ export type Database = {
           glass: string | null;
           iba: string | null;
           id: string;
+          image_origin: string | null;
+          image_source_url: string | null;
           image_url: string | null;
           instructions: string;
           merged_into_recipe_id: string | null;
@@ -1034,6 +1036,8 @@ export type Database = {
           glass?: string | null;
           iba?: string | null;
           id?: string;
+          image_origin?: string | null;
+          image_source_url?: string | null;
           image_url?: string | null;
           instructions: string;
           merged_into_recipe_id?: string | null;
@@ -1059,6 +1063,8 @@ export type Database = {
           glass?: string | null;
           iba?: string | null;
           id?: string;
+          image_origin?: string | null;
+          image_source_url?: string | null;
           image_url?: string | null;
           instructions?: string;
           merged_into_recipe_id?: string | null;
@@ -1310,12 +1316,15 @@ export type Database = {
         Returns: Json;
       };
       admin_delete_recipe: { Args: { p_recipe_id: string }; Returns: undefined };
+      admin_set_recipe_image: {
+        Args: { p_hero_url: string; p_recipe_id: string };
+        Returns: undefined;
+      };
       admin_upsert_recipe: {
         Args: {
           p_alcoholic_status: string;
           p_flavor_profile?: string[];
           p_glass: string;
-          p_image_url: string;
           p_ingredients: Json;
           p_instructions: string;
           p_name: string;

@@ -17,6 +17,14 @@ const nextConfig: NextConfig = {
         pathname: "/storage/v1/object/public/comment-photos/**",
       },
       {
+        // Self hosted recipe images (spec 0041). Heroes go through the
+        // optimizer; cards are already 400px and render unoptimized.
+        protocol: "https",
+        hostname: "ctuzjhhpnkkhooneporu.supabase.co",
+        pathname: "/storage/v1/object/public/recipe-images/**",
+      },
+      {
+        // Legacy admin pasted links, until migrate:images moves them (spec 0041 AC-13).
         protocol: "https",
         hostname: "imgur.com",
         port: "",

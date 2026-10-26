@@ -5,13 +5,17 @@ import { useTranslations } from "next-intl";
 import {
   ADMIN_ALCOHOLIC_STATUSES,
   saveAdminRecipe,
+  setRecipeImage,
   splitIngredientLines,
   splitNameList,
+  uploadRecipeImage,
   type AdminAlcoholicStatus,
   type AdminRecipeDetail,
   type AdminRecipeFormIngredient,
   type AdminRecipeFormTag,
   type AdminRecipeValidationError,
+  type SetRecipeImageError,
+  type UploadRecipeImageError,
 } from "@bartendingapp/shared";
 import { useRouter } from "@/i18n/navigation";
 import { supabase } from "@/lib/supabase";
@@ -25,6 +29,7 @@ import {
   useAdminIngredientSuggestions,
   useAdminTagNames,
 } from "./use-admin-recipe-suggestions";
+import { RecipeImageField, type RecipeImageChange } from "./recipe-image-field";
 
 type AdminTranslator = ReturnType<typeof useTranslations<"admin">>;
 
@@ -46,6 +51,35 @@ function errorFor(
       return t("errorInvalidStatus");
     default:
       return t("errorNoIngredients");
+  }
+}
+
+function uploadErrorMessage(
+  t: AdminTranslator,
+  reason: Exclude<UploadRecipeImageError["reason"], "request_failed">,
+): string {
+  switch (reason) {
+    case "forbidden":
+      return t("imageErrorNotAdmin");
+    case "too_large":
+      return t("imageErrorEncodedTooLarge");
+    case "wrong_type":
+      return t("imageErrorWebpUnsupported");
+  }
+}
+
+function setErrorMessage(
+  t: AdminTranslator,
+  reason: Exclude<SetRecipeImageError["reason"], "request_failed">,
+): string {
+  switch (reason) {
+    case "not admin":
+      return t("imageErrorNotAdmin");
+    case "recipe not found":
+      return t("imageErrorRecipeNotFound");
+    case "invalid image url":
+    case "image files missing":
+      return t("imageErrorFilesMissing");
   }
 }
 
@@ -73,7 +107,10 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   const router = useRouter();
   const [name, setName] = useState(existingRecipe?.name ?? "");
   const [instructions, setInstructions] = useState(existingRecipe?.instructions ?? "");
-  const [imageUrl, setImageUrl] = useState(existingRecipe?.imageUrl ?? "");
+  const [imageChange, setImageChange] = useState<RecipeImageChange>({ kind: "keep" });
+  // A new recipe whose details saved but whose image did not: a retry saves
+  // into this id instead of creating a second recipe.
+  const [savedRecipeId, setSavedRecipeId] = useState<string | null>(null);
   const [glass, setGlass] = useState(existingRecipe?.glass ?? "");
   const [alcoholicStatus, setAlcoholicStatus] = useState<AdminAlcoholicStatus>(
     (existingRecipe?.alcoholicStatus as AdminAlcoholicStatus) ?? "unknown",
@@ -155,10 +192,9 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
     setSaveError(null);
 
     const result = await saveAdminRecipe(supabase, {
-      recipeId: existingRecipe?.id ?? null,
+      recipeId: existingRecipe?.id ?? savedRecipeId,
       name,
       instructions,
-      imageUrl: imageUrl || null,
       glass: glass || null,
       alcoholicStatus,
       region: region || null,
@@ -171,9 +207,8 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
         : flavorProfile,
     });
 
-    setIsSaving(false);
-
     if (result.error) {
+      setIsSaving(false);
       if (result.error.reason === "validation") {
         setErrors(result.error.errors);
       } else {
@@ -183,7 +218,49 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
     }
 
     setErrors([]);
+    setSavedRecipeId(result.data.id);
+
+    // The storage path needs the recipe id, so the image goes up only after
+    // the details save (spec 0041).
+    const imageError = await saveImage(result.data.id);
+    setIsSaving(false);
+
+    if (imageError) {
+      setSaveError(t("imageSaveFailed", { message: imageError }));
+      return;
+    }
+
     router.push("/admin/recipes");
+  }
+
+  /** Applies the image change to a saved recipe; returns an error message or null. */
+  async function saveImage(recipeId: string): Promise<string | null> {
+    if (imageChange.kind === "keep") return null;
+
+    let heroUrl: string | null = null;
+
+    if (imageChange.kind === "replace") {
+      const upload = await uploadRecipeImage(supabase, recipeId, imageChange.image);
+
+      if (upload.error) {
+        return upload.error.reason === "request_failed"
+          ? upload.error.message
+          : uploadErrorMessage(t, upload.error.reason);
+      }
+
+      heroUrl = upload.data.heroUrl;
+    }
+
+    const set = await setRecipeImage(supabase, recipeId, heroUrl);
+
+    if (set.error) {
+      return set.error.reason === "request_failed"
+        ? set.error.message
+        : setErrorMessage(t, set.error.reason);
+    }
+
+    setImageChange({ kind: "keep" });
+    return null;
   }
 
   return (
@@ -219,10 +296,11 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
         )}
       </div>
 
-      <Input
-        label={t("imageUrl")}
-        value={imageUrl}
-        onChange={(event) => setImageUrl(event.target.value)}
+      <RecipeImageField
+        currentUrl={existingRecipe?.imageUrl ?? null}
+        change={imageChange}
+        onChange={setImageChange}
+        disabled={isSaving}
       />
 
       <Input

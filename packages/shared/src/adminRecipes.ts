@@ -185,7 +185,6 @@ export interface AdminRecipeFormValues {
   recipeId: string | null;
   name: string;
   instructions: string;
-  imageUrl: string | null;
   glass: string | null;
   alcoholicStatus: AdminAlcoholicStatus;
   region: string | null;
@@ -326,7 +325,6 @@ export async function saveAdminRecipe(
     p_recipe_id: values.recipeId,
     p_name: values.name.trim(),
     p_instructions: values.instructions.trim(),
-    p_image_url: values.imageUrl?.trim() || null,
     p_glass: canonicalGlass(values.glass),
     p_alcoholic_status: values.alcoholicStatus,
     p_region: values.region?.trim() || null,
