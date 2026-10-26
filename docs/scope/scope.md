@@ -730,7 +730,7 @@ Recipe images are hotlinked from TheCocktailDB (and Imgur via pasted admin URLs)
 - [x] Design it (spec): `/architect self hosted recipe images`
 - [ ] Build it: `/develop self hosted recipe images`
   - [ ] One admin upload end to end: migration (image columns, bucket and policies, `admin_set_recipe_image`, import guards), shared `recipeImages.ts`, the admin form file picker, and the remote pattern, satisfies AC-1 to AC-6, AC-11, AC-15
-  - [ ] Card sizes everywhere on web and mobile via `recipeImageUrl`, satisfies AC-10, AC-11
+  - [x] Card sizes everywhere on web and mobile via `recipeImageUrl`, satisfies AC-10, AC-11
   - [ ] Import job image state and the `--copy-images` copy with sharp, satisfies AC-7, AC-8, AC-9
   - [ ] Orphan sweep Edge Function and cron, plus the `migrate:images` legacy migration and Imgur removal, satisfies AC-12, AC-13
   - [ ] TheCocktailDB credit on recipe detail, satisfies AC-14
