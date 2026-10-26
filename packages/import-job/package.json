@@ -16,6 +16,7 @@
     "@anthropic-ai/sdk": "^0.124.0",
     "@bartendingapp/shared": "workspace:*",
     "@supabase/supabase-js": "^2.45.0",
+    "sharp": "0.35.4",
     "zod": "^3.25.0"
   },
   "devDependencies": {

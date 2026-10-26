@@ -35,6 +35,7 @@ async function main(): Promise<void> {
     name: recipe.name,
     instructions: recipe.instructions,
     imageUrl: recipe.imageUrl,
+    imageOrigin: recipe.imageUrl ? "external_hotlink" : null,
     // Same casing as the catalog import and admin saves (spec 0036), so the
     // shared ingredient rows never flip names between imports.
     glass: canonicalGlass(recipe.glass),

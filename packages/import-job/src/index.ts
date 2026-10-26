@@ -1,12 +1,25 @@
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
-import type { Database, Json } from "@bartendingapp/shared";
+import {
+  uploadRecipeImagePair,
+  type Database,
+  type Json,
+  type RecipeImageOrigin,
+} from "@bartendingapp/shared";
 import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
 import { fetchAllDrinks } from "./theCocktailDb";
 import { transformDrink } from "./transform";
+import {
+  copyCatalogImage,
+  decideCatalogImage,
+  resolveCatalogImages,
+  type CopyDeps,
+  type StoredImageState,
+} from "./catalogImages";
+import { downloadImage, mapWithConcurrency, processImageBuffer } from "./imageProcessing";
 import { parseCatalogOverrides } from "./catalogOverridesSchema";
 import {
   applyOverrides,
@@ -16,6 +29,60 @@ import {
 } from "./overrides";
 
 const OVERRIDES_PATH = fileURLToPath(new URL("./catalogOverrides.json", import.meta.url));
+const COPY_CONCURRENCY = 6;
+const PAGE_SIZE = 1000;
+
+/** Every catalog recipe's stored image columns, keyed by source_id (paged past the row cap). */
+async function fetchStoredImageStates(
+  supabase: SupabaseClient<Database>,
+): Promise<Map<string, StoredImageState>> {
+  const states = new Map<string, StoredImageState>();
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("recipes")
+      .select("source_id, image_url, image_origin, image_source_url")
+      .eq("source", "catalog")
+      .order("source_id")
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`Could not read current recipe images: ${error.message}`);
+    }
+
+    (data ?? []).forEach((row) =>
+      states.set(row.source_id, {
+        imageUrl: row.image_url,
+        imageOrigin: row.image_origin as RecipeImageOrigin | null,
+        imageSourceUrl: row.image_source_url,
+      }),
+    );
+
+    if (!data || data.length < PAGE_SIZE) {
+      return states;
+    }
+  }
+}
+
+function copyDeps(supabase: SupabaseClient<Database>): CopyDeps {
+  return {
+    download: (url) => downloadImage(url),
+    process: async (bytes) => {
+      const result = await processImageBuffer(bytes);
+      return result.error === null ? result : { data: null, error: result.error };
+    },
+    upload: async (sourceId, images) => {
+      const result = await uploadRecipeImagePair(supabase, "catalog", sourceId, images);
+      return result.error === null
+        ? result
+        : {
+            data: null,
+            error:
+              result.error.reason === "request_failed" ? result.error.message : result.error.reason,
+          };
+    },
+  };
+}
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -35,6 +102,7 @@ async function main(): Promise<void> {
   const supabaseUrl = requireEnv("SUPABASE_URL");
   const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
   const dryRun = process.argv.includes("--dry-run");
+  const copyImages = process.argv.includes("--copy-images");
 
   const supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
@@ -74,9 +142,23 @@ async function main(): Promise<void> {
     ),
   );
 
+  // Spec 0041: copying TheCocktailDB images into our bucket stays behind
+  // --copy-images until TheCocktailDB confirms copying is allowed.
+  const storedImages = await fetchStoredImageStates(supabase);
+  const imageDrinks = applied.drinks.map((drink) => ({
+    sourceId: drink.recipe.sourceId,
+    thumbUrl: drink.recipe.imageUrl,
+  }));
+
   if (dryRun) {
     const summary = summarizeOverrides(transformed, applied);
+    const imagesToCopy = imageDrinks.filter(
+      (drink) =>
+        decideCatalogImage(drink.thumbUrl, storedImages.get(drink.sourceId), copyImages).kind ===
+        "copy",
+    ).length;
     console.log("Dry run, nothing written.");
+    console.log(`  images to copy:     ${copyImages ? imagesToCopy : "off (no --copy-images)"}`);
     console.log(`  source drinks:      ${transformed.length}`);
     console.log(`  hidden:             ${summary.hidden}`);
     console.log(`  merges:             ${summary.merges}`);
@@ -88,12 +170,24 @@ async function main(): Promise<void> {
     return;
   }
 
+  const deps = copyDeps(supabase);
+  const images = await resolveCatalogImages(imageDrinks, storedImages, copyImages, (jobs) =>
+    mapWithConcurrency(jobs, COPY_CONCURRENCY, (job) =>
+      copyCatalogImage(job.sourceId, job.thumbUrl, deps),
+    ),
+  );
+  images.failures.forEach((failure) =>
+    console.warn(
+      `Image copy failed for ${failure.sourceId}, hotlinking instead: ${failure.reason}`,
+    ),
+  );
+
   const payload = applied.drinks.map((drink) => ({
     sourceId: drink.recipe.sourceId,
     name: drink.recipe.name,
     instructions: drink.recipe.instructions,
     instructionsOverride: drink.recipe.instructionsOverride,
-    imageUrl: drink.recipe.imageUrl,
+    ...images.fieldsBySourceId.get(drink.recipe.sourceId),
     glass: drink.recipe.glass,
     alcoholicStatus: drink.recipe.alcoholicStatus,
     iba: drink.recipe.iba,
@@ -114,6 +208,12 @@ async function main(): Promise<void> {
   console.log(
     `Imported ${payload.length} recipes (${transformed.length - payload.length} hidden, ${applied.merges.length} merged).`,
   );
+
+  if (copyImages) {
+    console.log(
+      `Images: ${images.summary.copied} copied, ${images.summary.unchanged} unchanged, ${images.summary.failed} failed.`,
+    );
+  }
 
   const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicApiKey) {
