@@ -8,7 +8,11 @@ import { Text } from "@/components/text";
 import { FavoriteToggle } from "@/favorites/favorite-toggle";
 import { useFavoriteRecipeIds } from "@/favorites/use-favorites";
 import { useToggleFavorite } from "@/favorites/use-favorite-mutations";
-import { formatMissingIngredients, type RecipeSearchResult } from "@bartendingapp/shared";
+import {
+  formatMissingIngredients,
+  recipeImageUrl,
+  type RecipeSearchResult,
+} from "@bartendingapp/shared";
 import { alcoholicStatusLabel } from "./format";
 import { RecipeImage } from "./recipe-image";
 
@@ -36,7 +40,7 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
       >
         <Card style={styles.card}>
           <View style={styles.imageWrapper}>
-            <RecipeImage uri={recipe.imageUrl} style={styles.image} />
+            <RecipeImage uri={recipeImageUrl(recipe.imageUrl, "card")} style={styles.image} />
           </View>
           <Text variant="subheading" numberOfLines={1}>
             {recipe.name}

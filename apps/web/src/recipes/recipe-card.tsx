@@ -10,6 +10,8 @@ import { useToggleFavorite } from "@/favorites/use-favorite-mutations";
 import { alcoholicStatusKey } from "./format";
 import {
   buildRecipeSlugPath,
+  isRecipeImageBucketUrl,
+  recipeImageUrl,
   splitMissingIngredients,
   type RecipeSearchResult,
 } from "@bartendingapp/shared";
@@ -31,6 +33,8 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
     return t("missingIngredients", { names: shown.join(", "), remaining });
   };
 
+  const cardImageUrl = recipeImageUrl(recipe.imageUrl, "card");
+
   // Spec 0038 AC-10, stretched link: the title link's ::after covers the whole
   // card so all of it stays clickable, and draws the card's focus ring. The
   // favorite toggle is a sibling of the link (never inside it) and sits above
@@ -42,10 +46,12 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
     <Card className="relative flex flex-col gap-two transition-[transform,box-shadow] duration-200 ease-out motion-safe:hover:z-20 motion-safe:hover:scale-105 motion-safe:hover:shadow-xl motion-safe:focus-within:z-20 motion-safe:focus-within:scale-105 motion-safe:focus-within:shadow-xl">
       <div className="relative aspect-square w-full overflow-hidden rounded-small">
         <Image
-          src={recipe.imageUrl ?? "/recipe-placeholder.svg"}
+          src={cardImageUrl ?? "/recipe-placeholder.svg"}
           alt=""
           fill
           sizes="(min-width: 768px) 240px, 45vw"
+          // Our 400px card file is served as is (spec 0041 AC-11).
+          unoptimized={isRecipeImageBucketUrl(cardImageUrl)}
           className="object-cover"
         />
       </div>
