@@ -3,7 +3,7 @@ _Steps derived from spec 0004 acceptance criteria. `/check verify` runs these; `
 
 ## UI / manual
 - [x] Web: visit `/`, no query entered → the first 20 recipes render alphabetically without needing input → AC-2
-- [ ] Web: type "margarita" in the search box → the Margarita recipe appears near the top, opening it shows instructions, image, and its ordered ingredients with measures → AC-1, AC-5, AC-6
+- [x] Web: type "margarita" in the search box → the Margarita recipe appears near the top, opening it shows instructions, image, and its ordered ingredients with measures → AC-1, AC-5, AC-6
 - [x] Web: type "lime" (an ingredient, not a recipe name) → recipes containing lime appear, ordered alphabetically → AC-1, AC-5
 - [x] Web: select the "Non alcoholic" filter with an empty query → only non alcoholic recipes render → AC-3
 - [x] Web: select a filter and a query together → results satisfy both → AC-3
@@ -18,12 +18,12 @@ _Steps derived from spec 0004 acceptance criteria. `/check verify` runs these; `
 - [ ] Mobile: force a network failure on the Search tab → a visible error state with a Retry button → AC-8
 
 ## Commands
-- [ ] `pnpm --filter web build` → succeeds, `/` prerenders statically using live data → AC-1, AC-2
+- [x] `pnpm --filter web build` → succeeds, `/` prerenders statically using live data → AC-1, AC-2 (2026-10-26: build succeeds; search now lives at `/[locale]/search` and renders on demand, a deliberate later change, so the "prerenders statically" part is stale)
 - [x] `pnpm --filter mobile exec tsc --noEmit` → passes → AC-9
 - [x] `pnpm test` → all existing suites still pass (26/26 at build time) → regression guard
 
 ## Live data checks (already run once during this build; re run to confirm no drift)
-- [ ] `select count(*) from search_recipes('margarita')` → 2 results, Margarita ranked first → AC-1, AC-5
+- [x] `select count(*) from search_recipes('margarita')` → 2 results, Margarita ranked first → AC-1, AC-5 (2026-10-26: 3 results after catalog changes, Margarita first)
 - [x] `select count(*) from search_recipes('', null, 100000, 0)` → exactly 50 rows (the page_limit clamp) → AC-4
 - [x] Two adjacent pages (`page_offset` 0 and 5, `page_limit` 5) of `search_recipes('')` share zero overlapping recipe ids → AC-4
 - [x] Temporarily soft delete a recipe containing a known ingredient (e.g. tequila in "Margarita"), then `search_recipes('tequila')` inside a rolled back transaction → 0 rows for that recipe, confirming the ingredient branch does not leak soft deleted recipes despite `recipe_ingredients`/`ingredients` RLS having no `deleted_at` awareness → AC-7, security
