@@ -103,7 +103,7 @@ Changed database functions:
 | `recipeImagePath(scope, key, hash, size)` | shared pure function | `'catalog' \| 'recipes'`, id, hash, size | bucket object name | none | none |
 | `pnpm --filter import-job import [--copy-images] [--dry-run]` | CLI | flags, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` | summary: copied, unchanged, failed | service role | per recipe failures logged, never fatal |
 | `pnpm --filter import-job migrate:images [--dry-run]` | CLI | same env | list of migrated and failed recipes | service role | per recipe failures listed |
-| `cleanup-orphan-recipe-images` | Edge Function, daily pg_cron | none | count deleted | service role (cron secret, as the comment sweep) | logs to Sentry |
+| `cleanup-orphan-recipe-images` | Edge Function, daily pg_cron | optional `{"dryRun": true}` | count deleted, or the list it would delete | `sb_secret_...` key on the `apikey` header (the `secret_key` Vault secret); see *Cron auth* | 401 `unauthorized` (logs key shapes, never values); batch failures to Sentry |
 
 **Value sourcing**:
 
@@ -119,6 +119,8 @@ Changed database functions:
 | Card image on web and mobile | card URL | `recipeImageUrl(image_url, 'card')`, derived from `image_url` |
 | Detail credit | show or hide | `fetch_recipe_detail.is_cocktaildb_recipe` |
 | Credit link | URL | constant `https://www.thecocktaildb.com` in `packages/shared` |
+| Sweep | accepted keys | Edge Function env: `SUPABASE_SERVICE_ROLE_KEY` plus every value in `SUPABASE_SECRET_KEYS` (JSON object) |
+| Sweep cron | key it sends | Vault secret `secret_key` (seeded as a placeholder; the real `sb_secret_...` value is set by hand in the SQL editor) |
 | Sweep | object age | `storage.objects.created_at` |
 | Sweep | referenced or not | `is_recipe_image_referenced(name)` against `recipes.image_url` |
 | Legacy migration | which rows | `image_origin = 'external_hotlink'` and the host is not `www.thecocktaildb.com` |
@@ -137,10 +139,12 @@ Changed database functions:
 - Write under `catalog/`: service role only (no policy grants it to `authenticated`).
 - `admin_set_recipe_image`: `security definer`, raises `not admin` unless `is_current_user_admin()`; execute revoked from `public` and `anon`, granted to `authenticated`.
 - `is_recipe_image_referenced`: execute granted to `service_role` only.
+- **Cron auth** for `cleanup-orphan-recipe-images` (differs from the comment sweep on purpose): on this project the Edge Function env holds new `sb_secret_...` keys, even under `SUPABASE_SERVICE_ROLE_KEY`, so the legacy service role JWT the comment sweep sends as `Authorization: Bearer` never matches. The pg_cron job (migration `20261027010000_recipe_image_sweep_secret_key.sql`, which replaces the job from `20261026130000`) sends the `secret_key` Vault secret on the `apikey` header; secret keys are not JWTs, so they don't go in `Authorization: Bearer`. The function accepts the legacy key or any `SUPABASE_SECRET_KEYS` value, presented as a Bearer token or an `apikey` header, compared in constant time, and builds its Supabase client with the key that matched. A rejected call returns 401 and logs only which key variables exist and the shape (`jwt`, `sb_secret`, or `other`, plus length) of what was sent, never a key value.
 - Images are encoded again through canvas or sharp, so no EXIF or location data is ever stored. No PII is involved; no compliance scope applies.
 
 **Configuration required**:
-- No new env vars. The import job and Edge Function reuse `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; the cron entry reuses the comment sweep's secret pattern.
+- No new env vars. The import job reuses `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY`; the Edge Function reads `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, and `SUPABASE_SECRET_KEYS`, all provided by the platform.
+- One new Vault secret, `secret_key`: the migration seeds `REPLACE_ME_VIA_DASHBOARD_SQL_EDITOR`, and you set the real `sb_secret_...` value (Settings > API Keys) once in the SQL editor with `vault.update_secret`. Until you do, every scheduled run returns 401.
 - New dependency: `sharp` in `packages/import-job` only.
 
 **Critical test scenarios**:
@@ -175,7 +179,7 @@ Ordered for the Tracer Bullet approach: slice 1 proves one admin uploaded image 
 7. `packages/import-job`: add `sharp`; read current image state per `source_id` before the run; decide `imageOrigin` and `imageSourceUrl` per drink; implement `--copy-images` (download, crop, encode, upload to `catalog/<source_id>/…`, per recipe failure fallback to hotlink, summary line); pass the three fields to `import_catalog`. Tests for the decide function (all transitions above) and the failure fallback with a fake fetcher. Satisfies **AC-7**, **AC-8**, **AC-9**
 
 **Slice 4: cleanup**
-8. `supabase/functions/cleanup-orphan-recipe-images` plus `is_recipe_image_referenced` and its daily pg_cron migration, mirroring the comment sweep (24 hour grace, Sentry on failure). Satisfies **AC-12**
+8. `supabase/functions/cleanup-orphan-recipe-images` plus `is_recipe_image_referenced` and its daily pg_cron migration, mirroring the comment sweep (24 hour grace, Sentry on failure) except for auth: the cron sends the `secret_key` Vault secret on the `apikey` header (see *Cron auth*). Satisfies **AC-12**
 
 **Slice 5: legacy links**
 9. `packages/import-job/src/migrateImages.ts` plus the `migrate:images` script (sharp, the same crop and sizes as AC-2, `recipes/<id>/…`, `--dry-run`, idempotent); run it, then remove the Imgur entries from `next.config.ts`. Satisfies **AC-13**
@@ -211,7 +215,7 @@ Ordered for the Tracer Bullet approach: slice 1 proves one admin uploaded image 
 
 **Neutral**:
 - `image_url` keeps its meaning (the URL to show), so the roughly 15 SQL read functions and both apps' data layers need no change beyond the card swap.
-- One more Edge Function and cron entry to watch, alongside the comment sweep.
+- One more Edge Function and cron entry to watch, alongside the comment sweep. Its cron auth uses a different header and Vault secret than the older sweeps, so the two patterns live side by side until the follow up below aligns them.
 
 ## Follow-up
 
@@ -219,4 +223,5 @@ Ordered for the Tracer Bullet approach: slice 1 proves one admin uploaded image 
 - [ ] Buy TheCocktailDB's Premium API key: their terms say you can't publish to an app store without being a paid subscriber, and `packages/import-job/src/theCocktailDb.ts` hardcodes the test key `1`. This blocks the store launch in spec 0040, not just images.
 - [ ] Vercel's Hobby plan is for non commercial personal use only; decide on Pro before monetizing (outside this spec).
 - [ ] Run `/scope` to enroll this spec as a feature, replacing the deferred "Self host recipe images" item.
+- [ ] The older cron jobs, `cleanup-orphan-comment-photos` (spec 0032) and `cleanup-anonymous-accounts` (spec 0017), still send the legacy `service_role_key` JWT as `Authorization: Bearer` and compare it only against `SUPABASE_SERVICE_ROLE_KEY`. If that variable holds an `sb_secret_...` key here too, they are probably returning 401 every night without anyone noticing. You may want to check their Edge Function logs and, if so, move them to the *Cron auth* pattern above (best as a small cross cutting spec, outside this one).
 - [ ] A placeholder cocktail glass image is still a TODO in `apps/mobile/src/recipes/recipe-image.tsx`; it could live in this bucket later.

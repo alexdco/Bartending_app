@@ -71,6 +71,10 @@ Option 2 reuses what already works in this codebase. Spec 0032 proved a public b
 
 The catalog copy step is built but switched off by default because TheCocktailDB's terms don't clearly allow copying images (basis: TheCocktailDB terms of use). Building admin uploads first delivers value now (custom recipes, Imgur replacement) without betting on their answer. The `image_origin` column fixes the existing bug where every import undoes admin image fixes, a problem regardless of where files live. The rollout follows the strangler pattern: hotlinks and bucket files run side by side and recipes move one at a time, so nothing breaks at any step (basis: strangler pattern for live migrations).
 
+### Sweep cron auth (recorded 2026-10-26, after the build)
+
+The spec first said the sweep would copy the comment sweep's auth: the `service_role_key` Vault secret (the legacy JWT) as `Authorization: Bearer`, compared to `SUPABASE_SERVICE_ROLE_KEY`. The first live runs returned 401. The function's rejection log (key shapes only) showed the Edge Function env holds `sb_secret_...` keys, even under `SUPABASE_SERVICE_ROLE_KEY`, so the JWT could never match. Two fixes shipped: the function accepts the legacy key or any `SUPABASE_SECRET_KEYS` value on either header (commit `daa0bfc`), and the cron sends the `secret_key` Vault secret on the `apikey` header (commit `d957fec`, migration `20261027010000`). Secret keys are not JWTs, so the `apikey` header is their natural home; the runner up, storing the `sb_secret` key in `service_role_key` and keeping the Bearer header, would have mislabeled the secret and broken the older sweeps that still read it.
+
 ## Evidence: terms and limits checked on 2026-10-26
 
 - TheCocktailDB: the test key `1` is for development or educational use; "You cannot publish apps to an appstore unless you are a paid subscriber" (Premium listed as a one time $10, possibly out of date). On copying: "You can scrape, copy and modify any content returned from the API, as long as you use the official end points", with no explicit wording on rehosting images. Credit: "must mention us as the source of the data" and "should link back to our website where appropriate". Image variants: `/small` 200px, `/medium` 350px, `/large` 500px; originals 700px.
@@ -88,6 +92,7 @@ Not confirmed: TheCocktailDB's explicit position on rehosting images (the follow
 - Spec 0030 (admin recipe management): `admin_upsert_recipe` and the admin form
 - Spec 0036 (recipe catalog cleanup): import idempotence (AC-4)
 - `supabase/migrations/20261012140000_preserve_taste_tags_on_import.sql`: the current `import_catalog` and `import_custom_recipes` image overwrite
+- `supabase/migrations/20261027010000_recipe_image_sweep_secret_key.sql` and `supabase/functions/cleanup-orphan-recipe-images/index.ts`: the shipped cron auth
 
 **Practices & standards**:
 - Strangler pattern for live migrations
