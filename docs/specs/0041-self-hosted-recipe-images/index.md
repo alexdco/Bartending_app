@@ -1,7 +1,7 @@
 # 0041. Self hosted recipe images
 
 **Date**: 2026-10-26
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

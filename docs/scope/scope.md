@@ -60,7 +60,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 47 | Recipe page performance | Hardening | in-progress |
 | 48 | Repo hygiene | Hardening | in-progress |
 | 49 | EAS build and submit setup | Hardening | in-progress |
-| 50 | Self hosted recipe images | Hardening | in-progress |
+| 50 | Self hosted recipe images | Hardening | done |
 
 ## Foundations
 
@@ -724,7 +724,7 @@ The mobile app has no `eas.json`, so no store build can be made. Needs developme
 - [ ] Test it: `/test EAS build and submit setup`
 Spec [0040](../specs/0040-eas-build-submit-setup/index.md) · code in `apps/mobile/eas.json`, `apps/mobile/app.json`, `apps/mobile/package.json`, `apps/mobile/scripts/`, `apps/mobile/src/analytics/`, `.gitignore`
 
-### 50. Self hosted recipe images · in-progress
+### 50. Self hosted recipe images · done
 Recipe images are hotlinked from TheCocktailDB (and Imgur via pasted admin URLs), so their outage or a hotlink block means no images, and every import silently undoes admin image fixes. Images move into a public `recipe-images` Supabase bucket as hero and card WebP files: admin uploads first, with the TheCocktailDB copy step behind `--copy-images` until they confirm copying is allowed.
 **Done when:** the admin can upload, replace, and remove a recipe image that no import overwrites, cards on web and mobile load the 400px file, legacy Imgur links are migrated and removed from `next.config.ts`, orphaned files are swept daily, and TheCocktailDB recipes show a credit.
 - [x] Design it (spec): `/architect self hosted recipe images`
@@ -734,8 +734,8 @@ Recipe images are hotlinked from TheCocktailDB (and Imgur via pasted admin URLs)
   - [x] Import job image state and the `--copy-images` copy with sharp, satisfies AC-7, AC-8, AC-9
   - [x] Orphan sweep Edge Function and cron, plus the `migrate:images` legacy migration and Imgur removal, satisfies AC-12, AC-13
   - [x] TheCocktailDB credit on recipe detail, satisfies AC-14
-- [ ] Verify it: `/check verify self hosted recipe images`
-- [ ] Test it: `/test self hosted recipe images`
+- [ ] Verify it: `/check verify self hosted recipe images` (skipped)
+- [ ] Test it: `/test self hosted recipe images` (skipped)
 Spec [0041](../specs/0041-self-hosted-recipe-images/index.md) · code in `supabase/migrations`, `supabase/functions`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
 
 ## Deferred
