@@ -23,19 +23,6 @@ const nextConfig: NextConfig = {
         hostname: "ctuzjhhpnkkhooneporu.supabase.co",
         pathname: "/storage/v1/object/public/recipe-images/**",
       },
-      {
-        // Legacy admin pasted links, until migrate:images moves them (spec 0041 AC-13).
-        protocol: "https",
-        hostname: "imgur.com",
-        port: "",
-        pathname: "/**",
-      },
-      {
-        protocol: "https",
-        hostname: "i.imgur.com",
-        port: "",
-        pathname: "/**",
-      },
     ],
   },
 };
