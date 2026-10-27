@@ -14,7 +14,9 @@
 // - POST {"dryRun": true} lists what would be deleted without deleting, for
 //   the first runs (spec 0041 migration plan risks).
 // - Only the scheduled pg_cron job may call this: the caller must present the
-//   service role key as a Bearer token, checked in constant time.
+//   legacy service role key or a new `sb_secret_...` key, as a Bearer token or
+//   an `apikey` header, checked in constant time. A rejected call logs which
+//   key variables exist and the shape of what was sent (never the values).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import * as Sentry from "npm:@sentry/deno@10";
 
@@ -53,6 +55,31 @@ function timingSafeEqual(a: string, b: string): boolean {
   return mismatch === 0;
 }
 
+/** The legacy service role key plus every named key in SUPABASE_SECRET_KEYS. */
+function acceptedKeys(): string[] {
+  const legacy = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
+  let secretKeys: string[] = [];
+  try {
+    const parsed = JSON.parse(Deno.env.get("SUPABASE_SECRET_KEYS") ?? "{}");
+    secretKeys = Object.values(parsed).filter((key): key is string => typeof key === "string");
+  } catch {
+    // Not set or not JSON: only the legacy key is accepted.
+  }
+  return [legacy, ...secretKeys].filter((key) => key.length > 0);
+}
+
+function presentedKeys(req: Request): string[] {
+  const authHeader = req.headers.get("Authorization") ?? "";
+  const bearer = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : "";
+  return [bearer, req.headers.get("apikey") ?? ""].filter((key) => key.length > 0);
+}
+
+/** "jwt", "sb_secret", or "other", plus length: enough to diagnose, never the key. */
+function keyShape(key: string): string {
+  const kind = key.startsWith("eyJ") ? "jwt" : key.startsWith("sb_secret_") ? "sb_secret" : "other";
+  return `${kind}:${key.length}`;
+}
+
 async function readDryRun(req: Request): Promise<boolean> {
   try {
     const body = await req.json();
@@ -67,15 +94,23 @@ Deno.serve(async (req) => {
     return jsonResponse({ error: "method not allowed" }, 405);
   }
 
-  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
-  const authHeader = req.headers.get("Authorization") ?? "";
-  const presentedToken = authHeader.startsWith("Bearer ") ? authHeader.slice("Bearer ".length) : "";
+  const accepted = acceptedKeys();
+  const presented = presentedKeys(req);
+  const matchedKey = accepted.find((key) =>
+    presented.some((candidate) => timingSafeEqual(candidate, key)),
+  );
 
-  if (!timingSafeEqual(presentedToken, serviceRoleKey)) {
+  if (!matchedKey) {
+    console.warn("cleanup-orphan-recipe-images: unauthorized", {
+      hasLegacyServiceRoleKey: (Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "").length > 0,
+      hasSecretKeys: (Deno.env.get("SUPABASE_SECRET_KEYS") ?? "").length > 0,
+      acceptedShapes: accepted.map(keyShape),
+      presentedShapes: presented.map(keyShape),
+    });
     return jsonResponse({ error: "unauthorized" }, 401);
   }
 
-  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, serviceRoleKey);
+  const supabase = createClient(Deno.env.get("SUPABASE_URL")!, matchedKey);
   const dryRun = await readDryRun(req);
 
   if (dryRun) {
