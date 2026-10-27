@@ -729,11 +729,11 @@ Recipe images are hotlinked from TheCocktailDB (and Imgur via pasted admin URLs)
 **Done when:** the admin can upload, replace, and remove a recipe image that no import overwrites, cards on web and mobile load the 400px file, legacy Imgur links are migrated and removed from `next.config.ts`, orphaned files are swept daily, and TheCocktailDB recipes show a credit.
 - [x] Design it (spec): `/architect self hosted recipe images`
 - [ ] Build it: `/develop self hosted recipe images`
-  - [ ] One admin upload end to end: migration (image columns, bucket and policies, `admin_set_recipe_image`, import guards), shared `recipeImages.ts`, the admin form file picker, and the remote pattern, satisfies AC-1 to AC-6, AC-11, AC-15
+  - [x] One admin upload end to end: migration (image columns, bucket and policies, `admin_set_recipe_image`, import guards), shared `recipeImages.ts`, the admin form file picker, and the remote pattern, satisfies AC-1 to AC-6, AC-11, AC-15
   - [x] Card sizes everywhere on web and mobile via `recipeImageUrl`, satisfies AC-10, AC-11
-  - [ ] Import job image state and the `--copy-images` copy with sharp, satisfies AC-7, AC-8, AC-9
+  - [x] Import job image state and the `--copy-images` copy with sharp, satisfies AC-7, AC-8, AC-9
   - [ ] Orphan sweep Edge Function and cron, plus the `migrate:images` legacy migration and Imgur removal, satisfies AC-12, AC-13
-  - [ ] TheCocktailDB credit on recipe detail, satisfies AC-14
+  - [x] TheCocktailDB credit on recipe detail, satisfies AC-14
 - [ ] Verify it: `/check verify self hosted recipe images`
 - [ ] Test it: `/test self hosted recipe images`
 Spec [0041](../specs/0041-self-hosted-recipe-images/index.md) · code in `supabase/migrations`, `supabase/functions`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
