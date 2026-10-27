@@ -13,6 +13,7 @@ Non UI logic shared between `apps/web` and `apps/mobile`: the Supabase client, g
 | `src/pantryMatching.ts` | Pantry to recipe matching logic |
 | `src/database.types.ts` | Generated Supabase types; regenerate after every migration |
 | `src/tokens.ts` | Design token values, source of truth for web theme CSS and mobile theme |
+| `src/recipeImages.ts` | Recipe image bucket constants, path and card URL helpers, upload and set calls (spec 0041); also the `@bartendingapp/shared/recipe-images` subpath |
 | `src/<feature>.ts` (e.g. `shoppingList.ts`, `comments.ts`) | Per feature data access: functions take a `SupabaseClient<Database>` as their first argument |
 | `scripts/` | One off catalog and content jobs (classification, translation, Learn articles, quizzes) run with `tsx` |
 
@@ -26,5 +27,6 @@ Consumed via the `@bartendingapp/shared` workspace package; no standalone dev se
 - No UI code here; this package has no framework (React/RN) dependency.
 - Exported types are the contract both apps build against; a breaking change here breaks both clients.
 - Server only modules that call Anthropic or need the service role key (translation, classification, Learn article and quiz generation) stay out of the `src/index.ts` barrel and are exposed as subpath exports in `package.json` (e.g. `@bartendingapp/shared/catalog-translation`), so they never reach a client bundle.
+- Scripts run with `tsx` load the `src/index.ts` barrel as CommonJS, which hides its `export *` names at runtime (typecheck and vitest still pass). A script importing runtime values imports them from a subpath export (e.g. `@bartendingapp/shared/recipe-images`); type only imports from the barrel are fine.
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

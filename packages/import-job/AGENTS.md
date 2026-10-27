@@ -13,6 +13,9 @@ One time (and rerunnable) catalog loader. Pulls every drink from TheCocktailDB, 
 | `src/transform.ts` | Pure mapping from a TheCocktailDB drink to our recipe, ingredient, and tag rows |
 | `src/importCustomRecipes.ts` | Custom recipe import entry point |
 | `src/customRecipes.json`, `src/customRecipesSchema.ts` | Hand curated recipes and the zod schema that validates them before import |
+| `src/catalogImages.ts` | Pure per drink image decision (keep, hotlink, or copy) and the copy step with injectable deps (spec 0041) |
+| `src/imageProcessing.ts` | sharp pipeline: square crop, hero and 400px card WebP, plus download and bounded concurrency helpers |
+| `src/migrateImages.ts`, `src/legacyImages.ts` | One time move of non TheCocktailDB hotlinks (Imgur album pages followed to their `og:image`) into the bucket |
 
 ## Commands
 
@@ -23,12 +26,19 @@ pnpm --filter @bartendingapp/import-job import
 # Import the custom recipes in src/customRecipes.json
 pnpm --filter @bartendingapp/import-job import:custom
 
+# Also copy TheCocktailDB images into the recipe-images bucket (off until
+# TheCocktailDB confirms copying is allowed, spec 0041)
+pnpm --filter @bartendingapp/import-job import --copy-images
+
+# Move legacy hotlinked images into the bucket (rerunnable; --dry-run lists them)
+pnpm --filter @bartendingapp/import-job migrate:images --dry-run
+
 # Lint / typecheck
 pnpm --filter @bartendingapp/import-job lint
 pnpm --filter @bartendingapp/import-job typecheck
 ```
 
-Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `packages/import-job/.env` (the root `.env.example` lists them), plus `ANTHROPIC_API_KEY` for the translation and classification steps. The service role key never leaves this server side job.
+Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `packages/import-job/.env` (the root `.env.example` lists them), plus `ANTHROPIC_API_KEY` for the translation and classification steps. The service role key never leaves this server side job. Only `migrate:images` loads that `.env` itself (`tsx --env-file-if-exists=.env`); the other scripts expect the variables in your shell.
 
 ## Conventions
 
@@ -36,5 +46,7 @@ Needs `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `packages/import-job/.en
 - Translation and classification reuse the shared modules (`@bartendingapp/shared/catalog-translation`, `@bartendingapp/shared/ingredient-classification`, `@bartendingapp/shared/units`); never reimplement them here.
 - Keep `transform.ts` pure: plain data in, plain data out. Network and Supabase calls stay in the entry points.
 - Admin made recipes (`recipes.source = 'admin'`, spec 0030) are managed from the web admin UI, not by this job.
+- Never touch a recipe whose `image_origin` is `admin_upload`; `import_catalog` guards it too. The one direct table write, `migrate:images` setting an image, is guarded on the old URL so a rerun changes nothing.
+- Runtime values from `@bartendingapp/shared` come through subpath exports (e.g. `/recipe-images`), never the barrel, since `tsx` loads the barrel as CommonJS.
 
 _Drafted by /sync from the introducing change, worth a quick human pass._

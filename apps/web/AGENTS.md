@@ -51,7 +51,7 @@ pnpm --filter web run generate-theme
 - Every user facing string goes through next-intl, with the key added to both `messages/en.json` and `messages/es.json`; links use the helpers in `src/i18n/navigation.ts` so the locale is kept.
 - Non UI logic (types, Supabase client, pantry matching) comes from `@bartendingapp/shared`, never duplicated here.
 - Queries for owner scoped rows (pantry, shopping list) pass `enabled: session !== null` from `useSession()`, so the first visit waits for the guest session bootstrap instead of failing and retrying.
-- Every remote image host shown through `next/image` needs an entry in `next.config.ts` `images.remotePatterns` (today TheCocktailDB and the Supabase `comment-photos` bucket).
+- Every remote image host shown through `next/image` needs an entry in `next.config.ts` `images.remotePatterns` (today TheCocktailDB and the Supabase `comment-photos` and `recipe-images` buckets). Recipe cards show `recipeImageUrl(url, "card")`, unoptimized when it is in our bucket; the detail hero, JSON-LD, and Open Graph use the hero URL.
 - Server rendering / static generation used deliberately for public recipe pages to meet the SEO requirement (see `docs/specs/0001-stack-and-architecture.md`).
 
 ## Agent skills
