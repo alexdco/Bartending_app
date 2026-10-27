@@ -6,11 +6,13 @@
 //
 //   pnpm --filter @bartendingapp/import-job migrate:images [--dry-run]
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
-import { uploadRecipeImagePair, type Database } from "@bartendingapp/shared";
+import type { Database } from "@bartendingapp/shared";
+import { uploadRecipeImagePair } from "@bartendingapp/shared/recipe-images";
 import { downloadImage, mapWithConcurrency, processImageBuffer } from "./imageProcessing";
 import {
   isLegacyHotlink,
   migrateLegacyImage,
+  sharedImageUrl,
   type LegacyImageRow,
   type MigrateDeps,
 } from "./legacyImages";
@@ -54,9 +56,34 @@ async function fetchLegacyRows(supabase: SupabaseClient<Database>): Promise<Lega
   }
 }
 
+/**
+ * Downloads a legacy link. A link to a page (an Imgur album, `imgur.com/a/…`)
+ * is followed to the image the page shares, since admins pasted page links.
+ */
+async function downloadLegacyImage(
+  url: string,
+): Promise<{ data: Uint8Array; error: null } | { data: null; error: string }> {
+  try {
+    const response = await fetch(url, { signal: AbortSignal.timeout(20000) });
+
+    if (!response.ok) {
+      return { data: null, error: `HTTP ${response.status}` };
+    }
+
+    if (!(response.headers.get("content-type") ?? "").startsWith("text/html")) {
+      return { data: new Uint8Array(await response.arrayBuffer()), error: null };
+    }
+
+    const imageUrl = sharedImageUrl(await response.text());
+    return imageUrl ? downloadImage(imageUrl) : { data: null, error: "page link with no og:image" };
+  } catch (error) {
+    return { data: null, error: error instanceof Error ? error.message : String(error) };
+  }
+}
+
 function migrateDeps(supabase: SupabaseClient<Database>): MigrateDeps {
   return {
-    download: (url) => downloadImage(url),
+    download: downloadLegacyImage,
     process: async (bytes) => {
       // Same rules as an admin upload (AC-2), including the 600px minimum.
       const result = await processImageBuffer(bytes, { requireMinSide: true });

@@ -7,7 +7,7 @@ import {
   recipeImageHeroSide,
   validateRecipeImageDimensions,
   type RecipeImagePair,
-} from "@bartendingapp/shared";
+} from "@bartendingapp/shared/recipe-images";
 
 export type ProcessImageError = "decode_failed" | "too_small";
 

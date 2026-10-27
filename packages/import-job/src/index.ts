@@ -2,12 +2,10 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
-import {
-  uploadRecipeImagePair,
-  type Database,
-  type Json,
-  type RecipeImageOrigin,
-} from "@bartendingapp/shared";
+import type { Database, Json } from "@bartendingapp/shared";
+// A subpath, not the barrel: tsx loads the barrel as CommonJS, which hides
+// its `export *` names at runtime.
+import { uploadRecipeImagePair, type RecipeImageOrigin } from "@bartendingapp/shared/recipe-images";
 import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
 import { fetchAllDrinks } from "./theCocktailDb";

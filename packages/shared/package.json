@@ -12,6 +12,7 @@
     "./method-and-alias-classification": "./src/methodAndAliasClassification.ts",
     "./units": "./src/units.ts",
     "./catalog-names": "./src/catalogNames.ts",
+    "./recipe-images": "./src/recipeImages.ts",
     "./learn-article-generation": "./src/learnArticleGeneration.ts",
     "./quiz-generation": "./src/quizGeneration.ts"
   },

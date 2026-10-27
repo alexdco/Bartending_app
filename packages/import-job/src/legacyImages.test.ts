@@ -1,5 +1,10 @@
 import { describe, expect, it, vi } from "vitest";
-import { isLegacyHotlink, migrateLegacyImage, type MigrateDeps } from "./legacyImages";
+import {
+  isLegacyHotlink,
+  migrateLegacyImage,
+  sharedImageUrl,
+  type MigrateDeps,
+} from "./legacyImages";
 
 const ROW = { id: "3f2b6c1e-8a4d-4e2f-9b7a-1c2d3e4f5a6b", imageUrl: "https://i.imgur.com/abc.jpg" };
 const HERO = `https://x.supabase.co/storage/v1/object/public/recipe-images/recipes/${ROW.id}/0123456789abcdef-hero.webp`;
@@ -21,6 +26,21 @@ describe("isLegacyHotlink", () => {
     expect(isLegacyHotlink("https://imgur.com/abc")).toBe(true);
     expect(isLegacyHotlink("https://example.com/x.png")).toBe(true);
     expect(isLegacyHotlink("https://www.thecocktaildb.com/images/media/drink/x.jpg")).toBe(false);
+  });
+});
+
+describe("sharedImageUrl", () => {
+  it("reads og:image and drops Imgur's ?fb crop", () => {
+    const html = `<head>
+      <meta property="og:image:width" content="600">
+      <meta property="og:image" data-react-helmet="true" content="https://i.imgur.com/VGTYvBh.png?fb">
+    </head>`;
+    expect(sharedImageUrl(html)).toBe("https://i.imgur.com/VGTYvBh.png");
+  });
+
+  it("returns null when the page shares no image", () => {
+    expect(sharedImageUrl("<html><head><title>x</title></head></html>")).toBeNull();
+    expect(sharedImageUrl('<meta property="og:image" content="not a url">')).toBeNull();
   });
 });
 

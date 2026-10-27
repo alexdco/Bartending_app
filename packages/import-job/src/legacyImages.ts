@@ -19,6 +19,30 @@ export function isLegacyHotlink(url: string): boolean {
   }
 }
 
+/**
+ * The image an HTML page shares (its `og:image`), for pasted links to a page
+ * such as an Imgur album (`imgur.com/a/…`) rather than to the image file.
+ * The query string is dropped: Imgur's `?fb` asks for a 600 x 315 social
+ * crop, and the bare URL is the full original.
+ */
+export function sharedImageUrl(html: string): string | null {
+  const tags = html.match(/<meta\b[^>]*>/gi) ?? [];
+  const tag = tags.find((candidate) => /property=["']og:image["']/i.test(candidate));
+  const content = tag?.match(/content=["']([^"']+)["']/i)?.[1];
+
+  if (!content) {
+    return null;
+  }
+
+  try {
+    const url = new URL(content);
+    url.search = "";
+    return url.toString();
+  } catch {
+    return null;
+  }
+}
+
 export interface MigrateDeps {
   download: (
     url: string,
