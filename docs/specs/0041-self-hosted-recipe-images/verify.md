@@ -27,7 +27,7 @@ Before you start: run `20261026120000_recipe_images.sql`, `20261026130000_recipe
 - [ ] `import --copy-images` with one thumb made to 404 (fixture) → that recipe is `external_hotlink`, the warning names its `source_id`, the import finishes, the summary shows `1 failed` → AC-8 (also covered by `catalogImages.test.ts`)
 - [ ] `pnpm --filter @bartendingapp/import-job migrate:images --dry-run` → lists every non TheCocktailDB hotlink with its id; run without the flag → each moves to `recipes/<id>/…` as `admin_upload`, failures print id and URL; run again → `0 migrated, 0 failed` → AC-13
 - [ ] Once migrate reports 0 remaining, the Imgur entries are removed from `apps/web/next.config.ts` → AC-13
-- [ ] POST to `cleanup-orphan-recipe-images` with `{"dryRun": true}` and the service role Bearer → lists only pairs older than 24 hours that no recipe references (the old pair from the replace step after a day, never the current one); without the flag it deletes them → AC-12
+- [ ] POST to `cleanup-orphan-recipe-images` with `{"dryRun": true}` and the `secret_key` Vault secret on the `apikey` header → lists only pairs older than 24 hours that no recipe references (the old pair from the replace step after a day, never the current one); without the flag it deletes them → AC-12
 - [ ] `select jobname, schedule from cron.job where jobname = 'orphan-recipe-image-cleanup'` → `45 4 * * *` → AC-12
 
 ## Value sourcing
