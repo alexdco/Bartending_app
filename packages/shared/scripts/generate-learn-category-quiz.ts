@@ -1,6 +1,7 @@
 // One-shot generation script for spec 0026 (learn quizzes): drafts a quiz on
 // a Learn category's published articles. Inserts one quizzes row
-// (status = 'draft') plus 5 to 8 quiz_questions rows. Review and publish
+// (status = 'draft') plus 5 to 8 quiz_questions rows, each linked to the
+// article that answers it (spec 0042). Review and publish
 // happens by editing the row directly in Supabase Studio; there is no in app
 // publish action (AC-11).
 //
@@ -15,7 +16,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database } from "../src/database.types";
-import { generateLearnCategoryQuiz } from "../src/quizGeneration";
+import { fetchLearnCategoryPool, generateLearnCategoryQuiz } from "../src/quizGeneration";
 import { LEARN_CATEGORIES, isLearnCategory } from "../src/learnArticles";
 
 function readArg(name: string): string | undefined {
@@ -57,18 +58,9 @@ async function main() {
   });
   const anthropic = new Anthropic({ apiKey: anthropicApiKey });
 
-  const { data: articles, error } = await supabase
-    .from("learn_articles")
-    .select("title, body_markdown")
-    .eq("category", category)
-    .eq("status", "published");
+  const pool = await fetchLearnCategoryPool(supabase, category);
 
-  if (error) {
-    console.error(`Failed to read published articles for category "${category}":`, error);
-    process.exit(1);
-  }
-
-  if (!articles || articles.length === 0) {
+  if (pool.length === 0) {
     console.error(
       `No published Learn articles found for category "${category}". Publish at least one article before generating a quiz for it.`,
     );
@@ -78,10 +70,7 @@ async function main() {
   const { id } = await generateLearnCategoryQuiz(supabase, anthropic, {
     title,
     category,
-    articles: articles.map((article) => ({
-      title: article.title,
-      bodyMarkdown: article.body_markdown,
-    })),
+    pool,
   });
 
   console.log(
@@ -89,4 +78,7 @@ async function main() {
   );
 }
 
-main();
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});

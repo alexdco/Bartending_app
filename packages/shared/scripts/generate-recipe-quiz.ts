@@ -1,7 +1,7 @@
 // One-shot generation script for spec 0026 (learn quizzes): drafts a quiz on
 // a recipe tag or region grouping's real ingredient/glassware/region data.
 // Inserts one quizzes row (status = 'draft') plus 5 to 8 quiz_questions
-// rows. Review and publish happens by editing the row directly in Supabase
+// rows, each linked to the recipe that answers it (spec 0042). Review and publish happens by editing the row directly in Supabase
 // Studio; there is no in app publish action (AC-11).
 //
 // The generation logic itself lives in quizGeneration.ts.
@@ -17,7 +17,7 @@
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database } from "../src/database.types";
-import { generateRecipeQuiz } from "../src/quizGeneration";
+import { fetchRecipePool, generateRecipeQuiz } from "../src/quizGeneration";
 
 function readArg(name: string): string | undefined {
   const flag = `--${name}`;
@@ -56,41 +56,12 @@ async function main() {
   const sourceType = region ? ("recipe_region" as const) : ("recipe_tag" as const);
   const sourceRef = region ?? tagId!;
 
-  const recipeIdsQuery = region
-    ? supabase.from("recipes").select("id").eq("region", region).is("deleted_at", null)
-    : supabase.from("recipe_tags").select("recipe_id").eq("tag_id", tagId!);
+  const pool = await fetchRecipePool(supabase, { sourceType, sourceRef });
 
-  const { data: recipeIdRows, error: recipeIdsError } = await recipeIdsQuery;
-
-  if (recipeIdsError) {
-    console.error(`Failed to look up recipes for this grouping:`, recipeIdsError);
-    process.exit(1);
-  }
-
-  const recipeIds = (recipeIdRows ?? []).map((row) =>
-    "id" in row ? row.id : (row as { recipe_id: string }).recipe_id,
-  );
-
-  if (recipeIds.length === 0) {
+  if (pool.length === 0) {
     console.error(
       `No recipes found for ${region ? `region "${region}"` : `tag "${tagId}"`}. Nothing to generate a quiz from.`,
     );
-    process.exit(1);
-  }
-
-  const { data: recipes, error: recipesError } = await supabase
-    .from("recipes")
-    .select("name, glass, region, recipe_ingredients(sort_order, ingredients(name))")
-    .in("id", recipeIds)
-    .is("deleted_at", null);
-
-  if (recipesError) {
-    console.error("Failed to read recipe detail for this grouping:", recipesError);
-    process.exit(1);
-  }
-
-  if (!recipes || recipes.length === 0) {
-    console.error("No recipes found for this grouping. Nothing to generate a quiz from.");
     process.exit(1);
   }
 
@@ -98,14 +69,7 @@ async function main() {
     title,
     sourceType,
     sourceRef,
-    recipes: recipes.map((recipe) => ({
-      name: recipe.name,
-      glass: recipe.glass,
-      region: recipe.region,
-      ingredients: [...recipe.recipe_ingredients]
-        .sort((a, b) => a.sort_order - b.sort_order)
-        .map((ri) => ri.ingredients.name),
-    })),
+    pool,
   });
 
   console.log(
@@ -113,4 +77,7 @@ async function main() {
   );
 }
 
-main();
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});
