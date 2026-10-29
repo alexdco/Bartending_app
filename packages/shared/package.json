@@ -29,7 +29,11 @@
     "generate-learn-category-quiz": "tsx scripts/generate-learn-category-quiz.ts",
     "generate-recipe-quiz": "tsx scripts/generate-recipe-quiz.ts",
     "backfill-quiz-sources": "tsx scripts/backfill-quiz-sources.ts",
-    "reparse-measures": "tsx scripts/reparse-measures.ts"
+    "reparse-measures": "tsx scripts/reparse-measures.ts",
+    "propose-recipe-notes": "tsx scripts/propose-recipe-notes.ts",
+    "apply-recipe-notes": "tsx scripts/apply-recipe-notes.ts",
+    "propose-ingredient-allergens": "tsx scripts/propose-ingredient-allergens.ts",
+    "apply-ingredient-allergens": "tsx scripts/apply-ingredient-allergens.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

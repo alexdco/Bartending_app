@@ -14,3 +14,6 @@ apps/mobile/credentials/
 
 # Quiz source backfill plan files (spec 0042): reviewed locally, never committed
 quiz-source-plan*.json
+
+# Propose and apply review files (specs 0010, 0043): reviewed locally, never committed
+packages/shared/scripts/tagging/
