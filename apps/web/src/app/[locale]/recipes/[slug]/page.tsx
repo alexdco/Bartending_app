@@ -22,6 +22,8 @@ import { CommentSection } from "@/comments/comment-section";
 import { FlavorProfileSection } from "@/recipes/flavor-profile-section";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { RecipeMeasures } from "@/recipes/recipe-measures";
+import { RecipeNotesSections } from "@/recipes/recipe-notes-sections";
+import { AllergenSection } from "@/recipes/allergen-section";
 import { buildRecipeJsonLd } from "@/recipes/recipe-json-ld";
 import { RecommendationsSection } from "@/recipe-recommendations/recommendations-section";
 
@@ -169,6 +171,10 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
           </section>
         }
       />
+
+      <RecipeNotesSections recipe={recipe} />
+
+      <AllergenSection ingredients={recipe.ingredients} />
 
       <RecommendationsSection recipeId={recipe.id} recipeName={recipe.name} />
 
