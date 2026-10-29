@@ -3,6 +3,8 @@ import type { Database } from "./database.types";
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "./locale";
 import { toRecognizedUnit, type RecognizedUnit } from "./units";
 import type { IngredientCategory } from "./batch";
+import { toAllergenList, type Allergen } from "./allergens";
+import { isDrinkStyle, type DrinkStyle } from "./drinkStyle";
 
 export type AlcoholicStatusFilter = "alcoholic" | "non_alcoholic" | "optional";
 
@@ -103,6 +105,8 @@ export interface RecipeIngredientDetail {
   category: IngredientCategory | null;
   /** Always on hand (Ice, Water): no pantry or shopping list buttons (spec 0036, AC-10). */
   isStaple: boolean;
+  /** Null = not reviewed yet, empty = reviewed, none (spec 0043, AC-6). */
+  allergens: readonly Allergen[] | null;
 }
 
 export interface RecipeDetail {
@@ -121,6 +125,12 @@ export interface RecipeDetail {
   isFavorited: boolean;
   /** Imported from TheCocktailDB (not custom or admin): show its credit (spec 0041 AC-14). */
   isCocktailDbRecipe: boolean;
+  /** Drink style family; null hides the Drink Style section (spec 0043, AC-1). */
+  drinkStyle: DrinkStyle | null;
+  /** Localized by the RPC, falling back to English (AC-5). */
+  drinkStyleNote: string | null;
+  bartenderTip: string | null;
+  presentationTip: string | null;
 }
 
 interface RecipeDetailIngredientRow {
@@ -132,6 +142,7 @@ interface RecipeDetailIngredientRow {
   amount_unit: string | null;
   category: IngredientCategory | null;
   is_staple?: boolean;
+  allergens?: unknown;
 }
 
 export async function fetchRecipeDetail(
@@ -161,6 +172,7 @@ export async function fetchRecipeDetail(
       amountUnit: toRecognizedUnit(ri.amount_unit),
       category: ri.category,
       isStaple: ri.is_staple ?? false,
+      allergens: toAllergenList(ri.allergens),
     }))
     .sort((a, b) => a.sortOrder - b.sortOrder);
 
@@ -175,6 +187,10 @@ export async function fetchRecipeDetail(
     flavorProfile: data.taste_tags ?? [],
     isFavorited: data.is_favorited,
     isCocktailDbRecipe: data.is_cocktaildb_recipe,
+    drinkStyle: isDrinkStyle(data.drink_style) ? data.drink_style : null,
+    drinkStyleNote: data.drink_style_note ?? null,
+    bartenderTip: data.bartender_tip ?? null,
+    presentationTip: data.presentation_tip ?? null,
   };
 }
 
