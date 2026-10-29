@@ -65,8 +65,19 @@ export async function withRetry<T>(label: string, run: () => Promise<T>): Promis
   return null;
 }
 
+// Reads packages/shared/.env when present (gitignored), as
+// backfill-quiz-sources.ts does. Variables already set in the shell are kept.
+function loadLocalEnvFile(): void {
+  try {
+    process.loadEnvFile(new URL("../.env", import.meta.url));
+  } catch {
+    // No .env file: rely on the shell environment.
+  }
+}
+
 /** Reads required env vars, exiting with the missing names when any is unset. */
 export function requireEnv<const K extends string>(names: readonly K[]): Record<K, string> {
+  loadLocalEnvFile();
   const missing = names.filter((name) => !process.env[name]);
   if (missing.length > 0) {
     console.error(`Missing ${missing.join(", ")}.`);
