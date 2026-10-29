@@ -118,6 +118,41 @@
     "toggleLabel": "Marcar {{name}} como favorito"
   },
   "recipe": {
-    "cocktailDbCredit": "Receta e imagen de TheCocktailDB"
+    "instructions": "Preparación",
+    "cocktailDbCredit": "Receta e imagen de TheCocktailDB",
+    "drinkStyle": "Estilo de bebida",
+    "bartenderTip": "Consejo del bartender",
+    "presentationTip": "Consejo de presentación",
+    "allergens": "Información sobre alérgenos",
+    "allergensNone": "Ninguno de los alérgenos comunes está en los ingredientes de la lista.",
+    "allergensIncomplete": "Esta información sobre alérgenos está incompleta: aún no se han revisado algunos ingredientes.",
+    "allergensDisclaimer": "Basado en los ingredientes de la lista. Las marcas varían, así que revisa siempre las etiquetas de los productos.",
+    "drinkStyles": {
+      "sour": "Sour",
+      "highball": "Highball",
+      "spirit_forward": "Predomina el destilado",
+      "fizz_collins": "Fizz y Collins",
+      "tiki": "Tiki",
+      "flip_cream": "Flip y cremosos",
+      "punch": "Ponche",
+      "shooter": "Shot",
+      "hot": "Bebida caliente",
+      "frozen": "Frozen",
+      "other": "Otro"
+    },
+    "allergenLabels": {
+      "egg": "Huevo",
+      "milk": "Leche",
+      "tree_nuts": "Frutos secos",
+      "peanuts": "Cacahuates",
+      "gluten": "Gluten",
+      "soy": "Soya",
+      "sulfites": "Sulfitos",
+      "fish": "Pescado",
+      "shellfish": "Mariscos",
+      "celery": "Apio",
+      "sesame": "Sésamo",
+      "mustard": "Mostaza"
+    }
   }
 }

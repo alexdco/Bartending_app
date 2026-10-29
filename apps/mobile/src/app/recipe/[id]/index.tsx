@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -13,6 +14,8 @@ import { CommentSection } from "@/comments/comment-section";
 import { FlavorProfileSection } from "@/recipes/flavor-profile-section";
 import { RecipeDetailHeader } from "@/recipes/recipe-detail-header";
 import { RecipeMeasures } from "@/recipes/recipe-measures";
+import { RecipeNotesSections } from "@/recipes/recipe-notes-sections";
+import { AllergenSection } from "@/recipes/allergen-section";
 import { useRecipeDetail } from "@/recipes/use-recipe-detail";
 import { useRecipeRedirect } from "@/recipes/use-recipe-redirect";
 import { RecommendationsSection } from "@/recipe-recommendations/recommendations-section";
@@ -20,6 +23,7 @@ import { RecommendationsSection } from "@/recipe-recommendations/recommendations
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const { data: recipe, error, isPending, refetch } = useRecipeDetail(id);
   // A hidden duplicate opens its kept recipe instead (spec 0036, AC-2). One
@@ -81,9 +85,15 @@ export default function RecipeDetailScreen() {
         <RecipeMeasures key={recipe.id} ingredients={recipe.ingredients} />
 
         <View style={styles.section}>
-          <Text variant="heading">Instructions</Text>
+          <Text variant="heading" accessibilityRole="header">
+            {t("recipe.instructions")}
+          </Text>
           <Text variant="body">{recipe.instructions}</Text>
         </View>
+
+        <RecipeNotesSections recipe={recipe} />
+
+        <AllergenSection ingredients={recipe.ingredients} />
 
         <RecommendationsSection recipeId={recipe.id} />
 

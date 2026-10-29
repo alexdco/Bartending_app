@@ -118,6 +118,41 @@
     "toggleLabel": "Favorite {{name}}"
   },
   "recipe": {
-    "cocktailDbCredit": "Recipe and image from TheCocktailDB"
+    "instructions": "Instructions",
+    "cocktailDbCredit": "Recipe and image from TheCocktailDB",
+    "drinkStyle": "Drink style",
+    "bartenderTip": "Bartender tip",
+    "presentationTip": "Presentation tip",
+    "allergens": "Allergen information",
+    "allergensNone": "None of the common allergens are in the listed ingredients.",
+    "allergensIncomplete": "This allergen information is incomplete: some ingredients haven't been reviewed yet.",
+    "allergensDisclaimer": "Based on the listed ingredients. Brands vary, so always check product labels.",
+    "drinkStyles": {
+      "sour": "Sour",
+      "highball": "Highball",
+      "spirit_forward": "Spirit forward",
+      "fizz_collins": "Fizz and Collins",
+      "tiki": "Tiki",
+      "flip_cream": "Flip and cream",
+      "punch": "Punch",
+      "shooter": "Shooter",
+      "hot": "Hot drink",
+      "frozen": "Frozen",
+      "other": "Other"
+    },
+    "allergenLabels": {
+      "egg": "Egg",
+      "milk": "Milk",
+      "tree_nuts": "Tree nuts",
+      "peanuts": "Peanuts",
+      "gluten": "Gluten",
+      "soy": "Soy",
+      "sulfites": "Sulfites",
+      "fish": "Fish",
+      "shellfish": "Shellfish",
+      "celery": "Celery",
+      "sesame": "Sesame",
+      "mustard": "Mustard"
+    }
   }
 }
