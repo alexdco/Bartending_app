@@ -28,6 +28,7 @@
     "generate-learn-article": "tsx scripts/generate-learn-article.ts",
     "generate-learn-category-quiz": "tsx scripts/generate-learn-category-quiz.ts",
     "generate-recipe-quiz": "tsx scripts/generate-recipe-quiz.ts",
+    "backfill-quiz-sources": "tsx scripts/backfill-quiz-sources.ts",
     "reparse-measures": "tsx scripts/reparse-measures.ts"
   },
   "dependencies": {

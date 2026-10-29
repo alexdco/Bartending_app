@@ -11,3 +11,6 @@ dist/
 # EAS signing and store keys live in EAS, never in the repo (spec 0040, AC-12)
 credentials.json
 apps/mobile/credentials/
+
+# Quiz source backfill plan files (spec 0042): reviewed locally, never committed
+quiz-source-plan*.json
