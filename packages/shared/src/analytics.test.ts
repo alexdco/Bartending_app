@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildQuizSourceLinkClickedEvent,
   ANALYTICS_EVENT_NAMES,
   buildDrinkIdeaGeneratedEvent,
   buildPantryItemAddedEvent,
@@ -33,5 +34,21 @@ describe("analytics event builders", () => {
     const event = buildDrinkIdeaGeneratedEvent({ source: "ai", pantry_size: 5 });
     expect(event.name).toBe(ANALYTICS_EVENT_NAMES.drinkIdeaGenerated);
     expect(Object.keys(event.properties).sort()).toEqual(["pantry_size", "source"]);
+  });
+
+  it("quiz_source_link_clicked carries exactly quiz_id, question_id, target_kind, was_correct (covers spec 0042 AC-9)", () => {
+    const event = buildQuizSourceLinkClickedEvent({
+      quiz_id: "quiz-1",
+      question_id: "question-1",
+      target_kind: "recipe",
+      was_correct: false,
+    });
+    expect(event.name).toBe("quiz_source_link_clicked");
+    expect(event.properties).toEqual({
+      quiz_id: "quiz-1",
+      question_id: "question-1",
+      target_kind: "recipe",
+      was_correct: false,
+    });
   });
 });
