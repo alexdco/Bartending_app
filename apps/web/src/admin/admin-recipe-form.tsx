@@ -4,6 +4,9 @@ import { useId, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   ADMIN_ALCOHOLIC_STATUSES,
+  DRINK_STYLES,
+  noteLength,
+  RECIPE_NOTE_MAX_LENGTH,
   saveAdminRecipe,
   setRecipeImage,
   splitIngredientLines,
@@ -14,10 +17,11 @@ import {
   type AdminRecipeFormIngredient,
   type AdminRecipeFormTag,
   type AdminRecipeValidationError,
+  type DrinkStyle,
   type SetRecipeImageError,
   type UploadRecipeImageError,
 } from "@bartendingapp/shared";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { supabase } from "@/lib/supabase";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
@@ -46,9 +50,15 @@ function errorFor(
     case "required":
       return t("errorRequired");
     case "too_long":
-      return field === "name" ? t("errorNameTooLong") : t("errorInstructionsTooLong");
+      return field === "name"
+        ? t("errorNameTooLong")
+        : field === "instructions"
+          ? t("errorInstructionsTooLong")
+          : t("errorNoteTooLong");
     case "invalid":
-      return t("errorInvalidStatus");
+      return field === "drinkStyle" ? t("errorInvalidDrinkStyle") : t("errorInvalidStatus");
+    case "needs_style":
+      return t("errorNoteNeedsStyle");
     default:
       return t("errorNoIngredients");
   }
@@ -95,6 +105,52 @@ function sameFlavorNames(
   return flavorKey(a) === flavorKey(b);
 }
 
+interface NoteFieldProps {
+  id: string;
+  label: string;
+  value: string;
+  onChange: (value: string) => void;
+  error: string | undefined;
+}
+
+/** A style sentence or tip textarea with a live n/240 counter (spec 0043 AC-10). */
+function NoteField({ id, label, value, onChange, error }: NoteFieldProps) {
+  const length = noteLength(value.trim());
+  const counterId = `${id}-counter`;
+
+  return (
+    <div className="flex flex-col gap-one">
+      <label htmlFor={id} className="text-label font-medium text-text">
+        {label}
+      </label>
+      <textarea
+        id={id}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        rows={2}
+        aria-describedby={counterId}
+        aria-invalid={error ? true : undefined}
+        className={`rounded-small border bg-surface px-three py-two text-body text-text ${
+          error ? "border-danger" : "border-border"
+        }`}
+      />
+      <span
+        id={counterId}
+        className={`self-end text-body-small ${
+          length > RECIPE_NOTE_MAX_LENGTH ? "text-danger" : "text-text-muted"
+        }`}
+      >
+        {length}/{RECIPE_NOTE_MAX_LENGTH}
+      </span>
+      {error && (
+        <span role="alert" className="text-body-small text-danger">
+          {error}
+        </span>
+      )}
+    </div>
+  );
+}
+
 export interface AdminRecipeFormProps {
   /** Pass an existing recipe to pre fill the form for editing; omit to create. */
   existingRecipe?: AdminRecipeDetail;
@@ -104,6 +160,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
   const tStatus = useTranslations("alcoholicStatus");
+  const tRecipe = useTranslations("recipe");
   const router = useRouter();
   const [name, setName] = useState(existingRecipe?.name ?? "");
   const [instructions, setInstructions] = useState(existingRecipe?.instructions ?? "");
@@ -125,6 +182,12 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   const [flavorProfile, setFlavorProfile] = useState<AdminRecipeFormTag[]>(
     existingRecipe?.flavorProfile.length ? existingRecipe.flavorProfile : [{ name: "" }],
   );
+  const [drinkStyle, setDrinkStyle] = useState<DrinkStyle | null>(
+    existingRecipe?.drinkStyle ?? null,
+  );
+  const [drinkStyleNote, setDrinkStyleNote] = useState(existingRecipe?.drinkStyleNote ?? "");
+  const [bartenderTip, setBartenderTip] = useState(existingRecipe?.bartenderTip ?? "");
+  const [presentationTip, setPresentationTip] = useState(existingRecipe?.presentationTip ?? "");
   const [errors, setErrors] = useState<AdminRecipeValidationError[]>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -205,12 +268,21 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
       flavorProfile: sameFlavorNames(flavorProfile, existingRecipe?.flavorProfile ?? [])
         ? null
         : flavorProfile,
+      drinkStyle,
+      drinkStyleNote,
+      bartenderTip,
+      presentationTip,
     });
 
     if (result.error) {
       setIsSaving(false);
       if (result.error.reason === "validation") {
         setErrors(result.error.errors);
+      } else if (result.error.reason === "notes_failed") {
+        // The recipe exists now: a retry updates it instead of creating another.
+        setErrors([]);
+        setSavedRecipeId(result.error.id);
+        setSaveError(t("notesSaveFailed", { message: result.error.message }));
       } else {
         setSaveError(result.error.message);
       }
@@ -498,6 +570,74 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
           {t("addTag")}
         </Button>
       </div>
+
+      <fieldset className="flex flex-col gap-three">
+        <legend className="contents">
+          <Text variant="label">{t("notesHeading")}</Text>
+        </legend>
+        <Text variant="bodySmall" muted>
+          {t("notesHint")}
+        </Text>
+
+        <div className="flex flex-col gap-one">
+          <label htmlFor="drinkStyle" className="text-label font-medium text-text">
+            {t("drinkStyle")}
+          </label>
+          <select
+            id="drinkStyle"
+            value={drinkStyle ?? ""}
+            onChange={(event) =>
+              setDrinkStyle(event.target.value ? (event.target.value as DrinkStyle) : null)
+            }
+            className={`rounded-small border bg-surface px-three py-two text-body text-text ${
+              errorFor(t, errors, "drinkStyle") ? "border-danger" : "border-border"
+            }`}
+          >
+            <option value="">{t("drinkStyleNone")}</option>
+            {DRINK_STYLES.map((style) => (
+              <option key={style} value={style}>
+                {tRecipe(`drinkStyles.${style}`)}
+              </option>
+            ))}
+          </select>
+          {errorFor(t, errors, "drinkStyle") && (
+            <span role="alert" className="text-body-small text-danger">
+              {errorFor(t, errors, "drinkStyle")}
+            </span>
+          )}
+        </div>
+
+        <NoteField
+          id="drinkStyleNote"
+          label={t("drinkStyleNote")}
+          value={drinkStyleNote}
+          onChange={setDrinkStyleNote}
+          error={errorFor(t, errors, "drinkStyleNote")}
+        />
+        <NoteField
+          id="bartenderTip"
+          label={t("bartenderTip")}
+          value={bartenderTip}
+          onChange={setBartenderTip}
+          error={errorFor(t, errors, "bartenderTip")}
+        />
+        <NoteField
+          id="presentationTip"
+          label={t("presentationTip")}
+          value={presentationTip}
+          onChange={setPresentationTip}
+          error={errorFor(t, errors, "presentationTip")}
+        />
+
+        {existingRecipe && existingRecipe.unreviewedAllergenCount > 0 ? (
+          <Text variant="bodySmall" muted>
+            {t("unreviewedAllergens", { count: existingRecipe.unreviewedAllergenCount })}{" "}
+            <Link href="/admin/ingredients" className="underline underline-offset-4">
+              {t("reviewAllergensLink")}
+            </Link>
+          </Text>
+        ) : null}
+      </fieldset>
 
       {saveError && (
         <Text variant="bodySmall" className="text-danger">

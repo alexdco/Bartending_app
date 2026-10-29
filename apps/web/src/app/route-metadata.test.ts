@@ -67,6 +67,7 @@ const ROUTES: Record<string, RouteMeta> = {
     description: null,
   },
   "auth/callback/page.tsx": { title: ["account", "callbackMetaTitle"], description: null },
+  "admin/ingredients/page.tsx": { title: ["admin", "ingredientsMetaTitle"], description: null },
   "admin/comments/page.tsx": { title: ["admin", "commentsMetaTitle"], description: null },
   "admin/recipes/page.tsx": { title: ["admin", "recipesMetaTitle"], description: null },
   "admin/recipes/new/page.tsx": { title: ["admin", "newRecipeMetaTitle"], description: null },

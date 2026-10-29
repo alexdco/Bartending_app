@@ -2,6 +2,13 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { parseMeasure, type RecognizedUnit } from "./units";
 import { canonicalGlass, canonicalIngredientName } from "./catalogNames";
+import {
+  DRINK_STYLES,
+  isDrinkStyle,
+  noteLength,
+  RECIPE_NOTE_MAX_LENGTH,
+  type DrinkStyle,
+} from "./drinkStyle";
 
 export const ADMIN_RECIPE_NAME_MAX_LENGTH = 200;
 export const ADMIN_RECIPE_INSTRUCTIONS_MAX_LENGTH = 10000;
@@ -119,6 +126,13 @@ export interface AdminRecipeDetail {
   tags: AdminRecipeTag[];
   /** Taste tags (tags.kind = 'taste'), sorted by name. */
   flavorProfile: AdminRecipeTag[];
+  /** English notes (spec 0043); Spanish is not edited in admin. */
+  drinkStyle: DrinkStyle | null;
+  drinkStyleNote: string | null;
+  bartenderTip: string | null;
+  presentationTip: string | null;
+  /** Ingredients with no allergen review yet, for the form's hint (spec 0043). */
+  unreviewedAllergenCount: number;
 }
 
 /**
@@ -135,7 +149,8 @@ export async function fetchAdminRecipeDetail(
     .from("recipes")
     .select(
       `id, name, instructions, image_url, glass, alcoholic_status, region, source,
-       recipe_ingredients ( measure, sort_order, ingredients ( name ) ),
+       drink_style, drink_style_note, bartender_tip, presentation_tip,
+       recipe_ingredients ( measure, sort_order, ingredients ( name, allergens ) ),
        recipe_tags ( tags ( name, kind ) )`,
     )
     .eq("id", id)
@@ -175,6 +190,13 @@ export async function fetchAdminRecipeDetail(
     ingredients,
     tags,
     flavorProfile,
+    drinkStyle: isDrinkStyle(data.drink_style) ? data.drink_style : null,
+    drinkStyleNote: data.drink_style_note,
+    bartenderTip: data.bartender_tip,
+    presentationTip: data.presentation_tip,
+    unreviewedAllergenCount: data.recipe_ingredients.filter(
+      (ri) => ri.ingredients.allergens === null,
+    ).length,
   };
 }
 
@@ -196,17 +218,30 @@ export interface AdminRecipeFormValues {
    * reclassification, so send one only when the admin touched the picker.
    */
   flavorProfile: AdminRecipeFormTag[] | null;
+  /** Spec 0043: null means none. */
+  drinkStyle: DrinkStyle | null;
+  /** Empty means none. */
+  drinkStyleNote: string;
+  bartenderTip: string;
+  presentationTip: string;
 }
 
 export type AdminRecipeValidationError =
   | { field: "name"; reason: "required" | "too_long" }
   | { field: "instructions"; reason: "required" | "too_long" }
   | { field: "alcoholicStatus"; reason: "invalid" }
-  | { field: "ingredients"; reason: "required" };
+  | { field: "ingredients"; reason: "required" }
+  | { field: "drinkStyle"; reason: "invalid" }
+  | { field: "drinkStyleNote"; reason: "too_long" | "needs_style" }
+  | { field: "bartenderTip"; reason: "too_long" }
+  | { field: "presentationTip"; reason: "too_long" };
+
+const isNoteTooLong = (text: string) => noteLength(text.trim()) > RECIPE_NOTE_MAX_LENGTH;
 
 /**
- * Mirrors admin_upsert_recipe's own checks (AC-8) so an invalid submission
- * is caught before the round trip, not only inside the function.
+ * Mirrors admin_upsert_recipe's and admin_set_recipe_notes' own checks
+ * (spec 0030 AC-8, spec 0043 AC-10) so an invalid submission is caught
+ * before the round trip, not only inside the functions.
  */
 export function validateAdminRecipeForm(
   values: AdminRecipeFormValues,
@@ -237,12 +272,32 @@ export function validateAdminRecipeForm(
     errors.push({ field: "ingredients", reason: "required" });
   }
 
+  if (values.drinkStyle !== null && !DRINK_STYLES.includes(values.drinkStyle)) {
+    errors.push({ field: "drinkStyle", reason: "invalid" });
+  }
+
+  if (isNoteTooLong(values.drinkStyleNote)) {
+    errors.push({ field: "drinkStyleNote", reason: "too_long" });
+  } else if (values.drinkStyleNote.trim() && values.drinkStyle === null) {
+    errors.push({ field: "drinkStyleNote", reason: "needs_style" });
+  }
+
+  if (isNoteTooLong(values.bartenderTip)) {
+    errors.push({ field: "bartenderTip", reason: "too_long" });
+  }
+
+  if (isNoteTooLong(values.presentationTip)) {
+    errors.push({ field: "presentationTip", reason: "too_long" });
+  }
+
   return errors;
 }
 
 export type SaveAdminRecipeError =
   | { reason: "validation"; errors: AdminRecipeValidationError[] }
-  | { reason: "request_failed"; message: string };
+  | { reason: "request_failed"; message: string }
+  /** The recipe saved under `id` but its notes did not; retry with that id (spec 0043). */
+  | { reason: "notes_failed"; id: string; message: string };
 
 export type SaveAdminRecipeResult =
   { data: { id: string }; error: null } | { data: null; error: SaveAdminRecipeError };
@@ -300,7 +355,9 @@ export function splitNameList(text: string): string[] {
  * Thin wrapper over the admin_upsert_recipe RPC (spec 0030): resolves or
  * creates each ingredient/tag/flavor by normalized name and replaces the recipe's
  * join rows in one transaction, so a save either fully succeeds or fully
- * fails (AC-8).
+ * fails (AC-8). Then admin_set_recipe_notes saves the English style and tips
+ * (spec 0043 AC-10); if only that call fails, the result is `notes_failed`
+ * with the saved id, so a retry updates that recipe instead of creating one.
  */
 export async function saveAdminRecipe(
   client: SupabaseClient<Database>,
@@ -337,7 +394,22 @@ export async function saveAdminRecipe(
     return { data: null, error: { reason: "request_failed", message: error.message } };
   }
 
-  return { data: { id: data as unknown as string }, error: null };
+  const id = data as unknown as string;
+
+  // Same generator limitation: these text params accept null (none).
+  const notes = await client.rpc("admin_set_recipe_notes", {
+    p_recipe_id: id,
+    p_drink_style: values.drinkStyle,
+    p_drink_style_note: values.drinkStyleNote.trim() || null,
+    p_bartender_tip: values.bartenderTip.trim() || null,
+    p_presentation_tip: values.presentationTip.trim() || null,
+  } as Database["public"]["Functions"]["admin_set_recipe_notes"]["Args"]);
+
+  if (notes.error) {
+    return { data: null, error: { reason: "notes_failed", id, message: notes.error.message } };
+  }
+
+  return { data: { id }, error: null };
 }
 
 export type DeleteAdminRecipeResult =
