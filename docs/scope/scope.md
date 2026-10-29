@@ -62,6 +62,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 49 | EAS build and submit setup | Hardening | in-progress |
 | 50 | Self hosted recipe images | Hardening | done |
 | 51 | Quiz answer source links | Slice 23 | in-progress |
+| 52 | Recipe drink style, tips, and allergens | Slice 29 | in-progress |
 
 ## Foundations
 
@@ -581,6 +582,21 @@ A signed in user can attach up to 3 photos to a recipe comment, on web and mobil
 - [x] Verify it: `/check verify recipe comment photos`
 - [x] Test it: `/test recipe comment photos`
 Spec [0032](../specs/0032-recipe-comment-photos/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
+
+## Slice 29: Recipe drink style, tips, and allergens
+
+### 52. Recipe drink style, tips, and allergens · in-progress
+Four new sections below Instructions on the recipe page, web and mobile: Drink Style, Bartender tip, Presentation tip, and Allergen Information. Style and tips come from a reviewed Haiku backfill in EN and ES and are editable in the admin form; allergens are derived from reviewed per ingredient tags, with an ingredient allergen editor in admin.
+**Done when:** a recipe page shows the four sections in order in both locales, the allergen list names each allergen with its source ingredients plus a "check product labels" disclaimer and an honest incomplete state, and admins can edit tips and ingredient allergens.
+- [x] Design it (spec): `/architect recipe drink style, tips, and allergens`
+- [ ] Build it: `/develop recipe drink style, tips, and allergens`
+  - [x] One thread end to end: migration (columns, checks, `fetch_recipe_detail`, apply and admin RPCs), shared types and `summarizeRecipeAllergens`, web and mobile sections proven on a hand seeded recipe, satisfies AC-1 to AC-6, AC-12
+  - [ ] Ingredient allergen pipeline: propose, review, apply, satisfies AC-6, AC-9
+  - [ ] Recipe notes pipeline in EN and ES: propose, review, apply, satisfies AC-1 to AC-5, AC-7, AC-8
+  - [x] Admin: recipe form note fields with the chained save, and the `/admin/ingredients` allergen editor, satisfies AC-10, AC-11
+- [ ] Verify it: `/check verify recipe drink style, tips, and allergens`
+- [ ] Test it: `/test recipe drink style, tips, and allergens`
+Spec [0043](../specs/0043-recipe-style-tips-allergens/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Hardening: app review fixes (Oct 2026)
 
