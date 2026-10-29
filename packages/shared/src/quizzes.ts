@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { isLearnCategory, type LearnCategory } from "./learnArticles";
 import { ensureAnonymousSession } from "./supabaseClient";
 
 // Learn quizzes (spec 0026): a quiz on a Learn category or a recipe
@@ -34,7 +35,16 @@ export interface QuizQuestion {
   correctOptionIndex: number;
   explanation: string | null;
   sortOrder: number;
+  // null = no source, or the source row is hidden by its own RLS (a draft
+  // article, a soft deleted recipe), spec 0042 AC-3.
+  source: QuizQuestionSource | null;
+  sourceAnchor: string | null;
 }
+
+// The one Learn article or recipe that holds a question's answer (spec 0042).
+export type QuizQuestionSource =
+  | { kind: "article"; id: string; title: string; category: LearnCategory }
+  | { kind: "recipe"; id: string; name: string };
 
 export interface QuizDetail extends QuizSummary {
   questions: QuizQuestion[];
@@ -60,6 +70,96 @@ function mapQuizSummary(row: {
     sourceRef: row.source_ref,
     publishedAt: row.published_at,
   };
+}
+
+// Builds a question's source from its embedded learn_articles / recipes rows
+// (spec 0042). An article only counts when its category is a known Learn
+// category, so an unexpected value never reaches a link path unchecked.
+function mapQuizQuestionSource(
+  article: { id: string; title: string; category: string } | null,
+  recipe: { id: string; name: string } | null,
+): QuizQuestionSource | null {
+  if (article) {
+    return isLearnCategory(article.category)
+      ? { kind: "article", id: article.id, title: article.title, category: article.category }
+      : null;
+  }
+  if (recipe) {
+    return { kind: "recipe", id: recipe.id, name: recipe.name };
+  }
+  return null;
+}
+
+export const QUIZ_SOURCE_ANCHOR_MIN_LENGTH = 3;
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+// Splits an explanation around the first case insensitive occurrence of its
+// stored anchor (spec 0042 AC-1, AC-2). `match` is sliced from the
+// explanation, so it keeps the explanation's own casing. Returns null when
+// the explanation is empty, the trimmed anchor is shorter than
+// QUIZ_SOURCE_ANCHOR_MIN_LENGTH, or the anchor is not found; callers then
+// fall back to the "Read more" line. The generation and backfill scripts use
+// the same helper as their validator, so "renders inline" and "passes
+// validation" can never disagree.
+export function splitExplanationAtAnchor(
+  explanation: string | null,
+  anchor: string | null,
+): { before: string; match: string; after: string } | null {
+  const trimmed = anchor?.trim() ?? "";
+  if (!explanation || trimmed.length < QUIZ_SOURCE_ANCHOR_MIN_LENGTH) {
+    return null;
+  }
+
+  const found = new RegExp(escapeRegExp(trimmed), "i").exec(explanation);
+  if (!found) {
+    return null;
+  }
+
+  const start = found.index;
+  const end = start + found[0].length;
+  return {
+    before: explanation.slice(0, start),
+    match: explanation.slice(start, end),
+    after: explanation.slice(end),
+  };
+}
+
+export type QuizAnswers = Readonly<Record<string, number>>;
+
+// Validates a kept result read back from client storage (spec 0042 AC-5):
+// returns the answers only if their keys are exactly this quiz's question
+// ids and every value is a valid option index, otherwise null (a stale
+// entry from an edited quiz, or a corrupt value, is simply not restored).
+// Callers always recompute the score from these answers.
+export function restoreQuizAnswers(
+  stored: unknown,
+  questions: readonly Pick<QuizQuestion, "id" | "options">[],
+): QuizAnswers | null {
+  if (typeof stored !== "object" || stored === null || Array.isArray(stored)) {
+    return null;
+  }
+
+  const entries = Object.entries(stored);
+  if (entries.length !== questions.length) {
+    return null;
+  }
+
+  const optionCounts = new Map(questions.map((question) => [question.id, question.options.length]));
+  const valid = entries.every(([questionId, value]) => {
+    const optionCount = optionCounts.get(questionId);
+    return (
+      optionCount !== undefined &&
+      typeof value === "number" &&
+      Number.isInteger(value) &&
+      value >= 0 &&
+      value < optionCount
+    );
+  });
+
+  return valid ? (Object.fromEntries(entries) as QuizAnswers) : null;
 }
 
 // RLS restricts every read here to status = 'published' rows regardless of
@@ -116,7 +216,9 @@ export async function fetchQuizDetail(
   const { data, error } = await client
     .from("quizzes")
     .select(
-      "id, title, source_type, source_ref, published_at, quiz_questions(id, question_type, prompt, options, correct_option_index, explanation, sort_order)",
+      // Plain (left) embeds for the sources, never !inner: a source hidden by
+      // its own RLS must come back null, not drop the question (spec 0042).
+      "id, title, source_type, source_ref, published_at, quiz_questions(id, question_type, prompt, options, correct_option_index, explanation, sort_order, source_anchor, learn_articles!source_article_id(id, title, category), recipes!source_recipe_id(id, name))",
     )
     .eq("id", id)
     .eq("status", "published")
@@ -147,6 +249,8 @@ export async function fetchQuizDetail(
       correctOptionIndex: question.correct_option_index,
       explanation: question.explanation,
       sortOrder: question.sort_order,
+      source: mapQuizQuestionSource(question.learn_articles, question.recipes),
+      sourceAnchor: question.source_anchor,
     })),
   };
 }

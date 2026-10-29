@@ -7,6 +7,8 @@ import {
   fetchQuizzes,
   isQuizSourceType,
   QUIZ_SOURCE_TYPES,
+  restoreQuizAnswers,
+  splitExplanationAtAnchor,
   submitQuizAttempt,
 } from "./quizzes";
 
@@ -142,6 +144,9 @@ describe("fetchQuizDetail", () => {
             correct_option_index: 0,
             explanation: null,
             sort_order: 1,
+            source_anchor: null,
+            learn_articles: null,
+            recipes: null,
           },
           {
             id: "q1",
@@ -151,6 +156,9 @@ describe("fetchQuizDetail", () => {
             correct_option_index: 0,
             explanation: "A jigger measures spirits.",
             sort_order: 0,
+            source_anchor: null,
+            learn_articles: null,
+            recipes: null,
           },
         ],
       },
@@ -168,7 +176,86 @@ describe("fetchQuizDetail", () => {
       correctOptionIndex: 0,
       explanation: "A jigger measures spirits.",
       sortOrder: 0,
+      source: null,
+      sourceAnchor: null,
     });
+  });
+
+  function detailWithQuestion(question: Record<string, unknown>) {
+    return {
+      id: "1",
+      title: "Quiz",
+      source_type: "recipe_tag",
+      source_ref: "tag-1",
+      published_at: "2026-01-01",
+      quiz_questions: [
+        {
+          id: "q1",
+          question_type: "multiple_choice",
+          prompt: "Which mug?",
+          options: ["Copper", "Glass"],
+          correct_option_index: 0,
+          explanation: "A Moscow Mule is served in a copper mug.",
+          sort_order: 0,
+          source_anchor: "Moscow Mule",
+          learn_articles: null,
+          recipes: null,
+          ...question,
+        },
+      ],
+    };
+  }
+
+  it("maps an embedded recipe to a recipe source (covers spec 0042 AC-1)", async () => {
+    const client = stubSupabase({
+      data: detailWithQuestion({ recipes: { id: "r1", name: "Moscow Mule" } }),
+      error: null,
+    });
+
+    const result = await fetchQuizDetail(client, "1");
+
+    expect(result?.questions[0]?.source).toEqual({ kind: "recipe", id: "r1", name: "Moscow Mule" });
+    expect(result?.questions[0]?.sourceAnchor).toBe("Moscow Mule");
+  });
+
+  it("maps an embedded article to an article source (covers spec 0042 AC-1)", async () => {
+    const client = stubSupabase({
+      data: detailWithQuestion({
+        learn_articles: { id: "a1", title: "The Jigger", category: "tools" },
+      }),
+      error: null,
+    });
+
+    const result = await fetchQuizDetail(client, "1");
+
+    expect(result?.questions[0]?.source).toEqual({
+      kind: "article",
+      id: "a1",
+      title: "The Jigger",
+      category: "tools",
+    });
+  });
+
+  it("drops an article source whose category is not a Learn category (covers spec 0042 AC-3)", async () => {
+    const client = stubSupabase({
+      data: detailWithQuestion({
+        learn_articles: { id: "a1", title: "Odd", category: "../admin" },
+      }),
+      error: null,
+    });
+
+    const result = await fetchQuizDetail(client, "1");
+
+    expect(result?.questions[0]?.source).toBeNull();
+  });
+
+  it("keeps a question whose source is hidden by RLS, with a null source (covers spec 0042 AC-3)", async () => {
+    const client = stubSupabase({ data: detailWithQuestion({}), error: null });
+
+    const result = await fetchQuizDetail(client, "1");
+
+    expect(result?.questions).toHaveLength(1);
+    expect(result?.questions[0]?.source).toBeNull();
   });
 
   it("returns null on no match, rather than distinguishing why (covers AC-6)", async () => {
@@ -183,6 +270,82 @@ describe("fetchQuizDetail", () => {
     const client = stubSupabase({ data: null, error: new Error("boom") });
 
     await expect(fetchQuizDetail(client, "1")).rejects.toThrow("boom");
+  });
+});
+
+describe("splitExplanationAtAnchor (spec 0042 AC-1, AC-2)", () => {
+  it("splits at a case insensitive match, keeping the explanation's casing", () => {
+    expect(splitExplanationAtAnchor("A Moscow Mule is served cold.", "moscow mule")).toEqual({
+      before: "A ",
+      match: "Moscow Mule",
+      after: " is served cold.",
+    });
+  });
+
+  it("uses only the first occurrence", () => {
+    expect(splitExplanationAtAnchor("Gin, then more gin.", "gin")).toEqual({
+      before: "",
+      match: "Gin",
+      after: ", then more gin.",
+    });
+  });
+
+  it("treats regex special characters in the anchor literally", () => {
+    expect(
+      splitExplanationAtAnchor("Try the St. Germain (elderflower)?", "St. Germain (elderflower)?"),
+    ).toEqual({
+      before: "Try the ",
+      match: "St. Germain (elderflower)?",
+      after: "",
+    });
+    expect(splitExplanationAtAnchor("Stx Germain", "St. Germain")).toBeNull();
+  });
+
+  it("trims the anchor before matching", () => {
+    expect(splitExplanationAtAnchor("A Negroni is bitter.", "  Negroni ")?.match).toBe("Negroni");
+  });
+
+  it("returns null for an anchor shorter than 3 characters", () => {
+    expect(splitExplanationAtAnchor("Ice is key.", "Ic")).toBeNull();
+    expect(splitExplanationAtAnchor("Ice is key.", "  I  ")).toBeNull();
+  });
+
+  it("returns null for a null or empty explanation, a null anchor, or no match", () => {
+    expect(splitExplanationAtAnchor(null, "Negroni")).toBeNull();
+    expect(splitExplanationAtAnchor("", "Negroni")).toBeNull();
+    expect(splitExplanationAtAnchor("A Negroni is bitter.", null)).toBeNull();
+    expect(splitExplanationAtAnchor("A Negroni is bitter.", "Martini")).toBeNull();
+  });
+});
+
+describe("restoreQuizAnswers (spec 0042 AC-5)", () => {
+  const questions = [
+    { id: "q1", options: ["a", "b", "c"] },
+    { id: "q2", options: ["True", "False"] },
+  ];
+
+  it("returns a valid answers record", () => {
+    expect(restoreQuizAnswers({ q1: 2, q2: 0 }, questions)).toEqual({ q1: 2, q2: 0 });
+  });
+
+  it("returns null for missing, extra, or unknown question ids", () => {
+    expect(restoreQuizAnswers({ q1: 0 }, questions)).toBeNull();
+    expect(restoreQuizAnswers({ q1: 0, q2: 0, q3: 0 }, questions)).toBeNull();
+    expect(restoreQuizAnswers({ q1: 0, qx: 0 }, questions)).toBeNull();
+  });
+
+  it("returns null for out of range or non integer option indexes", () => {
+    expect(restoreQuizAnswers({ q1: 3, q2: 0 }, questions)).toBeNull();
+    expect(restoreQuizAnswers({ q1: -1, q2: 0 }, questions)).toBeNull();
+    expect(restoreQuizAnswers({ q1: 0.5, q2: 0 }, questions)).toBeNull();
+    expect(restoreQuizAnswers({ q1: "0", q2: 0 }, questions)).toBeNull();
+  });
+
+  it("returns null for non object input", () => {
+    expect(restoreQuizAnswers(null, questions)).toBeNull();
+    expect(restoreQuizAnswers("{}", questions)).toBeNull();
+    expect(restoreQuizAnswers([0, 1], questions)).toBeNull();
+    expect(restoreQuizAnswers(undefined, questions)).toBeNull();
   });
 });
 

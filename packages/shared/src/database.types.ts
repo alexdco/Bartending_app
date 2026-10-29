@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5";
+    PostgrestVersion: "14.17";
   };
   public: {
     Tables: {
@@ -686,6 +686,9 @@ export type Database = {
           question_type: string;
           quiz_id: string;
           sort_order: number;
+          source_anchor: string | null;
+          source_article_id: string | null;
+          source_recipe_id: string | null;
         };
         Insert: {
           correct_option_index: number;
@@ -696,6 +699,9 @@ export type Database = {
           question_type: string;
           quiz_id: string;
           sort_order: number;
+          source_anchor?: string | null;
+          source_article_id?: string | null;
+          source_recipe_id?: string | null;
         };
         Update: {
           correct_option_index?: number;
@@ -706,6 +712,9 @@ export type Database = {
           question_type?: string;
           quiz_id?: string;
           sort_order?: number;
+          source_anchor?: string | null;
+          source_article_id?: string | null;
+          source_recipe_id?: string | null;
         };
         Relationships: [
           {
@@ -713,6 +722,27 @@ export type Database = {
             columns: ["quiz_id"];
             isOneToOne: false;
             referencedRelation: "quizzes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_questions_source_article_id_fkey";
+            columns: ["source_article_id"];
+            isOneToOne: false;
+            referencedRelation: "learn_articles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_questions_source_recipe_id_fkey";
+            columns: ["source_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_questions_source_recipe_id_fkey";
+            columns: ["source_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
             referencedColumns: ["id"];
           },
         ];
@@ -1470,10 +1500,7 @@ export type Database = {
         Returns: boolean;
       };
       is_current_user_admin: { Args: never; Returns: boolean };
-      is_recipe_image_referenced: {
-        Args: { p_name: string };
-        Returns: boolean;
-      };
+      is_recipe_image_referenced: { Args: { p_name: string }; Returns: boolean };
       list_my_pending_invites: {
         Args: never;
         Returns: {
