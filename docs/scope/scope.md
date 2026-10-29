@@ -61,6 +61,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 48 | Repo hygiene | Hardening | in-progress |
 | 49 | EAS build and submit setup | Hardening | in-progress |
 | 50 | Self hosted recipe images | Hardening | done |
+| 51 | Quiz answer source links | Slice 23 | in-progress |
 
 ## Foundations
 
@@ -492,6 +493,20 @@ Lets a user test their knowledge of recipes and Learn content (tools/spirits/win
 - [ ] Verify it: `/check verify learn quizzes`
 - [ ] Test it: `/test learn quizzes` — unit tests already added alongside the build (`quizzes.test.ts`, `quizGeneration.test.ts`), full `/test` pass still pending
 Spec [0026](../specs/0026-learn-quizzes.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
+
+### 51. Quiz answer source links · in-progress
+On the quiz result screen, each question's explanation links to the Learn article or recipe that holds its answer: the anchor phrase inside the explanation becomes the link, with a "Read more" line as the fallback. Questions store their source and anchor, both generation scripts produce them, and a reviewed backfill fills in the existing quizzes. Following a link and going Back keeps the result screen. Extends feature 29.
+**Done when:** every published quiz question on web and mobile links to its source article or recipe from the result screen, Back returns to the same result, and newly generated quizzes carry sources automatically.
+- [x] Design it (spec): `/architect quiz answer source links`
+- [x] Build it: `/develop quiz answer source links`
+  - [x] One linked question end to end: migration (source FKs, anchor, check), shared read plus `splitExplanationAtAnchor`, web inline link and "Read more" fallback, satisfies AC-1 to AC-4, AC-10
+  - [x] Kept result and "Take again" on web (sessionStorage) and mobile (in memory), plus the mobile result screen links, satisfies AC-1 to AC-5
+  - [x] Generation scripts emit and validate source and anchor, satisfies AC-6, AC-7
+  - [x] Backfill script (dry run plan file, then apply) run across all 7 quizzes, satisfies AC-8
+  - [x] `quiz_source_link_clicked` analytics on both apps, satisfies AC-9
+- [ ] Verify it: `/check verify quiz answer source links`
+- [ ] Test it: `/test quiz answer source links`
+Spec [0042](../specs/0042-quiz-answer-source-links.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Slice 24: Recipe comments
 
