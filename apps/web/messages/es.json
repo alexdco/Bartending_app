@@ -328,6 +328,8 @@
     "yourAnswerCorrect": "Tu respuesta: {answer} (correcta)",
     "yourAnswerIncorrect": "Tu respuesta: {answer} (incorrecta)",
     "correctAnswer": "Respuesta correcta: {answer}",
+    "readMore": "Más información: <link>{name}</link>",
+    "takeAgain": "Intentar de nuevo",
     "submit": "Enviar",
     "submitting": "Enviando…",
     "detailMetaDescription": "Haz el cuestionario {title} y pon a prueba lo que sabes de coctelería."

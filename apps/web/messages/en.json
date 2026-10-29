@@ -328,6 +328,8 @@
     "yourAnswerCorrect": "Your answer: {answer} (correct)",
     "yourAnswerIncorrect": "Your answer: {answer} (incorrect)",
     "correctAnswer": "Correct answer: {answer}",
+    "readMore": "Read more: <link>{name}</link>",
+    "takeAgain": "Take again",
     "submit": "Submit",
     "submitting": "Submitting…",
     "detailMetaDescription": "Take the {title} quiz and test your bartending knowledge."
