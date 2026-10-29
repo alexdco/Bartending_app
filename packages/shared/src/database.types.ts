@@ -496,6 +496,7 @@ export type Database = {
       };
       ingredients: {
         Row: {
+          allergens: string[] | null;
           category: string | null;
           category_source_name_hash: string | null;
           created_at: string;
@@ -507,6 +508,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          allergens?: string[] | null;
           category?: string | null;
           category_source_name_hash?: string | null;
           created_at?: string;
@@ -518,6 +520,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          allergens?: string[] | null;
           category?: string | null;
           category_source_name_hash?: string | null;
           created_at?: string;
@@ -978,34 +981,43 @@ export type Database = {
       };
       recipe_translations: {
         Row: {
+          bartender_tip: string | null;
           created_at: string;
+          drink_style_note: string | null;
           glass: string | null;
           instructions: string;
           locale: string;
           name: string;
           name_search: unknown;
+          presentation_tip: string | null;
           recipe_id: string;
           source_name_hash: string;
           updated_at: string;
         };
         Insert: {
+          bartender_tip?: string | null;
           created_at?: string;
+          drink_style_note?: string | null;
           glass?: string | null;
           instructions: string;
           locale: string;
           name: string;
           name_search?: unknown;
+          presentation_tip?: string | null;
           recipe_id: string;
           source_name_hash: string;
           updated_at?: string;
         };
         Update: {
+          bartender_tip?: string | null;
           created_at?: string;
+          drink_style_note?: string | null;
           glass?: string | null;
           instructions?: string;
           locale?: string;
           name?: string;
           name_search?: unknown;
+          presentation_tip?: string | null;
           recipe_id?: string;
           source_name_hash?: string;
           updated_at?: string;
@@ -1030,10 +1042,13 @@ export type Database = {
       recipes: {
         Row: {
           alcoholic_status: string;
+          bartender_tip: string | null;
           created_at: string;
           deleted_at: string | null;
           difficulty: string | null;
           difficulty_source_name_hash: string | null;
+          drink_style: string | null;
+          drink_style_note: string | null;
           fame_score: number | null;
           flavor_profile_locked: boolean;
           glass: string | null;
@@ -1049,6 +1064,7 @@ export type Database = {
           name: string;
           name_search: unknown;
           popularity_rank: number | null;
+          presentation_tip: string | null;
           region: string | null;
           source: string;
           source_id: string;
@@ -1057,10 +1073,13 @@ export type Database = {
         };
         Insert: {
           alcoholic_status?: string;
+          bartender_tip?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           difficulty?: string | null;
           difficulty_source_name_hash?: string | null;
+          drink_style?: string | null;
+          drink_style_note?: string | null;
           fame_score?: number | null;
           flavor_profile_locked?: boolean;
           glass?: string | null;
@@ -1076,6 +1095,7 @@ export type Database = {
           name: string;
           name_search?: unknown;
           popularity_rank?: number | null;
+          presentation_tip?: string | null;
           region?: string | null;
           source?: string;
           source_id: string;
@@ -1084,10 +1104,13 @@ export type Database = {
         };
         Update: {
           alcoholic_status?: string;
+          bartender_tip?: string | null;
           created_at?: string;
           deleted_at?: string | null;
           difficulty?: string | null;
           difficulty_source_name_hash?: string | null;
+          drink_style?: string | null;
+          drink_style_note?: string | null;
           fame_score?: number | null;
           flavor_profile_locked?: boolean;
           glass?: string | null;
@@ -1103,6 +1126,7 @@ export type Database = {
           name?: string;
           name_search?: unknown;
           popularity_rank?: number | null;
+          presentation_tip?: string | null;
           region?: string | null;
           source?: string;
           source_id?: string;
@@ -1346,8 +1370,22 @@ export type Database = {
         Returns: Json;
       };
       admin_delete_recipe: { Args: { p_recipe_id: string }; Returns: undefined };
+      admin_set_ingredient_allergens: {
+        Args: { p_allergens: string[]; p_ingredient_id: string };
+        Returns: undefined;
+      };
       admin_set_recipe_image: {
         Args: { p_hero_url: string; p_recipe_id: string };
+        Returns: undefined;
+      };
+      admin_set_recipe_notes: {
+        Args: {
+          p_bartender_tip: string;
+          p_drink_style: string;
+          p_drink_style_note: string;
+          p_presentation_tip: string;
+          p_recipe_id: string;
+        };
         Returns: undefined;
       };
       admin_upsert_recipe: {
@@ -1364,6 +1402,11 @@ export type Database = {
         };
         Returns: string;
       };
+      apply_ingredient_allergens: {
+        Args: { proposals: Json };
+        Returns: undefined;
+      };
+      apply_recipe_notes: { Args: { proposals: Json }; Returns: string[] };
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
       buy_shopping_list_item: {
         Args: { p_ingredient_id: string };
@@ -1445,7 +1488,10 @@ export type Database = {
         Args: { p_id: string; p_locale?: string };
         Returns: {
           alcoholic_status: string;
+          bartender_tip: string;
           difficulty: string;
+          drink_style: string;
+          drink_style_note: string;
           glass: string;
           id: string;
           image_url: string;
@@ -1455,6 +1501,7 @@ export type Database = {
           is_favorited: boolean;
           method: string;
           name: string;
+          presentation_tip: string;
           straining: string;
           taste_tags: string[];
         }[];
