@@ -64,6 +64,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 51 | Quiz answer source links | Slice 23 | in-progress |
 | 52 | Recipe drink style, tips, and allergens | Slice 29 | in-progress |
 | 53 | Google and Apple sign in | Slice 30 | in-progress |
+| 54 | Brazilian Portuguese and language agnostic locales | Slice 31 | in-progress |
 
 ## Foundations
 
@@ -615,6 +616,22 @@ Spec [0043](../specs/0043-recipe-style-tips-allergens/index.md) · code in `supa
 - [ ] Test it: `/test google and apple sign in`
 Spec [0044](../specs/0044-google-apple-sign-in/index.md)
 
+## Slice 31: Brazilian Portuguese and language agnostic locales
+
+### 54. Brazilian Portuguese and language agnostic locales · in-progress
+Adds Brazilian Portuguese (`pt`) as a third language on web, mobile, and the recipe catalog, and first removes every Spanish only hardcode (SQL checks, the `spanish` search column, twelve functions, the notes pipeline, hardcoded switcher arrays) so the next language needs no SQL function edits. Hidden behind `LAUNCHED_LOCALES` until the backfill and native review are done. Starts after feature 41.
+**Done when:** `/pt` pages and the mobile app read in Brazilian Portuguese (untranslated content falls back to English), Portuguese search works, Spanish is unchanged, the database lists languages only in `supported_locales`, and Portuguese is launched in the switcher, detection, sitemap, and hreflang.
+- [x] Design it (spec): `/architect third language`
+- [ ] Build it: `/develop brazilian portuguese and language agnostic locales`
+  - [x] Thin thread, unlaunched: `pt` in shared config, `supported_locales` migration with FKs, the `name_search` trigger and helpers, `fetch_recipe_detail`, the parity test, one recipe translated, satisfies AC-2, AC-4 to AC-6, AC-13, AC-15
+  - [ ] Every read function through the helpers, the `recommend_recipes` merge, and the verify.md SQL checks, satisfies AC-3 to AC-5
+  - [ ] Launch gating and discovery: switcher, detection, proxy, sitemap and hreflang, noindex, satisfies AC-7, AC-8, AC-14, AC-16
+  - [ ] Content: per locale catalog translation and backfill, the notes pipeline, admin per locale notes, and drink ideas in `pt`, satisfies AC-2, AC-6, AC-9 to AC-12
+  - [ ] Portuguese UI strings with native review, then launch, satisfies AC-1, AC-7, AC-14
+- [ ] Verify it: `/check verify brazilian portuguese and language agnostic locales`
+- [ ] Test it: `/test brazilian portuguese and language agnostic locales`
+Spec [0045](../specs/0045-language-agnostic-locales-portuguese/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
+
 ## Hardening: app review fixes (Oct 2026)
 
 Findings from the Cocktailist App Review (2026-10-08, production at cocktailist-five.vercel.app plus a code review at `bf23df8`), checked against the repo on 2026-10-09. The review's `review-fixes.patch` was never applied, so every item below is still open in code. Recommended to work this phase before finishing the remaining in-progress slices, in this order. The AC-5 search ranking fix sits on feature 5.
@@ -814,6 +831,10 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Apple revoke on web and Android deletes**: Sign in with Apple JS for a fresh code at delete (feature 53) · needs a decision · from spec 0044
 - **Set a password for provider only accounts**: a backup sign in method (feature 53) · needs a decision · from spec 0044
 - **Google One Tap on web**: GSI script, nonce, cookie consent review (features 13, 53) · needs a decision · from spec 0044
+- **Portuguese store listing copy**: store title, subtitle, keywords, and description in Brazilian Portuguese, for launch week (feature 54) · from spec 0045
+- **Translate Learn and quizzes**: Learn articles and quizzes are English only in every locale (features 28, 29, 54) · needs a decision · from spec 0045
+- **Locale aware number formatting**: `es` and `pt` use a decimal comma, but measures format the same in every locale (feature 54) · needs a decision · from spec 0045
+- **European Portuguese**: a separate `pt-PT` locale would need region aware detection (feature 54) · needs a decision · from spec 0045
 
 ## Legend
 
