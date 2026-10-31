@@ -9,6 +9,7 @@ import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
 import { ExternalLink } from "@/components/external-link";
 import { Input } from "@/components/input";
+import { PasswordInput } from "@/components/password-input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
@@ -138,9 +139,8 @@ function GuestAuthForm({
         value={email}
         onChangeText={setEmail}
       />
-      <Input
+      <PasswordInput
         label={t("account.password")}
-        secureTextEntry
         autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
         value={password}
         onChangeText={setPassword}

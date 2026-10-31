@@ -6,7 +6,7 @@ import { AuthError, completePasswordReset } from "@bartendingapp/shared";
 
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
-import { Input } from "@/components/input";
+import { PasswordInput } from "@/components/password-input";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
@@ -26,9 +26,8 @@ export default function ResetPasswordScreen() {
       <View style={styles.centered}>
         <Card style={styles.card}>
           <Text variant="heading">Set a new password</Text>
-          <Input
+          <PasswordInput
             label="New password"
-            secureTextEntry
             autoComplete="new-password"
             value={password}
             onChangeText={setPassword}

@@ -1,6 +1,8 @@
 {
   "common": {
     "back": "Atrás",
+    "showPassword": "Mostrar contraseña",
+    "hidePassword": "Ocultar contraseña",
     "somethingWentWrong": "Algo salió mal",
     "retry": "Reintentar",
     "add": "Agregar",

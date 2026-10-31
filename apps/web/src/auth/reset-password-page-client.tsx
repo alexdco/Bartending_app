@@ -8,7 +8,7 @@ import { useMutation } from "@tanstack/react-query";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
-import { Input } from "@/components/input";
+import { PasswordInput } from "@/components/password-input";
 import { Text } from "@/components/text";
 import { supabase } from "@/lib/supabase";
 
@@ -36,9 +36,8 @@ export function ResetPasswordPageClient() {
             <Text variant="heading" as="h2">
               {t("setNewPassword")}
             </Text>
-            <Input
+            <PasswordInput
               label={t("newPassword")}
-              type="password"
               autoComplete="new-password"
               required
               value={password}

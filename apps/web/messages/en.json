@@ -1,6 +1,8 @@
 {
   "common": {
     "back": "Back",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
     "somethingWentWrong": "Something went wrong",
     "retry": "Retry",
     "add": "Add",

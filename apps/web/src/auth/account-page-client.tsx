@@ -8,6 +8,7 @@ import { Button } from "@/components/button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
+import { PasswordInput } from "@/components/password-input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { useSession } from "./use-session";
@@ -94,9 +95,8 @@ function GuestAuthForm({
           value={email}
           onChange={(event) => setEmail(event.target.value)}
         />
-        <Input
+        <PasswordInput
           label={t("password")}
-          type="password"
           autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
           required
           value={password}
