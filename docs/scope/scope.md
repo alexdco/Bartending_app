@@ -63,6 +63,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 50 | Self hosted recipe images | Hardening | done |
 | 51 | Quiz answer source links | Slice 23 | in-progress |
 | 52 | Recipe drink style, tips, and allergens | Slice 29 | in-progress |
+| 53 | Google and Apple sign in | Slice 30 | in-progress |
 
 ## Foundations
 
@@ -598,6 +599,22 @@ Four new sections below Instructions on the recipe page, web and mobile: Drink S
 - [ ] Test it: `/test recipe drink style, tips, and allergens`
 Spec [0043](../specs/0043-recipe-style-tips-allergens/index.md) · code in `supabase/migrations`, `packages/shared`, `apps/web`, `apps/mobile`
 
+## Slice 30: Google and Apple sign in
+
+### 53. Google and Apple sign in · in-progress · from spec 0008
+"Continue with Google" and "Continue with Apple" on the guest account screen, on web, iOS, and Android. A guest's provider is linked onto their anonymous account so their data stays. If the provider account already exists, the app switches to it, warning first when this device has guest data. Apple tokens are revoked when an iOS user deletes their account.
+**Done when:** a guest with pantry data taps Google or Apple on any platform and keeps the same account and data, an existing provider account signs in (with the warning when guest data would be replaced), provider only accounts hide password and email actions, and deleting an Apple account on iOS revokes the Apple token.
+- [x] Design it (spec): `/architect google and apple sign in`
+- [ ] Build it: `/develop google and apple sign in`
+  - [ ] Web Google end to end: conflict code spike, shared link and sign in helpers, analytics events, account page buttons with flags, callback state machine with the guest data warning, satisfies AC-1 to AC-3, AC-5 to AC-9, AC-12 to AC-14
+  - [ ] Web Apple: Services ID, key, Supabase Apple provider, Apple button, satisfies AC-4, AC-5
+  - [ ] Mobile native: Google sign in on iOS and Android, Apple on iOS with the nonce flow, dev client rebuild, satisfies AC-1, AC-2, AC-4 to AC-9, AC-12, AC-13
+  - [ ] Android Apple through the browser flow, satisfies AC-2, AC-4, AC-8
+  - [ ] Apple revoke at delete on iOS, privacy page copy, regression pass, satisfies AC-10, AC-11, AC-14, AC-15
+- [ ] Verify it: `/check verify google and apple sign in`
+- [ ] Test it: `/test google and apple sign in`
+Spec [0044](../specs/0044-google-apple-sign-in/index.md)
+
 ## Hardening: app review fixes (Oct 2026)
 
 Findings from the Cocktailist App Review (2026-10-08, production at cocktailist-five.vercel.app plus a code review at `bf23df8`), checked against the repo on 2026-10-09. The review's `review-fixes.patch` was never applied, so every item below is still open in code. Recommended to work this phase before finishing the remaining in-progress slices, in this order. The AC-5 search ranking fix sits on feature 5.
@@ -793,6 +810,10 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Automated accessibility checks**: Playwright plus `@axe-core/playwright` on key pages once CI exists (features 2, 46) · needs a decision · from spec 0038
 - **Mobile accessibility lint**: no jsx-a11y equivalent runs on mobile; revisit if a maintained React Native plugin fits Expo's config (feature 46) · needs a decision · from spec 0038
 - **Mocktails only mode**: let under age visitors in with alcoholic recipes hidden everywhere, if the age gate's drop off proves costly (feature 45) · needs a decision · from spec 0037
+- **Connected accounts section**: view, link, and unlink Google, Apple, and email on the account screen (feature 53) · needs a decision · from spec 0044
+- **Apple revoke on web and Android deletes**: Sign in with Apple JS for a fresh code at delete (feature 53) · needs a decision · from spec 0044
+- **Set a password for provider only accounts**: a backup sign in method (feature 53) · needs a decision · from spec 0044
+- **Google One Tap on web**: GSI script, nonce, cookie consent review (features 13, 53) · needs a decision · from spec 0044
 
 ## Legend
 
