@@ -14,17 +14,15 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod/v4";
 import { createHash } from "node:crypto";
 import type { Database } from "./database.types";
-import { SUPPORTED_LOCALES, type Locale } from "./locale";
-
-const TARGET_LOCALES = SUPPORTED_LOCALES.filter((locale) => locale !== "en");
+import {
+  CATALOG_TRANSLATION_LOCALES,
+  LOCALE_AI_LANGUAGE,
+  type Locale,
+  type NonDefaultLocale,
+} from "./locale";
 
 const BATCH_SIZE = 10;
 const MAX_RETRIES = 3;
-
-const LOCALE_DISPLAY_NAME: Record<Locale, string> = {
-  en: "English",
-  es: "Spanish",
-};
 
 function sourceNameHash(...parts: string[]): string {
   return createHash("sha256").update(parts.join(" ")).digest("hex");
@@ -178,7 +176,7 @@ async function translateRecipes(
   anthropic: Anthropic,
   locale: Locale,
   localeName: string,
-  reprocessAll: boolean,
+  { reprocessAll, limit }: RunOptions,
 ) {
   const { data: recipes, error } = await supabase
     .from("recipes")
@@ -220,7 +218,8 @@ async function translateRecipes(
         })),
       };
     })
-    .filter((r) => reprocessAll || existingHashByRecipeId.get(r.id) !== r.hash);
+    .filter((r) => reprocessAll || existingHashByRecipeId.get(r.id) !== r.hash)
+    .slice(0, limit);
 
   console.log(`[${locale}] Translating ${inputs.length} recipes in batches of ${BATCH_SIZE}...`);
 
@@ -303,7 +302,7 @@ async function translateIngredients(
   anthropic: Anthropic,
   locale: Locale,
   localeName: string,
-  reprocessAll: boolean,
+  { reprocessAll, limit }: RunOptions,
 ) {
   const { data: ingredients, error } = await supabase.from("ingredients").select("id, name");
 
@@ -326,7 +325,8 @@ async function translateIngredients(
 
   const inputs: (NameInput & { hash: string })[] = (ingredients ?? [])
     .map((i) => ({ id: i.id, name: i.name, hash: sourceNameHash(i.name) }))
-    .filter((i) => reprocessAll || existingHashByIngredientId.get(i.id) !== i.hash);
+    .filter((i) => reprocessAll || existingHashByIngredientId.get(i.id) !== i.hash)
+    .slice(0, limit);
 
   console.log(
     `[${locale}] Translating ${inputs.length} ingredients in batches of ${BATCH_SIZE}...`,
@@ -383,7 +383,7 @@ async function translateTags(
   anthropic: Anthropic,
   locale: Locale,
   localeName: string,
-  reprocessAll: boolean,
+  { reprocessAll, limit }: RunOptions,
 ) {
   const { data: tags, error } = await supabase.from("tags").select("id, name");
 
@@ -406,7 +406,8 @@ async function translateTags(
 
   const inputs: NameInput[] = (tags ?? [])
     .map((t) => ({ id: t.id, name: t.name }))
-    .filter((t) => reprocessAll || !alreadyTranslated.has(t.id));
+    .filter((t) => reprocessAll || !alreadyTranslated.has(t.id))
+    .slice(0, limit);
 
   console.log(`[${locale}] Translating ${inputs.length} tags in batches of ${BATCH_SIZE}...`);
 
@@ -448,25 +449,39 @@ async function translateTags(
   );
 }
 
+interface RunOptions {
+  reprocessAll: boolean;
+  /** Caps the rows translated per kind (recipes, ingredients, tags) after the hash filter. */
+  limit: number | undefined;
+}
+
 export interface TranslateCatalogOptions {
   reprocessAll?: boolean;
+  /** Target locales; defaults to CATALOG_TRANSLATION_LOCALES (spec 0045 AC-9). */
+  locales?: readonly NonDefaultLocale[];
+  /** Caps the rows translated per kind and locale, e.g. 1 for a thin test run. */
+  limit?: number;
 }
 
 // Translates every recipe/ingredient/tag whose source_name_hash no longer
-// matches its current English content (or every row, with reprocessAll)
-// into every supported non English locale. Safe to call after every catalog
-// import: unchanged rows are skipped via the hash check (AC-17), so cost is
-// bounded to genuinely new or changed content regardless of call frequency.
+// matches its current English content for that locale (or every row, with
+// reprocessAll) into each target locale. Safe to call after every catalog
+// import: unchanged rows are skipped via the per locale hash check (AC-17),
+// so cost is bounded to genuinely new or changed content.
 export async function translateCatalog(
   supabase: SupabaseClient<Database>,
   anthropic: Anthropic,
-  { reprocessAll = false }: TranslateCatalogOptions = {},
+  {
+    reprocessAll = false,
+    locales = CATALOG_TRANSLATION_LOCALES,
+    limit,
+  }: TranslateCatalogOptions = {},
 ): Promise<void> {
-  for (const locale of TARGET_LOCALES) {
-    const localeName = LOCALE_DISPLAY_NAME[locale];
+  for (const locale of locales) {
+    const localeName = LOCALE_AI_LANGUAGE[locale];
     console.log(`\n=== Translating catalog into ${localeName} (${locale}) ===`);
-    await translateIngredients(supabase, anthropic, locale, localeName, reprocessAll);
-    await translateTags(supabase, anthropic, locale, localeName, reprocessAll);
-    await translateRecipes(supabase, anthropic, locale, localeName, reprocessAll);
+    await translateIngredients(supabase, anthropic, locale, localeName, { reprocessAll, limit });
+    await translateTags(supabase, anthropic, locale, localeName, { reprocessAll, limit });
+    await translateRecipes(supabase, anthropic, locale, localeName, { reprocessAll, limit });
   }
 }

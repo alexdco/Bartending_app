@@ -2,15 +2,22 @@ import i18n from "i18next";
 import { initReactI18next, useTranslation } from "react-i18next";
 import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { DEFAULT_LOCALE, isSupportedLocale, type Locale } from "@bartendingapp/shared";
+import {
+  DEFAULT_LOCALE,
+  isLaunchedLocale,
+  isSupportedLocale,
+  type Locale,
+} from "@bartendingapp/shared";
 import en from "./locales/en.json";
 import es from "./locales/es.json";
+import pt from "./locales/pt.json";
 
 const STORAGE_KEY = "localePreference";
 
 function detectDeviceLocale(): Locale {
   const [primary] = Localization.getLocales();
-  return isSupportedLocale(primary?.languageCode) ? primary.languageCode : DEFAULT_LOCALE;
+  // Detection never picks an unlaunched locale (spec 0045 AC-7).
+  return isLaunchedLocale(primary?.languageCode) ? primary.languageCode : DEFAULT_LOCALE;
 }
 
 export async function getStoredLocale(): Promise<Locale | null> {
@@ -44,6 +51,7 @@ export async function initI18n(): Promise<void> {
       resources: {
         en: { translation: en },
         es: { translation: es },
+        pt: { translation: pt },
       },
       lng: initialLocale,
       fallbackLng: DEFAULT_LOCALE,

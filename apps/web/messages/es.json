@@ -46,9 +46,7 @@
   },
   "language": {
     "changeLanguage": "Cambiar idioma",
-    "label": "Idioma",
-    "en": "English",
-    "es": "Español"
+    "label": "Idioma"
   },
   "account": {
     "heading": "Cuenta",

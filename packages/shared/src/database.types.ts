@@ -492,6 +492,13 @@ export type Database = {
             referencedRelation: "ingredients";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "ingredient_translations_locale_fkey";
+            columns: ["locale"];
+            isOneToOne: false;
+            referencedRelation: "supported_locales";
+            referencedColumns: ["code"];
+          },
         ];
       };
       ingredients: {
@@ -882,6 +889,13 @@ export type Database = {
         };
         Relationships: [
           {
+            foreignKeyName: "recipe_ingredient_translations_locale_fkey";
+            columns: ["locale"];
+            isOneToOne: false;
+            referencedRelation: "supported_locales";
+            referencedColumns: ["code"];
+          },
+          {
             foreignKeyName: "recipe_ingredient_translations_recipe_id_ingredient_id_fkey";
             columns: ["recipe_id", "ingredient_id"];
             isOneToOne: false;
@@ -1023,6 +1037,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "recipe_translations_locale_fkey";
+            columns: ["locale"];
+            isOneToOne: false;
+            referencedRelation: "supported_locales";
+            referencedColumns: ["code"];
+          },
           {
             foreignKeyName: "recipe_translations_recipe_id_fkey";
             columns: ["recipe_id"];
@@ -1176,6 +1197,21 @@ export type Database = {
           },
         ];
       };
+      supported_locales: {
+        Row: {
+          code: string;
+          text_search_config: string;
+        };
+        Insert: {
+          code: string;
+          text_search_config: string;
+        };
+        Update: {
+          code?: string;
+          text_search_config?: string;
+        };
+        Relationships: [];
+      };
       tag_translations: {
         Row: {
           created_at: string;
@@ -1199,6 +1235,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "tag_translations_locale_fkey";
+            columns: ["locale"];
+            isOneToOne: false;
+            referencedRelation: "supported_locales";
+            referencedColumns: ["code"];
+          },
           {
             foreignKeyName: "tag_translations_tag_id_fkey";
             columns: ["tag_id"];
@@ -1263,7 +1306,15 @@ export type Database = {
           updated_at?: string;
           user_id?: string;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "user_preferences_locale_fkey";
+            columns: ["locale"];
+            isOneToOne: false;
+            referencedRelation: "supported_locales";
+            referencedColumns: ["code"];
+          },
+        ];
       };
     };
     Views: {
@@ -1575,6 +1626,7 @@ export type Database = {
           region_name: string;
         }[];
       };
+      locale_search_config: { Args: { p_locale: string }; Returns: unknown };
       match_recipes_to_pantry: {
         Args: {
           locale?: string;
@@ -1671,6 +1723,7 @@ export type Database = {
           total_count: number;
         }[];
       };
+      resolve_locale: { Args: { p_locale: string }; Returns: string };
       resolve_recipe_redirect: {
         Args: { p_recipe_id: string };
         Returns: string;

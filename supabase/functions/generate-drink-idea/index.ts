@@ -70,13 +70,14 @@ async function guestIpHash(headers: Headers, secret: string, userId: string): Pr
   return hashIpBucket(ipBucket(clientIp), secret);
 }
 
-const SUPPORTED_LOCALES = ["en", "es"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "pt"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = "en";
 
 const LOCALE_NAMES: Record<Locale, string> = {
   en: "English",
   es: "Spanish",
+  pt: "Brazilian Portuguese",
 };
 
 function parseLocale(value: unknown): Locale {

@@ -3,7 +3,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import { Dialog, DropdownMenu, VisuallyHidden } from "radix-ui";
-import { avatarSize, getInitials, type Locale } from "@bartendingapp/shared";
+import {
+  avatarSize,
+  getInitials,
+  LAUNCHED_LOCALES,
+  LOCALE_NATIVE_NAME,
+  type Locale,
+} from "@bartendingapp/shared";
 import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { Text } from "./text";
 import { SiteLogo } from "./site-logo";
@@ -61,8 +67,6 @@ function themeLabelKey(preference: ThemePreference) {
   return themeOptions.find((option) => option.value === preference)?.key ?? "themeSystem";
 }
 
-const localeValues: Locale[] = ["en", "es"];
-
 /**
  * Switching locale is a route change (the URL segment is the source of truth,
  * AC-5), not just local state. Also syncs to the account when signed in
@@ -95,7 +99,7 @@ function LanguageSubmenu() {
           {t("label")}
         </Text>
         <Text variant="label" as="span" className="text-text-muted">
-          {t(activeLocale)}
+          {LOCALE_NATIVE_NAME[activeLocale]}
         </Text>
       </DropdownMenu.SubTrigger>
       <DropdownMenu.Portal>
@@ -108,14 +112,14 @@ function LanguageSubmenu() {
             value={activeLocale}
             onValueChange={(value) => switchLocale(value as Locale)}
           >
-            {localeValues.map((value) => (
+            {LAUNCHED_LOCALES.map((value) => (
               <DropdownMenu.RadioItem
                 key={value}
                 value={value}
                 className="block cursor-pointer px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
               >
                 <Text variant="label" as="span">
-                  {t(value)}
+                  {LOCALE_NATIVE_NAME[value]}
                 </Text>
               </DropdownMenu.RadioItem>
             ))}
@@ -490,12 +494,12 @@ function DrawerLanguageSection() {
           {t("label")}
         </Text>
         <Text variant="label" as="span" className="text-text-muted">
-          {t(activeLocale)}
+          {LOCALE_NATIVE_NAME[activeLocale]}
         </Text>
       </button>
       {expanded ? (
         <div className="flex flex-col gap-one pl-three">
-          {localeValues.map((value) => (
+          {LAUNCHED_LOCALES.map((value) => (
             <button
               key={value}
               type="button"
@@ -507,7 +511,7 @@ function DrawerLanguageSection() {
               }
             >
               <Text variant="label" as="span">
-                {t(value)}
+                {LOCALE_NATIVE_NAME[value]}
               </Text>
             </button>
           ))}

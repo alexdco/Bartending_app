@@ -46,9 +46,7 @@
   },
   "language": {
     "changeLanguage": "Change language",
-    "label": "Language",
-    "en": "English",
-    "es": "Español"
+    "label": "Language"
   },
   "account": {
     "heading": "Account",

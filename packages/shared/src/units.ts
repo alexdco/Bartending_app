@@ -475,9 +475,9 @@ export function formatAmountInUnit(
 
 /** Per locale unit word labels (not machine translated), mirroring locale.ts's Record<Locale, ...> lookup idiom. */
 export const UNIT_LABELS: Record<ConvertibleUnit, Record<Locale, string>> = {
-  oz: { en: "oz", es: "oz" },
-  ml: { en: "ml", es: "ml" },
-  cl: { en: "cl", es: "cl" },
+  oz: { en: "oz", es: "oz", pt: "oz" },
+  ml: { en: "ml", es: "ml", pt: "ml" },
+  cl: { en: "cl", es: "cl", pt: "cl" },
 };
 
 export function unitLabel(unit: ConvertibleUnit, locale: Locale = DEFAULT_LOCALE): string {
