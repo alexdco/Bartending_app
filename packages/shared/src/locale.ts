@@ -21,17 +21,20 @@ export const NON_DEFAULT_LOCALES: readonly NonDefaultLocale[] = SUPPORTED_LOCALE
 
 /**
  * The locales users can discover (switcher, detection, sitemap, hreflang).
- * Every supported locale still routes; only discovery is gated. Portuguese
+ * Every supported locale still routes; only discovery is gated. A new locale
  * joins at launch, in the same commit as CATALOG_TRANSLATION_LOCALES.
  */
-export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es"];
+export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt"];
 
 /**
  * The locales the import job translates new catalog rows into, and the
  * blocks the default recipe notes run writes. Holds only launched locales
  * outside a backfill run.
  */
-export const CATALOG_TRANSLATION_LOCALES = ["es"] as const satisfies readonly NonDefaultLocale[];
+export const CATALOG_TRANSLATION_LOCALES = [
+  "es",
+  "pt",
+] as const satisfies readonly NonDefaultLocale[];
 
 export type CatalogTranslationLocale = (typeof CATALOG_TRANSLATION_LOCALES)[number];
 

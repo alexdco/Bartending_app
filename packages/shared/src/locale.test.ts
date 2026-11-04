@@ -104,9 +104,9 @@ describe("launch lists", () => {
     expect(CATALOG_TRANSLATION_LOCALES.every(isNonDefaultLocale)).toBe(true);
   });
 
-  it("pt is supported but not launched yet", () => {
-    expect(SUPPORTED_LOCALES).toContain("pt");
-    expect(isLaunchedLocale("pt")).toBe(false);
+  it("pt is launched and translated by the import job", () => {
+    expect(isLaunchedLocale("pt")).toBe(true);
+    expect(CATALOG_TRANSLATION_LOCALES).toContain("pt");
   });
 });
 
@@ -121,9 +121,14 @@ describe("isNonDefaultLocale", () => {
 });
 
 describe("parseAcceptLanguage", () => {
-  it("never picks an unlaunched locale by default", () => {
-    expect(parseAcceptLanguage("pt-BR,pt;q=0.9")).toBeNull();
-    expect(parseAcceptLanguage("pt-BR,es;q=0.8")).toBe("es");
+  it("maps any Portuguese region to pt", () => {
+    expect(parseAcceptLanguage("pt-BR,pt;q=0.9")).toBe("pt");
+    expect(parseAcceptLanguage("pt-PT,en;q=0.5")).toBe("pt");
+  });
+
+  it("never picks a locale outside the allowed list", () => {
+    expect(parseAcceptLanguage("pt-BR,es;q=0.8", ["en", "es"])).toBe("es");
+    expect(parseAcceptLanguage("pt-BR", ["en", "es"])).toBeNull();
   });
 
   it("matches within an explicit allowed list", () => {
@@ -137,10 +142,9 @@ describe("parseAcceptLanguage", () => {
 });
 
 describe("resolveStoredLocale", () => {
-  it("treats an unlaunched value as absent unless allowed", () => {
+  it("keeps a launched stored value", () => {
     expect(resolveStoredLocale("es")).toBe("es");
-    expect(resolveStoredLocale("pt")).toBeNull();
-    expect(resolveStoredLocale("pt", { allowUnlaunched: true })).toBe("pt");
+    expect(resolveStoredLocale("pt")).toBe("pt");
   });
 
   it("rejects unsupported and missing values", () => {
@@ -156,19 +160,21 @@ describe("resolveRedirectLocale", () => {
     expect(resolveRedirectLocale(null, null)).toBe("en");
   });
 
-  it("never lands on an unlaunched locale, whatever the cookie or header says", () => {
-    expect(resolveRedirectLocale("pt", "pt-BR")).toBe("en");
-    expect(resolveRedirectLocale("pt", "es")).toBe("es");
+  it("lands on Portuguese from the cookie or a Portuguese header", () => {
+    expect(resolveRedirectLocale("pt", "en-US")).toBe("pt");
+    expect(resolveRedirectLocale(null, "pt-BR")).toBe("pt");
+  });
+
+  it("ignores an unsupported cookie", () => {
+    expect(resolveRedirectLocale("fr", "es")).toBe("es");
   });
 });
 
 describe("hreflangAlternates", () => {
-  it("lists launched locales by hreflang code", () => {
-    expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual({ en: "/en", es: "/es" });
-  });
-
-  it("gives an unlaunched page no alternates", () => {
-    expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual({});
+  it("lists launched locales by hreflang code, with pt as pt-BR", () => {
+    const expected = { en: "/en", es: "/es", "pt-BR": "/pt" };
+    expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual(expected);
+    expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual(expected);
   });
 });
 
