@@ -9,6 +9,7 @@ import {
   RECIPE_NOTE_MAX_LENGTH,
   type DrinkStyle,
 } from "./drinkStyle";
+import { NON_DEFAULT_LOCALES, type NonDefaultLocale } from "./locale";
 
 export const ADMIN_RECIPE_NAME_MAX_LENGTH = 200;
 export const ADMIN_RECIPE_INSTRUCTIONS_MAX_LENGTH = 10000;
@@ -126,13 +127,44 @@ export interface AdminRecipeDetail {
   tags: AdminRecipeTag[];
   /** Taste tags (tags.kind = 'taste'), sorted by name. */
   flavorProfile: AdminRecipeTag[];
-  /** English notes (spec 0043); Spanish is not edited in admin. */
+  /** English notes (spec 0043). */
   drinkStyle: DrinkStyle | null;
   drinkStyleNote: string | null;
   bartenderTip: string | null;
   presentationTip: string | null;
+  /** Per locale notes; null when the recipe has no translation row (spec 0045). */
+  translationNotes: AdminTranslationNotesByLocale;
   /** Ingredients with no allergen review yet, for the form's hint (spec 0043). */
   unreviewedAllergenCount: number;
+}
+
+export interface AdminTranslationNotes {
+  drink_style_note: string | null;
+  bartender_tip: string | null;
+  presentation_tip: string | null;
+}
+
+export type AdminTranslationNotesByLocale = Record<NonDefaultLocale, AdminTranslationNotes | null>;
+
+/** One entry per supported non English locale, null where no row exists. */
+export function toTranslationNotesByLocale(
+  rows: readonly (AdminTranslationNotes & { locale: string })[],
+): AdminTranslationNotesByLocale {
+  return Object.fromEntries(
+    NON_DEFAULT_LOCALES.map((locale) => {
+      const row = rows.find((candidate) => candidate.locale === locale);
+      return [
+        locale,
+        row
+          ? {
+              drink_style_note: row.drink_style_note,
+              bartender_tip: row.bartender_tip,
+              presentation_tip: row.presentation_tip,
+            }
+          : null,
+      ];
+    }),
+  ) as AdminTranslationNotesByLocale;
 }
 
 /**
@@ -151,7 +183,8 @@ export async function fetchAdminRecipeDetail(
       `id, name, instructions, image_url, glass, alcoholic_status, region, source,
        drink_style, drink_style_note, bartender_tip, presentation_tip,
        recipe_ingredients ( measure, sort_order, ingredients ( name, allergens ) ),
-       recipe_tags ( tags ( name, kind ) )`,
+       recipe_tags ( tags ( name, kind ) ),
+       recipe_translations ( locale, drink_style_note, bartender_tip, presentation_tip )`,
     )
     .eq("id", id)
     .is("deleted_at", null)
@@ -194,6 +227,7 @@ export async function fetchAdminRecipeDetail(
     drinkStyleNote: data.drink_style_note,
     bartenderTip: data.bartender_tip,
     presentationTip: data.presentation_tip,
+    translationNotes: toTranslationNotesByLocale(data.recipe_translations),
     unreviewedAllergenCount: data.recipe_ingredients.filter(
       (ri) => ri.ingredients.allergens === null,
     ).length,
@@ -410,6 +444,51 @@ export async function saveAdminRecipe(
   }
 
   return { data: { id }, error: null };
+}
+
+export type SetRecipeTranslationNotesResult =
+  | { data: true; error: null }
+  | {
+      data: null;
+      error:
+        | { reason: "too_long" }
+        | { reason: "no_translation_row" }
+        | { reason: "request_failed"; message: string };
+    };
+
+/**
+ * Saves one locale's notes (spec 0045 AC-11). Blank stores null, so the page
+ * falls back to English. A recipe with no row for that locale is an explicit
+ * error, not a silent no op.
+ */
+export async function setRecipeTranslationNotes(
+  client: SupabaseClient<Database>,
+  recipeId: string,
+  locale: NonDefaultLocale,
+  notes: AdminTranslationNotes,
+): Promise<SetRecipeTranslationNotesResult> {
+  const texts = [notes.drink_style_note, notes.bartender_tip, notes.presentation_tip];
+
+  if (texts.some((text) => isNoteTooLong(text ?? ""))) {
+    return { data: null, error: { reason: "too_long" } };
+  }
+
+  // Same generator limitation as admin_set_recipe_notes: these accept null.
+  const { error } = await client.rpc("admin_set_recipe_translation_notes", {
+    p_recipe_id: recipeId,
+    p_locale: locale,
+    p_drink_style_note: notes.drink_style_note?.trim() || null,
+    p_bartender_tip: notes.bartender_tip?.trim() || null,
+    p_presentation_tip: notes.presentation_tip?.trim() || null,
+  } as Database["public"]["Functions"]["admin_set_recipe_translation_notes"]["Args"]);
+
+  if (error) {
+    return error.code === "P0002"
+      ? { data: null, error: { reason: "no_translation_row" } }
+      : { data: null, error: { reason: "request_failed", message: error.message } };
+  }
+
+  return { data: true, error: null };
 }
 
 export type DeleteAdminRecipeResult =

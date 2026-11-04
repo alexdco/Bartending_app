@@ -9,8 +9,10 @@ import {
   fetchRecipeDetail,
   fetchRecipeRedirect,
   fetchRecipesByIds,
+  isLaunchedLocale,
+  LAUNCHED_LOCALES,
   localizedPath,
-  SUPPORTED_LOCALES,
+  LOCALE_HREFLANG,
   type Locale,
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
@@ -95,18 +97,21 @@ export async function generateMetadata({
   const t = await getTranslations("recipe");
   const description = t("metaDescription", { name: recipe.name, ingredients: ingredientNames });
 
-  const otherLocales = SUPPORTED_LOCALES.filter((candidate) => candidate !== locale);
+  const isLaunched = isLaunchedLocale(locale);
+  const otherLocales = isLaunched
+    ? LAUNCHED_LOCALES.filter((candidate) => candidate !== locale)
+    : [];
   const otherSlugs = await Promise.all(
     otherLocales.map((candidate) => resolveSlugForLocale(recipe.id, candidate)),
   );
 
-  const languages: Record<string, string> = {
-    [locale]: canonicalPath,
-  };
+  const languages: Record<string, string> = isLaunched
+    ? { [LOCALE_HREFLANG[locale]]: canonicalPath }
+    : {};
   otherLocales.forEach((candidate, index) => {
     const otherSlug = otherSlugs[index];
     if (otherSlug) {
-      languages[candidate] = localizedPath(candidate, `/recipes/${otherSlug}`);
+      languages[LOCALE_HREFLANG[candidate]] = localizedPath(candidate, `/recipes/${otherSlug}`);
     }
   });
 

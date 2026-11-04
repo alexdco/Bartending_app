@@ -6,9 +6,9 @@ import {
   buildLearnArticleSlugPath,
   extractIdFromRecipeSlug,
   fetchArticleDetail,
+  hreflangAlternates,
   isLearnCategory,
   localizedPath,
-  SUPPORTED_LOCALES,
 } from "@bartendingapp/shared";
 import { permanentRedirect } from "@/i18n/navigation";
 import { getLocale } from "next-intl/server";
@@ -55,9 +55,7 @@ export async function generateMetadata({
     title: article.title,
     alternates: {
       canonical: canonicalPath,
-      languages: Object.fromEntries(
-        SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, articlePath)]),
-      ),
+      languages: hreflangAlternates(locale, (candidate) => localizedPath(candidate, articlePath)),
     },
     openGraph: await buildOpenGraph(locale, { title: article.title, url: canonicalPath }),
   };

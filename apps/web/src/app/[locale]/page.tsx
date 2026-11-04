@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { buildOpenGraph } from "@/lib/open-graph";
 import { redirect } from "@/i18n/navigation";
 import { getLocale, getTranslations } from "next-intl/server";
-import { localizedPath, SUPPORTED_LOCALES, type Locale } from "@bartendingapp/shared";
+import { hreflangAlternates, localizedPath, type Locale } from "@bartendingapp/shared";
 import { HomePageClient } from "@/homepage/home-page-client";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -16,9 +16,7 @@ export async function generateMetadata(): Promise<Metadata> {
     description,
     alternates: {
       canonical: canonicalPath,
-      languages: Object.fromEntries(
-        SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, "/")]),
-      ),
+      languages: hreflangAlternates(locale, (candidate) => localizedPath(candidate, "/")),
     },
     openGraph: await buildOpenGraph(locale, {
       title: t("siteTitle"),

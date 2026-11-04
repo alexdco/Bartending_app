@@ -6,6 +6,9 @@ import {
   DEFAULT_LOCALE,
   isLaunchedLocale,
   isSupportedLocale,
+  LAUNCHED_LOCALES,
+  resolveStoredLocale,
+  SUPPORTED_LOCALES,
   type Locale,
 } from "@bartendingapp/shared";
 import en from "./locales/en.json";
@@ -13,6 +16,13 @@ import es from "./locales/es.json";
 import pt from "./locales/pt.json";
 
 const STORAGE_KEY = "localePreference";
+
+/** Dev and preview builds can reach every supported locale (spec 0045 AC-8). */
+const showAllLocales = __DEV__ || process.env.EXPO_PUBLIC_SHOW_ALL_LOCALES === "true";
+
+export const selectableLocales: readonly Locale[] = showAllLocales
+  ? SUPPORTED_LOCALES
+  : LAUNCHED_LOCALES;
 
 function detectDeviceLocale(): Locale {
   const [primary] = Localization.getLocales();
@@ -23,7 +33,7 @@ function detectDeviceLocale(): Locale {
 export async function getStoredLocale(): Promise<Locale | null> {
   try {
     const stored = await AsyncStorage.getItem(STORAGE_KEY);
-    return isSupportedLocale(stored) ? stored : null;
+    return resolveStoredLocale(stored, { allowUnlaunched: showAllLocales });
   } catch {
     return null;
   }

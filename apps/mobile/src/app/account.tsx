@@ -19,6 +19,7 @@ import {
   PRIVACY_POLICY_URL,
   getInitials,
   avatarSize,
+  LOCALE_NATIVE_NAME,
   type Locale,
 } from "@bartendingapp/shared";
 import { useSession } from "@/auth/use-session";
@@ -36,9 +37,7 @@ import {
   useSignOut,
   useSignUp,
 } from "@/auth/use-auth-mutations";
-import { changeLocale, useActiveLocale } from "@/i18n";
-
-const localeValues: Locale[] = ["en", "es"];
+import { changeLocale, selectableLocales, useActiveLocale } from "@/i18n";
 
 function useAuthErrorMessage() {
   const { t } = useTranslation();
@@ -79,13 +78,13 @@ function LanguageCard() {
     <Card style={styles.card}>
       <Text variant="heading">{t("menu.language")}</Text>
       <View style={styles.languageRow}>
-        {localeValues.map((value) => (
+        {selectableLocales.map((value) => (
           <Button
             key={value}
             variant={value === activeLocale ? "primary" : "secondary"}
             onPress={() => switchLocale(value)}
           >
-            {t(`language.${value}`)}
+            {LOCALE_NATIVE_NAME[value]}
           </Button>
         ))}
       </View>

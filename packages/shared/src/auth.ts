@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { ensureAnonymousSession } from "./supabaseClient";
 import type { Database } from "./database.types";
 import { fetchProfile, updateDisplayName, updateLocale } from "./preferences";
-import type { Locale } from "./locale";
+import { resolveStoredLocale, type Locale } from "./locale";
 
 export type AuthErrorReason =
   | "weak_password"
@@ -84,10 +84,11 @@ export async function signInWithPassword(
   // choice is written up only when the account has none yet. Non blocking,
   // matching signUpWithPassword's display name write: sign in already
   // succeeded above regardless of this outcome.
-  if (guestLocale) {
+  const launchedGuestLocale = resolveStoredLocale(guestLocale);
+  if (launchedGuestLocale) {
     const profile = await fetchProfile(client);
     if (profile.locale === null) {
-      await updateLocale(client, guestLocale);
+      await updateLocale(client, launchedGuestLocale);
     }
   }
 }

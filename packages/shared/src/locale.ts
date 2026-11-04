@@ -15,6 +15,10 @@ export type NonDefaultLocale = Exclude<Locale, "en">;
 
 export const DEFAULT_LOCALE: Locale = "en";
 
+export const NON_DEFAULT_LOCALES: readonly NonDefaultLocale[] = SUPPORTED_LOCALES.filter(
+  (locale): locale is NonDefaultLocale => locale !== DEFAULT_LOCALE,
+);
+
 /**
  * The locales users can discover (switcher, detection, sitemap, hreflang).
  * Every supported locale still routes; only discovery is gated. Portuguese
@@ -48,6 +52,19 @@ export const LOCALE_AI_LANGUAGE: Record<Locale, string> = {
   pt: "Brazilian Portuguese",
 };
 
+/**
+ * Regional wording the AI prompts must follow, appended to them as is. Empty
+ * when a language needs none, or starting with a space.
+ */
+export const LOCALE_AI_TERMS: Record<Locale, string> = {
+  en: "",
+  es: "",
+  pt:
+    ' Use Brazilian citrus terms: lime is "limão", lemon is "limão-siciliano", limeade is ' +
+    '"limonada", and lemonade is "limonada siciliana". Never write "lima" for lime, and keep ' +
+    "lemon and lime distinct.",
+};
+
 /** Each language's own name, shown in the switcher whatever the active language. */
 export const LOCALE_NATIVE_NAME: Record<Locale, string> = {
   en: "English",
@@ -65,6 +82,21 @@ export function isNonDefaultLocale(value: string | null | undefined): value is N
 
 export function isLaunchedLocale(value: string | null | undefined): value is Locale {
   return LAUNCHED_LOCALES.includes(value as Locale);
+}
+
+/**
+ * The one filter for a stored preference (web cookie, mobile AsyncStorage,
+ * user_preferences.locale). An unlaunched value counts as absent but is left
+ * in place, so it applies again at launch (spec 0045 AC-7).
+ */
+export function resolveStoredLocale(
+  value: string | null | undefined,
+  { allowUnlaunched = false }: { allowUnlaunched?: boolean } = {},
+): Locale | null {
+  if (!isSupportedLocale(value)) {
+    return null;
+  }
+  return allowUnlaunched || isLaunchedLocale(value) ? value : null;
 }
 
 export function parseAcceptLanguage(
@@ -89,4 +121,27 @@ export function parseAcceptLanguage(
   }
 
   return null;
+}
+
+/** The locale a path with no locale prefix redirects to (spec 0045 AC-7). */
+export function resolveRedirectLocale(
+  storedLocale: string | null | undefined,
+  acceptLanguage: string | null | undefined,
+): Locale {
+  return resolveStoredLocale(storedLocale) ?? parseAcceptLanguage(acceptLanguage) ?? DEFAULT_LOCALE;
+}
+
+/**
+ * A page's hreflang alternates, keyed by hreflang code, launched locales only.
+ * An unlaunched page gets none (spec 0045 AC-7).
+ */
+export function hreflangAlternates(
+  locale: Locale,
+  pathFor: (candidate: Locale) => string,
+): Record<string, string> {
+  return isLaunchedLocale(locale)
+    ? Object.fromEntries(
+        LAUNCHED_LOCALES.map((candidate) => [LOCALE_HREFLANG[candidate], pathFor(candidate)]),
+      )
+    : {};
 }

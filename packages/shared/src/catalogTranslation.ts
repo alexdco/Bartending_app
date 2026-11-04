@@ -17,6 +17,7 @@ import type { Database } from "./database.types";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LOCALE_AI_LANGUAGE,
+  LOCALE_AI_TERMS,
   type Locale,
   type NonDefaultLocale,
 } from "./locale";
@@ -67,6 +68,20 @@ interface NameInput {
   name: string;
 }
 
+/**
+ * The returned measures worth storing. A line with no English measure is sent
+ * as "(none)", which the model may translate literally, so it never gets a row.
+ */
+export function translatableMeasures<T extends { ingredient_id: string; measure: string | null }>(
+  source: readonly { ingredient_id: string; measure: string | null }[],
+  translated: readonly T[],
+): readonly T[] {
+  const measured = new Set(
+    source.filter((ing) => ing.measure !== null).map((ing) => ing.ingredient_id),
+  );
+  return translated.filter((m) => m.measure !== null && measured.has(m.ingredient_id));
+}
+
 function chunk<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < items.length; i += size) {
@@ -94,6 +109,7 @@ async function withRetry<T>(label: string, fn: () => Promise<T>): Promise<T | nu
 async function translateRecipeBatch(
   anthropic: Anthropic,
   localeName: string,
+  terms: string,
   batch: RecipeInput[],
 ) {
   const recipesText = batch
@@ -124,7 +140,7 @@ async function translateRecipeBatch(
           `translate or alter an ingredient_id. Keep cocktail terminology natural for a home bartender ` +
           `reading in ${localeName}. Return one entry per recipe, in the same order, referencing each by ` +
           `its id, and one ingredient_measures entry per ingredient listed, in the same order, referencing ` +
-          `each by its ingredient_id.\n\n${recipesText}`,
+          `each by its ingredient_id.${terms}\n\n${recipesText}`,
       },
     ],
     output_config: {
@@ -142,6 +158,7 @@ async function translateRecipeBatch(
 async function translateNameBatch(
   anthropic: Anthropic,
   localeName: string,
+  terms: string,
   kind: "ingredient" | "tag",
   batch: NameInput[],
 ) {
@@ -156,7 +173,7 @@ async function translateNameBatch(
         content:
           `Translate each cocktail ${kind} name below from English into ${localeName}, using the term a ` +
           `home bartender shopping or reading a recipe in ${localeName} would recognize. Return one item ` +
-          `per input, in the same order, referencing each by its id.\n\n${itemsText}`,
+          `per input, in the same order, referencing each by its id.${terms}\n\n${itemsText}`,
       },
     ],
     output_config: {
@@ -229,7 +246,7 @@ async function translateRecipes(
   for (const batch of chunk(inputs, BATCH_SIZE)) {
     const result = await withRetry(
       `[${locale}] recipe batch starting with "${batch[0]?.name}"`,
-      () => translateRecipeBatch(anthropic, localeName, batch),
+      () => translateRecipeBatch(anthropic, localeName, LOCALE_AI_TERMS[locale], batch),
     );
 
     if (!result) {
@@ -262,14 +279,15 @@ async function translateRecipes(
     }
 
     const ingredientMeasureRows = result.flatMap((r) =>
-      (measuresByRecipeId.get(r.id) ?? [])
-        .filter((m) => m.measure !== null)
-        .map((m) => ({
-          recipe_id: r.id,
-          ingredient_id: m.ingredient_id,
-          locale,
-          measure: m.measure,
-        })),
+      translatableMeasures(
+        byId.get(r.id)?.ingredients ?? [],
+        measuresByRecipeId.get(r.id) ?? [],
+      ).map((m) => ({
+        recipe_id: r.id,
+        ingredient_id: m.ingredient_id,
+        locale,
+        measure: m.measure,
+      })),
     );
 
     if (ingredientMeasureRows.length > 0) {
@@ -338,7 +356,7 @@ async function translateIngredients(
   for (const batch of chunk(inputs, BATCH_SIZE)) {
     const result = await withRetry(
       `[${locale}] ingredient batch starting with "${batch[0]?.name}"`,
-      () => translateNameBatch(anthropic, localeName, "ingredient", batch),
+      () => translateNameBatch(anthropic, localeName, LOCALE_AI_TERMS[locale], "ingredient", batch),
     );
 
     if (!result) {
@@ -416,7 +434,7 @@ async function translateTags(
 
   for (const batch of chunk(inputs, BATCH_SIZE)) {
     const result = await withRetry(`[${locale}] tag batch starting with "${batch[0]?.name}"`, () =>
-      translateNameBatch(anthropic, localeName, "tag", batch),
+      translateNameBatch(anthropic, localeName, LOCALE_AI_TERMS[locale], "tag", batch),
     );
 
     if (!result) {

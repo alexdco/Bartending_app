@@ -7,11 +7,15 @@ import { describe, expect, it } from "vitest";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LAUNCHED_LOCALES,
+  LOCALE_AI_TERMS,
   LOCALE_TEXT_SEARCH_CONFIG,
   SUPPORTED_LOCALES,
+  hreflangAlternates,
   isLaunchedLocale,
   isNonDefaultLocale,
   parseAcceptLanguage,
+  resolveRedirectLocale,
+  resolveStoredLocale,
 } from "./locale";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
@@ -129,5 +133,51 @@ describe("parseAcceptLanguage", () => {
   it("returns null for an empty header", () => {
     expect(parseAcceptLanguage(null)).toBeNull();
     expect(parseAcceptLanguage("")).toBeNull();
+  });
+});
+
+describe("resolveStoredLocale", () => {
+  it("treats an unlaunched value as absent unless allowed", () => {
+    expect(resolveStoredLocale("es")).toBe("es");
+    expect(resolveStoredLocale("pt")).toBeNull();
+    expect(resolveStoredLocale("pt", { allowUnlaunched: true })).toBe("pt");
+  });
+
+  it("rejects unsupported and missing values", () => {
+    expect(resolveStoredLocale("fr", { allowUnlaunched: true })).toBeNull();
+    expect(resolveStoredLocale(null)).toBeNull();
+  });
+});
+
+describe("resolveRedirectLocale", () => {
+  it("prefers a launched stored locale, then the header, then English", () => {
+    expect(resolveRedirectLocale("es", "en-US")).toBe("es");
+    expect(resolveRedirectLocale(null, "es-MX")).toBe("es");
+    expect(resolveRedirectLocale(null, null)).toBe("en");
+  });
+
+  it("never lands on an unlaunched locale, whatever the cookie or header says", () => {
+    expect(resolveRedirectLocale("pt", "pt-BR")).toBe("en");
+    expect(resolveRedirectLocale("pt", "es")).toBe("es");
+  });
+});
+
+describe("hreflangAlternates", () => {
+  it("lists launched locales by hreflang code", () => {
+    expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual({ en: "/en", es: "/es" });
+  });
+
+  it("gives an unlaunched page no alternates", () => {
+    expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual({});
+  });
+});
+
+describe("LOCALE_AI_TERMS", () => {
+  it("leaves the Spanish prompts unchanged", () => {
+    expect(LOCALE_AI_TERMS.es).toBe("");
+  });
+
+  it("starts with a space when set, so it appends cleanly to a prompt", () => {
+    expect(LOCALE_AI_TERMS.pt.startsWith(" ")).toBe(true);
   });
 });

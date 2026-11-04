@@ -3,8 +3,10 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import {
   saveAdminRecipe,
+  setRecipeTranslationNotes,
   splitNameList,
   toAdminIngredientPayload,
+  toTranslationNotesByLocale,
   validateAdminRecipeForm,
   type AdminRecipeFormValues,
 } from "./adminRecipes";
@@ -137,6 +139,55 @@ describe("saveAdminRecipe notes (spec 0043 AC-10)", () => {
 
     const result = await saveAdminRecipe(client, { ...formValues, bartenderTip: "a".repeat(241) });
     expect(result.error?.reason).toBe("validation");
+    expect(rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("toTranslationNotesByLocale (spec 0045 AC-11)", () => {
+  it("gives every non English locale an entry, null where no row exists", () => {
+    const notes = { drink_style_note: "Nota", bartender_tip: null, presentation_tip: null };
+    expect(toTranslationNotesByLocale([{ locale: "es", ...notes }])).toEqual({
+      es: notes,
+      pt: null,
+    });
+  });
+});
+
+describe("setRecipeTranslationNotes (spec 0045 AC-11)", () => {
+  const notes = { drink_style_note: " Nota ", bartender_tip: "  ", presentation_tip: null };
+  const clientReturning = (error: { code: string; message: string } | null) => {
+    const rpc = vi.fn().mockResolvedValue({ error });
+    return { rpc, client: { rpc } as unknown as SupabaseClient<Database> };
+  };
+
+  it("trims the notes and stores a blank as null", async () => {
+    const { client, rpc } = clientReturning(null);
+    const result = await setRecipeTranslationNotes(client, "recipe", "pt", notes);
+    expect(result).toEqual({ data: true, error: null });
+    expect(rpc).toHaveBeenCalledWith("admin_set_recipe_translation_notes", {
+      p_recipe_id: "recipe",
+      p_locale: "pt",
+      p_drink_style_note: "Nota",
+      p_bartender_tip: null,
+      p_presentation_tip: null,
+    });
+  });
+
+  it("reports a missing translation row explicitly", async () => {
+    const { client } = clientReturning({ code: "P0002", message: "no row" });
+    expect(await setRecipeTranslationNotes(client, "recipe", "pt", notes)).toEqual({
+      data: null,
+      error: { reason: "no_translation_row" },
+    });
+  });
+
+  it("rejects a too long note without calling the database", async () => {
+    const { client, rpc } = clientReturning(null);
+    const tooLong = { ...notes, bartender_tip: "x".repeat(241) };
+    expect(await setRecipeTranslationNotes(client, "recipe", "pt", tooLong)).toEqual({
+      data: null,
+      error: { reason: "too_long" },
+    });
     expect(rpc).not.toHaveBeenCalled();
   });
 });

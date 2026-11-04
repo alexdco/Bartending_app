@@ -1,8 +1,9 @@
 // Propose step for spec 0043 (recipe drink style, tips, and allergens), AC-7.
 // Asks Claude Haiku for each live recipe's drink style family, style
-// sentence, bartender tip, and presentation tip, in English and Spanish, and
-// writes a review file. Never writes to the database; apply-recipe-notes.ts
-// does that after you review the EN and ES text.
+// sentence, bartender tip, and presentation tip, in English and every
+// supported non English locale (spec 0045 AC-10), and writes a review file.
+// Never writes to the database; apply-recipe-notes.ts does that after you
+// review the text.
 //
 // Usage:
 //   ANTHROPIC_API_KEY=... SUPABASE_URL=... SUPABASE_SERVICE_ROLE_KEY=... pnpm propose-recipe-notes
@@ -14,6 +15,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod/v4";
 import type { Database } from "../src/database.types";
 import { DRINK_STYLES } from "../src/drinkStyle";
+import { LOCALE_AI_LANGUAGE, LOCALE_AI_TERMS, NON_DEFAULT_LOCALES } from "../src/locale";
 import { validateRecipeNoteProposals, type RecipeNoteProposal } from "../src/recipeNoteProposals";
 import {
   assertSameIds,
@@ -43,10 +45,18 @@ const ResponseSchema = z.object({
     NotesSchema.extend({
       id: z.string(),
       drink_style: z.enum(DRINK_STYLES),
-      es: NotesSchema,
+      translations: z.object(
+        Object.fromEntries(NON_DEFAULT_LOCALES.map((locale) => [locale, NotesSchema])),
+      ),
     }),
   ),
 });
+
+const TRANSLATION_LANGUAGES = NON_DEFAULT_LOCALES.map(
+  (locale) => `${locale} (${LOCALE_AI_LANGUAGE[locale]})`,
+).join(", ");
+
+const TRANSLATION_TERMS = NON_DEFAULT_LOCALES.map((locale) => LOCALE_AI_TERMS[locale]).join("");
 
 interface RecipeInput {
   id: string;
@@ -89,8 +99,9 @@ async function proposeBatch(
           `- bartender_tip: one or two sentences with a practical tip for making it better.\n` +
           `- presentation_tip: one or two sentences on glass, garnish, or serving.\n` +
           `Keep each text under ${TARGET_LENGTH} characters, plain text with no markdown. ` +
-          `Also give es: the same three texts written naturally in Latin American Spanish ` +
-          `(not a word for word translation), same limits. Return one entry per recipe, ` +
+          `Also give translations: for each of ${TRANSLATION_LANGUAGES}, keyed by that code, ` +
+          `the same three texts written naturally in that language (not a word for word ` +
+          `translation), same limits.${TRANSLATION_TERMS} Return one entry per recipe, ` +
           `echoing its id exactly.\n\n` +
           batch.map(describeRecipe).join("\n---\n"),
       },
@@ -193,7 +204,7 @@ async function main() {
   console.log(
     `Done. ${proposals.length} proposals in ${REVIEW_FILE_PATH}.` +
       (dropped > 0 ? ` ${dropped} recipes dropped; apply, then rerun to retry them.` : "") +
-      " Review the English and Spanish text, then run apply-recipe-notes.",
+      " Review the text in every language, then run apply-recipe-notes.",
   );
 }
 

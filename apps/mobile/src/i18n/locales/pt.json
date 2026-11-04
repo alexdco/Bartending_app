@@ -23,10 +23,6 @@
     "language": "Language",
     "bartenderMode": "Bartender Mode"
   },
-  "language": {
-    "en": "English",
-    "es": "Español"
-  },
   "account": {
     "heading": "Account",
     "viewFavorites": "View favorites",

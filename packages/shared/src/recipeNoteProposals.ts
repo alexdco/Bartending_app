@@ -3,10 +3,12 @@
 // apply-recipe-notes.ts checks the reviewed file before the RPC. Mirrors the
 // checks in apply_recipe_notes. Kept out of the index barrel: only those
 // scripts use it.
-// Spec: docs/specs/0043-recipe-style-tips-allergens/index.md
+// Specs: docs/specs/0043-recipe-style-tips-allergens/index.md,
+// docs/specs/0045-language-agnostic-locales-portuguese/index.md
 import { z } from "zod/v4";
 import { DRINK_STYLES, noteLength, RECIPE_NOTE_MAX_LENGTH, type DrinkStyle } from "./drinkStyle";
 import type { ProposalValidation } from "./ingredientAllergenProposals";
+import { NON_DEFAULT_LOCALES, type NonDefaultLocale } from "./locale";
 
 /** Present, not blank after trimming, and at most 240 code points (AC-8). */
 const NoteTextSchema = z
@@ -27,22 +29,24 @@ export const RecipeNoteProposalSchema = NotesSchema.extend({
   /** For the reviewer; stripped before the RPC. */
   name: z.string(),
   drink_style: z.enum(DRINK_STYLES),
-  es: NotesSchema,
+  /** One block per supported non English locale, no more and no fewer (AC-10). */
+  translations: z.record(z.enum(NON_DEFAULT_LOCALES), NotesSchema),
 });
 
 export type RecipeNoteProposal = z.infer<typeof RecipeNoteProposalSchema>;
 
-interface NotesPayload {
+// Type aliases, not interfaces, so a row stays assignable to the RPC's Json arg.
+type NotesPayload = {
   readonly drink_style_note: string;
   readonly bartender_tip: string;
   readonly presentation_tip: string;
-}
+};
 
-export interface RecipeNotePayloadRow extends NotesPayload {
+export type RecipeNotePayloadRow = NotesPayload & {
   readonly id: string;
   readonly drink_style: DrinkStyle;
-  readonly es: NotesPayload;
-}
+  readonly translations: Record<NonDefaultLocale, NotesPayload>;
+};
 
 /** Checks the whole file; any error rejects everything (AC-8). */
 export function validateRecipeNoteProposals(
@@ -85,6 +89,8 @@ export function toRecipeNotePayload(
     id: p.id,
     drink_style: p.drink_style,
     ...trimNotes(p),
-    es: trimNotes(p.es),
+    translations: Object.fromEntries(
+      NON_DEFAULT_LOCALES.map((locale) => [locale, trimNotes(p.translations[locale])]),
+    ) as Record<NonDefaultLocale, NotesPayload>,
   }));
 }

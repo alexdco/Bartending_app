@@ -1439,6 +1439,16 @@ export type Database = {
         };
         Returns: undefined;
       };
+      admin_set_recipe_translation_notes: {
+        Args: {
+          p_bartender_tip: string;
+          p_drink_style_note: string;
+          p_locale: string;
+          p_presentation_tip: string;
+          p_recipe_id: string;
+        };
+        Returns: undefined;
+      };
       admin_upsert_recipe: {
         Args: {
           p_alcoholic_status: string;
@@ -1457,7 +1467,7 @@ export type Database = {
         Args: { proposals: Json };
         Returns: undefined;
       };
-      apply_recipe_notes: { Args: { proposals: Json }; Returns: string[] };
+      apply_recipe_notes: { Args: { p_proposals: Json }; Returns: Json };
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
       buy_shopping_list_item: {
         Args: { p_ingredient_id: string };
@@ -1666,38 +1676,22 @@ export type Database = {
           count: number;
         }[];
       };
-      recommend_recipes:
-        | {
-            Args: {
-              current_recipe_id?: string;
-              page_limit?: number;
-              page_offset?: number;
-              recent_recipe_ids?: string[];
-            };
-            Returns: {
-              alcoholic_status: string;
-              id: string;
-              image_url: string;
-              name: string;
-              score: number;
-            }[];
-          }
-        | {
-            Args: {
-              current_recipe_id?: string;
-              locale?: string;
-              page_limit?: number;
-              page_offset?: number;
-              recent_recipe_ids?: string[];
-            };
-            Returns: {
-              alcoholic_status: string;
-              id: string;
-              image_url: string;
-              name: string;
-              score: number;
-            }[];
-          };
+      recommend_recipes: {
+        Args: {
+          current_recipe_id?: string;
+          locale?: string;
+          page_limit?: number;
+          page_offset?: number;
+          recent_recipe_ids?: string[];
+        };
+        Returns: {
+          alcoholic_status: string;
+          id: string;
+          image_url: string;
+          name: string;
+          score: number;
+        }[];
+      };
       release_ai_generation_slot: {
         Args: { p_day: string; p_ip_hash: string; p_user_id: string };
         Returns: undefined;

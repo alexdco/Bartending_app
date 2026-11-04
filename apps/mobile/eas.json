@@ -20,6 +20,9 @@
       "distribution": "internal",
       "channel": "preview",
       "environment": "preview",
+      "env": {
+        "EXPO_PUBLIC_SHOW_ALL_LOCALES": "true"
+      },
       "android": {
         "buildType": "apk"
       }

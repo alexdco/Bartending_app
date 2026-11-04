@@ -7,10 +7,10 @@ import {
   buildQuizSlugPath,
   fetchPopularByRegion,
   fetchQuizBySource,
+  hreflangAlternates,
   listPopularRegions,
   localizedPath,
   matchRegionSlug,
-  SUPPORTED_LOCALES,
   type Locale,
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
@@ -51,9 +51,7 @@ export async function generateMetadata({
   const locale = (await getLocale()) as Locale;
   const canonicalPath = localizedPath(locale, regionPath);
 
-  const languages = Object.fromEntries(
-    SUPPORTED_LOCALES.map((locale) => [locale, localizedPath(locale, regionPath)]),
-  );
+  const languages = hreflangAlternates(locale, (candidate) => localizedPath(candidate, regionPath));
 
   return {
     title,

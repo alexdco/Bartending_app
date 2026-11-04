@@ -6,32 +6,31 @@ import {
   listAllRecipesForSitemap,
   listPopularRegions,
   listPublishedLearnArticlesForSitemap,
+  LAUNCHED_LOCALES,
   localizedPath,
+  LOCALE_HREFLANG,
   slugify,
-  SUPPORTED_LOCALES,
   type Locale,
 } from "@bartendingapp/shared";
 import { supabasePublic } from "@/lib/supabase-public";
 import { siteAbsoluteUrl } from "@/lib/site-url";
 
 /**
- * One entry per locale for a page, each listing every locale's URL as an
- * hreflang alternate. `pathFor` gives the unprefixed path in that locale,
+ * One entry per launched locale for a page, each listing every launched
+ * locale's URL as an hreflang alternate. `pathFor` gives the unprefixed path in that locale,
  * since a recipe's slug differs by language.
  */
 function localizedEntries(
   pathFor: (locale: Locale) => string,
   lastModified?: string,
 ): MetadataRoute.Sitemap {
+  const urlFor = (locale: Locale) => siteAbsoluteUrl(localizedPath(locale, pathFor(locale)));
   const languages = Object.fromEntries(
-    SUPPORTED_LOCALES.map((locale) => [
-      locale,
-      siteAbsoluteUrl(localizedPath(locale, pathFor(locale))),
-    ]),
+    LAUNCHED_LOCALES.map((locale) => [LOCALE_HREFLANG[locale], urlFor(locale)]),
   );
 
-  return SUPPORTED_LOCALES.map((locale) => ({
-    url: languages[locale],
+  return LAUNCHED_LOCALES.map((locale) => ({
+    url: urlFor(locale),
     ...(lastModified ? { lastModified } : {}),
     alternates: { languages },
   }));

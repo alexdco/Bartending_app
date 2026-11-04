@@ -10,6 +10,8 @@ import {
   AGE_GATE_VERSION,
   BRAND_NAME,
   colors,
+  isLaunchedLocale,
+  LOCALE_HREFLANG,
 } from "@bartendingapp/shared";
 import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/lib/site-url";
@@ -45,6 +47,8 @@ export async function generateMetadata({ params }: LayoutProps<"/[locale]">): Pr
     description: t("siteDescription"),
     applicationName: BRAND_NAME,
     openGraph: { siteName: BRAND_NAME },
+    // Crawlers must reach an unlaunched locale to see this (spec 0045 AC-7).
+    ...(isLaunchedLocale(locale) ? {} : { robots: { index: false } }),
   };
 }
 
@@ -104,7 +108,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
 
   return (
     <html
-      lang={locale}
+      lang={LOCALE_HREFLANG[locale]}
       className={`${fraunces.variable} ${inter.variable}`}
       suppressHydrationWarning
     >

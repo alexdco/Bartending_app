@@ -6,14 +6,34 @@
 // cookies later in this same middleware pass sees the refreshed values.
 import createMiddleware from "next-intl/middleware";
 import { createServerClient } from "@supabase/ssr";
-import { type NextRequest } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { isSupportedLocale, resolveRedirectLocale } from "@bartendingapp/shared";
 import { routing } from "./i18n/routing";
 import { SUPABASE_ANON_KEY, SUPABASE_URL, SUPABASE_COOKIE_OPTIONS } from "./lib/supabase-env";
 
 const intlMiddleware = createMiddleware(routing);
 
+// Every path with no locale prefix is sent to a launched locale here, ahead of
+// next-intl, whose own detection would accept any supported locale.
+function unprefixedRedirect(request: NextRequest): NextResponse | null {
+  const { pathname } = request.nextUrl;
+  const firstSegment = pathname.split("/")[1]?.toLowerCase();
+
+  if (isSupportedLocale(firstSegment)) {
+    return null;
+  }
+
+  const locale = resolveRedirectLocale(
+    request.cookies.get("NEXT_LOCALE")?.value,
+    request.headers.get("accept-language"),
+  );
+  const url = request.nextUrl.clone();
+  url.pathname = pathname === "/" ? `/${locale}` : `/${locale}${pathname}`;
+  return NextResponse.redirect(url);
+}
+
 export default async function middleware(request: NextRequest) {
-  const response = intlMiddleware(request);
+  const response = unprefixedRedirect(request) ?? intlMiddleware(request);
 
   const supabase = createServerClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     cookieOptions: SUPABASE_COOKIE_OPTIONS,
