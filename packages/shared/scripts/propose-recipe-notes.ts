@@ -371,19 +371,24 @@ async function proposeLocale(
   let proposals: readonly RecipeTranslationNoteProposal[] = [];
   let dropped: readonly LocaleInput[] = [];
 
-  for (const batch of chunk(inputs, LOCALE_BATCH_SIZE)) {
-    const result = await withRetry(`Batch starting with "${batch[0]?.name}"`, () =>
-      proposeLocaleBatch(anthropic, locale, batch),
-    );
+  // A failed batch is retried one recipe at a time, so a recipe that can never
+  // pass (a translation over the limit) drops alone, not with its neighbors.
+  const batches = chunk(inputs, LOCALE_BATCH_SIZE).map((batch) => ({ batch, split: true }));
+  for (let next = batches.shift(); next; next = batches.shift()) {
+    const { batch, split } = next;
+    const label =
+      batch.length === 1 ? `"${batch[0]?.name}"` : `Batch starting with "${batch[0]?.name}"`;
+    const result = await withRetry(label, () => proposeLocaleBatch(anthropic, locale, batch));
     if (result) {
       proposals = [...proposals, ...result];
       writeReviewFile(reviewFile, proposals);
       console.log(`Proposed ${proposals.length} of ${inputs.length}.`);
+    } else if (split && batch.length > 1) {
+      console.error(`${label} failed ${MAX_RETRIES} times; trying its recipes one at a time.`);
+      batches.unshift(...batch.map((recipe) => ({ batch: [recipe], split: false })));
     } else {
       dropped = [...dropped, ...batch];
-      console.error(
-        `Dropped the batch starting with "${batch[0]?.name}" after ${MAX_RETRIES} failed attempts.`,
-      );
+      console.error(`Dropped ${label} after ${MAX_RETRIES} failed attempts.`);
     }
   }
 

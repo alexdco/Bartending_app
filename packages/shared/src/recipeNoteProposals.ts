@@ -56,9 +56,10 @@ export type RecipeNotePayloadRow = NotesPayload & {
 };
 
 /** Checks a whole file against one row schema; any error rejects everything. */
-function validateFile<T extends { readonly id: string }>(
+function validateFile<T extends { readonly id: string; readonly name: string }>(
   schema: z.ZodType<T>,
   value: unknown,
+  rowErrors: (row: T) => readonly string[] = () => [],
 ): ProposalValidation<T> {
   const parsed = z.array(schema).safeParse(value);
   if (!parsed.success) {
@@ -74,6 +75,14 @@ function validateFile<T extends { readonly id: string }>(
         return `${issue.path.join(".")}${name}: ${issue.message}`;
       }),
     };
+  }
+
+  // Checked only once every row parses, so a failed field never shows up here too.
+  const crossFieldErrors = parsed.data.flatMap((row, index) =>
+    rowErrors(row).map((message) => `${index}.${message.replace(": ", ` (${row.name}): `)}`),
+  );
+  if (crossFieldErrors.length > 0) {
+    return { ok: false, errors: crossFieldErrors };
   }
 
   const ids = parsed.data.map((p) => p.id);
@@ -178,43 +187,39 @@ export function planLocaleNoteBackfill(
 
 const SourceTextSchema = z.string().refine((text) => !isBlank(text), { message: "is blank" });
 
-export const RecipeTranslationNoteProposalSchema = z
-  .object({
-    id: z.guid(),
-    /** For the reviewer; stripped before the RPC. */
-    name: z.string(),
-    /** The English text each note was translated from, copied verbatim from `recipes`. */
-    source: z.strictObject({
-      drink_style_note: SourceTextSchema.optional(),
-      bartender_tip: SourceTextSchema.optional(),
-      presentation_tip: SourceTextSchema.optional(),
-    }),
-    notes: z.strictObject({
-      drink_style_note: NoteTextSchema.optional(),
-      bartender_tip: NoteTextSchema.optional(),
-      presentation_tip: NoteTextSchema.optional(),
-    }),
-  })
-  .superRefine((p, ctx) => {
-    const noteKeys = Object.keys(p.notes).sort().join();
-    if (noteKeys === "") {
-      ctx.addIssue({ code: "custom", path: ["notes"], message: "is empty" });
-    } else if (noteKeys !== Object.keys(p.source).sort().join()) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["source"],
-        message: "must hold the same fields as notes",
-      });
-    }
-  });
+export const RecipeTranslationNoteProposalSchema = z.object({
+  id: z.guid(),
+  /** For the reviewer; stripped before the RPC. */
+  name: z.string(),
+  /** The English text each note was translated from, copied verbatim from `recipes`. */
+  source: z.strictObject({
+    drink_style_note: SourceTextSchema.optional(),
+    bartender_tip: SourceTextSchema.optional(),
+    presentation_tip: SourceTextSchema.optional(),
+  }),
+  notes: z.strictObject({
+    drink_style_note: NoteTextSchema.optional(),
+    bartender_tip: NoteTextSchema.optional(),
+    presentation_tip: NoteTextSchema.optional(),
+  }),
+});
 
 export type RecipeTranslationNoteProposal = z.infer<typeof RecipeTranslationNoteProposalSchema>;
+
+/** `notes` holds at least one field, and `source` exactly the same ones. */
+function translationKeyErrors(p: RecipeTranslationNoteProposal): readonly string[] {
+  const noteKeys = Object.keys(p.notes).sort().join();
+  if (noteKeys === "") return ["notes: is empty"];
+  return noteKeys === Object.keys(p.source).sort().join()
+    ? []
+    : ["source: must hold the same fields as notes"];
+}
 
 /** Checks the whole --locale file; any error rejects everything (AC-18). */
 export function validateRecipeTranslationNoteProposals(
   value: unknown,
 ): ProposalValidation<RecipeTranslationNoteProposal> {
-  return validateFile(RecipeTranslationNoteProposalSchema, value);
+  return validateFile(RecipeTranslationNoteProposalSchema, value, translationKeyErrors);
 }
 
 export type RecipeTranslationNotePayloadRow = {

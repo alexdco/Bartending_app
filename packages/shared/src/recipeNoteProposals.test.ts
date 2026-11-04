@@ -254,3 +254,21 @@ describe("RecipeTranslationNotesResultSchema", () => {
     expect(RecipeTranslationNotesResultSchema.parse(result)).toEqual(result);
   });
 });
+
+describe("validateRecipeTranslationNoteProposals errors", () => {
+  it("reports a too long note once, without a field mismatch on top", () => {
+    const row = { ...ptRow, notes: { bartender_tip: "a".repeat(241) } };
+    expect(validateRecipeTranslationNoteProposals([row])).toEqual({
+      ok: false,
+      errors: ["0.notes.bartender_tip (Margarita): is over 240 characters"],
+    });
+  });
+
+  it("names the row on a field mismatch", () => {
+    const row = { ...ptRow, source: { presentation_tip: "Salt." } };
+    expect(validateRecipeTranslationNoteProposals([row])).toEqual({
+      ok: false,
+      errors: ["0.source (Margarita): must hold the same fields as notes"],
+    });
+  });
+});
