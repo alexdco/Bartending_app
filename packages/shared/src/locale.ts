@@ -27,10 +27,13 @@ export const NON_DEFAULT_LOCALES: readonly NonDefaultLocale[] = SUPPORTED_LOCALE
 export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es"];
 
 /**
- * The locales the import job translates new catalog rows into. Holds only
- * launched locales outside a backfill run.
+ * The locales the import job translates new catalog rows into, and the
+ * blocks the default recipe notes run writes. Holds only launched locales
+ * outside a backfill run.
  */
-export const CATALOG_TRANSLATION_LOCALES: readonly NonDefaultLocale[] = ["es"];
+export const CATALOG_TRANSLATION_LOCALES = ["es"] as const satisfies readonly NonDefaultLocale[];
+
+export type CatalogTranslationLocale = (typeof CATALOG_TRANSLATION_LOCALES)[number];
 
 export const LOCALE_TEXT_SEARCH_CONFIG: Record<Locale, string> = {
   en: "english",

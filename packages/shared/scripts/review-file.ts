@@ -3,6 +3,7 @@
 // script itself (no package.json entry).
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
+import { isNonDefaultLocale, type NonDefaultLocale } from "../src/locale";
 
 export const HAIKU_MODEL = "claude-haiku-4-5-20251001";
 export const MAX_RETRIES = 3;
@@ -63,6 +64,34 @@ export async function withRetry<T>(label: string, run: () => Promise<T>): Promis
     }
   }
   return null;
+}
+
+export function flagValue(name: string): string | undefined {
+  const index = process.argv.indexOf(name);
+  return index === -1 ? undefined : process.argv[index + 1];
+}
+
+/** `--locale <code>`: one supported non English locale, else the run stops (spec 0045). */
+export function parseLocaleFlag(): NonDefaultLocale | undefined {
+  const value = flagValue("--locale");
+  if (value === undefined) return undefined;
+  if (!isNonDefaultLocale(value)) {
+    console.error(`--locale must be a supported non English locale, got "${value}".`);
+    process.exit(1);
+  }
+  return value;
+}
+
+/** `--limit <n>`: a positive integer, else the run stops. */
+export function parseLimitFlag(): number | undefined {
+  const value = flagValue("--limit");
+  if (value === undefined) return undefined;
+  const limit = Number(value);
+  if (!Number.isInteger(limit) || limit < 1) {
+    console.error(`--limit must be a positive integer, got "${value}".`);
+    process.exit(1);
+  }
+  return limit;
 }
 
 // Reads packages/shared/.env when present (gitignored), as

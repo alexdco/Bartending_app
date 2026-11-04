@@ -1468,6 +1468,10 @@ export type Database = {
         Returns: undefined;
       };
       apply_recipe_notes: { Args: { p_proposals: Json }; Returns: Json };
+      apply_recipe_translation_notes: {
+        Args: { p_locale: string; p_proposals: Json };
+        Returns: Json;
+      };
       apply_region_proposals: { Args: { proposals: Json }; Returns: undefined };
       buy_shopping_list_item: {
         Args: { p_ingredient_id: string };
