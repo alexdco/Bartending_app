@@ -30,11 +30,11 @@ export async function generateMetadata({
     return {};
   }
 
+  // Spec 0033 AC-8: hand written per category, never a template.
   const t = await getTranslations("learn");
-  const label = t(`categories.${category}`);
   return {
-    title: t("categoryMetaTitle", { label }),
-    description: t("categoryMetaDescription", { label: label.toLowerCase() }),
+    title: t(`categoryTitles.${category}`),
+    description: t(`categoryDescriptions.${category}`),
   };
 }
 
@@ -69,9 +69,12 @@ export default async function LearnCategoryPage({
               key={article.id}
               href={`/learn/${category}/${buildLearnArticleSlugPath(article.id, article.title)}`}
             >
-              <Card>
+              <Card className="flex flex-col gap-one">
                 <Text variant="subheading" as="h2">
                   {article.title}
+                </Text>
+                <Text variant="body" muted>
+                  {article.summary}
                 </Text>
               </Card>
             </Link>

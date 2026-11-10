@@ -41,17 +41,34 @@ describe("isLearnCategory", () => {
 });
 
 describe("fetchArticlesByCategory", () => {
-  it("maps published rows to summaries (covers AC-2)", async () => {
+  it("maps published rows to summaries, carrying the summary subtitle (covers AC-2, spec 0033 AC-7)", async () => {
     const client = stubSupabase({
-      data: [{ id: "1", title: "Jiggers", category: "tools", published_at: "2026-01-01" }],
+      data: [
+        {
+          id: "1",
+          title: "Jiggers",
+          category: "tools",
+          summary: "What a jigger is.",
+          published_at: "2026-01-01",
+        },
+      ],
       error: null,
     });
 
     const result = await fetchArticlesByCategory(client, "tools");
 
     expect(result).toEqual([
-      { id: "1", title: "Jiggers", category: "tools", publishedAt: "2026-01-01" },
+      {
+        id: "1",
+        title: "Jiggers",
+        category: "tools",
+        summary: "What a jigger is.",
+        publishedAt: "2026-01-01",
+      },
     ]);
+    expect(client.from("learn_articles").select).toHaveBeenCalledWith(
+      expect.stringContaining("summary"),
+    );
   });
 
   it("returns an empty list rather than an error for a category with no rows (covers AC-2)", async () => {
@@ -84,6 +101,7 @@ describe("fetchArticleDetail", () => {
         id: "1",
         title: "Jiggers",
         category: "tools",
+        summary: "What a jigger is.",
         body_markdown: "## About jiggers",
         published_at: "2026-01-01",
       },
@@ -96,6 +114,7 @@ describe("fetchArticleDetail", () => {
       id: "1",
       title: "Jiggers",
       category: "tools",
+      summary: "What a jigger is.",
       publishedAt: "2026-01-01",
       bodyMarkdown: "## About jiggers",
     });

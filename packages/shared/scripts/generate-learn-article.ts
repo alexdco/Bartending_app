@@ -63,4 +63,9 @@ async function main() {
   console.log(`\nDraft created: ${id} (status: draft). Review and publish it in Supabase Studio.`);
 }
 
-main();
+// Any failure, including an invalid generated summary (spec 0033 AC-9),
+// exits non zero with nothing inserted.
+main().catch((error: unknown) => {
+  console.error(error instanceof Error ? error.message : error);
+  process.exit(1);
+});

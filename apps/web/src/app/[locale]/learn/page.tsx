@@ -9,7 +9,7 @@ import { Text } from "@/components/text";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("learn");
-  return { title: t("title"), description: t("metaDescription") };
+  return { title: t("landingTitle"), description: t("landingDescription") };
 }
 
 export default function LearnPage() {

@@ -178,19 +178,19 @@ No `fact_checked_at` column: the review doc holds the record.
 
 Tracer Bullet: slice 1 runs the whole correction path on the one urgent article, and each later slice thickens a part of it.
 
-0. Search live `body_markdown` for each known finding's phrase and record the matching article ids at the top of the review doc. Add the `.gitattributes` LF rule, satisfies **AC-2**, **AC-3**, **AC-4**.
-1. **Slice 1, simple syrup.** Fact check the simple syrup article, cite sources, and get owner approval. If step 0 placed the grenadine ratio here, fix it in this slice; otherwise it waits for slice 3. Start the review doc with its entry, write `supabase/migrations/<ts>_learn_fix_simple_syrup.sql`, have the owner apply it, run the md5 check, and confirm the page on web and mobile, satisfies **AC-1**, **AC-2**, **AC-3**.
+0. Search live `body_markdown` for each known finding's phrase and record the matching article ids at the top of the review doc. Add the `.gitattributes` LF rule, satisfies **AC-2**, **AC-3**, **AC-4**. _Done 2026-10-10._
+1. **Slice 1, simple syrup.** Fact check the simple syrup article, cite sources, and get owner approval. If step 0 placed the grenadine ratio here, fix it in this slice; otherwise it waits for slice 3. Start the review doc with its entry, write `supabase/migrations/<ts>_learn_fix_simple_syrup.sql`, have the owner apply it, run the md5 check, and confirm the page on web and mobile, satisfies **AC-1**, **AC-2**, **AC-3**. _Done: applied, live md5 `b562ed32…` matches (checked 2026-11-09)._
 2. **Slice 2, summary thread.** Read the live ids and statuses, draft one topic only summary per row, and get owner approval. Then write the idempotent migration `<ts>_learn_articles_summary.sql`, which:
    - adds `summary` as nullable, with both check constraints;
    - backfills every row by `id`;
    - runs a `do` block that raises if any row is still null;
    - sets `not null`.
 
-   After it's applied, regenerate `packages/shared/src/database.types.ts`, add `summary` to `LearnArticleSummary` and both fetch selects, and update the generator in the same slice: the `summary` field in `ArticleDraftSchema`, the check after parsing, and the insert. Without that, the generator fails once the column is not null. Satisfies **AC-5**, **AC-9**.
-3. Web article `generateMetadata`: `description` and `openGraph.description` from `summary`, satisfies **AC-6**.
-4. Web and mobile category lists: a summary subtitle under each title, satisfies **AC-7**.
-5. Web catalog keys `learn.categoryTitles.*`, `learn.categoryDescriptions.*`, `learn.landingTitle`, and `learn.landingDescription` in `en.json` and `es.json` (owner approved copy). The category page's `generateMetadata` reads them, and the landing page gets a new async `generateMetadata` that does too, satisfies **AC-8**.
-6. Generator prompt accuracy rules, plus tests for the summary check and the prompt contents, satisfies **AC-9**, **AC-10**.
+   After it's applied, regenerate `packages/shared/src/database.types.ts`, add `summary` to `LearnArticleSummary` and both fetch selects, and update the generator in the same slice: the `summary` field in `ArticleDraftSchema`, the check after parsing, and the insert. Without that, the generator fails once the column is not null. Satisfies **AC-5**, **AC-9**. _Done 2026-11-09: `20261109120000_learn_articles_summary.sql` applied (35 of 35 rows, not null, both checks live), types regenerated._
+3. Web article `generateMetadata`: `description` and `openGraph.description` from `summary`, satisfies **AC-6**. _Done 2026-11-09._
+4. Web and mobile category lists: a summary subtitle under each title, satisfies **AC-7**. _Done 2026-11-09._
+5. Web catalog keys `learn.categoryTitles.*`, `learn.categoryDescriptions.*`, `learn.landingTitle`, and `learn.landingDescription` in `en.json` and `es.json` (owner approved copy). The category page's `generateMetadata` reads them, and the landing page gets a new async `generateMetadata` that does too, satisfies **AC-8**. _Done 2026-11-09: en, es, and pt (Portuguese launched after this spec), copy approved by the owner._
+6. Generator prompt accuracy rules, plus tests for the summary check and the prompt contents, satisfies **AC-9**, **AC-10**. _Done 2026-11-09._
 7. **Slice 3, remaining corrections.** Fact check the other 17 published articles one at a time, starting with the known ones (jigger, proof, oak barrels, then whichever article holds the "suggests complexity" sentence). Add each approved entry to the review doc, then write `<ts>_learn_article_corrections.sql` with one commented block per changed article. Reread each summary against its corrected body, and fix any that went stale in the same migration. Snapshot `published_at` and `status` before apply, then run the md5 and snapshot checks after, satisfies **AC-2**, **AC-3**, **AC-4**, **AC-5**, **AC-11**.
 
 ## Migration plan

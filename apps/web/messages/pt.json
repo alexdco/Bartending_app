@@ -341,12 +341,25 @@
       "beer": "Cerveja",
       "other": "Outros"
     },
-    "categoryMetaTitle": "Artigos sobre {label}",
-    "categoryMetaDescription": "Aprenda sobre {label} para fazer drinks em casa.",
     "emptyTitle": "Ainda não há artigos",
     "emptyDescription": "Volte em breve para ver artigos desta categoria.",
     "takeTheQuiz": "Faça o quiz: {title}",
-    "metaDescription": "Guias curtos sobre destilados, técnicas e utensílios para quem faz drinks em casa."
+    "landingTitle": "Guias de coquetelaria",
+    "landingDescription": "Guias curtos e práticos sobre utensílios de bar, destilados, vinho e cerveja, para quem faz drinks em casa.",
+    "categoryTitles": {
+      "tools": "Guias de utensílios de bar",
+      "spirits": "Guias de destilados",
+      "wine": "Guias de vinho",
+      "beer": "Guias de cerveja",
+      "other": "Xaropes, bitters e mais"
+    },
+    "categoryDescriptions": {
+      "tools": "Como funcionam o dosador, a coqueteleira, as peneiras, a colher bailarina e o socador, e quais utensílios vale a pena ter em casa.",
+      "spirits": "Como os destilados são feitos, envelhecidos e rotulados, do teor alcoólico à escolha do destilado base dos seus drinks.",
+      "wine": "Guias para ler rótulos de vinho e entender doçura, taninos e espumantes, para quem serve vinho em casa.",
+      "beer": "Guias sobre estilos, amargor e cor da cerveja, para entender um rótulo e escolher uma cerveja de que você goste.",
+      "other": "Guias sobre xaropes, bitters, destilados sem álcool e outros básicos para fazer um bom drink em casa."
+    }
   },
   "quizzes": {
     "title": "Quizzes",

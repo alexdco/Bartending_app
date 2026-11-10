@@ -11,10 +11,36 @@ export function isLearnCategory(value: string | null | undefined): value is Lear
   return LEARN_CATEGORIES.includes(value as LearnCategory);
 }
 
+// Spec 0033 (AC-5, AC-9): the bounds the learn_articles.summary check
+// constraints enforce, shared by the generator and its tests.
+export const SUMMARY_MIN_CHARS = 70;
+export const SUMMARY_MAX_CHARS = 160;
+
+const SUMMARY_MARKDOWN = /\*\*|__|^#|`|\]\(/;
+
+// Returns why a summary would be rejected, or null when it is valid. Length
+// counts code points to match Postgres char_length.
+export function validateLearnSummary(summary: string): string | null {
+  const length = [...summary].length;
+  if (length < SUMMARY_MIN_CHARS || length > SUMMARY_MAX_CHARS) {
+    return `summary is ${length} characters, must be ${SUMMARY_MIN_CHARS} to ${SUMMARY_MAX_CHARS}`;
+  }
+  if (summary !== summary.trim()) {
+    return "summary has leading or trailing whitespace";
+  }
+  if (SUMMARY_MARKDOWN.test(summary)) {
+    return "summary contains markdown";
+  }
+  return null;
+}
+
 export interface LearnArticleSummary {
   id: string;
   title: string;
   category: LearnCategory;
+  // Topic only plain text, 70 to 160 characters (spec 0033): the list
+  // subtitle and the article page's meta description.
+  summary: string;
   publishedAt: string | null;
 }
 
@@ -31,7 +57,7 @@ export async function fetchArticlesByCategory(
 ): Promise<LearnArticleSummary[]> {
   const { data, error } = await client
     .from("learn_articles")
-    .select("id, title, category, published_at")
+    .select("id, title, category, summary, published_at")
     .eq("category", category)
     .eq("status", "published")
     .order("published_at", { ascending: false })
@@ -45,6 +71,7 @@ export async function fetchArticlesByCategory(
     id: row.id,
     title: row.title,
     category: row.category as LearnCategory,
+    summary: row.summary,
     publishedAt: row.published_at,
   }));
 }
@@ -88,7 +115,7 @@ export async function fetchArticleDetail(
 ): Promise<LearnArticleDetail | null> {
   const { data, error } = await client
     .from("learn_articles")
-    .select("id, title, category, body_markdown, published_at")
+    .select("id, title, category, summary, body_markdown, published_at")
     .eq("id", id)
     .eq("category", category)
     .eq("status", "published")
@@ -106,6 +133,7 @@ export async function fetchArticleDetail(
     id: data.id,
     title: data.title,
     category: data.category as LearnCategory,
+    summary: data.summary,
     publishedAt: data.published_at,
     bodyMarkdown: data.body_markdown,
   };

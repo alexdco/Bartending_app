@@ -341,12 +341,25 @@
       "beer": "Cerveza",
       "other": "Otros"
     },
-    "categoryMetaTitle": "Artículos: {label}",
-    "categoryMetaDescription": "Aprende sobre {label} para preparar tragos en casa.",
     "emptyTitle": "Todavía no hay artículos",
     "emptyDescription": "Vuelve pronto para ver artículos de esta categoría.",
     "takeTheQuiz": "Haz el cuestionario: {title}",
-    "metaDescription": "Guías breves sobre destilados, técnicas y herramientas para bartenders en casa."
+    "landingTitle": "Guías de coctelería",
+    "landingDescription": "Guías breves y prácticas sobre herramientas de bar, destilados, vino y cerveza, para quienes preparan tragos en casa.",
+    "categoryTitles": {
+      "tools": "Guías de herramientas de bar",
+      "spirits": "Guías de destilados",
+      "wine": "Guías de vino",
+      "beer": "Guías de cerveza",
+      "other": "Jarabes, amargos y más"
+    },
+    "categoryDescriptions": {
+      "tools": "Cómo funcionan el jigger, la coctelera, los coladores, la cuchara de bar y el mortero, y qué herramientas vale la pena tener en casa.",
+      "spirits": "Cómo se elaboran, añejan y etiquetan los destilados, desde la graduación hasta cómo elegir el destilado base de tus cócteles.",
+      "wine": "Guías para leer etiquetas de vino y entender el dulzor, los taninos y los espumosos, para quienes sirven vino en casa.",
+      "beer": "Guías sobre estilos, amargor y color de la cerveza, para entender una etiqueta y elegir una cerveza que te guste.",
+      "other": "Guías sobre jarabes, amargos, destilados sin alcohol y otros básicos para preparar un buen cóctel en casa."
+    }
   },
   "quizzes": {
     "title": "Cuestionarios",

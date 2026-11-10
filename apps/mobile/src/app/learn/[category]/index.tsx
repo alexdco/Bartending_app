@@ -72,10 +72,14 @@ export default function LearnCategoryScreen() {
                 onPress={() => router.push(`/learn/${category}/${article.id}` as never)}
                 accessibilityRole="button"
                 accessibilityLabel={article.title}
+                accessibilityHint={article.summary}
                 style={styles.row}
               >
-                <Card>
+                <Card style={styles.articleCard}>
                   <Text variant="subheading">{article.title}</Text>
+                  <Text variant="body" muted>
+                    {article.summary}
+                  </Text>
                 </Card>
               </TouchableOpacity>
             ))}
@@ -116,6 +120,9 @@ const styles = StyleSheet.create({
   },
   articleList: {
     gap: Spacing.three,
+  },
+  articleCard: {
+    gap: Spacing.one,
   },
   centered: {
     alignItems: "center",

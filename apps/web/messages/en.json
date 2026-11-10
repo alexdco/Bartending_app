@@ -341,12 +341,25 @@
       "beer": "Beer",
       "other": "Other"
     },
-    "categoryMetaTitle": "{label} articles",
-    "categoryMetaDescription": "Learn about {label} for home bartending.",
     "emptyTitle": "No articles yet",
     "emptyDescription": "Check back soon for articles in this category.",
     "takeTheQuiz": "Take the quiz: {title}",
-    "metaDescription": "Short guides to spirits, techniques, and tools for home bartenders."
+    "landingTitle": "Bartending guides",
+    "landingDescription": "Short, practical guides to bar tools, spirits, wine, and beer, written for people who make drinks at home.",
+    "categoryTitles": {
+      "tools": "Bar tool guides",
+      "spirits": "Spirits guides",
+      "wine": "Wine guides",
+      "beer": "Beer guides",
+      "other": "Syrups, bitters, and more"
+    },
+    "categoryDescriptions": {
+      "tools": "How jiggers, shakers, strainers, bar spoons, and muddlers work, and which bar tools are worth having at home.",
+      "spirits": "How spirits are made, aged, and labeled, from proof and cask strength to choosing a base spirit for your cocktails.",
+      "wine": "Guides to reading wine labels, sweetness, tannins, and sparkling wine, for people who pour wine at home.",
+      "beer": "Guides to beer styles, bitterness, and color, so you can make sense of a label and pick a beer you'll enjoy.",
+      "other": "Guides to syrups, bitters, non-alcoholic spirits, and the other basics behind a good cocktail at home."
+    }
   },
   "quizzes": {
     "title": "Quizzes",

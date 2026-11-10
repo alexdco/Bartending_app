@@ -51,13 +51,20 @@ export async function generateMetadata({
   const locale = (await getLocale()) as Locale;
   const canonicalPath = localizedPath(locale, articlePath);
 
+  // Spec 0033 AC-6: the article's own summary, never the site description.
+  // Bodies are English only, so /es and /pt show the English summary too.
   return {
     title: article.title,
+    description: article.summary,
     alternates: {
       canonical: canonicalPath,
       languages: hreflangAlternates(locale, (candidate) => localizedPath(candidate, articlePath)),
     },
-    openGraph: await buildOpenGraph(locale, { title: article.title, url: canonicalPath }),
+    openGraph: await buildOpenGraph(locale, {
+      title: article.title,
+      description: article.summary,
+      url: canonicalPath,
+    }),
   };
 }
 

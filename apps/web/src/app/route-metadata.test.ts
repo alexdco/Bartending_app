@@ -1,8 +1,10 @@
 import { readdirSync, readFileSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { describe, expect, it } from "vitest";
+import { LEARN_CATEGORIES } from "@bartendingapp/shared";
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
+import pt from "../../messages/pt.json";
 
 // Spec 0037, AC-2 and AC-3: every route has its own translated title, and
 // every indexable route its own description. This mirrors the spec's Route
@@ -38,13 +40,14 @@ const ROUTES: Record<string, RouteMeta> = {
     title: ["popular", "metaTitle"],
     description: ["popular", "metaDescription"],
   },
-  "learn/page.tsx": { title: ["learn", "title"], description: ["learn", "metaDescription"] },
-  "learn/[category]/page.tsx": {
-    title: ["learn", "categoryMetaTitle"],
-    description: ["learn", "categoryMetaDescription"],
+  "learn/page.tsx": {
+    title: ["learn", "landingTitle"],
+    description: ["learn", "landingDescription"],
   },
-  // Its description is the article summary from spec 0033, not built yet.
-  "learn/[category]/[slug]/page.tsx": { title: "data", description: null },
+  // One title and description per category (spec 0033 AC-8), checked below.
+  "learn/[category]/page.tsx": { title: "data", description: "data" },
+  // Its description is the article's summary column (spec 0033 AC-6).
+  "learn/[category]/[slug]/page.tsx": { title: "data", description: "data" },
   "quizzes/page.tsx": { title: ["quizzes", "title"], description: ["quizzes", "metaDescription"] },
   "quizzes/[slug]/page.tsx": {
     title: "data",
@@ -100,7 +103,7 @@ const pageFiles = readdirSync(LOCALE_DIR, { recursive: true, withFileTypes: true
 
 const source = (file: string) => readFileSync(join(LOCALE_DIR, file), "utf8");
 
-const LOCALES: Record<string, Messages> = { en, es } as unknown as Record<string, Messages>;
+const LOCALES: Record<string, Messages> = { en, es, pt } as unknown as Record<string, Messages>;
 
 const keyed = (meta: RouteMeta["title"] | RouteMeta["description"]) =>
   Array.isArray(meta) ? (meta as readonly [string, string]) : null;
@@ -142,6 +145,31 @@ describe("route metadata coverage", () => {
     const notFound = messages.common.notFoundTitle;
     expect(new Set([...titles, notFound]).size).toBe(titles.length + 1);
   });
+
+  it("reads each Learn category's own title and description", () => {
+    const text = source("learn/[category]/page.tsx");
+    expect(text).toContain("t(`categoryTitles.${category}`)");
+    expect(text).toContain("t(`categoryDescriptions.${category}`)");
+  });
+
+  it("reads each Learn article's description from its summary", () => {
+    const text = source("learn/[category]/[slug]/page.tsx");
+    expect(text).toContain("description: article.summary");
+  });
+
+  it.each(Object.keys(LOCALES))(
+    "has a hand written title and description for every Learn category in %s",
+    (locale) => {
+      const learn = LOCALES[locale].learn as unknown as Record<string, Record<string, string>>;
+      LEARN_CATEGORIES.forEach((category) => {
+        expect(learn.categoryTitles?.[category]?.trim()).toBeTruthy();
+        expect(learn.categoryDescriptions?.[category]?.trim()).toBeTruthy();
+      });
+      const titles = LEARN_CATEGORIES.map((category) => learn.categoryTitles[category]);
+      expect(new Set(titles).size).toBe(titles.length);
+      expect(Object.values(learn.categoryDescriptions).join(" ")).not.toMatch(/Learn about/);
+    },
+  );
 
   it("titles the locale not found page", () => {
     const text = readFileSync(join(LOCALE_DIR, "not-found.tsx"), "utf8");
