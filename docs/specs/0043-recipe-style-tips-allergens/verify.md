@@ -4,13 +4,13 @@ _Steps derived from spec 0043 acceptance criteria. `/check verify` runs these; `
 Seeded fixture (live, real values): Clover Club `b926e79c-1907-417f-b75f-d2a5158c0a29` has family `sour` plus all three EN notes; Egg white = `{egg}`, Gin = `{}`, Grenadine and Lemon not reviewed.
 
 ## UI / manual
-- [ ] Web `/en/recipes/clover-club-b926e79c-…` → Drink style shows "Sour" and the sentence; Bartender tip and Presentation tip show their text → AC-1, AC-2, AC-3
-- [ ] Same page → order is Instructions, Drink style, Bartender tip, Presentation tip, Allergen information, then recommendations and comments → AC-4
-- [ ] Web `/es/recipes/…` → headings and the "Sour" label come from `es.json`; the three texts show English (no `es` translation row yet) → AC-5
-- [ ] After translate-catalog and apply-recipe-notes, `/es/` shows the Spanish texts; a recipe with no `es` row still shows English → AC-5
+- [x] Web `/en/recipes/clover-club-b926e79c-…` → Drink style shows "Sour" and the sentence; Bartender tip and Presentation tip show their text → AC-1, AC-2, AC-3
+- [x] Same page → order is Instructions, Drink style, Bartender tip, Presentation tip, Allergen information, then recommendations and comments → AC-4
+- [x] Web `/es/recipes/…` → headings and the "Sour" label come from `es.json`; the three texts show English (no `es` translation row yet) → AC-5
+- [x] After translate-catalog and apply-recipe-notes, `/es/` shows the Spanish texts; a recipe with no `es` row still shows English → AC-5
 - [ ] Clover Club allergens → "Egg (Egg white)", the incomplete line, and the disclaimer; no "none" line → AC-6
-- [ ] A recipe whose ingredients are all reviewed with `{}` → "None of the common allergens…" plus the disclaimer → AC-6
-- [ ] A recipe with two ingredients sharing an allergen (e.g. vermouth and champagne) → one entry listing both, in recipe order → AC-6
+- [x] A recipe whose ingredients are all reviewed with `{}` → "None of the common allergens…" plus the disclaimer → AC-6
+- [x] A recipe with two ingredients sharing an allergen (e.g. vermouth and champagne) → one entry listing both, in recipe order → AC-6
 - [ ] Set a recipe's family to `other` with no sentence → Drink style section hidden; with a sentence → only the sentence shows → AC-1
 - [ ] Mobile: open the Clover Club in both locales → same sections, order, and text as web; "Instructions"/"Preparación" heading from i18n → AC-1 to AC-6
 - [ ] Admin `/admin/recipes/<id>/edit` → family select (with None), three textareas with a live n/240 counter; the hint "N ingredients have no allergen review yet" links to `/admin/ingredients` → AC-10
@@ -34,8 +34,8 @@ Seeded fixture (live, real values): Clover Club `b926e79c-1907-417f-b75f-d2a5158
 ## Value sourcing
 - [ ] Family label → `recipes.drink_style` → `recipe.drinkStyles.<value>`: change the family in admin, the label changes in both locales
 - [ ] Style sentence and tips → `coalesce(rt.<col>, r.<col>)` by `p_locale`: with an `es` row holding Spanish, `/es/` shows Spanish and `/en/` English; null the ES field, `/es/` falls back to English
-- [ ] Allergen entries and status → `summarizeRecipeAllergens` over `ingredients[].allergens` and the localized names: in `es`, entries use translated ingredient names once `ingredient_translations` exist
-- [ ] Allergen labels, none line, incomplete line, disclaimer → i18n files: all four switch with the locale
+- [x] Allergen entries and status → `summarizeRecipeAllergens` over `ingredients[].allergens` and the localized names: in `es`, entries use translated ingredient names once `ingredient_translations` exist
+- [x] Allergen labels, none line, incomplete line, disclaimer → i18n files: all four switch with the locale
 - [ ] Propose inputs → `recipes`, `recipe_ingredients`, `ingredients` via the service role: the review file names match the DB names
 - [ ] Which rows propose includes → any EN value null / `allergens is null`; `--all` overrides: fill one recipe fully, rerun propose, it is left out
 - [ ] Apply targets → each proposal's `id`: an id not in the file is untouched

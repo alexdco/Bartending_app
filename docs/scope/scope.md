@@ -65,6 +65,29 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 52 | Recipe drink style, tips, and allergens | Slice 29 | in-progress |
 | 53 | Google and Apple sign in | Slice 30 | in-progress |
 | 54 | Brazilian Portuguese and language agnostic locales | Slice 31 | in-progress |
+| 55 | Staples in AI drink ideas | Hardening | in-progress |
+| 56 | Learn route caching | Hardening | planned |
+| 57 | Batch calculator v2 | Hardening | planned |
+| 58 | Locale aware number formatting | Hardening | planned |
+| 59 | Catalog freshness rules | Hardening | planned |
+| 60 | Store listing copy and app icon | Hardening | planned |
+| 61 | Automated accessibility checks | Hardening | planned |
+| 62 | Search sort control | Slice 32 | planned |
+| 63 | Comment safety | Slice 33 | planned |
+| 64 | Translate Learn and quizzes | Slice 34 | planned |
+| 65 | Ingredient substitution suggestions | Slice 35 | planned |
+| 66 | Shared shift log | Slice 36 | planned |
+| 67 | Mocktails only mode | Slice 37 | planned |
+| 68 | User submitted recipes | Slice 38 | planned |
+| 69 | French | Slice 39 | in-progress |
+| 70 | Russian | Slice 39 | planned |
+| 71 | Hindi | Slice 39 | planned |
+| 72 | Japanese | Slice 39 | planned |
+| 73 | Korean | Slice 39 | planned |
+| 74 | Simplified Chinese | Slice 39 | planned |
+| 75 | Arabic | Slice 39 | planned |
+| 76 | European Portuguese | Slice 39 | planned |
+| 77 | Accent insensitive search | Slice 39 | planned |
 
 ## Foundations
 
@@ -591,10 +614,10 @@ Spec [0032](../specs/0032-recipe-comment-photos/index.md) · code in `supabase/m
 Four new sections below Instructions on the recipe page, web and mobile: Drink Style, Bartender tip, Presentation tip, and Allergen Information. Style and tips come from a reviewed Haiku backfill in EN and ES and are editable in the admin form; allergens are derived from reviewed per ingredient tags, with an ingredient allergen editor in admin.
 **Done when:** a recipe page shows the four sections in order in both locales, the allergen list names each allergen with its source ingredients plus a "check product labels" disclaimer and an honest incomplete state, and admins can edit tips and ingredient allergens.
 - [x] Design it (spec): `/architect recipe drink style, tips, and allergens`
-- [ ] Build it: `/develop recipe drink style, tips, and allergens`
+- [x] Build it: `/develop recipe drink style, tips, and allergens`
   - [x] One thread end to end: migration (columns, checks, `fetch_recipe_detail`, apply and admin RPCs), shared types and `summarizeRecipeAllergens`, web and mobile sections proven on a hand seeded recipe, satisfies AC-1 to AC-6, AC-12
-  - [ ] Ingredient allergen pipeline: propose, review, apply, satisfies AC-6, AC-9
-  - [ ] Recipe notes pipeline in EN and ES: propose, review, apply, satisfies AC-1 to AC-5, AC-7, AC-8
+  - [x] Ingredient allergen pipeline: propose, review, apply, satisfies AC-6, AC-9
+  - [x] Recipe notes pipeline in EN and ES: propose, review, apply, satisfies AC-1 to AC-5, AC-7, AC-8
   - [x] Admin: recipe form note fields with the chained save, and the `/admin/ingredients` allergen editor, satisfies AC-10, AC-11
 - [ ] Verify it: `/check verify recipe drink style, tips, and allergens`
 - [ ] Test it: `/test recipe drink style, tips, and allergens`
@@ -622,12 +645,12 @@ Spec [0044](../specs/0044-google-apple-sign-in/index.md)
 Adds Brazilian Portuguese (`pt`) as a third language on web, mobile, and the recipe catalog, and first removes every Spanish only hardcode (SQL checks, the `spanish` search column, twelve functions, the notes pipeline, hardcoded switcher arrays) so the next language needs no SQL function edits. Hidden behind `LAUNCHED_LOCALES` until the backfill and native review are done. Starts after feature 41.
 **Done when:** `/pt` pages and the mobile app read in Brazilian Portuguese (untranslated content falls back to English), Portuguese search works, Spanish is unchanged, the database lists languages only in `supported_locales`, and Portuguese is launched in the switcher, detection, sitemap, and hreflang.
 - [x] Design it (spec): `/architect third language`
-- [ ] Build it: `/develop brazilian portuguese and language agnostic locales`
+- [x] Build it: `/develop brazilian portuguese and language agnostic locales`
   - [x] Thin thread, unlaunched: `pt` in shared config, `supported_locales` migration with FKs, the `name_search` trigger and helpers, `fetch_recipe_detail`, the parity test, one recipe translated, satisfies AC-2, AC-4 to AC-6, AC-13, AC-15
-  - [ ] Every read function through the helpers, the `recommend_recipes` merge, and the verify.md SQL checks, satisfies AC-3 to AC-5
-  - [ ] Launch gating and discovery: switcher, detection, proxy, sitemap and hreflang, noindex, satisfies AC-7, AC-8, AC-14, AC-16
-  - [ ] Content: per locale catalog translation and backfill, the notes pipeline, admin per locale notes, and drink ideas in `pt`, satisfies AC-2, AC-6, AC-9 to AC-12
-  - [ ] Portuguese UI strings with native review, then launch, satisfies AC-1, AC-7, AC-14
+  - [x] Every read function through the helpers, the `recommend_recipes` merge, and the verify.md SQL checks, satisfies AC-3 to AC-5
+  - [x] Launch gating and discovery: switcher, detection, proxy, sitemap and hreflang, noindex, satisfies AC-7, AC-8, AC-14, AC-16
+  - [x] Content: per locale catalog translation and backfill, the notes pipeline (default run on `CATALOG_TRANSLATION_LOCALES`, plus the `--locale` notes backfill that never touches English or other locales), admin per locale notes, and drink ideas in `pt`, satisfies AC-2, AC-6, AC-9 to AC-12, AC-17, AC-18
+  - [x] Portuguese UI strings with native review, then launch, satisfies AC-1, AC-7, AC-14 (launched 2026-11-04: `pt` added to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES`; still owes a mobile build and a production sitemap and hreflang check)
 - [ ] Verify it: `/check verify brazilian portuguese and language agnostic locales`
 - [ ] Test it: `/test brazilian portuguese and language agnostic locales`
 Spec [0045](../specs/0045-language-agnostic-locales-portuguese/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
@@ -665,9 +688,9 @@ Four of five articles checked had errors. Most urgent is a food safety error: "S
 **Done when:** every published article has been fact checked and corrected (simple syrup first), each article has its own meta description, and category descriptions read naturally.
 - [x] Design it (spec): `/architect learn article accuracy pass`
 - [ ] Build it: `/develop learn article accuracy pass`
-  - [ ] Slice 1: simple syrup fact check, sourced and approved, shipped as its own migration (after locating every known finding in live bodies), satisfies AC-1, AC-2, AC-3
-  - [ ] Slice 2: required `summary` column with backfill, shared types and fetch layer, article metadata, summary subtitles on web and mobile, generator summary and accuracy prompt, satisfies AC-5, AC-6, AC-7, AC-9, AC-10
-  - [ ] Catalog titles and descriptions for the Learn landing and category pages (en and es), satisfies AC-8
+  - [x] Slice 1: simple syrup fact check, sourced and approved, shipped as its own migration (after locating every known finding in live bodies), satisfies AC-1, AC-2, AC-3 (applied, live md5 matches the expected hash, checked 2026-11-09)
+  - [x] Slice 2: required `summary` column with backfill, shared types and fetch layer, article metadata, summary subtitles on web and mobile, generator summary and accuracy prompt, satisfies AC-5, AC-6, AC-7, AC-9, AC-10 (migration applied 2026-11-09, 35 of 35 rows)
+  - [x] Catalog titles and descriptions for the Learn landing and category pages (en and es), satisfies AC-8 (built 2026-11-09 in en, es, and pt; copy approved by the owner 2026-11-09)
   - [ ] Slice 3: fact check the remaining published articles, one corrections migration, md5 and snapshot checks, satisfies AC-2, AC-3, AC-4, AC-11
 - [ ] Verify it: `/check verify learn article accuracy pass`
 - [ ] Test it: `/test learn article accuracy pass`
@@ -699,12 +722,12 @@ Closes feature 23's unmet Done when. The web message catalog has 83 keys in only
 Dilution is computed on alcohol only, so batches come out under diluted (spec 0022 AC-6 itself needs changing). Common TheCocktailDB units don't parse (`shot`, `jigger`, `part`, `dl`, `Tblsp`, `1 ½ oz`), so lines show "not scaled" and recipes like Afterglow lose the batch panel. Tiny liter amounts show `0 l`. The batch units (oz / ml / liter) don't match the toggle (oz / ml / cl).
 **Done when:** dilution is based on a decided volume, the common units parse (with a decided value for shot and jigger), parts scale relative to a chosen total, tiny amounts never show as zero, unit choices are consistent, and the import job is rerun so existing recipes pick up the new rules.
 - [x] Design it (spec): [0035](../specs/0035-batch-calculator-correctness/index.md)
-- [ ] Build it: `/develop batch calculator correctness`
-  - [ ] Shot thread end to end: widened unit check plus pair check migration, unit type split and `toRecognizedUnit` guard at every cast site, shot and jigger parsing, `reparse-measures` script (AC-1, AC-2, AC-9, AC-12)
+- [x] Build it: `/develop batch calculator correctness` (built in `4ca0599`, on `main`; live checked 2026-11-03: `pnpm reparse-measures --dry-run` reads 1946 rows, 1335 parsed including 76 `shot` and 76 `part`, 0 rows to change; Afterglow stores `part` lines)
+  - [x] Shot thread end to end: widened unit check plus pair check migration, unit type split and `toRecognizedUnit` guard at every cast site, shot and jigger parsing, `reparse-measures` script (AC-1, AC-2, AC-9, AC-12)
   - [x] Remaining parser forms and range guards: dl, l, tblsp, pint, qt, gal, `1 ½`, unit then extra words (AC-1, AC-2, AC-11)
   - [x] Batch math and panel, web and mobile: parts with part size input, dilution on all included lines, oz/ml/cl/l with the `<` floor, batch unit follows the toggle, new copy in the message catalog (AC-3 to AC-7, AC-13)
-  - [ ] Admin save parses measures, and Quick Build parts view (AC-8, AC-10)
-  - [ ] Live rollout: migrations, deploy web and mobile, reparse dry run then real run, confirm 0 changes on rerun (AC-9)
+  - [x] Admin save parses measures, and Quick Build parts view (AC-8, AC-10)
+  - [x] Live rollout: migrations, deploy web and mobile, reparse dry run then real run, confirm 0 changes on rerun (AC-9)
 - [ ] Verify it: `/check verify batch calculator correctness`
 - [ ] Test it: `/test batch calculator correctness`
 Spec [0035](../specs/0035-batch-calculator-correctness/index.md) · code in `packages/shared`, `packages/import-job`, `supabase/migrations`, `apps/web`, `apps/mobile`
@@ -803,38 +826,160 @@ Recipe images are hotlinked from TheCocktailDB (and Imgur via pasted admin URLs)
 - [ ] Test it: `/test self hosted recipe images` (skipped)
 Spec [0041](../specs/0041-self-hosted-recipe-images/index.md) · code in `supabase/migrations`, `supabase/functions`, `packages/shared`, `packages/import-job`, `apps/web`, `apps/mobile`
 
+## Hardening: deferred follow ups (Nov 2026)
+
+Small correctness and launch items promoted from the Deferred list on 2026-11-09.
+
+### 55. Staples in AI drink ideas
+The drink ideas prompt does not know Ice and Water are always on hand, so it can skip ideas the pantry can really make (from spec 0036, feature 44).
+**Done when:** the AI drink ideas prompt treats Ice and Water as always available, and a pantry without them still gets ideas that use them.
+- [x] Build it: `/develop staples in AI drink ideas` · code in `supabase/functions/generate-drink-idea/`
+
+### 56. Learn route caching · needs a decision
+Spec 0025 promised `revalidate = 60` on the Learn routes, but the code has none. Pick timed revalidation or dynamic render and make the code match (from spec 0033, feature 28).
+**Done when:** every Learn route has one deliberate caching mode, it is written down in a spec, and an edited article shows up within the promised window.
+- [ ] Design it (spec): `/architect learn route caching`
+
+### 57. Batch calculator v2 · needs a decision
+Three batch gaps from spec 0035: counted lines scale silently (`2 dashes` × 25 shows `50 dashes`), range measures like `2-3 oz` do not batch, and every method gets the same default dilution (feature 42).
+**Done when:** counted lines scale in a way a bartender can use, range measures batch using `amount_max_value`, and stirred, shaken, and built drinks each get their own default dilution.
+- [ ] Design it (spec): `/architect batch calculator v2`
+
+### 58. Locale aware number formatting · needs a decision
+`es`, `pt`, and `fr` use a decimal comma (French also uses a space as the thousands separator), but measures format the same in every locale (from specs 0045 and 0046, features 54 and 69).
+**Done when:** measures, conversions, and batch amounts show the right decimal separator for each locale on web and mobile, from one shared formatter.
+- [ ] Design it (spec): `/architect locale aware number formatting`
+
+### 59. Catalog freshness rules · needs a decision
+Keep the catalog right as it changes: decide whether the import job or an admin edit wins on a catalog recipe (spec 0035), give new imports and admin adds a fame score so they do not sort last (spec 0038), and add a hidden duplicate's name as a `recipe_aliases` entry on the kept recipe (spec 0036).
+**Done when:** an import never silently undoes an admin edit, new recipes get a fame score (or a clear flag) on arrival, and searching a merged duplicate's old name finds the kept recipe.
+- [ ] Design it (spec): `/architect catalog freshness rules`
+
+### 60. Store listing copy and app icon
+Store title, subtitle, keywords, and description in English, Spanish, Brazilian Portuguese, and French, plus a designed app icon and an iOS Icon Composer `.icon` dropped in as `assets/brand/mark.svg` (from specs 0037, 0045, and 0046, features 45, 54, and 69).
+**Done when:** listing copy exists for all four locales within each store's length limits, and the designed icon replaces the placeholder in both store builds.
+- [ ] Build it: `/develop store listing copy and app icon`
+
+### 61. Automated accessibility checks · needs a decision
+Playwright plus `@axe-core/playwright` on key web pages, run in CI, plus a look at whether a maintained React Native accessibility lint fits Expo's config (from spec 0038, features 2 and 46). Needs feature 48's CI first.
+**Done when:** CI fails on serious axe violations on the key web pages, and mobile either runs an accessibility lint or the spec records why not.
+- [ ] Design it (spec): `/architect automated accessibility checks`
+
+## Slice 32: Search sort control
+
+### 62. Search sort control · needs a decision
+A "Popular / A to Z" toggle on search for people who miss alphabetical browsing (from spec 0038, feature 46).
+**Done when:** search on web and mobile can switch between popular and alphabetical order, and the choice sticks for the session.
+- [ ] Design it (spec): `/architect search sort control`
+
+## Slice 33: Comment safety
+
+### 63. Comment safety · needs a decision
+A report button on comments and photos that feeds the admin comments page, plus automated screening (for example a vision check) that hides a flagged photo until an admin reviews it (from spec 0032, features 31 and 34).
+**Done when:** any viewer can report a comment or photo once, reports show up on the admin comments page, and a flagged upload stays hidden until an admin clears it.
+- [ ] Design it (spec): `/architect comment safety`
+
+## Slice 34: Translate Learn and quizzes
+
+### 64. Translate Learn and quizzes · needs a decision
+Learn articles and quizzes are English only in every locale (from spec 0045, features 28, 29, 54). The spec should also decide whether article bodies move from SQL migrations to markdown files in the repo plus a sync script (from spec 0033).
+**Done when:** Learn articles, summaries, and quizzes read in `es` and `pt` where a translation exists, fall back to English where it does not, and editing an article no longer means hand writing SQL in three languages.
+- [ ] Design it (spec): `/architect translate learn and quizzes`
+
+## Slice 35: Ingredient substitution suggestions
+
+### 65. Ingredient substitution suggestions · needs a decision
+When an ingredient is 86'd in Bartender Mode, suggest a swap so the drink can still be made (from spec 0023, feature 26).
+**Done when:** a recipe with an 86'd ingredient shows at least one sensible substitute where one exists, and says so plainly where none does.
+- [ ] Design it (spec): `/architect ingredient substitution suggestions`
+
+## Slice 36: Shared shift log
+
+### 66. Shared shift log · needs a decision
+A build history for a bar, saved on the server and visible to all staff, beyond today's per bartender recently viewed list kept on the device (from spec 0023, feature 26).
+**Done when:** every staff member of a bar sees the same list of drinks made this shift, and people outside the bar cannot read it.
+- [ ] Design it (spec): `/architect shared shift log`
+
+## Slice 37: Mocktails only mode
+
+### 67. Mocktails only mode · needs a decision
+Let under age visitors in with alcoholic recipes hidden everywhere, instead of turning them away at the age gate (from spec 0037, feature 45).
+**Done when:** a visitor who fails the age gate can choose mocktails only and never sees an alcoholic recipe in search, detail, ideas, Learn, or recommendations.
+- [ ] Design it (spec): `/architect mocktails only mode`
+
+## Slice 38: User submitted recipes
+
+### 68. User submitted recipes · needs a decision · GA
+Signed in users submit their own recipes, and an admin reviews them before they reach the public catalog.
+**Done when:** a signed in user can submit a recipe, it stays private until an admin approves it, and approved recipes appear in search with the author credited.
+- [ ] Design it (spec): `/architect user submitted recipes`
+
+## Slice 39: More languages
+
+Each language rides the language agnostic locale setup from feature 54: a `supported_locales` row, entries in `packages/shared/src/locale.ts`, message files, a catalog translation and recipe notes backfill, native review, then launch through `LAUNCHED_LOCALES`. Ordered from lowest to highest lift. The non Latin scripts share open questions (search without a Postgres stemmer, fonts, line breaking) that the first of them to reach `/architect` should settle for the rest.
+
+### 69. French · in-progress
+Adds French (`fr`, written as in France) on web, mobile, the recipe catalog, recipe notes, and drink ideas, on the Portuguese path, with an accent insensitive `public.french_unaccent` search config and no SQL function edits. Hidden behind `LAUNCHED_LOCALES` until a native French review signs off. Starts after feature 54 passes `/check verify`.
+**Done when:** `/fr` pages and the mobile app read in French (untranslated content falls back to English), French search works, and French is launched in the switcher, detection, sitemap, and hreflang.
+- [x] Design it (spec): `/architect french locale`
+- [ ] Build it: `/develop french locale`
+  - [ ] Thin thread, unlaunched: the `unaccent` extension, the `french_unaccent` config and `fr` row, `locale.ts` entries, `normalizeFrenchTypography`, test fixes, the edge function's French, stub message files, one recipe translated, satisfies AC-3 to AC-7, AC-12, AC-14
+  - [ ] Content: terms review, then the full catalog backfill and the `--locale fr` notes proposal, satisfies AC-2, AC-9 to AC-11
+  - [ ] French UI strings, then a native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-10, AC-12, AC-13
+  - [ ] Launch: `fr` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, satisfies AC-8, AC-15, AC-16
+- [ ] Verify it: `/check verify french locale`
+- [ ] Test it: `/test french locale`
+Spec [0046](../specs/0046-french-locale.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
+
+### 70. Russian · needs a decision
+Adds Russian (`ru`). Built in `russian` search config; first Cyrillic locale and first with three plural forms, so message plurals and number formatting (feature 58) need a check.
+**Done when:** `/ru` pages and the mobile app read in Russian with correct plurals (untranslated content falls back to English), Russian search works, and Russian is launched in the switcher, detection, sitemap, and hreflang.
+- [ ] Design it (spec): `/architect russian locale`
+
+### 71. Hindi · needs a decision
+Adds Hindi (`hi`). Devanagari script needs a font that renders it on web and mobile; check whether the database's Postgres version ships the `hindi` search config or search falls back to `simple`.
+**Done when:** `/hi` pages and the mobile app read in Hindi with correct Devanagari rendering (untranslated content falls back to English), Hindi search returns sensible results, and Hindi is launched in the switcher, detection, sitemap, and hreflang.
+- [ ] Design it (spec): `/architect hindi locale`
+
+### 72. Japanese · needs a decision
+Adds Japanese (`ja`). No word spaces and no Postgres stemmer, so search needs `pg_trgm` or a tokenizer; CJK fonts and line breaking on web and mobile. The spec should settle the CJK search approach for features 73 and 74 too.
+**Done when:** `/ja` pages and the mobile app read in Japanese (untranslated content falls back to English), searching a Japanese drink or ingredient name finds it, and Japanese is launched in the switcher, detection, sitemap, and hreflang.
+- [ ] Design it (spec): `/architect japanese locale`
+
+### 73. Korean · needs a decision
+Adds Korean (`ko`). No Postgres stemmer; reuses the CJK search approach chosen in feature 72.
+**Done when:** `/ko` pages and the mobile app read in Korean (untranslated content falls back to English), Korean search finds drinks and ingredients, and Korean is launched in the switcher, detection, sitemap, and hreflang.
+- [ ] Design it (spec): `/architect korean locale`
+
+### 74. Simplified Chinese · needs a decision
+Adds Simplified Chinese (`zh`, hreflang `zh-CN`). No word spaces; reuses the CJK search approach chosen in feature 72. The spec should decide whether the URL code is `zh` or `zh-cn`, leaving room for Traditional Chinese later.
+**Done when:** `/zh` pages and the mobile app read in Simplified Chinese (untranslated content falls back to English), Chinese search finds drinks and ingredients, and Simplified Chinese is launched in the switcher, detection, sitemap, and hreflang.
+- [ ] Design it (spec): `/architect simplified chinese locale`
+
+### 75. Arabic · needs a decision
+Adds Arabic (`ar`), the first right to left locale. Web needs `dir="rtl"` and logical CSS properties; mobile needs `I18nManager` RTL with its app restart, plus mirrored icons and layouts. Built in `arabic` search config.
+**Done when:** `/ar` pages and the mobile app read in Arabic with mirrored layouts and no broken left to right assumptions on key screens (untranslated content falls back to English), Arabic search works, and Arabic is launched in the switcher, detection, sitemap, and hreflang.
+- [ ] Design it (spec): `/architect arabic locale`
+
+### 76. European Portuguese · needs a decision
+A separate `pt-PT` locale beside today's Brazilian `pt`, which needs region aware detection and a decision on URL codes and fallback between the two (moved from Deferred, from spec 0045, feature 54).
+**Done when:** Portugal visitors land on European Portuguese, Brazilian visitors still land on `pt`, each falls back to the other before English where a translation is missing, and both are listed distinctly in the switcher and hreflang.
+- [ ] Design it (spec): `/architect european portuguese locale`
+
+### 77. Accent insensitive search · needs a decision
+Search ignores accents only for French translated recipe names (spec 0046). Ingredient search, the trigram tier, English base names, and Spanish and Portuguese stay accent sensitive, so "peche" may miss "pêche" and "limon" may miss "limón" (from spec 0046, feature 69).
+**Done when:** recipe and ingredient search match with or without accents in every locale, with a before and after snapshot showing no other result changes, and trigram search stays fast.
+- [ ] Design it (spec): `/architect accent insensitive search`
+
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
 - **Ads or subscription monetization**: no monetization in this build pass; revisit once there is usage · needs a decision
-- **User submitted recipes**: community recipe submission and moderation · needs a decision
 - **ML/collaborative recommendations**: usage based recommendation model once there is a real user base · needs a decision
-- **Ingredient substitution suggestions**: suggest a swap when an ingredient is 86'd (feature 26) · needs a decision · from spec 0023
-- **Shared "recently made" shift log**: a server persisted, all-staff-visible build history for a bar, beyond today's per-bartender client side recently viewed list (feature 26) · needs a decision · from spec 0023
-- **Automated comment photo screening**: e.g. Claude Haiku vision checks each uploaded photo and hides flagged ones until admin review (feature 34) · needs a decision · from spec 0032
-- **Report a comment or photo**: a viewer facing report button feeding the admin comments page (features 31, 34) · needs a decision · from spec 0032
-- **Learn route caching**: spec 0025 promised `revalidate = 60` on the Learn routes but the code has none; decide timed revalidation or dynamic render (feature 28) · needs a decision · from spec 0033
-- **Learn articles as repo files**: move article source of truth to markdown files plus a sync script if editing bodies in SQL migrations proves painful (feature 28) · needs a decision · from spec 0033
-- **Scale counted lines in batches**: `2 dashes` × 25 shows `50 dashes` (feature 42) · needs a decision · from spec 0035
-- **Batch range measures**: batch `2-3 oz` using `amount_max_value` (feature 42) · needs a decision · from spec 0035
-- **Method based dilution default**: stirred, shaken, and built drinks get different default dilution (feature 42) · needs a decision · from spec 0035
-- **Import job vs admin edits**: the catalog import can overwrite admin edits to a catalog recipe; decide which wins (feature 42) · needs a decision · from spec 0035
-- **Staples in AI drink ideas**: tell the drink ideas prompt that Ice and Water are always on hand (feature 44) · needs a decision · from spec 0036
-- **Aliases for merged duplicates**: add a hidden duplicate's name (e.g. "Long Island Tea") as a `recipe_aliases` entry on the kept recipe for bartender search (feature 44) · needs a decision · from spec 0036
-- **Store listing copy**: store title, subtitle, keywords, and description in English and Spanish (feature 45) · from spec 0037
-- **Designed app icon**: a commissioned icon plus an iOS Icon Composer `.icon`, dropped in as `assets/brand/mark.svg` (feature 45) · from spec 0037
-- **Fame scores for new recipes**: catalog imports and admin adds arrive with no fame score and sort last; flag them or run `tag-regions` periodically (feature 46) · needs a decision · from spec 0038
-- **Search sort control**: a "Popular / A to Z" toggle if people miss alphabetical browsing (feature 46) · needs a decision · from spec 0038
-- **Automated accessibility checks**: Playwright plus `@axe-core/playwright` on key pages once CI exists (features 2, 46) · needs a decision · from spec 0038
-- **Mobile accessibility lint**: no jsx-a11y equivalent runs on mobile; revisit if a maintained React Native plugin fits Expo's config (feature 46) · needs a decision · from spec 0038
-- **Mocktails only mode**: let under age visitors in with alcoholic recipes hidden everywhere, if the age gate's drop off proves costly (feature 45) · needs a decision · from spec 0037
 - **Connected accounts section**: view, link, and unlink Google, Apple, and email on the account screen (feature 53) · needs a decision · from spec 0044
 - **Apple revoke on web and Android deletes**: Sign in with Apple JS for a fresh code at delete (feature 53) · needs a decision · from spec 0044
 - **Set a password for provider only accounts**: a backup sign in method (feature 53) · needs a decision · from spec 0044
 - **Google One Tap on web**: GSI script, nonce, cookie consent review (features 13, 53) · needs a decision · from spec 0044
-- **Portuguese store listing copy**: store title, subtitle, keywords, and description in Brazilian Portuguese, for launch week (feature 54) · from spec 0045
-- **Translate Learn and quizzes**: Learn articles and quizzes are English only in every locale (features 28, 29, 54) · needs a decision · from spec 0045
-- **Locale aware number formatting**: `es` and `pt` use a decimal comma, but measures format the same in every locale (feature 54) · needs a decision · from spec 0045
-- **European Portuguese**: a separate `pt-PT` locale would need region aware detection (feature 54) · needs a decision · from spec 0045
+- **Canadian French**: a separate `fr-CA` locale beside `fr`, with region aware detection and fallback, like European Portuguese (feature 69) · needs a decision · from spec 0046
 
 ## Legend
 
