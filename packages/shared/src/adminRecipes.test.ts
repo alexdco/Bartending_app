@@ -149,6 +149,7 @@ describe("toTranslationNotesByLocale (spec 0045 AC-11)", () => {
     expect(toTranslationNotesByLocale([{ locale: "es", ...notes }])).toEqual({
       es: notes,
       pt: null,
+      fr: null,
     });
   });
 });

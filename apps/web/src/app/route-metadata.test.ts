@@ -5,6 +5,7 @@ import { LEARN_CATEGORIES } from "@bartendingapp/shared";
 import en from "../../messages/en.json";
 import es from "../../messages/es.json";
 import pt from "../../messages/pt.json";
+import fr from "../../messages/fr.json";
 
 // Spec 0037, AC-2 and AC-3: every route has its own translated title, and
 // every indexable route its own description. This mirrors the spec's Route
@@ -103,7 +104,7 @@ const pageFiles = readdirSync(LOCALE_DIR, { recursive: true, withFileTypes: true
 
 const source = (file: string) => readFileSync(join(LOCALE_DIR, file), "utf8");
 
-const LOCALES: Record<string, Messages> = { en, es, pt } as unknown as Record<string, Messages>;
+const LOCALES: Record<string, Messages> = { en, es, pt, fr } as unknown as Record<string, Messages>;
 
 const keyed = (meta: RouteMeta["title"] | RouteMeta["description"]) =>
   Array.isArray(meta) ? (meta as readonly [string, string]) : null;

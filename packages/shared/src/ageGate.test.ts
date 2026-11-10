@@ -9,7 +9,7 @@ import {
 describe("AGE_GATE_EXEMPT_PATTERN", () => {
   it("matches the exact pattern the spec pins for the current locales", () => {
     expect(AGE_GATE_EXEMPT_PATTERN.source).toBe(
-      String.raw`^(?:\/(?:en|es|pt))?\/(?:privacy|auth\/callback)\/?$`,
+      String.raw`^(?:\/(?:en|es|pt|fr))?\/(?:privacy|auth\/callback)\/?$`,
     );
     expect(AGE_GATE_EXEMPT_PATTERN.flags).toBe("");
   });
@@ -34,7 +34,7 @@ describe("isAgeGateExemptPath", () => {
     "/en",
     "/en/recipes/privacy-cocktail-123",
     "/en/account/reset-password",
-    "/fr/privacy",
+    "/de/privacy",
     "/en/privacy/extra",
     "/en/auth",
   ])("does not exempt %s", (pathname) => {

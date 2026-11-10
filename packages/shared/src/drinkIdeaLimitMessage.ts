@@ -65,6 +65,24 @@ const COPY: Record<Locale, Copy> = {
       before: "As ideias de drinks estão muito procuradas hoje. Tente de novo depois de {time}.",
     },
   },
+  // Hand written French as in France (spec 0046 AC-13), pending native review.
+  fr: {
+    signIn: "Connectez-vous",
+    signInLimit: {
+      before: "Vous avez utilisé les idées de cocktails gratuites du jour. ",
+      after: " pour en obtenir d’autres aujourd’hui, ou réessayez après {time}.",
+    },
+    limit: {
+      before: "Vous avez atteint la limite d’idées de cocktails du jour. Réessayez après {time}.",
+    },
+    busySignIn: {
+      before: "Les idées de cocktails sont très demandées aujourd’hui. ",
+      after: " pour continuer, ou réessayez après {time}.",
+    },
+    busy: {
+      before: "Les idées de cocktails sont très demandées aujourd’hui. Réessayez après {time}.",
+    },
+  },
 };
 
 function copyCase(limitReason: DrinkIdeaLimitReason, signInHelps: boolean): CopyCase {

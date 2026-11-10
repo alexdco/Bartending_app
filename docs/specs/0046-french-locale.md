@@ -1,7 +1,7 @@
 # 0046. French locale
 
 **Date**: 2026-11-09
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

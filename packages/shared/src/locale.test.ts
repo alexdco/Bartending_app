@@ -115,7 +115,8 @@ describe("isNonDefaultLocale", () => {
     expect(isNonDefaultLocale("es")).toBe(true);
     expect(isNonDefaultLocale("pt")).toBe(true);
     expect(isNonDefaultLocale("en")).toBe(false);
-    expect(isNonDefaultLocale("fr")).toBe(false);
+    expect(isNonDefaultLocale("fr")).toBe(true);
+    expect(isNonDefaultLocale("de")).toBe(false);
     expect(isNonDefaultLocale(undefined)).toBe(false);
   });
 });
@@ -148,8 +149,34 @@ describe("resolveStoredLocale", () => {
   });
 
   it("rejects unsupported and missing values", () => {
-    expect(resolveStoredLocale("fr", { allowUnlaunched: true })).toBeNull();
+    expect(resolveStoredLocale("de", { allowUnlaunched: true })).toBeNull();
     expect(resolveStoredLocale(null)).toBeNull();
+  });
+});
+
+// French stays unlaunched until its native review signs off (spec 0046 AC-7, AC-14).
+describe("unlaunched French", () => {
+  it("routes but is never discovered", () => {
+    expect(isLaunchedLocale("fr")).toBe(false);
+    expect(parseAcceptLanguage("fr-FR,fr;q=0.9")).toBeNull();
+    expect(resolveRedirectLocale(null, "fr-CA")).toBe("en");
+    expect(hreflangAlternates("fr", (locale) => `/${locale}`)).toEqual({});
+  });
+
+  it("treats a stored fr as absent, and keeps it for preview builds", () => {
+    expect(resolveStoredLocale("fr")).toBeNull();
+    expect(resolveStoredLocale("fr", { allowUnlaunched: true })).toBe("fr");
+    expect(resolveRedirectLocale("fr", "es")).toBe("es");
+  });
+
+  it("maps every French region to fr when allowed", () => {
+    for (const header of ["fr-FR", "fr-CA", "fr-BE", "fr-CH"]) {
+      expect(parseAcceptLanguage(header, SUPPORTED_LOCALES)).toBe("fr");
+    }
+  });
+
+  it("searches French through the accent insensitive config", () => {
+    expect(LOCALE_TEXT_SEARCH_CONFIG.fr).toBe("public.french_unaccent");
   });
 });
 
@@ -166,7 +193,7 @@ describe("resolveRedirectLocale", () => {
   });
 
   it("ignores an unsupported cookie", () => {
-    expect(resolveRedirectLocale("fr", "es")).toBe("es");
+    expect(resolveRedirectLocale("de", "es")).toBe("es");
   });
 });
 

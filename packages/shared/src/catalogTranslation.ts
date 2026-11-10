@@ -14,6 +14,7 @@ import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod/v4";
 import { createHash } from "node:crypto";
 import type { Database } from "./database.types";
+import { normalizeFrenchTypography } from "./frenchTypography";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LOCALE_AI_LANGUAGE,
@@ -66,6 +67,14 @@ interface RecipeInput {
 interface NameInput {
   id: string;
   name: string;
+}
+
+/**
+ * The punctuation pass a locale's AI output gets before it is stored: French
+ * typography for `fr` (spec 0046 AC-1), unchanged text for every other locale.
+ */
+export function localeTypography(locale: Locale): (text: string) => string {
+  return locale === "fr" ? normalizeFrenchTypography : (text) => text;
 }
 
 /**
@@ -288,15 +297,16 @@ async function translateRecipes(
 
     const byId = new Map(batch.map((r) => [r.id, r]));
     const measuresByRecipeId = new Map(result.map((r) => [r.id, r.ingredient_measures]));
+    const typeset = localeTypography(locale);
 
     const recipeRows = result
       .filter((r) => byId.has(r.id))
       .map((r) => ({
         recipe_id: r.id,
         locale,
-        name: r.name,
-        instructions: r.instructions,
-        glass: r.glass,
+        name: typeset(r.name),
+        instructions: typeset(r.instructions),
+        glass: r.glass === null ? null : typeset(r.glass),
         source_name_hash: byId.get(r.id)!.hash,
       }));
 
@@ -318,7 +328,7 @@ async function translateRecipes(
         recipe_id: r.id,
         ingredient_id: m.ingredient_id,
         locale,
-        measure: m.measure,
+        measure: m.measure === null ? null : typeset(m.measure),
       })),
     );
 
@@ -397,12 +407,13 @@ async function translateIngredients(
     }
 
     const byId = new Map(batch.map((i) => [i.id, i]));
+    const typeset = localeTypography(locale);
     const rows = result
       .filter((r) => byId.has(r.id))
       .map((r) => ({
         ingredient_id: r.id,
         locale,
-        name: r.name,
+        name: typeset(r.name),
         source_name_hash: byId.get(r.id)!.hash,
       }));
 
@@ -475,9 +486,10 @@ async function translateTags(
     }
 
     const byId = new Map(batch.map((t) => [t.id, t]));
+    const typeset = localeTypography(locale);
     const rows = result
       .filter((r) => byId.has(r.id))
-      .map((r) => ({ tag_id: r.id, locale, name: r.name }));
+      .map((r) => ({ tag_id: r.id, locale, name: typeset(r.name) }));
 
     const { error: upsertError } = await supabase
       .from("tag_translations")

@@ -14,6 +14,7 @@ import {
 import en from "./locales/en.json";
 import es from "./locales/es.json";
 import pt from "./locales/pt.json";
+import fr from "./locales/fr.json";
 
 const STORAGE_KEY = "localePreference";
 
@@ -62,6 +63,7 @@ export async function initI18n(): Promise<void> {
         en: { translation: en },
         es: { translation: es },
         pt: { translation: pt },
+        fr: { translation: fr },
       },
       lng: initialLocale,
       fallbackLng: DEFAULT_LOCALE,

@@ -4,9 +4,10 @@
 // Adding a language is a supported_locales row, entries here, message files,
 // and a translation backfill, with no SQL function edits.
 // Specs: docs/specs/0020-multi-language-support/index.md,
-// docs/specs/0045-language-agnostic-locales-portuguese/index.md
+// docs/specs/0045-language-agnostic-locales-portuguese/index.md,
+// docs/specs/0046-french-locale.md
 
-export const SUPPORTED_LOCALES = ["en", "es", "pt"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -42,6 +43,8 @@ export const LOCALE_TEXT_SEARCH_CONFIG: Record<Locale, string> = {
   en: "english",
   es: "spanish",
   pt: "portuguese",
+  // Strips accents before stemming, so "creme" finds "crème" (spec 0046 AC-3).
+  fr: "public.french_unaccent",
 };
 
 /** BCP 47 codes for hreflang, the sitemap, and <html lang>. URLs keep the bare code. */
@@ -49,6 +52,7 @@ export const LOCALE_HREFLANG: Record<Locale, string> = {
   en: "en",
   es: "es",
   pt: "pt-BR",
+  fr: "fr",
 };
 
 /** The language named in AI translation and recipe notes prompts. */
@@ -56,6 +60,7 @@ export const LOCALE_AI_LANGUAGE: Record<Locale, string> = {
   en: "English",
   es: "Latin American Spanish",
   pt: "Brazilian Portuguese",
+  fr: "French as written in France",
 };
 
 /**
@@ -69,6 +74,14 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     ' Use Brazilian citrus terms: lime is "limão", lemon is "limão-siciliano", limeade is ' +
     '"limonada", and lemonade is "limonada siciliana". Never write "lima" for lime, and keep ' +
     "lemon and lime distinct.",
+  // Pending native review (spec 0046). generate-drink-idea carries a hand
+  // copy of the citrus and typography sentences: change both together.
+  fr:
+    ' Lime is "citron vert" and lemon is "citron jaune"; never write "citron" alone for lime, ' +
+    'and keep lemon and lime distinct. Bar tools: shaker is "shaker", jigger is "doseur", ' +
+    'muddler is "pilon", strainer is "passoire", and bar spoon is "cuillère à mélange". Use ' +
+    "French typography: a narrow no break space before ; ! ? and a no break space before :, " +
+    "and « » quotes.",
 };
 
 /** Each language's own name, shown in the switcher whatever the active language. */
@@ -76,6 +89,7 @@ export const LOCALE_NATIVE_NAME: Record<Locale, string> = {
   en: "English",
   es: "Español",
   pt: "Português",
+  fr: "Français",
 };
 
 export function isSupportedLocale(value: string | null | undefined): value is Locale {

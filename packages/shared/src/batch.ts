@@ -336,10 +336,10 @@ export function hasPartIngredient(
 
 /** Batch unit labels, the same text in every locale (spec 0035 AC-6). */
 export const BATCH_UNIT_LABELS: Record<BatchUnit, Record<Locale, string>> = {
-  oz: { en: "oz", es: "oz", pt: "oz" },
-  ml: { en: "ml", es: "ml", pt: "ml" },
-  cl: { en: "cl", es: "cl", pt: "cl" },
-  l: { en: "l", es: "l", pt: "l" },
+  oz: { en: "oz", es: "oz", pt: "oz", fr: "oz" },
+  ml: { en: "ml", es: "ml", pt: "ml", fr: "ml" },
+  cl: { en: "cl", es: "cl", pt: "cl", fr: "cl" },
+  l: { en: "l", es: "l", pt: "l", fr: "l" },
 };
 
 export function batchUnitLabel(unit: BatchUnit, locale: Locale = DEFAULT_LOCALE): string {

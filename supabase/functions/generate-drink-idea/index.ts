@@ -70,7 +70,7 @@ async function guestIpHash(headers: Headers, secret: string, userId: string): Pr
   return hashIpBucket(ipBucket(clientIp), secret);
 }
 
-const SUPPORTED_LOCALES = ["en", "es", "pt"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "pt", "fr"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = "en";
 
@@ -78,7 +78,43 @@ const LOCALE_NAMES: Record<Locale, string> = {
   en: "English",
   es: "Spanish",
   pt: "Brazilian Portuguese",
+  fr: "French as written in France",
 };
+
+// Hand copy of LOCALE_AI_TERMS.fr in packages/shared/src/locale.ts (this Deno
+// function can't import packages/shared); change both in the same commit.
+const FRENCH_INSTRUCTION =
+  'Lime is "citron vert" and lemon is "citron jaune"; never write "citron" alone for lime. ' +
+  "Use French typography: a narrow no break space before ; ! ? and a no break space " +
+  "before :, and « » quotes. ";
+
+// Hand copy of normalizeFrenchTypography in packages/shared/src/frenchTypography.ts
+// (spec 0046 AC-12); change both in the same commit.
+function normalizeFrenchTypography(text: string): string {
+  return text
+    .replace(/["“]([^"“”]*?)["”]/g, (_match, inner: string) => `«${inner.trim()}»`)
+    .replace(/«[ \u00A0\u202F]*/g, "«\u202F")
+    .replace(/[ \u00A0\u202F]*»/g, "\u202F»")
+    .replace(/([^\s])[ \u00A0\u202F]*([;!?]+)(?=$|[\s»)\]])/g, "$1\u202F$2")
+    .replace(/([^\s])[ \u00A0\u202F]+:(?=$|\s)/g, "$1\u00A0:")
+    .replace(/(\p{L}):(?=$|\s)/gu, "$1\u00A0:");
+}
+
+/** French typography on the text a French reader sees; source_name stays as matched. */
+function typesetIdea(idea: DrinkIdea, locale: Locale): DrinkIdea {
+  if (locale !== "fr") {
+    return idea;
+  }
+  return {
+    name: normalizeFrenchTypography(idea.name),
+    ingredients: idea.ingredients.map((ingredient) => ({
+      ...ingredient,
+      name: normalizeFrenchTypography(ingredient.name),
+      amount: normalizeFrenchTypography(ingredient.amount),
+    })),
+    steps: idea.steps.map(normalizeFrenchTypography),
+  };
+}
 
 function parseLocale(value: unknown): Locale {
   return typeof value === "string" && (SUPPORTED_LOCALES as readonly string[]).includes(value)
@@ -123,7 +159,8 @@ async function generateWithClaude(
     locale === DEFAULT_LOCALE
       ? ""
       : `Write the name, ingredient names, and steps natively in ${LOCALE_NAMES[locale]}, ` +
-        `as a native speaker would phrase them, not a literal translation. `;
+        `as a native speaker would phrase them, not a literal translation. ` +
+        (locale === "fr" ? FRENCH_INSTRUCTION : "");
 
   const message = await anthropic.messages.parse(
     {
@@ -161,7 +198,7 @@ async function generateWithClaude(
     pantrySet.has(normalizeIngredientName(ingredient.source_name)),
   );
 
-  return usesOnlyPantry ? idea : null;
+  return usesOnlyPantry ? typesetIdea(idea, locale) : null;
 }
 
 function isRetryableError(error: unknown): boolean {

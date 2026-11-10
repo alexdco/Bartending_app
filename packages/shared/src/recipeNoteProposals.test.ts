@@ -25,6 +25,11 @@ const notesByLocale: Record<
     bartender_tip: "Bata com força e bastante gelo para sair bem gelado e levemente diluído.",
     presentation_tip: "Coloque sal em só metade da borda para cada gole ser uma escolha.",
   },
+  fr: {
+    drink_style_note: " Un sour à la tequila équilibré par le citron vert et la liqueur d’orange. ",
+    bartender_tip: "Secouez fort avec beaucoup de glace pour qu’il soit froid et un peu dilué.",
+    presentation_tip: "Givrez la moitié du bord au sel pour que chaque gorgée reste un choix.",
+  },
 };
 
 // One block per CATALOG_TRANSLATION_LOCALES code, so the fixture stays valid at launch.

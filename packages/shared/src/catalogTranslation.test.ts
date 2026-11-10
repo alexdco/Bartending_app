@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { needsRecipeTranslation, translatableMeasures } from "./catalogTranslation";
+import {
+  localeTypography,
+  needsRecipeTranslation,
+  translatableMeasures,
+} from "./catalogTranslation";
 
 describe("needsRecipeTranslation", () => {
   const ingredients = [
@@ -49,5 +53,13 @@ describe("translatableMeasures", () => {
       { ingredient_id: "rum", measure: "1 oz" },
     ];
     expect(translatableMeasures(source, translated)).toEqual([]);
+  });
+});
+
+describe("localeTypography", () => {
+  it("applies French typography to fr output only", () => {
+    expect(localeTypography("fr")("Santé !")).toBe("Santé\u202F!");
+    expect(localeTypography("es")("¡Salud !")).toBe("¡Salud !");
+    expect(localeTypography("pt")('Um "shaker"')).toBe('Um "shaker"');
   });
 });
