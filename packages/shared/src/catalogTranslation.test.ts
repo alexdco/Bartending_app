@@ -1,5 +1,31 @@
 import { describe, expect, it } from "vitest";
-import { translatableMeasures } from "./catalogTranslation";
+import { needsRecipeTranslation, translatableMeasures } from "./catalogTranslation";
+
+describe("needsRecipeTranslation", () => {
+  const ingredients = [
+    { measure: "2 oz", translated: true },
+    { measure: null, translated: false },
+  ];
+
+  it("skips a recipe whose hash matches and whose measures are all translated", () => {
+    expect(needsRecipeTranslation({ hash: "h", existingHash: "h", ingredients })).toBe(false);
+  });
+
+  it("translates a new recipe or one whose English text changed", () => {
+    expect(needsRecipeTranslation({ hash: "h", existingHash: undefined, ingredients })).toBe(true);
+    expect(needsRecipeTranslation({ hash: "h2", existingHash: "h", ingredients })).toBe(true);
+  });
+
+  it("translates a recipe whose measure translations were cascaded away by a reimport", () => {
+    const reimported = [
+      { measure: "2 oz", translated: false },
+      { measure: null, translated: false },
+    ];
+    expect(needsRecipeTranslation({ hash: "h", existingHash: "h", ingredients: reimported })).toBe(
+      true,
+    );
+  });
+});
 
 describe("translatableMeasures", () => {
   const source = [

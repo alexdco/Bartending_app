@@ -82,6 +82,26 @@ export function translatableMeasures<T extends { ingredient_id: string; measure:
   return translated.filter((m) => m.measure !== null && measured.has(m.ingredient_id));
 }
 
+/**
+ * Whether a recipe needs translating into a locale: it is new, its English
+ * text changed (AC-17), or a measured line has no translation row. The hash
+ * doesn't cover measures, and import_catalog / admin_upsert_recipe delete and
+ * reinsert recipe_ingredients, which cascades away the translated measures.
+ */
+export function needsRecipeTranslation({
+  hash,
+  existingHash,
+  ingredients,
+}: {
+  hash: string;
+  existingHash: string | undefined;
+  ingredients: readonly { measure: string | null; translated: boolean }[];
+}): boolean {
+  return (
+    existingHash !== hash || ingredients.some((ing) => ing.measure !== null && !ing.translated)
+  );
+}
+
 function chunk<T>(items: T[], size: number): T[][] {
   const chunks: T[][] = [];
   for (let i = 0; i < items.length; i += size) {
@@ -198,9 +218,10 @@ async function translateRecipes(
   const { data: recipes, error } = await supabase
     .from("recipes")
     .select(
-      "id, name, instructions, glass, recipe_ingredients ( ingredient_id, measure, ingredients ( name ) )",
+      "id, name, instructions, glass, recipe_ingredients ( ingredient_id, measure, ingredients ( name ), recipe_ingredient_translations ( locale ) )",
     )
-    .is("deleted_at", null);
+    .is("deleted_at", null)
+    .eq("recipe_ingredients.recipe_ingredient_translations.locale", locale);
 
   if (error) {
     throw new Error(`Failed to read recipes: ${error.message}`);
@@ -220,6 +241,18 @@ async function translateRecipes(
   );
 
   const inputs: (RecipeInput & { hash: string })[] = (recipes ?? [])
+    .filter(
+      (r) =>
+        reprocessAll ||
+        needsRecipeTranslation({
+          hash: sourceNameHash(r.name, r.instructions, r.glass ?? ""),
+          existingHash: existingHashByRecipeId.get(r.id),
+          ingredients: (r.recipe_ingredients ?? []).map((ri) => ({
+            measure: ri.measure,
+            translated: ri.recipe_ingredient_translations.length > 0,
+          })),
+        }),
+    )
     .map((r) => {
       const hash = sourceNameHash(r.name, r.instructions, r.glass ?? "");
       return {
@@ -235,7 +268,6 @@ async function translateRecipes(
         })),
       };
     })
-    .filter((r) => reprocessAll || existingHashByRecipeId.get(r.id) !== r.hash)
     .slice(0, limit);
 
   console.log(`[${locale}] Translating ${inputs.length} recipes in batches of ${BATCH_SIZE}...`);

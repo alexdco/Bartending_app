@@ -41,3 +41,31 @@ The silent English fallback is the deciding force. A language added to TS but mi
 Brazilian Portuguese (code `pt`) was chosen for reach alongside a Latin American Spanish audience. Keeping the main language code only matches how `en`/`es` work, so detection and routing need no region logic. `pt-BR` is still announced to search engines through `LOCALE_HREFLANG`. Fallback goes straight to English, not through Spanish: English is the source text, so it is always present and always accurate, and one rule keeps every query a single join.
 
 Gating with `LAUNCHED_LOCALES` (a code list) won over a PostHog flag because routing, the sitemap, and hreflang are decided at build and render time on the server, where a remote flag adds a network dependency to SEO pages. Making recipe notes and admin editing per locale (rather than auto translating notes) keeps Portuguese tips under the same human review as Spanish ones, and it makes the next language free.
+
+## Notes backfill for a new locale (added 2026-11-03)
+
+### Context
+
+The notes pipeline was built (build step 5a) to propose English and every locale together, for recipes missing an English note. Every recipe already has reviewed English notes, so a plain run finds nothing for Portuguese, and `--all` would regenerate and then overwrite reviewed English and Spanish text. The validator also needs every locale block on every row, so a Portuguese only file can't pass. An admin edit to an English note clears that field in every locale (spec 0043 AC-10), so an empty translated note already means "needs translating," whether it is new or went stale.
+
+### Options considered
+
+**Option A: a `--locale` pass that translates the reviewed English notes, per field (chosen).** Its own review file and its own apply function, which writes only that locale's rows. **Pros**: English and other locales can't be touched by construction, not by care; the same tool refills fields cleared by English edits in any locale; the next language needs nothing new. **Cons**: a second file shape and a second SQL function; notes follow the English wording, so they read a little less native.
+
+**Option B: the same pass, but writing fresh notes from the recipe alone.** **Pros**: more natural text in each language. **Cons**: Portuguese tips can drift from or contradict the reviewed English ones, and the reviewer has no source to check against.
+
+**Option C: fold notes into `translate-catalog`.** **Pros**: reuses hash gating and one job per locale. **Cons**: skips the review file, which is the whole reason the notes pipeline exists apart from the catalog translation.
+
+**Option D: loosen `apply_recipe_notes` so English fields and locale blocks are all optional.** **Pros**: one function. **Cons**: weakens the checks on the English path and mixes two contracts in one payload, so a mistake in a backfill file could reach `recipes`.
+
+### Rationale
+
+The deciding force is that reviewed text must be impossible to overwrite by accident, not merely unlikely. Option A gets that from the shape: the file has no English, and the function never writes `recipes`. Per field filling follows directly from the English edit rule, which clears one field at a time, so filling whole blocks would rewrite reviewed Portuguese beside the empty field. A file per locale keeps a days long native review from blocking new recipe imports. The default run moves to `CATALOG_TRANSLATION_LOCALES` because that is exactly where translation rows exist, so it stops paying for notes that would only be skipped.
+
+Calls made while writing (you may override any):
+- **Stale check on apply**: each file row carries its English `source` text, and apply skips and reports any field whose English changed since propose. It guards the real window of a long review. Runner up: no check, relying on the reviewer.
+- **Gone, not an error, for a deleted recipe**: a recipe soft deleted during a days long review is reported and skipped, so one deletion never blocks the backfill. Malformed rows still reject the whole file. Runner up: raise, as the default apply does (found by the cross check).
+- **Overwrite, not fill only, on apply**: one rule, matching English today, chosen by you. Runner up: fill only with a second report.
+- **Batch size 20** for the `--locale` pass, since output is one language and often one field. Runner up: 10, as the default run uses.
+- **Selection as a pure function** (`planLocaleNoteBackfill`), so the rule that protects reviewed text is unit tested without a database. Runner up: inline in the script.
+- **Migration D, not an edit to C**: you weren't sure whether C is live, and a new function applies cleanly either way.
