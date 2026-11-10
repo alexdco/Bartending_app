@@ -925,7 +925,7 @@ Adds French (`fr`, written as in France) on web, mobile, the recipe catalog, rec
 - [ ] Build it: `/develop french locale`
   - [x] Thin thread, unlaunched: the `unaccent` extension, the `french_unaccent` config and `fr` row, `locale.ts` entries, `normalizeFrenchTypography`, test fixes, the edge function's French, stub message files, one recipe translated, satisfies AC-3 to AC-7, AC-12, AC-14
   - [x] Content: terms review, then the full catalog backfill and the `--locale fr` notes proposal, satisfies AC-2, AC-9 to AC-11
-  - [ ] French UI strings, then a native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-10, AC-12, AC-13
+  - [x] French UI strings, then a native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-10, AC-12, AC-13
   - [ ] Launch: `fr` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, satisfies AC-8, AC-15, AC-16
 - [ ] Verify it: `/check verify french locale`
 - [ ] Test it: `/test french locale`

@@ -82,7 +82,7 @@ describe("validateRecipeNoteProposals", () => {
   });
 
   it("rejects an English or unsupported translations key", () => {
-    for (const code of ["en", "fr"]) {
+    for (const code of ["en", "de"]) {
       const translations = { ...margarita.translations, [code]: notesByLocale.es };
       expect(validateRecipeNoteProposals([{ ...margarita, translations }]).ok).toBe(false);
     }

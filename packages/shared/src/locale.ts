@@ -25,7 +25,7 @@ export const NON_DEFAULT_LOCALES: readonly NonDefaultLocale[] = SUPPORTED_LOCALE
  * Every supported locale still routes; only discovery is gated. A new locale
  * joins at launch, in the same commit as CATALOG_TRANSLATION_LOCALES.
  */
-export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt"];
+export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt", "fr"];
 
 /**
  * The locales the import job translates new catalog rows into, and the
@@ -35,6 +35,7 @@ export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt"];
 export const CATALOG_TRANSLATION_LOCALES = [
   "es",
   "pt",
+  "fr",
 ] as const satisfies readonly NonDefaultLocale[];
 
 export type CatalogTranslationLocale = (typeof CATALOG_TRANSLATION_LOCALES)[number];
@@ -74,8 +75,8 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     ' Use Brazilian citrus terms: lime is "limão", lemon is "limão-siciliano", limeade is ' +
     '"limonada", and lemonade is "limonada siciliana". Never write "lima" for lime, and keep ' +
     "lemon and lime distinct.",
-  // Pending native review (spec 0046). generate-drink-idea carries a hand
-  // copy of the citrus and typography sentences: change both together.
+  // Approved in the native review (spec 0046). generate-drink-idea carries a
+  // hand copy of the citrus and typography sentences: change both together.
   fr:
     ' Lime is "citron vert" and lemon is "citron jaune"; never write "citron" alone for lime, ' +
     'and keep lemon and lime distinct. Bar tools: shaker is "shaker", jigger is "doseur", ' +
