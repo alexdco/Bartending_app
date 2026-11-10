@@ -21,12 +21,14 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod/v4";
+import { localeTypography } from "../src/catalogTranslation";
 import type { Database } from "../src/database.types";
 import { DRINK_STYLES } from "../src/drinkStyle";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LOCALE_AI_LANGUAGE,
   LOCALE_AI_TERMS,
+  type CatalogTranslationLocale,
   type NonDefaultLocale,
 } from "../src/locale";
 import {
@@ -162,11 +164,25 @@ async function proposeBatch(
   );
 
   const names = new Map(batch.map((r) => [r.id, r.name]));
-  // Name second so the reviewer sees it right under the id.
-  const proposals = parsed.recipes.map(({ id, ...rest }) => ({
+  // Name second so the reviewer sees it right under the id. Each locale's
+  // block gets its punctuation pass (spec 0046 AC-1) before validation.
+  const proposals = parsed.recipes.map(({ id, translations, ...rest }) => ({
     id,
     name: names.get(id) ?? "",
     ...rest,
+    translations: Object.fromEntries(
+      Object.entries(translations).map(([locale, notes]) => {
+        const typeset = localeTypography(locale as CatalogTranslationLocale);
+        return [
+          locale,
+          {
+            drink_style_note: typeset(notes.drink_style_note),
+            bartender_tip: typeset(notes.bartender_tip),
+            presentation_tip: typeset(notes.presentation_tip),
+          },
+        ];
+      }),
+    ),
   }));
 
   const validation = validateRecipeNoteProposals(proposals);
@@ -288,7 +304,7 @@ async function proposeLocaleBatch(
     parsed.recipes.map((r) => r.id),
   );
 
-  const validation = proposalsFromLocaleReply(batch, parsed);
+  const validation = proposalsFromLocaleReply(batch, parsed, localeTypography(locale));
   if (!validation.ok) {
     throw new Error(`invalid proposals: ${validation.errors.join("; ")}`);
   }

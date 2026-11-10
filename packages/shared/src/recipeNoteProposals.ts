@@ -256,11 +256,14 @@ export type LocaleNotesReply = z.infer<typeof LocaleNotesReplySchema>;
 /**
  * Turns a reply into file rows. Fails when a recipe is missing, a requested
  * field is not a valid text, or an unrequested field is not null, so the
- * batch is retried (AC-17).
+ * batch is retried (AC-17). `typeset` is the locale's punctuation pass
+ * (spec 0046 AC-1), run before validation so the length check sees the
+ * stored text.
  */
 export function proposalsFromLocaleReply(
   batch: readonly BackfillPick[],
   reply: LocaleNotesReply,
+  typeset: (text: string) => string = (text) => text,
 ): ProposalValidation<RecipeTranslationNoteProposal> {
   const byId = new Map(reply.recipes.map((r) => [r.id, r]));
   const errors = batch.flatMap((pick) => {
@@ -279,7 +282,12 @@ export function proposalsFromLocaleReply(
       id: pick.id,
       name: pick.name,
       source: pick.source,
-      notes: Object.fromEntries(pick.fields.map((f) => [f, byId.get(pick.id)?.[f]])),
+      notes: Object.fromEntries(
+        pick.fields.map((f) => {
+          const text = byId.get(pick.id)?.[f];
+          return [f, typeof text === "string" ? typeset(text) : text];
+        }),
+      ),
     })),
   );
 }

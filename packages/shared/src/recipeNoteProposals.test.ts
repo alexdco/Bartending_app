@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { localeTypography } from "./catalogTranslation";
 import { CATALOG_TRANSLATION_LOCALES, NON_DEFAULT_LOCALES, type NonDefaultLocale } from "./locale";
 import {
   planLocaleNoteBackfill,
@@ -238,6 +239,15 @@ describe("proposalsFromLocaleReply", () => {
         { id: pick.id, name: pick.name, source: pick.source, notes: { bartender_tip: "Bata." } },
       ],
     });
+  });
+
+  it("runs the punctuation pass on each requested note before validation", () => {
+    const result = proposalsFromLocaleReply(
+      [pick],
+      reply({ bartender_tip: "Secouez fort !" }),
+      localeTypography("fr"),
+    );
+    expect(result.ok && result.proposals[0]?.notes.bartender_tip).toBe("Secouez fort !");
   });
 
   it("fails when a requested field is null or an unrequested one is filled", () => {
