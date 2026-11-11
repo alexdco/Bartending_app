@@ -316,13 +316,19 @@ describe("generate-drink-idea's Hindi hand copies", () => {
     return new Function(`${plain}\nreturn normalizeHindiTypography;`)() as (text: string) => string;
   };
 
-  it.each(["«आप»", "«हरा नींबू»", "«पीला नींबू»", "«नींबू»", "«।»"])(
-    "both copies pin %s",
-    (term) => {
-      expect(LOCALE_AI_TERMS.hi).toContain(term);
-      expect(hindiInstruction()).toContain(term);
-    },
-  );
+  it.each([
+    "«आप»",
+    "«हरा नींबू»",
+    "«पीला नींबू»",
+    "«नींबू»",
+    "«पीले नींबू का शरबत»",
+    "«पीले और हरे नींबू वाला सोडा»",
+    "«बर्फ़»",
+    "«।»",
+  ])("both copies pin %s", (term) => {
+    expect(LOCALE_AI_TERMS.hi).toContain(term);
+    expect(hindiInstruction()).toContain(term);
+  });
 
   it("stores both copies in Unicode NFC", () => {
     expect(LOCALE_AI_TERMS.hi).toBe(LOCALE_AI_TERMS.hi.normalize("NFC"));

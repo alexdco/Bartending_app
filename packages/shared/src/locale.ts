@@ -109,11 +109,16 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
   // citrus, tool, and punctuation sentences: change both together.
   hi:
     " Write everyday Hindi in Devanagari, not formal Sanskrit based Hindi and not Hinglish, and " +
-    "address the reader as «आप». Lime is «हरा नींबू» and lemon is «पीला नींबू»; keep lemon and " +
-    "lime distinct, never write «नींबू» alone, and never use the loanwords «लाइम» or «लेमन». " +
+    "address the reader as «आप». Never mix Latin letters into a Hindi word. Lime is «हरा नींबू» " +
+    "and lemon is «पीला नींबू», inflecting «हरा» and «पीला» as grammar needs (हरे, हरी, पीले, " +
+    "पीली, as in «हरे नींबू का रस»); keep lemon and lime distinct, never write «नींबू» alone, " +
+    "and never use the loanwords «लाइम» or «लेमन». Lemonade is «पीले नींबू का शरबत» and " +
+    "lemon-lime soda is «पीले और हरे नींबू वाला सोडा», never «नींबू पानी». " +
     "Bar tools: shaker is «शेकर», jigger is «जिगर», muddler is «मडलर», strainer is " +
     "«स्ट्रेनर», and bar spoon is «बार स्पून». Simple syrup is «शुगर सिरप», bitters is " +
-    "«बिटर्स», and ice is «बर्फ़». Write glass names as Devanagari loanwords. Use Western " +
+    "«बिटर्स», and ice is «बर्फ़». Write glass names as Devanagari loanwords, for example " +
+    "highball glass is «हाईबॉल गिलास», cocktail glass is «कॉकटेल गिलास», and old fashioned " +
+    "glass is «ओल्ड फ़ैशन्ड गिलास». Use Western " +
     "digits (0 to 9), write units without dots (मिली, सेली, ली, औंस), end sentences with " +
     "«।», and use “ ” quotes.",
 };

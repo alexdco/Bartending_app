@@ -25,6 +25,24 @@ _Steps derived from spec 0048 acceptance criteria. `/check verify` runs these; `
 - [ ] After the web deploy (migration first), browse `/en`, `/es`, `/ru` search, home, popular, and a recipe page → card links and canonicals unchanged, no 308 on click → AC-5, AC-9
 - [x] Once the one `hi` recipe from step 1 exists: on `/hi`, its card links to `<english-slug>-<uuid>`, clicking returns 200 with no 308, and the page canonical and the sitemap's `/hi` entry use the same slug → AC-9 (card click checked by you 2026-11-11; canonical is `japanese-fizz-<uuid>`; the sitemap has no `hi` until launch)
 
+## Build step 3 (terms review, then catalog backfill)
+
+_2026-11-11: you approved `LOCALE_AI_TERMS.hi` and `HINDI_INSTRUCTION` with fixes from the step 1 findings: glass name examples (हाईबॉल गिलास, कॉकटेल गिलास, ओल्ड फ़ैशन्ड गिलास), inflected citrus forms (हरे, हरी, पीले, पीली), no Latin letters inside a Hindi word, and ice «बर्फ़» in the edge sentence. After the backfill, lemonade «पीले नींबू का शरबत» and lemon-lime soda «पीले और हरे नींबू वाला सोडा» were pinned too, since नींबू पानी and नींबू-चूने failed AC-14. `generate-drink-idea` version 12 carries both changes._
+
+- [x] Native reviewer approves `LOCALE_AI_TERMS.hi` and `HINDI_INSTRUCTION` in `generate-drink-idea` → AC-14, AC-17
+- [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale hi` → every live recipe, ingredient, and tag has a `hi` row → AC-2, AC-14 (2026-11-11: 396 ingredients, 393 tags, 463 recipes; one batch of 10 hit `ON CONFLICT DO UPDATE command cannot affect row a second time` and went through on the rerun. 475 recipe rows, all names in Devanagari, 1,829 measure rows)
+- [x] Run it again → translates nothing → AC-14 (third run: 0 ingredients, 0 tags, 0 recipes)
+- [x] Every `hi` row is NFC and `name_search` equals `to_tsvector('hindi', name)` → AC-3, AC-23 (0 non NFC rows across the four tables, 0 mismatches)
+- [x] The AC-14 regex `(?<!(हरा|हरे|हरी|पीला|पीले|पीली) )नींबू` over `hi` rows of all four tables → no rows; no «लाइम» or «लेमन» → AC-14 (2026-11-11: the first pass failed 13 recipe rows, mostly नींबू पानी for lemonade, plus «वोदका लेमन». After the lemonade pin, `source_name_hash` was set to `''` on those 14 `hi` rows (the column is `not null`) and `translate-catalog --locale hi` retranslated them. Now clean, NFC, and `name_search` matches; only Vodka Slime's स्लाइम matches लाइम, a false positive)
+
+## Build step 4 (notes proposal and UI strings)
+
+- [x] Hindi typography in the notes run → `localeTypography("hi")` already returns `normalizeHindiTypography` for `propose-recipe-notes` (no change needed) → AC-1, AC-15
+- [x] `pnpm --filter @bartendingapp/shared propose-recipe-notes --locale hi` → 473 proposals in `scripts/tagging/recipe-notes-proposals.hi.json`, NFC, every sentence ends in । → AC-15 (for step 5 review: 12 note lines keep a bare नींबू, for example «नींबू स्वाद वाले रम», «कड़वा नींबू» for bitter lemon, «नींबू का पहिया»; fix them in the review before the apply)
+- [ ] Admin recipe form on one recipe → a Hindi notes section appears; saving it changes only that recipe's `hi` row → AC-16
+- [x] Web `messages/hi.json` and mobile `locales/hi.json` drafted in full: everyday Hindi, आप, danda, Western digits, ICU `one`/`other` and `_one`/`_other` → AC-1, AC-11 (only the brand, sample placeholders, and Service shorthand stay in Latin letters; key parity, plural forms, and placeholder tests pass)
+- [x] Every message on the placeholder list is label plus value (`लोकप्रिय: {region}`, `पसंदीदा: {name}`, `सवाल {number}/{total}`) → AC-12 (the native reviewer checks the list in step 5)
+
 ## UI / manual
 - [x] Network panel on `/hi` → both Noto font files load; on `/en`, `/fr`, `/ru` → no Noto request → AC-10
 - [x] On `/hi`, nav, buttons, labels, and footer use the taller line heights with no clipped matras at 360 px → AC-10 (unblocked by spec 0049, 2026-11-11: `/hi` computes the Hindi line heights on bare `text-<role>` and `leading-<role>`; the matra check itself is still yours)

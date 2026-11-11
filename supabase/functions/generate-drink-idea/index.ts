@@ -127,11 +127,13 @@ function normalizeRussianTypography(text: string): string {
 
 // Hand copy of LOCALE_AI_TERMS.hi in packages/shared/src/locale.ts (spec 0048
 // AC-17); change both in the same commit.
-// Everyday Hindi with «आप», lime «हरा नींबू», lemon «पीला नींबू», never «नींबू» alone.
+// Everyday Hindi with «आप», lime «हरा नींबू», lemon «पीला नींबू» (inflected as needed),
+// never «नींबू» alone, ice «बर्फ़», no Latin letters inside a Hindi word.
 const HINDI_INSTRUCTION =
-  "Write everyday Hindi in Devanagari and address the reader as \u00AB\u0906\u092A\u00BB. " +
-  "Lime is \u00AB\u0939\u0930\u093E \u0928\u0940\u0902\u092C\u0942\u00BB and lemon is \u00AB\u092A\u0940\u0932\u093E \u0928\u0940\u0902\u092C\u0942\u00BB; never write \u00AB\u0928\u0940\u0902\u092C\u0942\u00BB alone. " +
-  "Keep bar tool names as Devanagari loanwords. " +
+  "Write everyday Hindi in Devanagari and address the reader as \u00AB\u0906\u092A\u00BB. Never mix Latin letters into a Hindi word. " +
+  "Lime is \u00AB\u0939\u0930\u093E \u0928\u0940\u0902\u092C\u0942\u00BB and lemon is \u00AB\u092A\u0940\u0932\u093E \u0928\u0940\u0902\u092C\u0942\u00BB, inflected as grammar needs (\u0939\u0930\u0947, \u0939\u0930\u0940, \u092A\u0940\u0932\u0947, \u092A\u0940\u0932\u0940); never write \u00AB\u0928\u0940\u0902\u092C\u0942\u00BB alone. " +
+  "Lemonade is \u00AB\u092A\u0940\u0932\u0947 \u0928\u0940\u0902\u092C\u0942 \u0915\u093E \u0936\u0930\u092C\u0924\u00BB and lemon-lime soda is \u00AB\u092A\u0940\u0932\u0947 \u0914\u0930 \u0939\u0930\u0947 \u0928\u0940\u0902\u092C\u0942 \u0935\u093E\u0932\u093E \u0938\u094B\u0921\u093E\u00BB, never \u00AB\u0928\u0940\u0902\u092C\u0942 \u092A\u093E\u0928\u0940\u00BB. " +
+  "Ice is \u00AB\u092C\u0930\u094D\u092B\u093C\u00BB. Keep bar tool and glass names as Devanagari loanwords. " +
   "Write units without dots and end sentences with \u00AB\u0964\u00BB. ";
 
 // Hand copy of normalizeHindiTypography in packages/shared/src/hindiTypography.ts
