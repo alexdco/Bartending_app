@@ -25,7 +25,7 @@ export const NON_DEFAULT_LOCALES: readonly NonDefaultLocale[] = SUPPORTED_LOCALE
  * Every supported locale still routes; only discovery is gated. A new locale
  * joins at launch, in the same commit as CATALOG_TRANSLATION_LOCALES.
  */
-export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt", "fr"];
+export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt", "fr", "ru"];
 
 /**
  * The locales the import job translates new catalog rows into, and the
@@ -36,6 +36,7 @@ export const CATALOG_TRANSLATION_LOCALES = [
   "es",
   "pt",
   "fr",
+  "ru",
 ] as const satisfies readonly NonDefaultLocale[];
 
 export type CatalogTranslationLocale = (typeof CATALOG_TRANSLATION_LOCALES)[number];
@@ -87,7 +88,7 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     'muddler is "pilon", strainer is "passoire", and bar spoon is "cuillère à mélange". Use ' +
     "French typography: a narrow no break space before ; ! ? and a no break space before :, " +
     "and « » quotes.",
-  // Drafted for the native review (spec 0047 build step 3). generate-drink-idea
+  // Approved in the native review (spec 0047). generate-drink-idea
   // carries a hand copy of the address, citrus, and typography sentences:
   // change both together.
   ru:

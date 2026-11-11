@@ -178,6 +178,37 @@ describe("launched French", () => {
   });
 });
 
+// Russian is launched (spec 0047 AC-8, AC-19).
+describe("launched Russian", () => {
+  it("is launched and translated by the import job", () => {
+    expect(isLaunchedLocale("ru")).toBe(true);
+    expect(CATALOG_TRANSLATION_LOCALES).toContain("ru");
+  });
+
+  it("maps every Russian region to ru", () => {
+    for (const header of ["ru-RU", "ru-UA", "ru-KZ", "ru-BY"]) {
+      expect(parseAcceptLanguage(header)).toBe("ru");
+      expect(resolveRedirectLocale(null, header)).toBe("ru");
+    }
+  });
+
+  it("never picks ru for Ukrainian, Belarusian, or Kazakh", () => {
+    for (const header of ["uk-UA", "be-BY", "kk-KZ"]) {
+      expect(parseAcceptLanguage(header)).toBeNull();
+      expect(resolveRedirectLocale(null, header)).toBe("en");
+    }
+  });
+
+  it("keeps a stored ru, ahead of the header", () => {
+    expect(resolveStoredLocale("ru")).toBe("ru");
+    expect(resolveRedirectLocale("ru", "es")).toBe("ru");
+  });
+
+  it("searches Russian through the built in config", () => {
+    expect(LOCALE_TEXT_SEARCH_CONFIG.ru).toBe("russian");
+  });
+});
+
 describe("resolveRedirectLocale", () => {
   it("prefers a launched stored locale, then the header, then English", () => {
     expect(resolveRedirectLocale("es", "en-US")).toBe("es");
@@ -197,10 +228,11 @@ describe("resolveRedirectLocale", () => {
 
 describe("hreflangAlternates", () => {
   it("lists launched locales by hreflang code, with pt as pt-BR", () => {
-    const expected = { en: "/en", es: "/es", "pt-BR": "/pt", fr: "/fr" };
+    const expected = { en: "/en", es: "/es", "pt-BR": "/pt", fr: "/fr", ru: "/ru" };
     expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("fr", (locale) => `/${locale}`)).toEqual(expected);
+    expect(hreflangAlternates("ru", (locale) => `/${locale}`)).toEqual(expected);
   });
 });
 

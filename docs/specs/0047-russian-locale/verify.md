@@ -102,6 +102,17 @@ _2026-11-11: the native reviewer approved as is: the web and mobile UI strings, 
 - [x] The two `ru` rows without notes are expected: Boyarsky has no English notes, and Early Riser has none in any locale (no drink style), so both show English → AC-2
 - [ ] With `generate-drink-idea` version 10, a `ru` request whose pantry has lime → Russian text, «вы», «сок лайма» or «лайм», never «лимонный» for lime → AC-17
 
+## Build step 6 (launch)
+
+_2026-11-11: `"ru"` added to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit; the `notesByLocale` fixture already had its `ru` block (required by its `Record<NonDefaultLocale, …>` type since step 1). No default notes file was pending: `recipe-notes-proposals.json` (2026-10-29) was applied long ago._
+
+- [x] `locale.test.ts` → `ru-RU`, `ru-UA`, `ru-KZ`, `ru-BY` pick `ru`; `uk-UA`, `be-BY`, `kk-KZ` pick English; a stored `ru` beats the header; hreflang lists `ru` → AC-8, AC-19
+- [ ] After the web deploy, production `/sitemap.xml` lists `/ru/...` URLs, and a page's hreflang alternates include `ru` → AC-8, AC-19
+- [ ] After the web deploy, `Accept-Language: ru-RU` on `/` lands on `/ru`; `uk-UA` lands on `/en`; `/ru/` has no `noindex` → AC-8
+- [ ] Web language menu shows «Русский» in every locale; `<html lang="ru">` on `/ru` → AC-8
+- [ ] A production mobile build lists Русский in the language card, and a device set to Russian opens in Russian → AC-8, AC-19
+- [ ] The next import job run translates its new recipes into `ru` too → AC-14
+
 ## Later build steps (not yet built)
 
 - Step 6: launch and production checks → AC-8, AC-19; step 7: store listings → AC-20
