@@ -10,7 +10,7 @@ _2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recip
 - [x] Run the check in the migration's header comment → `true, true` (ё and е match both ways) → AC-3
 - [x] Rerun the snapshot → identical to the saved output → AC-5
 - [x] Run the 0045 structure query with `ru|russian` added to the pattern (`p.prosrc ~ '''(es|pt|fr|ru|spanish|portuguese|russian)'''`) → no rows → AC-4
-- [ ] Deploy `generate-drink-idea`, then request an idea with `locale: "ru"` → Russian text, «вы», « » quotes, pantry verification passes → AC-17
+- [x] Deploy `generate-drink-idea`, then request an idea with `locale: "ru"` → Russian text, «вы», « » quotes, pantry verification passes → AC-17
   _Reopened 2026-11-11: the live function was still version 9, with no `ru` in its locale list, so a `ru` request fell back to English. Version 10 (with Russian and the lime term line) was deployed 2026-11-11; check again against it._
 - [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale ru --limit 1` → one `ru` recipe row; run it again → translates nothing → AC-14
   _2026-11-10: it picked Jamaica Kiss. Instructions, the ingredient («кофейный ликёр»), the tag, and the measures came back in Russian and `name_search` matches `to_tsvector('russian', name)`. Haiku kept the name «Jamaica Kiss» in Latin letters and left the glass as "Hurricane glass" (es, pt, fr translated it): check glass wording in the step 3 terms review._
@@ -28,39 +28,39 @@ _2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recip
 - [ ] Before launch: web language menu and production mobile language card show no Русский; mobile dev and preview builds do → AC-7
 - [ ] Before launch: sitemap and every hreflang alternate have no `ru`; `/ru/` has `noindex`, a self canonical, and no alternates → AC-7
 - [ ] Before launch: set a stored `ru` preference (cookie, AsyncStorage, `user_preferences.locale`) → it is ignored for detection and left in place → AC-18
-- [ ] Signed in, save `ru` as the preference → `user_preferences.locale = 'ru'` is accepted and syncs → AC-18
+- [x] Signed in, save `ru` as the preference → `user_preferences.locale = 'ru'` is accepted and syncs → AC-18
 - [ ] `/ru` body copy hyphenates long words at 360 px; headings and buttons do not → AC-1
 
 ## Value sourcing
 
-- [ ] Catalog read with `locale = 'ru'` for a recipe with no `ru` row → English text, never blank or another language → AC-2
-- [ ] Russian recipe search config → `select public.locale_search_config('ru')` returns `russian` → AC-3
-- [ ] Insert or update of a `ru` `recipe_translations` row → `name_search` equals `to_tsvector('russian', name)` → AC-3
-- [ ] Russian ingredient search → a lowercase query matches a capitalized Russian ingredient name (trigram) → AC-3
-- [ ] Recipe slug → the slug follows the page locale's name: `/ru` uses the transliterated Russian name, `/en` the English one → AC-9
-- [ ] `/ru` heading font comes from `DISPLAY_FONT_BY_LOCALE.ru` (`lora`); every other locale stays on Fraunces → AC-10
-- [ ] Required plural forms come from `Intl.PluralRules`: `ru` needs one, few, many, other → AC-11
+- [x] Catalog read with `locale = 'ru'` for a recipe with no `ru` row → English text, never blank or another language → AC-2
+- [x] Russian recipe search config → `select public.locale_search_config('ru')` returns `russian` → AC-3
+- [x] Insert or update of a `ru` `recipe_translations` row → `name_search` equals `to_tsvector('russian', name)` → AC-3
+- [x] Russian ingredient search → a lowercase query matches a capitalized Russian ingredient name (trigram) → AC-3
+- [x] Recipe slug → the slug follows the page locale's name: `/ru` uses the transliterated Russian name, `/en` the English one → AC-9
+- [x] `/ru` heading font comes from `DISPLAY_FONT_BY_LOCALE.ru` (`lora`); every other locale stays on Fraunces → AC-10
+- [x] Required plural forms come from `Intl.PluralRules`: `ru` needs one, few, many, other → AC-11
 - [ ] Mobile plural at runtime uses Hermes `Intl.PluralRules` (device check above) → AC-11
-- [ ] Detection after launch: `ru-KZ` picks `ru`; `uk-UA`, `be-BY`, `kk-KZ` pick English → AC-8
+- [x] Detection after launch: `ru-KZ` picks `ru`; `uk-UA`, `be-BY`, `kk-KZ` pick English → AC-8
 - [ ] Hreflang, sitemap, and `<html lang>` use `LOCALE_HREFLANG.ru` (`ru`) → AC-8
 - [ ] Switcher label is `Русский` whatever the active language → AC-8
 - [ ] Catalog and notes prompts carry `LOCALE_AI_LANGUAGE.ru` and `LOCALE_AI_TERMS.ru` (lime «лайм», lemon «лимон») → AC-14, AC-15
-- [ ] Russian AI output passes through `normalizeRussianTypography` (or the edge function copy): straight quotes become « », a spaced hyphen becomes ` — ` → AC-1, AC-17
+- [x] Russian AI output passes through `normalizeRussianTypography` (or the edge function copy): straight quotes become « », a spaced hyphen becomes ` — ` → AC-1, AC-17
 - [ ] Retranslation uses the `ru` row's `source_name_hash` → a second run translates nothing → AC-14
 - [ ] Units show `унц.`, `мл`, `сл`, `л` in `ru`, with a dot decimal → AC-13
-- [ ] Launch adds `ru` to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit → AC-19
+- [x] Launch adds `ru` to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit → AC-19
 
 ## Commands
 
-- [ ] `pnpm test` → all pass, including `seo.test.ts` (transliteration), `russianTypography.test.ts`, `locale.test.ts` (parity with `ru`), and `apps/mobile/src/i18n/plurals.test.ts` (1, 2, 5, 21) → AC-6, AC-9, AC-11, AC-17
-- [ ] `pnpm -r typecheck` and `pnpm lint` → no errors → AC-6
+- [x] `pnpm test` → all pass, including `seo.test.ts` (transliteration), `russianTypography.test.ts`, `locale.test.ts` (parity with `ru`), and `apps/mobile/src/i18n/plurals.test.ts` (1, 2, 5, 21) → AC-6, AC-9, AC-11, AC-17
+- [x] `pnpm -r typecheck` and `pnpm lint` → no errors → AC-6
 - [ ] Slug regression: `select count(*) from (select name from public.recipes union all select name from public.recipe_translations) s where name ~ '[Ѐ-ӿ]'` → 0 before the `ru` backfill, so existing slugs are byte identical (checked 2026-11-10: 0 of 1,937 names) → AC-5
 
 ## Build step 2 (plural and placeholder tests)
 
-- [ ] `pnpm test` → `packages/shared/src/pluralForms.test.ts` (en, es, pt, fr need one, other; ru needs one, few, many, other), `apps/web/src/i18n/pluralForms.test.ts`, `apps/mobile/src/i18n/pluralForms.test.ts`, and both `placeholderMessages.test.ts` pass → AC-11, AC-12
-- [ ] Delete `ratings.summary_few` from mobile `ru.json` → the mobile forms test fails naming `ratings.summary_few`; restore it → AC-11
-- [ ] Drop the `many` branch from web `ru.json` `ratings.summary` or `recipe.missingIngredients` → the web forms test fails naming the key; restore it → AC-11
+- [x] `pnpm test` → `packages/shared/src/pluralForms.test.ts` (en, es, pt, fr need one, other; ru needs one, few, many, other), `apps/web/src/i18n/pluralForms.test.ts`, `apps/mobile/src/i18n/pluralForms.test.ts`, and both `placeholderMessages.test.ts` pass → AC-11, AC-12
+- [x] Delete `ratings.summary_few` from mobile `ru.json` → the mobile forms test fails naming `ratings.summary_few`; restore it → AC-11
+- [x] Drop the `many` branch from web `ru.json` `ratings.summary` or `recipe.missingIngredients` → the web forms test fails naming the key; restore it → AC-11
 - [ ] Remove the `one` branch from `recipe.missingIngredients` in `es.json` → the web forms test fails with `lacks one`; restore it (checked 2026-11-10) → AC-11
 - [ ] Add a message with `{name}` to web or mobile `en.json` → the matching placeholder test fails until `placeholderMessages.ts` lists it → AC-12
 - [ ] In `/ru`, a recipe with 2, 5, and 21 ratings shows «2 оценки», «5 оценок», «21 оценка», and the rating stars read «Поставить 2 звезды», «Поставить 5 звёзд» → AC-11
@@ -100,7 +100,7 @@ _2026-11-11: the native reviewer approved as is: the web and mobile UI strings, 
 - [x] `apply-recipe-notes --locale ru` → 473 `ru` rows gain notes; the notes of `en` (`recipes`), `es`, `pt`, `fr` hash the same before and after → AC-15
 - [x] Every `ru` note whose English mentions lime says «лайм» (0 lost) → AC-14
 - [x] The two `ru` rows without notes are expected: Boyarsky has no English notes, and Early Riser has none in any locale (no drink style), so both show English → AC-2
-- [ ] With `generate-drink-idea` version 10, a `ru` request whose pantry has lime → Russian text, «вы», «сок лайма» or «лайм», never «лимонный» for lime → AC-17
+- [x] With `generate-drink-idea` version 10, a `ru` request whose pantry has lime → Russian text, «вы», «сок лайма» or «лайм», never «лимонный» for lime → AC-17
 
 ## Build step 6 (launch)
 
