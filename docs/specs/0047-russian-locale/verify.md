@@ -13,10 +13,10 @@ _2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recip
 - [x] Deploy `generate-drink-idea`, then request an idea with `locale: "ru"` → Russian text, «вы», « » quotes, pantry verification passes → AC-17
 - [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale ru --limit 1` → one `ru` recipe row; run it again → translates nothing → AC-14
   _2026-11-10: it picked Jamaica Kiss. Instructions, the ingredient («кофейный ликёр»), the tag, and the measures came back in Russian and `name_search` matches `to_tsvector('russian', name)`. Haiku kept the name «Jamaica Kiss» in Latin letters and left the glass as "Hurricane glass" (es, pt, fr translated it): check glass wording in the step 3 terms review._
-- [ ] Visit `/ru/recipes/<slug>` for a recipe whose `ru` name is in Cyrillic → the URL slug is transliterated Latin (never `recipe-<uuid>`), the name shows in Russian, headings render in Lora → AC-9, AC-10
-  _Open: the step 1 recipe kept a Latin name, so this waits for a Cyrillic name (step 3 backfill). Transliteration itself is covered by `seo.test.ts`._
-- [ ] Search `/ru` for that recipe's Russian name typed with е in place of ё, then for its English name → both find it → AC-3
-  _Open, same reason. The database check (ё and е match both ways) passed on 2026-11-10._
+- [x] Visit `/ru/recipes/<slug>` for a recipe whose `ru` name is in Cyrillic → the URL slug is transliterated Latin (never `recipe-<uuid>`), the name shows in Russian, headings render in Lora → AC-9, AC-10
+  _2026-11-10: «Взлёт» (Blastoff) serves at `/ru/recipes/vzlet-a780bf50-…` with a self canonical and `noindex` (unlaunched); `recipe-<uuid>` redirects (308) to it. Lora was confirmed in the step 1 network check._
+- [x] Search `/ru` for that recipe's Russian name typed with е in place of ё, then for its English name → both find it → AC-3
+  _2026-11-10: `search_recipes` in `ru` finds «Взлёт» for «Взлет» and for "Blastoff"._
 - [x] On a phone with a dev build, switch to Русский and open a recipe with 2 ratings → «2 оценки»; 5 → «5 оценок»; 21 → «21 оценка» → AC-11
 
 ## UI / manual
@@ -65,9 +65,22 @@ _2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recip
 - [ ] In `/ru`, a recipe with 2, 5, and 21 ratings shows «2 оценки», «5 оценок», «21 оценка», and the rating stars read «Поставить 2 звезды», «Поставить 5 звёзд» → AC-11
 - [ ] Native reviewer reads both `placeholderMessages.ts` lists and the six drafted web `ru` plural messages (step 5) → AC-11, AC-12
 
+## Build step 3 (terms review, then catalog backfill)
+
+_2026-11-10: the native reviewer approved `LOCALE_AI_TERMS.ru` and the edge function sentence as is. No glass name or cocktail name term was added, so Haiku may keep some glass and cocktail names in Latin letters._
+
+_2026-11-10: backfill run twice. All 475 live recipes, every ingredient, and every tag have a `ru` row; 376 recipe names are in Cyrillic; every `ru` `name_search` equals `to_tsvector('russian', name)`; all 27 lime and lemon ingredients read «лайм» or «лимон» correctly._
+
+- [x] Native reviewer approves `LOCALE_AI_TERMS.ru` and `RUSSIAN_INSTRUCTION` in `generate-drink-idea` → AC-14, AC-17
+- [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale ru` → every recipe, ingredient, tag, and measure gets a `ru` row → AC-2, AC-14
+- [x] Run it again → translates nothing (hash gating per locale) → AC-14
+- [x] `select count(*) from public.recipes r where deleted_at is null and not exists (select 1 from public.recipe_translations t where t.recipe_id = r.id and t.locale = 'ru')` → 0 (the script skips soft deleted recipes; 17 of 492 are deleted) → AC-2
+- [x] Lime and lemon: every `ru` ingredient name for an English name containing "lime" uses «лайм», and "lemon" uses «лимон», never mixed → AC-14
+- [x] `select count(*) from public.recipe_translations where locale = 'ru' and name ~ '[Ѐ-ӿ]'` → above 0, then do the two open step 1 checks (Cyrillic slug, ё search) with one of those recipes → AC-3, AC-9
+
 ## Later build steps (not yet built)
 
-- Steps 3 to 5: terms review, full backfill, notes proposal, full UI strings, native review, notes apply, admin Russian notes section → AC-1, AC-2, AC-12 to AC-16
+- Steps 4 to 5: terms review, full backfill, notes proposal, full UI strings, native review, notes apply, admin Russian notes section → AC-1, AC-2, AC-12 to AC-16
 - Step 6: launch and production checks → AC-8, AC-19; step 7: store listings → AC-20
 
 ## Acceptance criteria coverage
