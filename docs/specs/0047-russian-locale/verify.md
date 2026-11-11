@@ -55,9 +55,18 @@ _2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recip
 - [ ] `pnpm -r typecheck` and `pnpm lint` → no errors → AC-6
 - [ ] Slug regression: `select count(*) from (select name from public.recipes union all select name from public.recipe_translations) s where name ~ '[Ѐ-ӿ]'` → 0 before the `ru` backfill, so existing slugs are byte identical (checked 2026-11-10: 0 of 1,937 names) → AC-5
 
+## Build step 2 (plural and placeholder tests)
+
+- [ ] `pnpm test` → `packages/shared/src/pluralForms.test.ts` (en, es, pt, fr need one, other; ru needs one, few, many, other), `apps/web/src/i18n/pluralForms.test.ts`, `apps/mobile/src/i18n/pluralForms.test.ts`, and both `placeholderMessages.test.ts` pass → AC-11, AC-12
+- [ ] Delete `ratings.summary_few` from mobile `ru.json` → the mobile forms test fails naming `ratings.summary_few`; restore it → AC-11
+- [ ] Drop the `many` branch from web `ru.json` `ratings.summary` or `recipe.missingIngredients` → the web forms test fails naming the key; restore it → AC-11
+- [ ] Remove the `one` branch from `recipe.missingIngredients` in `es.json` → the web forms test fails with `lacks one`; restore it (checked 2026-11-10) → AC-11
+- [ ] Add a message with `{name}` to web or mobile `en.json` → the matching placeholder test fails until `placeholderMessages.ts` lists it → AC-12
+- [ ] In `/ru`, a recipe with 2, 5, and 21 ratings shows «2 оценки», «5 оценок», «21 оценка», and the rating stars read «Поставить 2 звезды», «Поставить 5 звёзд» → AC-11
+- [ ] Native reviewer reads both `placeholderMessages.ts` lists and the six drafted web `ru` plural messages (step 5) → AC-11, AC-12
+
 ## Later build steps (not yet built)
 
-- Step 2: plural forms test over web ICU and mobile keys, the `one` branch for `missingIngredients` in `es`, `pt`, `fr`, and the placeholder list test → AC-11, AC-12
 - Steps 3 to 5: terms review, full backfill, notes proposal, full UI strings, native review, notes apply, admin Russian notes section → AC-1, AC-2, AC-12 to AC-16
 - Step 6: launch and production checks → AC-8, AC-19; step 7: store listings → AC-20
 

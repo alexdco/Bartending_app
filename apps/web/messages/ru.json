@@ -172,7 +172,7 @@
     "flavorProfile": "Flavor profile",
     "cocktailDbCredit": "Recipe and image from TheCocktailDB",
     "unit": "Unit",
-    "missingIngredients": "{remaining, plural, =0 {Missing: {names}} other {Missing: {names} +# more}}",
+    "missingIngredients": "{remaining, plural, =0 {Не хватает: {names}} one {Не хватает: {names} и ещё #} few {Не хватает: {names} и ещё #} many {Не хватает: {names} и ещё #} other {Не хватает: {names} и ещё #}}",
     "inPantry": "In pantry",
     "addToPantry": "Add to pantry",
     "onList": "On list",
@@ -395,12 +395,12 @@
     "indexMetaDescription": "See which cocktails and mocktails are popular in each region."
   },
   "ratings": {
-    "summary": "{average} ({count, plural, one {# rating} other {# ratings}})",
+    "summary": "{average} ({count, plural, one {# оценка} few {# оценки} many {# оценок} other {# оценки}})",
     "none": "No ratings yet. Be the first to rate it.",
     "signInToRate": "<link>Sign in</link> to rate this recipe",
     "rating": "Rating",
-    "rateStars": "{count, plural, one {Rate # star} other {Rate # stars}}",
-    "starsLabel": "Rated {average} out of 5 from {count, plural, one {# rating} other {# ratings}}"
+    "rateStars": "{count, plural, one {Поставить # звезду} few {Поставить # звезды} many {Поставить # звёзд} other {Поставить # звезды}}",
+    "starsLabel": "Средняя оценка {average} из 5, {count, plural, one {# оценка} few {# оценки} many {# оценок} other {# оценки}}"
   },
   "recommendations": {
     "title": "You may also like",
@@ -674,7 +674,7 @@
     "errorNoteNeedsStyle": "Choose a drink style before adding a style sentence.",
     "errorInvalidDrinkStyle": "Choose a drink style from the list.",
     "notesSaveFailed": "The recipe saved, but its style and tips did not: {message}. Saving again updates the same recipe.",
-    "unreviewedAllergens": "{count, plural, one {# ingredient has} other {# ingredients have}} no allergen review yet.",
+    "unreviewedAllergens": "{count, plural, one {# ингредиент ещё не проверен} few {# ингредиента ещё не проверены} many {# ингредиентов ещё не проверены} other {# ингредиента ещё не проверены}} на аллергены.",
     "reviewAllergensLink": "Review ingredient allergens",
     "ingredientAllergens": "Ingredient allergens",
     "ingredientsMetaTitle": "Ingredient allergens",
@@ -690,7 +690,7 @@
     "loadIngredientsFailed": "Couldn't load ingredients. Check your connection and try again.",
     "loadingIngredients": "Loading ingredients",
     "noIngredients": "No ingredients match.",
-    "ingredientCount": "{count, plural, one {# ingredient} other {# ingredients}}",
+    "ingredientCount": "{count, plural, one {# ингредиент} few {# ингредиента} many {# ингредиентов} other {# ингредиента}}",
     "pageOf": "Page {page} of {pages}",
     "previousPage": "Previous",
     "nextPage": "Next"

@@ -172,7 +172,7 @@
     "flavorProfile": "Profil aromatique",
     "cocktailDbCredit": "Recette et image de TheCocktailDB",
     "unit": "Unité",
-    "missingIngredients": "{remaining, plural, =0 {Manque : {names}} other {Manque : {names} et # de plus}}",
+    "missingIngredients": "{remaining, plural, =0 {Manque : {names}} one {Manque : {names} et # de plus} other {Manque : {names} et # de plus}}",
     "inPantry": "Dans le garde-manger",
     "addToPantry": "Ajouter au garde-manger",
     "onList": "Sur la liste",

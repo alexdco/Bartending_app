@@ -937,7 +937,7 @@ Adds Russian (`ru`). Built in `russian` search config; first Cyrillic locale and
 - [x] Design it (spec): `/architect russian locale`
 - [ ] Build it: `/develop russian locale` (starts after feature 69 passes `/check verify`)
   - [x] Thin thread, unlaunched: the `ru` row, `locale.ts` entries, transliterated slugs, Lora headings and share image font, `normalizeRussianTypography`, the edge function's Russian, mobile registration with the Node plural test, one recipe translated, satisfies AC-3 to AC-7, AC-9 to AC-11, AC-17, AC-18 (built ahead of feature 69's verify by choice; the live Cyrillic slug and ё search checks wait for a Cyrillic recipe name in the backfill, see verify.md)
-  - [ ] Plural forms and placeholder list tests, satisfies AC-11, AC-12
+  - [x] Plural forms and placeholder list tests, satisfies AC-11, AC-12 (the six web `ru` plural messages got drafted Russian forms so the test passes; they await the step 5 review)
   - [ ] Content: terms review, full catalog backfill, the `--locale ru` notes proposal, and the Russian UI strings, satisfies AC-1, AC-2, AC-12, AC-14 to AC-16
   - [ ] Native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-12, AC-13, AC-15, AC-17
   - [ ] Launch: `ru` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, satisfies AC-8, AC-19, AC-20

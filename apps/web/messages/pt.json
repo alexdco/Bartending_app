@@ -172,7 +172,7 @@
     "flavorProfile": "Perfil de sabor",
     "cocktailDbCredit": "Receita e imagem do TheCocktailDB",
     "unit": "Unidade",
-    "missingIngredients": "{remaining, plural, =0 {Faltam: {names}} other {Faltam: {names} e mais #}}",
+    "missingIngredients": "{remaining, plural, =0 {Faltam: {names}} one {Faltam: {names} e mais #} other {Faltam: {names} e mais #}}",
     "inPantry": "Na despensa",
     "addToPantry": "Adicionar à despensa",
     "onList": "Na lista",
