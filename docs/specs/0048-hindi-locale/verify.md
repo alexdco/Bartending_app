@@ -49,8 +49,8 @@ _2026-11-11: review sheet `packages/shared/scripts/tagging/hindi-review.csv` (gi
 
 _2026-11-11: the pre pass missed Devanagari digits (`४५ मिली`), which AC-1 rules out: 23 drink idea lines, 2 notes, and in the live catalog 88 `hi` measure rows and 7 `hi` recipe rows. `normalizeHindiTypography` (and the edge function's hand copy) now writes them as 0 to 9; the review sheet and `recipe-notes-proposals.hi.json` were rewritten the same way._
 
-- [ ] Run the digit update in the SQL editor (`translate()` over `hi` rows of `recipe_ingredient_translations.measure` and the `recipe_translations` text columns) → both closing counts are 0 → AC-1
-- [ ] Deploy `generate-drink-idea` (version 13) with the digit rule; a Hindi drink idea shows `45 मिली`, not `४५ मिली` → AC-1, AC-17
+- [x] Run the digit update in the SQL editor (`translate()` over `hi` rows of `recipe_ingredient_translations.measure` and the `recipe_translations` text columns) → both closing counts are 0 → AC-1 (2026-11-11: both 0; 1,646 `hi` measures now carry Western digits)
+- [ ] Deploy `generate-drink-idea` (version 13) with the digit rule; a Hindi drink idea shows `45 मिली`, not `४५ मिली` → AC-1, AC-17 (2026-11-11: version 13 deployed and active, the digit rule is in the live source, `verify_jwt` still on; the live Hindi drink idea check is still open)
 - [ ] Native reviewer fills the `fix` column: UI strings (age gate and privacy first), the placeholder list rows, unit and limit copy, the drink idea samples, and every note → AC-1, AC-12, AC-13, AC-15, AC-17
 - [ ] Fixes applied to `hi.json` (web, mobile), `drinkIdeaLimitMessage.ts`, the unit labels, and `recipe-notes-proposals.hi.json`; tests pass → AC-1, AC-13
 - [ ] 360 px layout check on web and on both phones with the reviewed strings → AC-10, AC-20
