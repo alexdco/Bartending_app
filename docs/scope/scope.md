@@ -80,7 +80,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 67 | Mocktails only mode | Slice 37 | planned |
 | 68 | User submitted recipes | Slice 38 | planned |
 | 69 | French | Slice 39 | in-progress |
-| 70 | Russian | Slice 39 | planned |
+| 70 | Russian | Slice 39 | in-progress |
 | 71 | Hindi | Slice 39 | planned |
 | 72 | Japanese | Slice 39 | planned |
 | 73 | Korean | Slice 39 | planned |
@@ -931,10 +931,19 @@ Adds French (`fr`, written as in France) on web, mobile, the recipe catalog, rec
 - [ ] Test it: `/test french locale`
 Spec [0046](../specs/0046-french-locale.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
-### 70. Russian · needs a decision
+### 70. Russian · in-progress
 Adds Russian (`ru`). Built in `russian` search config; first Cyrillic locale and first with three plural forms, so message plurals and number formatting (feature 58) need a check.
 **Done when:** `/ru` pages and the mobile app read in Russian with correct plurals (untranslated content falls back to English), Russian search works, and Russian is launched in the switcher, detection, sitemap, and hreflang.
-- [ ] Design it (spec): `/architect russian locale`
+- [x] Design it (spec): `/architect russian locale`
+- [ ] Build it: `/develop russian locale` (starts after feature 69 passes `/check verify`)
+  - [x] Thin thread, unlaunched: the `ru` row, `locale.ts` entries, transliterated slugs, Lora headings and share image font, `normalizeRussianTypography`, the edge function's Russian, mobile registration with the Node plural test, one recipe translated, satisfies AC-3 to AC-7, AC-9 to AC-11, AC-17, AC-18 (built ahead of feature 69's verify by choice; the live Cyrillic slug and ё search checks wait for a Cyrillic recipe name in the backfill, see verify.md)
+  - [ ] Plural forms and placeholder list tests, satisfies AC-11, AC-12
+  - [ ] Content: terms review, full catalog backfill, the `--locale ru` notes proposal, and the Russian UI strings, satisfies AC-1, AC-2, AC-12, AC-14 to AC-16
+  - [ ] Native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-12, AC-13, AC-15, AC-17
+  - [ ] Launch: `ru` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, satisfies AC-8, AC-19, AC-20
+- [ ] Verify it: `/check verify russian locale`
+- [ ] Test it: `/test russian locale`
+Spec [0047](../specs/0047-russian-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 71. Hindi · needs a decision
 Adds Hindi (`hi`). Devanagari script needs a font that renders it on web and mobile; check whether the database's Postgres version ships the `hindi` search config or search falls back to `simple`.

@@ -28,6 +28,7 @@ export * from "./homepage";
 export * from "./initials";
 export * from "./locale";
 export * from "./frenchTypography";
+export * from "./russianTypography";
 export * from "./units";
 export * from "./batch";
 export * from "./bar";

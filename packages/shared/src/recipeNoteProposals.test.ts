@@ -31,6 +31,12 @@ const notesByLocale: Record<
     bartender_tip: "Secouez fort avec beaucoup de glace pour qu’il soit froid et un peu dilué.",
     presentation_tip: "Givrez la moitié du bord au sel pour que chaque gorgée reste un choix.",
   },
+  ru: {
+    drink_style_note: " Сауэр на текиле, сбалансированный лаймом и апельсиновым ликёром. ",
+    bartender_tip:
+      "Встряхивайте сильно, с большим количеством льда, чтобы коктейль вышел холодным.",
+    presentation_tip: "Обсыпьте солью только половину края, чтобы гость выбирал сам.",
+  },
 };
 
 // One block per CATALOG_TRANSLATION_LOCALES code, so the fixture stays valid at launch.

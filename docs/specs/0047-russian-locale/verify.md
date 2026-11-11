@@ -1,0 +1,66 @@
+# Verify: Russian locale · spec 0047 · updated 2026-11-10
+_Steps derived from spec 0047 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
+
+## Build step 1 (thin thread): your steps before it counts as landed
+
+_2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recipe detail, 9 recipe searches, 6 ingredient searches) hashed `731160d4cba89e77f940e66df7ee4dba` before and after; ё and е matched both ways; no function names a locale._
+
+- [x] Before the migration, snapshot `es`, `pt`, `fr`: `select public.search_recipes('margarita', null, 20, 0, l) from unnest(array['es','pt','fr']) l;` and `select public.fetch_recipe_detail(id, l) from public.recipes, unnest(array['es','pt','fr']) l where name = 'Margarita';` → save the output → AC-5
+- [x] Apply `supabase/migrations/20261110120000_russian_locale.sql` in the SQL editor → `select * from public.supported_locales where code = 'ru'` returns `('ru', 'russian')` → AC-4, AC-6
+- [x] Run the check in the migration's header comment → `true, true` (ё and е match both ways) → AC-3
+- [x] Rerun the snapshot → identical to the saved output → AC-5
+- [x] Run the 0045 structure query with `ru|russian` added to the pattern (`p.prosrc ~ '''(es|pt|fr|ru|spanish|portuguese|russian)'''`) → no rows → AC-4
+- [x] Deploy `generate-drink-idea`, then request an idea with `locale: "ru"` → Russian text, «вы», « » quotes, pantry verification passes → AC-17
+- [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale ru --limit 1` → one `ru` recipe row; run it again → translates nothing → AC-14
+  _2026-11-10: it picked Jamaica Kiss. Instructions, the ingredient («кофейный ликёр»), the tag, and the measures came back in Russian and `name_search` matches `to_tsvector('russian', name)`. Haiku kept the name «Jamaica Kiss» in Latin letters and left the glass as "Hurricane glass" (es, pt, fr translated it): check glass wording in the step 3 terms review._
+- [ ] Visit `/ru/recipes/<slug>` for a recipe whose `ru` name is in Cyrillic → the URL slug is transliterated Latin (never `recipe-<uuid>`), the name shows in Russian, headings render in Lora → AC-9, AC-10
+  _Open: the step 1 recipe kept a Latin name, so this waits for a Cyrillic name (step 3 backfill). Transliteration itself is covered by `seo.test.ts`._
+- [ ] Search `/ru` for that recipe's Russian name typed with е in place of ё, then for its English name → both find it → AC-3
+  _Open, same reason. The database check (ё and е match both ways) passed on 2026-11-10._
+- [x] On a phone with a dev build, switch to Русский and open a recipe with 2 ratings → «2 оценки»; 5 → «5 оценок»; 21 → «21 оценка» → AC-11
+
+## UI / manual
+
+- [x] `/ru` in the network panel → Lora and Inter's Cyrillic file load; `/en` and `/fr` → no Lora request → AC-10
+- [ ] `/ru/opengraph-image` → Russian tagline in Lora SemiBold, no missing glyph boxes; `/en/opengraph-image` unchanged → AC-10
+- [ ] Before launch: `Accept-Language: ru-RU` on `/` → lands on `/en` → AC-7
+- [ ] Before launch: web language menu and production mobile language card show no Русский; mobile dev and preview builds do → AC-7
+- [ ] Before launch: sitemap and every hreflang alternate have no `ru`; `/ru/` has `noindex`, a self canonical, and no alternates → AC-7
+- [ ] Before launch: set a stored `ru` preference (cookie, AsyncStorage, `user_preferences.locale`) → it is ignored for detection and left in place → AC-18
+- [ ] Signed in, save `ru` as the preference → `user_preferences.locale = 'ru'` is accepted and syncs → AC-18
+- [ ] `/ru` body copy hyphenates long words at 360 px; headings and buttons do not → AC-1
+
+## Value sourcing
+
+- [ ] Catalog read with `locale = 'ru'` for a recipe with no `ru` row → English text, never blank or another language → AC-2
+- [ ] Russian recipe search config → `select public.locale_search_config('ru')` returns `russian` → AC-3
+- [ ] Insert or update of a `ru` `recipe_translations` row → `name_search` equals `to_tsvector('russian', name)` → AC-3
+- [ ] Russian ingredient search → a lowercase query matches a capitalized Russian ingredient name (trigram) → AC-3
+- [ ] Recipe slug → the slug follows the page locale's name: `/ru` uses the transliterated Russian name, `/en` the English one → AC-9
+- [ ] `/ru` heading font comes from `DISPLAY_FONT_BY_LOCALE.ru` (`lora`); every other locale stays on Fraunces → AC-10
+- [ ] Required plural forms come from `Intl.PluralRules`: `ru` needs one, few, many, other → AC-11
+- [ ] Mobile plural at runtime uses Hermes `Intl.PluralRules` (device check above) → AC-11
+- [ ] Detection after launch: `ru-KZ` picks `ru`; `uk-UA`, `be-BY`, `kk-KZ` pick English → AC-8
+- [ ] Hreflang, sitemap, and `<html lang>` use `LOCALE_HREFLANG.ru` (`ru`) → AC-8
+- [ ] Switcher label is `Русский` whatever the active language → AC-8
+- [ ] Catalog and notes prompts carry `LOCALE_AI_LANGUAGE.ru` and `LOCALE_AI_TERMS.ru` (lime «лайм», lemon «лимон») → AC-14, AC-15
+- [ ] Russian AI output passes through `normalizeRussianTypography` (or the edge function copy): straight quotes become « », a spaced hyphen becomes ` — ` → AC-1, AC-17
+- [ ] Retranslation uses the `ru` row's `source_name_hash` → a second run translates nothing → AC-14
+- [ ] Units show `унц.`, `мл`, `сл`, `л` in `ru`, with a dot decimal → AC-13
+- [ ] Launch adds `ru` to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit → AC-19
+
+## Commands
+
+- [ ] `pnpm test` → all pass, including `seo.test.ts` (transliteration), `russianTypography.test.ts`, `locale.test.ts` (parity with `ru`), and `apps/mobile/src/i18n/plurals.test.ts` (1, 2, 5, 21) → AC-6, AC-9, AC-11, AC-17
+- [ ] `pnpm -r typecheck` and `pnpm lint` → no errors → AC-6
+- [ ] Slug regression: `select count(*) from (select name from public.recipes union all select name from public.recipe_translations) s where name ~ '[Ѐ-ӿ]'` → 0 before the `ru` backfill, so existing slugs are byte identical (checked 2026-11-10: 0 of 1,937 names) → AC-5
+
+## Later build steps (not yet built)
+
+- Step 2: plural forms test over web ICU and mobile keys, the `one` branch for `missingIngredients` in `es`, `pt`, `fr`, and the placeholder list test → AC-11, AC-12
+- Steps 3 to 5: terms review, full backfill, notes proposal, full UI strings, native review, notes apply, admin Russian notes section → AC-1, AC-2, AC-12 to AC-16
+- Step 6: launch and production checks → AC-8, AC-19; step 7: store listings → AC-20
+
+## Acceptance criteria coverage
+
+- AC-1: hyphenation, typography steps (full strings in step 4) · AC-2: value sourcing fallback · AC-3: migration check, search steps · AC-4: structure query · AC-5: snapshot and slug regression · AC-6: parity test · AC-7: gating steps · AC-8: detection (after launch) · AC-9: slug steps · AC-10: fonts and share image · AC-11: plural tests and device · AC-12: step 2 · AC-13: units · AC-14: translate run · AC-15, AC-16: step 4 · AC-17: drink idea · AC-18: stored preference · AC-19, AC-20: launch

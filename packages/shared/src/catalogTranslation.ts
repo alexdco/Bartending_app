@@ -15,6 +15,7 @@ import { z } from "zod/v4";
 import { createHash } from "node:crypto";
 import type { Database } from "./database.types";
 import { normalizeFrenchTypography } from "./frenchTypography";
+import { normalizeRussianTypography } from "./russianTypography";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LOCALE_AI_LANGUAGE,
@@ -71,10 +72,13 @@ interface NameInput {
 
 /**
  * The punctuation pass a locale's AI output gets before it is stored: French
- * typography for `fr` (spec 0046 AC-1), unchanged text for every other locale.
+ * typography for `fr` (spec 0046 AC-1), Russian for `ru` (spec 0047 AC-1),
+ * unchanged text for every other locale.
  */
 export function localeTypography(locale: Locale): (text: string) => string {
-  return locale === "fr" ? normalizeFrenchTypography : (text) => text;
+  if (locale === "fr") return normalizeFrenchTypography;
+  if (locale === "ru") return normalizeRussianTypography;
+  return (text) => text;
 }
 
 /**

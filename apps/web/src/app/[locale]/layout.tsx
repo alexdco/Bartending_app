@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter } from "next/font/google";
+import { Fraunces, Inter, Lora } from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -15,6 +15,7 @@ import {
 } from "@bartendingapp/shared";
 import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/lib/site-url";
+import { DISPLAY_FONT_BY_LOCALE, type DisplayFont } from "@/lib/display-font";
 import "../globals.css";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
@@ -28,9 +29,20 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
+// Russian headings (spec 0047 AC-10). Not preloaded, so only pages that apply
+// its class ever download it.
+const lora = Lora({
+  variable: "--font-display-loaded",
+  subsets: ["latin", "cyrillic"],
+  display: "swap",
+  preload: false,
+});
+
+const DISPLAY_FONTS: Record<DisplayFont, { readonly variable: string }> = { fraunces, lora };
+
 const inter = Inter({
   variable: "--font-body-loaded",
-  subsets: ["latin"],
+  subsets: ["latin", "cyrillic"],
   display: "swap",
 });
 
@@ -109,7 +121,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   return (
     <html
       lang={LOCALE_HREFLANG[locale]}
-      className={`${fraunces.variable} ${inter.variable}`}
+      className={`${DISPLAY_FONTS[DISPLAY_FONT_BY_LOCALE[locale]].variable} ${inter.variable}`}
       suppressHydrationWarning
     >
       <head>

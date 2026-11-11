@@ -5,6 +5,7 @@ import { createTranslator, hasLocale } from "next-intl";
 import { BRAND_NAME, colors } from "@bartendingapp/shared";
 import { routing } from "@/i18n/routing";
 import { OG_CARD_ID, OG_CARD_SIZE } from "@/lib/open-graph";
+import { DISPLAY_FONT_BY_LOCALE, DISPLAY_FONT_FILES } from "@/lib/display-font";
 
 // The default share card for every page without its own image (spec 0037,
 // AC-5): the glass mark, the brand, and the translated tagline on charcoal.
@@ -14,8 +15,12 @@ const { bg, accent, text, textMuted } = colors.dark;
 
 // Image generation runs at build time with no request, where next-intl's
 // request config can't run, so the tagline is read straight from messages.
+function ogLocale(requested: string) {
+  return hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
+}
+
 async function ogTagline(requested: string): Promise<string> {
-  const locale = hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
+  const locale = ogLocale(requested);
   const messages = (await import(`../../../messages/${locale}.json`)).default;
   return createTranslator({ locale, messages, namespace: "home" })("ogTagline");
 }
@@ -40,7 +45,9 @@ export async function generateImageMetadata({ params }: { params: { locale: stri
 export default async function OpenGraphImage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
   const tagline = await ogTagline(locale);
-  const fraunces = await readFile(join(process.cwd(), "src/assets/fonts/Fraunces-SemiBold.ttf"));
+  // The locale's heading font, so a Cyrillic tagline has its glyphs (spec 0047 AC-10).
+  const display = DISPLAY_FONT_FILES[DISPLAY_FONT_BY_LOCALE[ogLocale(locale)]];
+  const fontData = await readFile(join(process.cwd(), "src/assets/fonts", display.file));
 
   return new ImageResponse(
     <div
@@ -63,17 +70,17 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ loc
           />
           <path d="M7.5 6h9" stroke={bg} strokeWidth="1.25" strokeLinecap="round" />
         </svg>
-        <div style={{ fontFamily: "Fraunces", fontSize: 112, color: text, letterSpacing: -2 }}>
+        <div style={{ fontFamily: display.name, fontSize: 112, color: text, letterSpacing: -2 }}>
           {BRAND_NAME}
         </div>
       </div>
-      <div style={{ marginTop: 40, fontSize: 48, color: textMuted, fontFamily: "Fraunces" }}>
+      <div style={{ marginTop: 40, fontSize: 48, color: textMuted, fontFamily: display.name }}>
         {tagline}
       </div>
     </div>,
     {
       ...OG_CARD_SIZE,
-      fonts: [{ name: "Fraunces", data: fraunces, style: "normal", weight: 600 }],
+      fonts: [{ name: display.name, data: fontData, style: "normal", weight: 600 }],
     },
   );
 }

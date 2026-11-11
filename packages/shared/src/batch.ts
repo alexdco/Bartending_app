@@ -334,12 +334,15 @@ export function hasPartIngredient(
   return ingredients.some((i) => i.amountValue !== null && i.amountUnit === "part");
 }
 
-/** Batch unit labels, the same text in every locale (spec 0035 AC-6). */
+/**
+ * Batch unit labels (spec 0035 AC-6): the same Latin text in every locale
+ * except Russian, which writes them in Cyrillic (spec 0047 AC-13).
+ */
 export const BATCH_UNIT_LABELS: Record<BatchUnit, Record<Locale, string>> = {
-  oz: { en: "oz", es: "oz", pt: "oz", fr: "oz" },
-  ml: { en: "ml", es: "ml", pt: "ml", fr: "ml" },
-  cl: { en: "cl", es: "cl", pt: "cl", fr: "cl" },
-  l: { en: "l", es: "l", pt: "l", fr: "l" },
+  oz: { en: "oz", es: "oz", pt: "oz", fr: "oz", ru: "унц." },
+  ml: { en: "ml", es: "ml", pt: "ml", fr: "ml", ru: "мл" },
+  cl: { en: "cl", es: "cl", pt: "cl", fr: "cl", ru: "сл" },
+  l: { en: "l", es: "l", pt: "l", fr: "l", ru: "л" },
 };
 
 export function batchUnitLabel(unit: BatchUnit, locale: Locale = DEFAULT_LOCALE): string {

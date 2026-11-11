@@ -15,6 +15,7 @@ import en from "./locales/en.json";
 import es from "./locales/es.json";
 import pt from "./locales/pt.json";
 import fr from "./locales/fr.json";
+import ru from "./locales/ru.json";
 
 const STORAGE_KEY = "localePreference";
 
@@ -64,6 +65,8 @@ export async function initI18n(): Promise<void> {
         es: { translation: es },
         pt: { translation: pt },
         fr: { translation: fr },
+        // i18next ^26 picks _one/_few/_many/_other through Intl.PluralRules (spec 0047 AC-11).
+        ru: { translation: ru },
       },
       lng: initialLocale,
       fallbackLng: DEFAULT_LOCALE,

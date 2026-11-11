@@ -12,8 +12,68 @@ export function localizedPath(locale: Locale, path: string): string {
   return suffix === "/" ? `/${locale}` : `/${locale}${suffix}`;
 }
 
+/**
+ * Latin spellings for non Latin letters in slugs, keyed by lowercase character
+ * (not by locale), so a name gets the same slug whatever the page locale.
+ * Cyrillic follows the Yandex URL style (spec 0047 AC-9), with the Ukrainian
+ * and Belarusian letters so loanwords keep every letter. Changing an entry
+ * changes live URLs; old ones still resolve through the trailing uuid.
+ */
+export const SLUG_TRANSLITERATION: Readonly<Record<string, string>> = {
+  а: "a",
+  б: "b",
+  в: "v",
+  г: "g",
+  д: "d",
+  е: "e",
+  ё: "e",
+  ж: "zh",
+  з: "z",
+  и: "i",
+  й: "y",
+  к: "k",
+  л: "l",
+  м: "m",
+  н: "n",
+  о: "o",
+  п: "p",
+  р: "r",
+  с: "s",
+  т: "t",
+  у: "u",
+  ф: "f",
+  х: "kh",
+  ц: "ts",
+  ч: "ch",
+  ш: "sh",
+  щ: "shch",
+  ъ: "",
+  ы: "y",
+  ь: "",
+  э: "e",
+  ю: "yu",
+  я: "ya",
+  і: "i",
+  ї: "yi",
+  є: "ye",
+  ґ: "g",
+  ў: "u",
+};
+
+/** The Cyrillic block (U+0400 to U+04FF), the only characters transliterated. */
+const CYRILLIC_PATTERN = /[Ѐ-ӿ]/g;
+
+/**
+ * Replaces each Cyrillic character with its table spelling (dropping one the
+ * table lacks) and leaves every other character as is, so input with no
+ * Cyrillic comes back byte identical.
+ */
+function transliterate(input: string): string {
+  return input.replace(CYRILLIC_PATTERN, (char) => SLUG_TRANSLITERATION[char.toLowerCase()] ?? "");
+}
+
 export function slugify(input: string, fallback: "recipe" | "region" | "article" | "quiz"): string {
-  const slug = input
+  const slug = transliterate(input)
     .normalize("NFKD")
     .replace(/[̀-ͯ]/g, "")
     .toLowerCase()

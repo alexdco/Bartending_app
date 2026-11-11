@@ -78,6 +78,13 @@
     }
   }
 
+  /* Russian words run long; <html lang="ru"> lets the browser hyphenate body
+     copy correctly (spec 0047). Headings and buttons stay whole. */
+  :lang(ru) main p,
+  :lang(ru) main li {
+    hyphens: auto;
+  }
+
   .learn-article-body h2,
   .learn-article-body h3 {
     font-family: var(--font-display);

@@ -5,9 +5,9 @@
 // and a translation backfill, with no SQL function edits.
 // Specs: docs/specs/0020-multi-language-support/index.md,
 // docs/specs/0045-language-agnostic-locales-portuguese/index.md,
-// docs/specs/0046-french-locale.md
+// docs/specs/0046-french-locale.md, docs/specs/0047-russian-locale.md
 
-export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -46,6 +46,8 @@ export const LOCALE_TEXT_SEARCH_CONFIG: Record<Locale, string> = {
   pt: "portuguese",
   // Strips accents before stemming, so "creme" finds "crème" (spec 0046 AC-3).
   fr: "public.french_unaccent",
+  // Built in; it already stems "ликер" and "ликёр" alike (spec 0047 AC-3).
+  ru: "russian",
 };
 
 /** BCP 47 codes for hreflang, the sitemap, and <html lang>. URLs keep the bare code. */
@@ -54,6 +56,7 @@ export const LOCALE_HREFLANG: Record<Locale, string> = {
   es: "es",
   pt: "pt-BR",
   fr: "fr",
+  ru: "ru",
 };
 
 /** The language named in AI translation and recipe notes prompts. */
@@ -62,6 +65,7 @@ export const LOCALE_AI_LANGUAGE: Record<Locale, string> = {
   es: "Latin American Spanish",
   pt: "Brazilian Portuguese",
   fr: "French as written in France",
+  ru: "Russian",
 };
 
 /**
@@ -83,6 +87,15 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     'muddler is "pilon", strainer is "passoire", and bar spoon is "cuillère à mélange". Use ' +
     "French typography: a narrow no break space before ; ! ? and a no break space before :, " +
     "and « » quotes.",
+  // Drafted for the native review (spec 0047 build step 3). generate-drink-idea
+  // carries a hand copy of the address, citrus, and typography sentences:
+  // change both together.
+  ru:
+    " Address the reader with lowercase «вы». Lime is «лайм» and lemon is «лимон»; keep lemon " +
+    "and lime distinct. Bar tools: shaker is «шейкер», jigger is «джиггер», muddler is " +
+    "«мадлер», strainer is «стрейнер», and bar spoon is «барная ложка». Simple syrup is " +
+    "«сахарный сироп» and bitters is «биттер». Write ё where standard Russian spelling uses " +
+    "it (ликёр, лёд). Use « » quotes and a spaced em dash ( — ).",
 };
 
 /** Each language's own name, shown in the switcher whatever the active language. */
@@ -91,6 +104,7 @@ export const LOCALE_NATIVE_NAME: Record<Locale, string> = {
   es: "Español",
   pt: "Português",
   fr: "Français",
+  ru: "Русский",
 };
 
 export function isSupportedLocale(value: string | null | undefined): value is Locale {

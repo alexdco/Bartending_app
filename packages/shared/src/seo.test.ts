@@ -62,6 +62,24 @@ describe("slugify", () => {
     expect(slugify("!!!", "article")).toBe("article");
   });
 
+  it("transliterates Cyrillic with the Yandex URL style (spec 0047 AC-9)", () => {
+    expect(slugify("Маргарита", "recipe")).toBe("margarita");
+    expect(slugify("Белый русский", "recipe")).toBe("belyy-russkiy");
+    expect(slugify("Щука ёж", "recipe")).toBe("shchuka-ezh");
+    expect(slugify("Їжак", "recipe")).toBe("yizhak");
+    expect(slugify("Объём", "recipe")).toBe("obem");
+  });
+
+  it("transliterates Cyrillic mixed with Latin, and drops a Cyrillic letter the table lacks", () => {
+    expect(slugify("Мохито Mojito", "recipe")).toBe("mokhito-mojito");
+    expect(slugify("Ѣ", "recipe")).toBe("recipe");
+  });
+
+  it("leaves input with no Cyrillic exactly as before", () => {
+    expect(slugify("Crème de Cassis & Café", "recipe")).toBe("creme-de-cassis-cafe");
+    expect(slugify("Ação Œuvre", "recipe")).toBe("acao-uvre");
+  });
+
   it("truncates long input to 60 characters without a trailing hyphen", () => {
     const long = "a".repeat(100);
     const result = slugify(long, "article");

@@ -150,6 +150,7 @@ describe("toTranslationNotesByLocale (spec 0045 AC-11)", () => {
       es: notes,
       pt: null,
       fr: null,
+      ru: null,
     });
   });
 });

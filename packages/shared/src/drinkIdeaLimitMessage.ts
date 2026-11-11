@@ -83,6 +83,25 @@ const COPY: Record<Locale, Copy> = {
       before: "Les idées de cocktails sont très demandées aujourd’hui. Réessayez après {time}.",
     },
   },
+  // Hand written Russian with lowercase «вы» (spec 0047 AC-13), pending native review.
+  // The time stands alone after a colon, so it needs no case ending (AC-12).
+  ru: {
+    signIn: "Войдите",
+    signInLimit: {
+      before: "Вы использовали все бесплатные идеи коктейлей на сегодня. ",
+      after: ", чтобы получить ещё, или попробуйте снова. Обновление: {time}.",
+    },
+    limit: {
+      before: "Вы достигли дневного лимита идей коктейлей. Попробуйте снова. Обновление: {time}.",
+    },
+    busySignIn: {
+      before: "Сегодня идеи коктейлей очень востребованы. ",
+      after: ", чтобы продолжить, или попробуйте снова. Обновление: {time}.",
+    },
+    busy: {
+      before: "Сегодня идеи коктейлей очень востребованы. Попробуйте снова. Обновление: {time}.",
+    },
+  },
 };
 
 function copyCase(limitReason: DrinkIdeaLimitReason, signInHelps: boolean): CopyCase {

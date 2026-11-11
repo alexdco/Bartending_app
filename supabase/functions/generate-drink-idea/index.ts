@@ -70,7 +70,7 @@ async function guestIpHash(headers: Headers, secret: string, userId: string): Pr
   return hashIpBucket(ipBucket(clientIp), secret);
 }
 
-const SUPPORTED_LOCALES = ["en", "es", "pt", "fr"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = "en";
 
@@ -79,6 +79,7 @@ const LOCALE_NAMES: Record<Locale, string> = {
   es: "Spanish",
   pt: "Brazilian Portuguese",
   fr: "French as written in France",
+  ru: "Russian",
 };
 
 // Hand copy of LOCALE_AI_TERMS.fr in packages/shared/src/locale.ts (this Deno
@@ -100,19 +101,51 @@ function normalizeFrenchTypography(text: string): string {
     .replace(/(\p{L}):(?=$|\s)/gu, "$1\u00A0:");
 }
 
-/** French typography on the text a French reader sees; source_name stays as matched. */
+// Hand copy of LOCALE_AI_TERMS.ru in packages/shared/src/locale.ts (spec 0047
+// AC-17); change both in the same commit.
+const RUSSIAN_INSTRUCTION =
+  "Address the reader with lowercase \u00AB\u0432\u044B\u00BB. Lime is \u00AB\u043B\u0430\u0439\u043C\u00BB and lemon is \u00AB\u043B\u0438\u043C\u043E\u043D\u00BB. " +
+  "Use \u00AB \u00BB quotes and a spaced em dash. ";
+
+// Hand copy of normalizeRussianTypography in packages/shared/src/russianTypography.ts
+// (spec 0047 AC-17); change both in the same commit.
+function normalizeRussianTypography(text: string): string {
+  return text
+    .split(/(\u00AB[^\u00BB]*\u00BB)/)
+    .map((segment, index) =>
+      index % 2 === 1
+        ? segment
+        : segment
+            .replace(/"([^"\n]+)"/g, (_match, inner: string) => `\u00AB${inner.trim()}\u00BB`)
+            .replace(/[ \u00A0]+[-\u2013\u2014][ \u00A0]+/g, "\u00A0\u2014 "),
+    )
+    .join("");
+}
+
+const LOCALE_INSTRUCTIONS: Partial<Record<Locale, string>> = {
+  fr: FRENCH_INSTRUCTION,
+  ru: RUSSIAN_INSTRUCTION,
+};
+
+const LOCALE_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
+  fr: normalizeFrenchTypography,
+  ru: normalizeRussianTypography,
+};
+
+/** The locale's typography on the text its reader sees; source_name stays as matched. */
 function typesetIdea(idea: DrinkIdea, locale: Locale): DrinkIdea {
-  if (locale !== "fr") {
+  const typeset = LOCALE_TYPOGRAPHY[locale];
+  if (typeset === undefined) {
     return idea;
   }
   return {
-    name: normalizeFrenchTypography(idea.name),
+    name: typeset(idea.name),
     ingredients: idea.ingredients.map((ingredient) => ({
       ...ingredient,
-      name: normalizeFrenchTypography(ingredient.name),
-      amount: normalizeFrenchTypography(ingredient.amount),
+      name: typeset(ingredient.name),
+      amount: typeset(ingredient.amount),
     })),
-    steps: idea.steps.map(normalizeFrenchTypography),
+    steps: idea.steps.map(typeset),
   };
 }
 
@@ -160,7 +193,7 @@ async function generateWithClaude(
       ? ""
       : `Write the name, ingredient names, and steps natively in ${LOCALE_NAMES[locale]}, ` +
         `as a native speaker would phrase them, not a literal translation. ` +
-        (locale === "fr" ? FRENCH_INSTRUCTION : "");
+        (LOCALE_INSTRUCTIONS[locale] ?? "");
 
   const message = await anthropic.messages.parse(
     {
