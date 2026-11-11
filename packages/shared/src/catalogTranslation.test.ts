@@ -1,9 +1,37 @@
 import { describe, expect, it } from "vitest";
 import {
   localeTypography,
+  nameTranslationPrompt,
   needsRecipeTranslation,
   translatableMeasures,
 } from "./catalogTranslation";
+import { LOCALE_AI_TERMS } from "./locale";
+
+// covers: spec 0047 AC-2. The Russian terms (address the reader, « » quotes)
+// once turned whole batches of tag names into quoted sentences.
+describe("nameTranslationPrompt", () => {
+  const batch = [
+    { id: "t1", name: "Sweet" },
+    { id: "t2", name: "Aromatic" },
+  ];
+  const prompt = nameTranslationPrompt("Russian", LOCALE_AI_TERMS.ru, "tag", batch);
+
+  it("asks for the bare name, with no quotes, description, or sentence", () => {
+    expect(prompt).toContain(
+      "return only the translated name itself, with no quotes, no description, and no sentence",
+    );
+  });
+
+  it("puts the label guard before the locale terms, so it frames them", () => {
+    expect(prompt.indexOf("short label")).toBeGreaterThan(-1);
+    expect(prompt.indexOf("short label")).toBeLessThan(prompt.indexOf(LOCALE_AI_TERMS.ru));
+  });
+
+  it("still carries the locale terms and every name by id", () => {
+    expect(prompt).toContain(LOCALE_AI_TERMS.ru);
+    expect(prompt).toContain("id: t1\nname: Sweet\n---\nid: t2\nname: Aromatic");
+  });
+});
 
 describe("needsRecipeTranslation", () => {
   const ingredients = [

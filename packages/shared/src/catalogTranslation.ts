@@ -65,7 +65,7 @@ interface RecipeInput {
   ingredients: { ingredient_id: string; name: string; measure: string | null }[];
 }
 
-interface NameInput {
+export interface NameInput {
   id: string;
   name: string;
 }
@@ -188,6 +188,28 @@ async function translateRecipeBatch(
   return parsed.recipes;
 }
 
+/**
+ * The prompt for a batch of ingredient or tag names. The locale terms are
+ * written for full sentences (Russian's address the reader and quote rules),
+ * and without the label guard Haiku sometimes turned a whole batch of bare
+ * names into quoted sentences aimed at the reader (spec 0047 AC-2).
+ */
+export function nameTranslationPrompt(
+  localeName: string,
+  terms: string,
+  kind: "ingredient" | "tag",
+  batch: readonly NameInput[],
+): string {
+  const itemsText = batch.map((item) => `id: ${item.id}\nname: ${item.name}`).join("\n---\n");
+  return (
+    `Translate each cocktail ${kind} name below from English into ${localeName}, using the term a ` +
+    `home bartender shopping or reading a recipe in ${localeName} would recognize. Return one item ` +
+    `per input, in the same order, referencing each by its id. Each name is a short label: return ` +
+    `only the translated name itself, with no quotes, no description, and no sentence; the style ` +
+    `notes below are for full sentences and do not apply to these names.${terms}\n\n${itemsText}`
+  );
+}
+
 async function translateNameBatch(
   anthropic: Anthropic,
   localeName: string,
@@ -195,18 +217,13 @@ async function translateNameBatch(
   kind: "ingredient" | "tag",
   batch: NameInput[],
 ) {
-  const itemsText = batch.map((item) => `id: ${item.id}\nname: ${item.name}`).join("\n---\n");
-
   const message = await anthropic.messages.parse({
     model: "claude-haiku-4-5-20251001",
     max_tokens: 4096,
     messages: [
       {
         role: "user",
-        content:
-          `Translate each cocktail ${kind} name below from English into ${localeName}, using the term a ` +
-          `home bartender shopping or reading a recipe in ${localeName} would recognize. Return one item ` +
-          `per input, in the same order, referencing each by its id.${terms}\n\n${itemsText}`,
+        content: nameTranslationPrompt(localeName, terms, kind, batch),
       },
     ],
     output_config: {
