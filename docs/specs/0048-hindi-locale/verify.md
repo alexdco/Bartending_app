@@ -43,6 +43,15 @@ _2026-11-11: you approved `LOCALE_AI_TERMS.hi` and `HINDI_INSTRUCTION` with fixe
 - [x] Web `messages/hi.json` and mobile `locales/hi.json` drafted in full: everyday Hindi, आप, danda, Western digits, ICU `one`/`other` and `_one`/`_other` → AC-1, AC-11 (only the brand, sample placeholders, and Service shorthand stay in Latin letters; key parity, plural forms, and placeholder tests pass)
 - [x] Every message on the placeholder list is label plus value (`लोकप्रिय: {region}`, `पसंदीदा: {name}`, `सवाल {number}/{total}`) → AC-12 (the native reviewer checks the list in step 5)
 
+## Build step 5 (native review)
+
+_2026-11-11: review sheet `packages/shared/scripts/tagging/hindi-review.csv` (gitignored, 2,269 rows): 648 web and 126 mobile strings, 4 unit labels, 7 drink idea limit lines, 65 lines from 5 sampled drink ideas (the edge function's exact prompt and model, run locally), and 1,419 proposed notes. An automated pre pass flags 58 rows: in notes, 26 grapefruit written as अंगूर (grape), 13 bare नींबू, 12 हरा/पीला before a postposition (likely हरे/पीले), 2 missing egg white, 2 बर्फ without nukta, 1 loanword; in drink ideas, 2 हरा नींबू का. The catalog's ingredient names are right (चकोतरा), but 6 recipes' Hindi instructions also say अंगूर for grapefruit._
+
+- [ ] Native reviewer fills the `fix` column: UI strings (age gate and privacy first), the placeholder list rows, unit and limit copy, the drink idea samples, and every note → AC-1, AC-12, AC-13, AC-15, AC-17
+- [ ] Fixes applied to `hi.json` (web, mobile), `drinkIdeaLimitMessage.ts`, the unit labels, and `recipe-notes-proposals.hi.json`; tests pass → AC-1, AC-13
+- [ ] 360 px layout check on web and on both phones with the reviewed strings → AC-10, AC-20
+- [ ] `apply-recipe-notes --locale hi` → only `hi` rows change; the `en`, `es`, `pt`, `fr`, `ru` notes snapshot is identical before and after → AC-15
+
 ## UI / manual
 - [x] Network panel on `/hi` → both Noto font files load; on `/en`, `/fr`, `/ru` → no Noto request → AC-10
 - [x] On `/hi`, nav, buttons, labels, and footer use the taller line heights with no clipped matras at 360 px → AC-10 (unblocked by spec 0049, 2026-11-11: `/hi` computes the Hindi line heights on bare `text-<role>` and `leading-<role>`; the matra check itself is still yours)
