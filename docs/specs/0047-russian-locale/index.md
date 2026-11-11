@@ -1,7 +1,7 @@
 # 0047. Russian locale
 
 **Date**: 2026-11-10
-**Status**: In Progress
+**Status**: Accepted
 
 ## Summary
 

@@ -8,8 +8,31 @@ import {
   toBarFormUnit,
   toMl,
   toRecognizedUnit,
+  unitLabel,
   type RecognizedUnit,
 } from "./units";
+
+describe("unitLabel (spec 0047 AC-13)", () => {
+  it("writes the unit toggle labels in Cyrillic for ru", () => {
+    expect(unitLabel("oz", "ru")).toBe("унц.");
+    expect(unitLabel("ml", "ru")).toBe("мл");
+    expect(unitLabel("cl", "ru")).toBe("сл");
+  });
+
+  it("keeps the Latin labels in every other locale", () => {
+    for (const locale of ["en", "es", "pt", "fr"] as const) {
+      expect([unitLabel("oz", locale), unitLabel("ml", locale), unitLabel("cl", locale)]).toEqual([
+        "oz",
+        "ml",
+        "cl",
+      ]);
+    }
+  });
+
+  it("defaults to English when no locale is given", () => {
+    expect(unitLabel("ml")).toBe("ml");
+  });
+});
 
 describe("parseMeasure (spec 0035 AC-1)", () => {
   const parses: readonly [string, number, RecognizedUnit][] = [

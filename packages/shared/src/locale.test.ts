@@ -17,6 +17,7 @@ import {
   resolveRedirectLocale,
   resolveStoredLocale,
 } from "./locale";
+import { normalizeRussianTypography } from "./russianTypography";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const migrationsDir = join(repoRoot, "supabase/migrations");
@@ -233,6 +234,61 @@ describe("hreflangAlternates", () => {
     expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("fr", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("ru", (locale) => `/${locale}`)).toEqual(expected);
+  });
+});
+
+// Spec 0047 AC-17: generate-drink-idea (Deno) can't import packages/shared, so
+// it carries hand copies of the Russian terms and typography. These tests fail
+// when one copy changes without the other.
+describe("generate-drink-idea's Russian hand copies", () => {
+  const source = readFileSync(drinkIdeaFunction, "utf8");
+
+  /** The decoded text of the edge function's RUSSIAN_INSTRUCTION constant. */
+  const russianInstruction = (): string => {
+    const body = /const RUSSIAN_INSTRUCTION =([\s\S]*?);\n/.exec(source)?.[1];
+    if (body === undefined) throw new Error("No RUSSIAN_INSTRUCTION in generate-drink-idea");
+    return [...body.matchAll(/"((?:[^"\\]|\\.)*)"/g)]
+      .map(([, literal]) => JSON.parse(`"${literal ?? ""}"`) as string)
+      .join("");
+  };
+
+  /** The edge function's normalizeRussianTypography, with its type annotations removed. */
+  const edgeTypography = (): ((text: string) => string) => {
+    const fn = /function normalizeRussianTypography\(text: string\): string \{[\s\S]*?\n\}\n/.exec(
+      source,
+    )?.[0];
+    if (fn === undefined) throw new Error("No normalizeRussianTypography in generate-drink-idea");
+    const plain = fn.replace("(text: string): string", "(text)").replace(/: string\)/g, ")");
+    return new Function(`${plain}\nreturn normalizeRussianTypography;`)() as (
+      text: string,
+    ) => string;
+  };
+
+  it.each([
+    "«вы»",
+    "«лайм»",
+    "«лимон»",
+    "«сок лайма»",
+    "«долька лайма»",
+    "«кружок лайма»",
+    "«лимонный»",
+  ])("both copies pin %s", (term) => {
+    expect(LOCALE_AI_TERMS.ru).toContain(term);
+    expect(russianInstruction()).toContain(term);
+  });
+
+  it("types Russian exactly like the shared normalizeRussianTypography", () => {
+    const typeset = edgeTypography();
+    const samples = [
+      'Коктейль "Мохито" со льдом.',
+      "лёд - обязательно",
+      "лёд – обязательно",
+      "«Уже - в кавычках» - а это нет",
+      "2-3 дольки лайма, https://example.com/a-b",
+      'один "кавычка',
+      "",
+    ];
+    expect(samples.map(typeset)).toEqual(samples.map(normalizeRussianTypography));
   });
 });
 

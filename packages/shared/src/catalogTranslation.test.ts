@@ -62,4 +62,11 @@ describe("localeTypography", () => {
     expect(localeTypography("es")("¡Salud !")).toBe("¡Salud !");
     expect(localeTypography("pt")('Um "shaker"')).toBe('Um "shaker"');
   });
+
+  // covers: spec 0047 AC-1
+  it("applies Russian typography to ru output", () => {
+    expect(localeTypography("ru")('Коктейль "Мохито" - классика.')).toBe(
+      "Коктейль «Мохито» — классика.",
+    );
+  });
 });

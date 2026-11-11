@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  batchUnitLabel,
   computeBatch,
   convertPartSize,
   formatBatchAmount,
@@ -13,6 +14,25 @@ import {
   validateServings,
   type BatchIngredientInput,
 } from "./batch";
+
+describe("batchUnitLabel (spec 0047 AC-13)", () => {
+  it("writes every batch unit in Cyrillic for ru, liters included", () => {
+    expect((["oz", "ml", "cl", "l"] as const).map((unit) => batchUnitLabel(unit, "ru"))).toEqual([
+      "унц.",
+      "мл",
+      "сл",
+      "л",
+    ]);
+  });
+
+  it("keeps the Latin labels in every other locale", () => {
+    for (const locale of ["en", "es", "pt", "fr"] as const) {
+      expect(
+        (["oz", "ml", "cl", "l"] as const).map((unit) => batchUnitLabel(unit, locale)),
+      ).toEqual(["oz", "ml", "cl", "l"]);
+    }
+  });
+});
 
 function ingredient(overrides: Partial<BatchIngredientInput> = {}): BatchIngredientInput {
   return {

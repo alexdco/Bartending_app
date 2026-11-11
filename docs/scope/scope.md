@@ -80,7 +80,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 67 | Mocktails only mode | Slice 37 | planned |
 | 68 | User submitted recipes | Slice 38 | planned |
 | 69 | French | Slice 39 | in-progress |
-| 70 | Russian | Slice 39 | in-progress |
+| 70 | Russian | Slice 39 | done |
 | 71 | Hindi | Slice 39 | planned |
 | 72 | Japanese | Slice 39 | planned |
 | 73 | Korean | Slice 39 | planned |
@@ -931,7 +931,7 @@ Adds French (`fr`, written as in France) on web, mobile, the recipe catalog, rec
 - [ ] Test it: `/test french locale`
 Spec [0046](../specs/0046-french-locale.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
-### 70. Russian · in-progress
+### 70. Russian · done
 Adds Russian (`ru`). Built in `russian` search config; first Cyrillic locale and first with three plural forms, so message plurals and number formatting (feature 58) need a check.
 **Done when:** `/ru` pages and the mobile app read in Russian with correct plurals (untranslated content falls back to English), Russian search works, and Russian is launched in the switcher, detection, sitemap, and hreflang.
 - [x] Design it (spec): `/architect russian locale`
@@ -942,7 +942,7 @@ Adds Russian (`ru`). Built in `russian` search config; first Cyrillic locale and
   - [x] Native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-12, AC-13, AC-15, AC-17 (one drink idea check against `generate-drink-idea` version 10 still open in verify.md)
   - [ ] Launch: `ru` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, satisfies AC-8, AC-19, AC-20 (launch commit made 2026-11-11; the web deploy, mobile build, and production checks remain)
 - [ ] Verify it: `/check verify russian locale`
-- [ ] Test it: `/test russian locale`
+- [x] Test it: `/test russian locale`
 Spec [0047](../specs/0047-russian-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 71. Hindi · needs a decision

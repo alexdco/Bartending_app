@@ -60,6 +60,34 @@ describe("drinkIdeaLimitMessage", () => {
     expect(message?.after).toMatch(/^ para seguir, o vuelve a intentarlo después de .*12.*2026/);
   });
 
+  // covers: spec 0047 AC-12, AC-13
+  it("writes the Russian copy, links Войдите, and leaves the time standing alone", () => {
+    const message = drinkIdeaLimitMessage(
+      { limitReason: "user_limit", signInHelps: true, resetsAt: RESETS_AT },
+      { copyLocale: "ru", formatLocale: "ru", timeZone: "UTC" },
+    );
+    expect(message?.signInText).toBe("Войдите");
+    expect(message?.before).toBe("Вы использовали все бесплатные идеи коктейлей на сегодня. ");
+    expect(message?.after).toMatch(/^, чтобы получить ещё, .*Обновление: 12 окт\. 2026.*\.$/);
+  });
+
+  it.each([
+    ["user_limit", false],
+    ["global_limit", true],
+    ["global_limit", false],
+  ] as const)(
+    "puts the Russian %s time after a colon (sign in helps: %s)",
+    (limitReason, signInHelps) => {
+      const message = drinkIdeaLimitMessage(
+        { limitReason, signInHelps, resetsAt: RESETS_AT },
+        { copyLocale: "ru", formatLocale: "ru", timeZone: "UTC" },
+      );
+      const text = join(message) ?? "";
+      expect(text).toMatch(/Обновление: 12 окт\. 2026/);
+      expect(text.slice(1)).not.toMatch(/\bВы\b/u);
+    },
+  );
+
   it("shows the reset time in the given time zone", () => {
     const message = drinkIdeaLimitMessage(
       { limitReason: "user_limit", signInHelps: false, resetsAt: RESETS_AT },
