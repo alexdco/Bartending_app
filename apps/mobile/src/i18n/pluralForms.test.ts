@@ -11,6 +11,7 @@ import es from "./locales/es.json";
 import fr from "./locales/fr.json";
 import pt from "./locales/pt.json";
 import ru from "./locales/ru.json";
+import hi from "./locales/hi.json";
 
 // Spec 0047 AC-11: every plural key family in en.json (`summary_one`,
 // `summary_other`) has a key for every plural form the locale reaches for
@@ -18,7 +19,7 @@ import ru from "./locales/ru.json";
 
 type Tree = { readonly [key: string]: string | Tree };
 
-const resources: Record<NonDefaultLocale, Tree> = { es, pt, fr, ru };
+const resources: Record<NonDefaultLocale, Tree> = { es, pt, fr, ru, hi };
 
 const PLURAL_SUFFIX = /_(?:zero|one|two|few|many|other)$/;
 

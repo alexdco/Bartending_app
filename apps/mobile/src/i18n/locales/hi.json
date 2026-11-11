@@ -1,0 +1,156 @@
+{
+  "common": {
+    "back": "Back",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "retry": "Retry",
+    "somethingWentWrong": "Something went wrong"
+  },
+  "nav": {
+    "home": "होम",
+    "search": "खोजें",
+    "pantry": "पैंट्री",
+    "shoppingList": "शॉपिंग लिस्ट",
+    "drinkIdeas": "ड्रिंक आइडिया",
+    "popular": "लोकप्रिय",
+    "service": "सर्विस",
+    "learn": "सीखें",
+    "quizzes": "क्विज़"
+  },
+  "menu": {
+    "account": "Account",
+    "signOut": "Sign out",
+    "language": "Language",
+    "bartenderMode": "Bartender Mode"
+  },
+  "account": {
+    "heading": "Account",
+    "viewFavorites": "View favorites",
+    "signedOut": "Signed out",
+    "sessionExpiredDescription": "Your session expired. Sign in again to keep syncing your pantry and favorites.",
+    "loadingAccount": "Loading account",
+    "signIn": "Sign in",
+    "createAccount": "Create an account",
+    "email": "Email",
+    "password": "Password",
+    "nameOptional": "Name (optional)",
+    "pleaseWait": "Please wait…",
+    "createAccountAction": "Create account",
+    "needAccountSignUp": "Need an account? Sign up",
+    "alreadyHaveAccountSignIn": "Already have an account? Sign in",
+    "checkYourInbox": "Check your inbox",
+    "checkEmailToFinish": "Check your email to finish creating your account, or sign in if you already have one.",
+    "name": "Name",
+    "displayName": "Display name",
+    "saving": "Saving…",
+    "saveName": "Save name",
+    "nameTooLong": "Name must be 50 characters or fewer.",
+    "nameTooShort": "Name must be at least 1 character.",
+    "nameSaveFailed": "We couldn't save your name. Check your connection and try again.",
+    "signedIn": "Signed in",
+    "signingOut": "Signing out…",
+    "signOut": "Sign out",
+    "changeEmail": "Change email",
+    "newEmail": "New email",
+    "checkNewEmailToConfirm": "Check your new email to confirm the change.",
+    "updateEmail": "Update email",
+    "changePassword": "Change password",
+    "resetEmailDescription": "We'll email you a link to set a new password.",
+    "checkEmailForResetLink": "Check your email for a reset link.",
+    "sendResetEmail": "Send reset email",
+    "sendingResetEmail": "Sending…",
+    "deleteAccount": "Delete account",
+    "deleteAccountDescription": "This permanently deletes your account, pantry, favorites, and preferences. This cannot be undone. Type DELETE to confirm.",
+    "typeDeleteToConfirm": "Type DELETE to confirm",
+    "deleteAccountFailed": "We couldn't delete your account. Check your connection and try again.",
+    "deleteMyAccount": "Delete my account",
+    "deleting": "Deleting…",
+    "privacyPolicy": "Privacy Policy",
+    "errorWeakPassword": "Password must be at least 6 characters.",
+    "errorInvalidCredentials": "Incorrect email or password.",
+    "errorEmailAlreadyRegistered": "Check your email to finish creating your account, or sign in if you already have one.",
+    "errorNoSession": "We couldn't verify your session. Check your connection and try again.",
+    "errorGeneric": "Something went wrong. Check your connection and try again.",
+    "responsibleDrinking": "Please drink responsibly."
+  },
+  "ageGate": {
+    "title": "Before you come in",
+    "question": "Are you of legal drinking age where you live?",
+    "yes": "Yes, I am",
+    "no": "No",
+    "blockedTitle": "Come back later",
+    "blockedBody": "Cocktailist is for people of legal drinking age. Come back when you're of age.",
+    "privacyLink": "Privacy Policy",
+    "responsibleDrinking": "Please drink responsibly."
+  },
+  "home": {
+    "classicsTitle": "Classics to start with"
+  },
+  "popular": {
+    "emptyTitle": "No popular drinks yet",
+    "emptyDescription": "We're still picking the favorites for each region. In the meantime, browse every recipe.",
+    "regionEmptyTitle": "No popular drinks for this region yet",
+    "regionEmptyDescription": "No drinks for this region yet. Browse every recipe instead.",
+    "browseAll": "Browse all recipes"
+  },
+  "drinkIdeas": {
+    "emptyPantryTitle": "Add a few ingredients to get ideas",
+    "emptyPantryDescription": "Tell us what's in your bar and we'll show you what you can make.",
+    "addIngredients": "Add ingredients"
+  },
+  "service": {
+    "loading": "Loading Service",
+    "loadFailed": "We couldn't load Service. Check your connection and try again.",
+    "loadingBar": "Loading bar data",
+    "loadBarFailed": "Couldn't load this bar",
+    "checkConnection": "Check your connection and try again."
+  },
+  "ratings": {
+    "none": "No ratings yet. Be the first to rate it.",
+    "summary_one": "{{average}} ({{count}} रेटिंग)",
+    "summary_other": "{{average}} ({{count}} रेटिंग)",
+    "starsLabel_one": "औसत रेटिंग: 5 में से {{average}}, कुल {{count}} रेटिंग",
+    "starsLabel_other": "औसत रेटिंग: 5 में से {{average}}, कुल {{count}} रेटिंग"
+  },
+  "favorites": {
+    "toggleLabel": "Favorite {{name}}"
+  },
+  "recipe": {
+    "instructions": "Instructions",
+    "cocktailDbCredit": "Recipe and image from TheCocktailDB",
+    "drinkStyle": "Drink style",
+    "bartenderTip": "Bartender tip",
+    "presentationTip": "Presentation tip",
+    "allergens": "Allergen information",
+    "allergensNone": "None of the common allergens are in the listed ingredients.",
+    "allergensIncomplete": "This allergen information is incomplete: some ingredients haven't been reviewed yet.",
+    "allergensDisclaimer": "Based on the listed ingredients. Brands vary, so always check product labels.",
+    "drinkStyles": {
+      "sour": "Sour",
+      "highball": "Highball",
+      "spirit_forward": "Spirit forward",
+      "fizz_collins": "Fizz and Collins",
+      "tiki": "Tiki",
+      "flip_cream": "Flip and cream",
+      "punch": "Punch",
+      "shooter": "Shooter",
+      "hot": "Hot drink",
+      "frozen": "Frozen",
+      "other": "Other"
+    },
+    "allergenLabels": {
+      "egg": "Egg",
+      "milk": "Milk",
+      "tree_nuts": "Tree nuts",
+      "peanuts": "Peanuts",
+      "gluten": "Gluten",
+      "soy": "Soy",
+      "sulfites": "Sulfites",
+      "fish": "Fish",
+      "shellfish": "Shellfish",
+      "celery": "Celery",
+      "sesame": "Sesame",
+      "mustard": "Mustard"
+    }
+  }
+}

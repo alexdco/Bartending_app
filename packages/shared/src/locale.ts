@@ -5,9 +5,10 @@
 // and a translation backfill, with no SQL function edits.
 // Specs: docs/specs/0020-multi-language-support/index.md,
 // docs/specs/0045-language-agnostic-locales-portuguese/index.md,
-// docs/specs/0046-french-locale.md, docs/specs/0047-russian-locale.md
+// docs/specs/0046-french-locale.md, docs/specs/0047-russian-locale.md,
+// docs/specs/0048-hindi-locale/index.md
 
-export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -49,6 +50,8 @@ export const LOCALE_TEXT_SEARCH_CONFIG: Record<Locale, string> = {
   fr: "public.french_unaccent",
   // Built in; it already stems "ликер" and "ликёр" alike (spec 0047 AC-3).
   ru: "russian",
+  // Built in; it stems "संतरा" and "संतरे" alike (spec 0048 AC-3).
+  hi: "hindi",
 };
 
 /** BCP 47 codes for hreflang, the sitemap, and <html lang>. URLs keep the bare code. */
@@ -58,6 +61,7 @@ export const LOCALE_HREFLANG: Record<Locale, string> = {
   pt: "pt-BR",
   fr: "fr",
   ru: "ru",
+  hi: "hi",
 };
 
 /** The language named in AI translation and recipe notes prompts. */
@@ -67,6 +71,7 @@ export const LOCALE_AI_LANGUAGE: Record<Locale, string> = {
   pt: "Brazilian Portuguese",
   fr: "French as written in France",
   ru: "Russian",
+  hi: "Hindi",
 };
 
 /**
@@ -99,6 +104,18 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "«мадлер», strainer is «стрейнер», and bar spoon is «барная ложка». Simple syrup is " +
     "«сахарный сироп» and bitters is «биттер». Write ё where standard Russian spelling uses " +
     "it (ликёр, лёд). Use « » quotes and a spaced em dash ( — ).",
+  // Drafted for the native review (spec 0048), which approves it before the
+  // backfill. generate-drink-idea carries a hand copy of the register,
+  // citrus, tool, and punctuation sentences: change both together.
+  hi:
+    " Write everyday Hindi in Devanagari, not formal Sanskrit based Hindi and not Hinglish, and " +
+    "address the reader as «आप». Lime is «हरा नींबू» and lemon is «पीला नींबू»; keep lemon and " +
+    "lime distinct, never write «नींबू» alone, and never use the loanwords «लाइम» or «लेमन». " +
+    "Bar tools: shaker is «शेकर», jigger is «जिगर», muddler is «मडलर», strainer is " +
+    "«स्ट्रेनर», and bar spoon is «बार स्पून». Simple syrup is «शुगर सिरप», bitters is " +
+    "«बिटर्स», and ice is «बर्फ़». Write glass names as Devanagari loanwords. Use Western " +
+    "digits (0 to 9), write units without dots (मिली, सेली, ली, औंस), end sentences with " +
+    "«।», and use “ ” quotes.",
 };
 
 /** Each language's own name, shown in the switcher whatever the active language. */
@@ -108,6 +125,7 @@ export const LOCALE_NATIVE_NAME: Record<Locale, string> = {
   pt: "Português",
   fr: "Français",
   ru: "Русский",
+  hi: "हिन्दी",
 };
 
 export function isSupportedLocale(value: string | null | undefined): value is Locale {

@@ -102,6 +102,25 @@ const COPY: Record<Locale, Copy> = {
       before: "Сегодня идеи коктейлей очень востребованы. Попробуйте снова. Обновление: {time}.",
     },
   },
+  // Hand written everyday Hindi with आप (spec 0048 AC-13), pending native review.
+  // The time stands alone after a colon as a label, so it needs no postposition (AC-12).
+  hi: {
+    signIn: "साइन इन करें",
+    signInLimit: {
+      before: "आपने आज के मुफ़्त ड्रिंक आइडिया इस्तेमाल कर लिए हैं। ",
+      after: " और आज ज़्यादा पाएँ, या बाद में फिर कोशिश करें। फिर से उपलब्ध: {time}",
+    },
+    limit: {
+      before: "आप आज की ड्रिंक आइडिया सीमा तक पहुँच गए हैं। फिर से उपलब्ध: {time}",
+    },
+    busySignIn: {
+      before: "आज ड्रिंक आइडिया की बहुत माँग है। ",
+      after: " और जारी रखें, या बाद में फिर कोशिश करें। फिर से उपलब्ध: {time}",
+    },
+    busy: {
+      before: "आज ड्रिंक आइडिया की बहुत माँग है। बाद में फिर कोशिश करें। फिर से उपलब्ध: {time}",
+    },
+  },
 };
 
 function copyCase(limitReason: DrinkIdeaLimitReason, signInHelps: boolean): CopyCase {

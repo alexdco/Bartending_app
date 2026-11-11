@@ -101,6 +101,22 @@
   }
 }
 
+/* Hindi (spec 0048 AC-10). Unlayered, so it beats the :root tokens in
+   theme.generated.css. Latin characters keep Inter; Devanagari falls through
+   to Noto Sans Devanagari, whose --font-body-script class only /hi applies.
+   Taller line heights so vowel signs above and below letters never clip;
+   every leading-* utility reads these tokens. No hyphens rule: browsers
+   don't hyphenate Hindi. */
+:root:lang(hi) {
+  --font-body: var(--font-body-loaded), var(--font-body-script), var(--font-body-fallback);
+  --leading-display: 1.35;
+  --leading-heading: 1.4;
+  --leading-subheading: 1.45;
+  --leading-body: 1.75;
+  --leading-body-small: 1.7;
+  --leading-label: 1.6;
+}
+
 /* Age gate (spec 0037). The inline head script sets html[data-age] before
    paint; these rules are unlayered so they win over Tailwind utilities. The
    page stays visible under the scrim, never display: none or visibility:

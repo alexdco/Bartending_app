@@ -16,6 +16,7 @@ import es from "./locales/es.json";
 import pt from "./locales/pt.json";
 import fr from "./locales/fr.json";
 import ru from "./locales/ru.json";
+import hi from "./locales/hi.json";
 
 const STORAGE_KEY = "localePreference";
 
@@ -67,6 +68,8 @@ export async function initI18n(): Promise<void> {
         fr: { translation: fr },
         // i18next ^26 picks _one/_few/_many/_other through Intl.PluralRules (spec 0047 AC-11).
         ru: { translation: ru },
+        // Hindi uses _one for 0 and 1 and _other from 2 (spec 0048 AC-11).
+        hi: { translation: hi },
       },
       lng: initialLocale,
       fallbackLng: DEFAULT_LOCALE,

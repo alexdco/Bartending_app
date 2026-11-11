@@ -29,6 +29,7 @@ export * from "./initials";
 export * from "./locale";
 export * from "./frenchTypography";
 export * from "./russianTypography";
+export * from "./hindiTypography";
 export * from "./pluralForms";
 export * from "./units";
 export * from "./batch";

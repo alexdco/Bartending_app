@@ -91,6 +91,13 @@ describe("localeTypography", () => {
     expect(localeTypography("pt")('Um "shaker"')).toBe('Um "shaker"');
   });
 
+  // covers: spec 0048 AC-1, AC-23
+  it("applies Hindi typography to hi output", () => {
+    expect(localeTypography("hi")('"मोहितो" में 30 मि.ली. रम डालें.')).toBe(
+      "“मोहितो” में 30 मिली रम डालें।",
+    );
+  });
+
   // covers: spec 0047 AC-1
   it("applies Russian typography to ru output", () => {
     expect(localeTypography("ru")('Коктейль "Мохито" - классика.')).toBe(

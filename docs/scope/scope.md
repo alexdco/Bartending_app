@@ -81,7 +81,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 68 | User submitted recipes | Slice 38 | planned |
 | 69 | French | Slice 39 | in-progress |
 | 70 | Russian | Slice 39 | done |
-| 71 | Hindi | Slice 39 | planned |
+| 71 | Hindi | Slice 39 | in-progress |
 | 72 | Japanese | Slice 39 | planned |
 | 73 | Korean | Slice 39 | planned |
 | 74 | Simplified Chinese | Slice 39 | planned |
@@ -945,10 +945,19 @@ Adds Russian (`ru`). Built in `russian` search config; first Cyrillic locale and
 - [x] Test it: `/test russian locale`
 Spec [0047](../specs/0047-russian-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
-### 71. Hindi · needs a decision
-Adds Hindi (`hi`). Devanagari script needs a font that renders it on web and mobile; check whether the database's Postgres version ships the `hindi` search config or search falls back to `simple`.
+### 71. Hindi · in-progress
+Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); Noto Sans and Noto Serif Devanagari on web; recipe slugs fall back to the English name through a new locale agnostic `base_name` on the recipe read functions; the `/hi` share image stays English. Built now, unlaunched; launch waits for features 69 and 70 to pass `/check verify`.
 **Done when:** `/hi` pages and the mobile app read in Hindi with correct Devanagari rendering (untranslated content falls back to English), Hindi search returns sensible results, and Hindi is launched in the switcher, detection, sitemap, and hreflang.
-- [ ] Design it (spec): `/architect hindi locale`
+- [x] Design it (spec): `/architect hindi locale`
+- [ ] Build it: `/develop hindi locale`
+  - [ ] Thin thread, unlaunched: the `hi` row, `locale.ts` entries, `normalizeHindiTypography`, Noto fonts and `:lang(hi)` tokens, `SHARE_IMAGE_LOCALE`, the edge function's Hindi, mobile registration and the phone checks, one recipe translated, satisfies AC-3, AC-4, AC-6, AC-7, AC-10, AC-11, AC-17 to AC-20, AC-23
+  - [ ] Slug source: `base_name` on the eight recipe read functions and the English name slug fallback, satisfies AC-5, AC-9
+  - [ ] Content: terms review, full catalog backfill, the `--locale hi` notes proposal, and the Hindi UI strings, satisfies AC-1, AC-2, AC-12, AC-14 to AC-16
+  - [ ] Native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-12, AC-13, AC-15, AC-17, AC-20
+  - [ ] Launch (after 69 and 70 verify): `hi` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-8, AC-21, AC-22
+- [ ] Verify it: `/check verify hindi locale`
+- [ ] Test it: `/test hindi locale`
+Spec [0048](../specs/0048-hindi-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 72. Japanese · needs a decision
 Adds Japanese (`ja`). No word spaces and no Postgres stemmer, so search needs `pg_trgm` or a tokenizer; CJK fonts and line breaking on web and mobile. The spec should settle the CJK search approach for features 73 and 74 too.

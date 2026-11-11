@@ -18,6 +18,7 @@ import {
   resolveStoredLocale,
 } from "./locale";
 import { normalizeRussianTypography } from "./russianTypography";
+import { normalizeHindiTypography } from "./hindiTypography";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const migrationsDir = join(repoRoot, "supabase/migrations");
@@ -289,6 +290,58 @@ describe("generate-drink-idea's Russian hand copies", () => {
       "",
     ];
     expect(samples.map(typeset)).toEqual(samples.map(normalizeRussianTypography));
+  });
+});
+
+// Spec 0048 AC-17, AC-23: the same hand copy check for Hindi.
+describe("generate-drink-idea's Hindi hand copies", () => {
+  const source = readFileSync(drinkIdeaFunction, "utf8");
+
+  /** The decoded text of the edge function's HINDI_INSTRUCTION constant. */
+  const hindiInstruction = (): string => {
+    const body = /const HINDI_INSTRUCTION =([\s\S]*?);\n/.exec(source)?.[1];
+    if (body === undefined) throw new Error("No HINDI_INSTRUCTION in generate-drink-idea");
+    return [...body.matchAll(/"((?:[^"\\]|\\.)*)"/g)]
+      .map(([, literal]) => JSON.parse(`"${literal ?? ""}"`) as string)
+      .join("");
+  };
+
+  /** The edge function's normalizeHindiTypography, with its type annotations removed. */
+  const edgeTypography = (): ((text: string) => string) => {
+    const fn = /function normalizeHindiTypography\(text: string\): string \{[\s\S]*?\n\}\n/.exec(
+      source,
+    )?.[0];
+    if (fn === undefined) throw new Error("No normalizeHindiTypography in generate-drink-idea");
+    const plain = fn.replace("(text: string): string", "(text)").replace(/: string\)/g, ")");
+    return new Function(`${plain}\nreturn normalizeHindiTypography;`)() as (text: string) => string;
+  };
+
+  it.each(["«आप»", "«हरा नींबू»", "«पीला नींबू»", "«नींबू»", "«।»"])(
+    "both copies pin %s",
+    (term) => {
+      expect(LOCALE_AI_TERMS.hi).toContain(term);
+      expect(hindiInstruction()).toContain(term);
+    },
+  );
+
+  it("stores both copies in Unicode NFC", () => {
+    expect(LOCALE_AI_TERMS.hi).toBe(LOCALE_AI_TERMS.hi.normalize("NFC"));
+    expect(hindiInstruction()).toBe(hindiInstruction().normalize("NFC"));
+  });
+
+  it("types Hindi exactly like the shared normalizeHindiTypography", () => {
+    const typeset = edgeTypography();
+    const samples = [
+      "बर्फ़ डालें. फिर हिलाएँ.",
+      "30 मि.ली. रम, 2 सें.ली. सिरप, 1 ली. पानी",
+      'यह "मोहितो" है .',
+      "डॉ. शर्मा कहते हैं... क | ख 1.5",
+      "Shake well. https://example.com/a.b",
+      "ज़",
+      'एक " बिना जोड़ी',
+      "",
+    ];
+    expect(samples.map(typeset)).toEqual(samples.map(normalizeHindiTypography));
   });
 });
 

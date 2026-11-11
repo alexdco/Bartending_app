@@ -9,7 +9,7 @@ import {
 describe("AGE_GATE_EXEMPT_PATTERN", () => {
   it("matches the exact pattern the spec pins for the current locales", () => {
     expect(AGE_GATE_EXEMPT_PATTERN.source).toBe(
-      String.raw`^(?:\/(?:en|es|pt|fr|ru))?\/(?:privacy|auth\/callback)\/?$`,
+      String.raw`^(?:\/(?:en|es|pt|fr|ru|hi))?\/(?:privacy|auth\/callback)\/?$`,
     );
     expect(AGE_GATE_EXEMPT_PATTERN.flags).toBe("");
   });

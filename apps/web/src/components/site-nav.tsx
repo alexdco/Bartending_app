@@ -7,6 +7,7 @@ import {
   avatarSize,
   getInitials,
   LAUNCHED_LOCALES,
+  LOCALE_HREFLANG,
   LOCALE_NATIVE_NAME,
   type Locale,
 } from "@bartendingapp/shared";
@@ -98,7 +99,12 @@ function LanguageSubmenu() {
         <Text variant="label" as="span">
           {t("label")}
         </Text>
-        <Text variant="label" as="span" className="text-text-muted">
+        <Text
+          variant="label"
+          as="span"
+          className="text-text-muted"
+          lang={LOCALE_HREFLANG[activeLocale]}
+        >
           {LOCALE_NATIVE_NAME[activeLocale]}
         </Text>
       </DropdownMenu.SubTrigger>
@@ -118,7 +124,7 @@ function LanguageSubmenu() {
                 value={value}
                 className="block cursor-pointer px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected data-[state=checked]:bg-surface-selected"
               >
-                <Text variant="label" as="span">
+                <Text variant="label" as="span" lang={LOCALE_HREFLANG[value]}>
                   {LOCALE_NATIVE_NAME[value]}
                 </Text>
               </DropdownMenu.RadioItem>
@@ -493,7 +499,12 @@ function DrawerLanguageSection() {
         <Text variant="label" as="span">
           {t("label")}
         </Text>
-        <Text variant="label" as="span" className="text-text-muted">
+        <Text
+          variant="label"
+          as="span"
+          className="text-text-muted"
+          lang={LOCALE_HREFLANG[activeLocale]}
+        >
           {LOCALE_NATIVE_NAME[activeLocale]}
         </Text>
       </button>
@@ -510,7 +521,7 @@ function DrawerLanguageSection() {
                   : "block rounded-medium px-three py-two text-left hover:bg-surface-selected"
               }
             >
-              <Text variant="label" as="span">
+              <Text variant="label" as="span" lang={LOCALE_HREFLANG[value]}>
                 {LOCALE_NATIVE_NAME[value]}
               </Text>
             </button>

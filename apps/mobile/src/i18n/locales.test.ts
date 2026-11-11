@@ -6,6 +6,7 @@ import es from "./locales/es.json";
 import fr from "./locales/fr.json";
 import pt from "./locales/pt.json";
 import ru from "./locales/ru.json";
+import hi from "./locales/hi.json";
 
 // Spec 0046 build step 4: every locale's resource file holds the same keys as
 // en.json. A plural family (`summary_one`, `summary_few`, ...) counts as one
@@ -14,7 +15,7 @@ import ru from "./locales/ru.json";
 type Tree = { readonly [key: string]: string | Tree };
 
 // Keyed by NonDefaultLocale, so a new locale fails typecheck until it is here.
-const resources: Record<NonDefaultLocale, Tree> = { es, pt, fr, ru };
+const resources: Record<NonDefaultLocale, Tree> = { es, pt, fr, ru, hi };
 
 const PLURAL_SUFFIX = /_(?:zero|one|two|few|many|other)$/;
 

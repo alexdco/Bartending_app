@@ -4,8 +4,8 @@ import { ImageResponse } from "next/og";
 import { createTranslator, hasLocale } from "next-intl";
 import { BRAND_NAME, colors } from "@bartendingapp/shared";
 import { routing } from "@/i18n/routing";
-import { OG_CARD_ID, OG_CARD_SIZE } from "@/lib/open-graph";
-import { DISPLAY_FONT_BY_LOCALE, DISPLAY_FONT_FILES } from "@/lib/display-font";
+import { OG_CARD_ID, OG_CARD_SIZE, SHARE_IMAGE_LOCALE } from "@/lib/open-graph";
+import { DISPLAY_FONT_BY_LOCALE, DISPLAY_FONT_FILES, isShareImageFont } from "@/lib/display-font";
 
 // The default share card for every page without its own image (spec 0037,
 // AC-5): the glass mark, the brand, and the translated tagline on charcoal.
@@ -15,8 +15,12 @@ const { bg, accent, text, textMuted } = colors.dark;
 
 // Image generation runs at build time with no request, where next-intl's
 // request config can't run, so the tagline is read straight from messages.
+// Resolved once through SHARE_IMAGE_LOCALE, so the tagline, font, alt, and
+// metadata all agree (spec 0048 AC-19: /hi shares the English card).
 function ogLocale(requested: string) {
-  return hasLocale(routing.locales, requested) ? requested : routing.defaultLocale;
+  return SHARE_IMAGE_LOCALE[
+    hasLocale(routing.locales, requested) ? requested : routing.defaultLocale
+  ];
 }
 
 async function ogTagline(requested: string): Promise<string> {
@@ -46,7 +50,11 @@ export default async function OpenGraphImage({ params }: { params: Promise<{ loc
   const { locale } = await params;
   const tagline = await ogTagline(locale);
   // The locale's heading font, so a Cyrillic tagline has its glyphs (spec 0047 AC-10).
-  const display = DISPLAY_FONT_FILES[DISPLAY_FONT_BY_LOCALE[ogLocale(locale)]];
+  const font = DISPLAY_FONT_BY_LOCALE[ogLocale(locale)];
+  if (!isShareImageFont(font)) {
+    throw new Error(`No bundled share image font for "${locale}"; map it in SHARE_IMAGE_LOCALE`);
+  }
+  const display = DISPLAY_FONT_FILES[font];
   const fontData = await readFile(join(process.cwd(), "src/assets/fonts", display.file));
 
   return new ImageResponse(

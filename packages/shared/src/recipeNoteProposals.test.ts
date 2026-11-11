@@ -37,6 +37,11 @@ const notesByLocale: Record<
       "Встряхивайте сильно, с большим количеством льда, чтобы коктейль вышел холодным.",
     presentation_tip: "Обсыпьте солью только половину края, чтобы гость выбирал сам.",
   },
+  hi: {
+    drink_style_note: " हरे नींबू और ऑरेंज लिकर से संतुलित टकीला सावर। ",
+    bartender_tip: "खूब बर्फ़ के साथ ज़ोर से हिलाएँ, ताकि यह ठंडा और हल्का पतला बने।",
+    presentation_tip: "किनारे के सिर्फ़ आधे हिस्से पर नमक लगाएँ, ताकि हर घूँट मेहमान की पसंद रहे।",
+  },
 };
 
 // One block per CATALOG_TRANSLATION_LOCALES code, so the fixture stays valid at launch.

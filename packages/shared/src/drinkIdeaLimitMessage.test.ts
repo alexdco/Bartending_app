@@ -88,6 +88,24 @@ describe("drinkIdeaLimitMessage", () => {
     },
   );
 
+  // covers: spec 0048 AC-12, AC-13
+  it.each([
+    ["user_limit", true],
+    ["user_limit", false],
+    ["global_limit", true],
+    ["global_limit", false],
+  ] as const)(
+    "writes the Hindi %s copy with the time as a label (sign in helps: %s)",
+    (limitReason, signInHelps) => {
+      const message = drinkIdeaLimitMessage(
+        { limitReason, signInHelps, resetsAt: RESETS_AT },
+        { copyLocale: "hi", formatLocale: "hi", timeZone: "UTC" },
+      );
+      expect(message?.signInText).toBe(signInHelps ? "साइन इन करें" : undefined);
+      expect(join(message)).toMatch(/फिर से उपलब्ध: \S.*2026.*$/u);
+    },
+  );
+
   it("shows the reset time in the given time zone", () => {
     const message = drinkIdeaLimitMessage(
       { limitReason: "user_limit", signInHelps: false, resetsAt: RESETS_AT },

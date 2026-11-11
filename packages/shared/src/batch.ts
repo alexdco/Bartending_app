@@ -336,13 +336,14 @@ export function hasPartIngredient(
 
 /**
  * Batch unit labels (spec 0035 AC-6): the same Latin text in every locale
- * except Russian, which writes them in Cyrillic (spec 0047 AC-13).
+ * except Russian, which writes them in Cyrillic (spec 0047 AC-13), and
+ * Hindi, which writes them in Devanagari with no dots (spec 0048 AC-13).
  */
 export const BATCH_UNIT_LABELS: Record<BatchUnit, Record<Locale, string>> = {
-  oz: { en: "oz", es: "oz", pt: "oz", fr: "oz", ru: "унц." },
-  ml: { en: "ml", es: "ml", pt: "ml", fr: "ml", ru: "мл" },
-  cl: { en: "cl", es: "cl", pt: "cl", fr: "cl", ru: "сл" },
-  l: { en: "l", es: "l", pt: "l", fr: "l", ru: "л" },
+  oz: { en: "oz", es: "oz", pt: "oz", fr: "oz", ru: "унц.", hi: "औंस" },
+  ml: { en: "ml", es: "ml", pt: "ml", fr: "ml", ru: "мл", hi: "मिली" },
+  cl: { en: "cl", es: "cl", pt: "cl", fr: "cl", ru: "сл", hi: "सेली" },
+  l: { en: "l", es: "l", pt: "l", fr: "l", ru: "л", hi: "ली" },
 };
 
 export function batchUnitLabel(unit: BatchUnit, locale: Locale = DEFAULT_LOCALE): string {

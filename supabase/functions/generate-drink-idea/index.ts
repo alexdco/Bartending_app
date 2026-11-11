@@ -70,7 +70,7 @@ async function guestIpHash(headers: Headers, secret: string, userId: string): Pr
   return hashIpBucket(ipBucket(clientIp), secret);
 }
 
-const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = "en";
 
@@ -80,6 +80,7 @@ const LOCALE_NAMES: Record<Locale, string> = {
   pt: "Brazilian Portuguese",
   fr: "French as written in France",
   ru: "Russian",
+  hi: "Hindi",
 };
 
 // Hand copy of LOCALE_AI_TERMS.fr in packages/shared/src/locale.ts (this Deno
@@ -124,14 +125,50 @@ function normalizeRussianTypography(text: string): string {
     .join("");
 }
 
+// Hand copy of LOCALE_AI_TERMS.hi in packages/shared/src/locale.ts (spec 0048
+// AC-17); change both in the same commit.
+// Everyday Hindi with «आप», lime «हरा नींबू», lemon «पीला नींबू», never «नींबू» alone.
+const HINDI_INSTRUCTION =
+  "Write everyday Hindi in Devanagari and address the reader as \u00AB\u0906\u092A\u00BB. " +
+  "Lime is \u00AB\u0939\u0930\u093E \u0928\u0940\u0902\u092C\u0942\u00BB and lemon is \u00AB\u092A\u0940\u0932\u093E \u0928\u0940\u0902\u092C\u0942\u00BB; never write \u00AB\u0928\u0940\u0902\u092C\u0942\u00BB alone. " +
+  "Keep bar tool names as Devanagari loanwords. " +
+  "Write units without dots and end sentences with \u00AB\u0964\u00BB. ";
+
+// Hand copy of normalizeHindiTypography in packages/shared/src/hindiTypography.ts
+// (spec 0048 AC-17, AC-23); change both in the same commit.
+function normalizeHindiTypography(text: string): string {
+  const abbreviations = [
+    "\u0921\u0949",
+    "\u0936\u094D\u0930\u0940",
+    "\u0938\u0902",
+    "\u092A\u0943",
+  ];
+  return text
+    .normalize("NFC")
+    .replace(/\u092E\u093F\.\u0932\u0940\./g, "\u092E\u093F\u0932\u0940")
+    .replace(/\u0938\u0947\u0902\.\u0932\u0940\./g, "\u0938\u0947\u0932\u0940")
+    .replace(/(?<=\d )\u0932\u0940\./g, "\u0932\u0940")
+    .replace(
+      /(?<=[\u0900-\u097F])\.(?=[ \t]*$|\r?\n|["\u201D\u2019']|[ \t]+\S)/g,
+      (dot, offset, whole) =>
+        abbreviations.includes(/[^\s"\u201C(]+$/.exec(whole.slice(0, offset))?.[0] ?? "")
+          ? dot
+          : "\u0964",
+    )
+    .replace(/[ \t]+\u0964/g, "\u0964")
+    .replace(/"([^"\n]+)"/g, (_match, inner: string) => `\u201C${inner.trim()}\u201D`);
+}
+
 const LOCALE_INSTRUCTIONS: Partial<Record<Locale, string>> = {
   fr: FRENCH_INSTRUCTION,
   ru: RUSSIAN_INSTRUCTION,
+  hi: HINDI_INSTRUCTION,
 };
 
 const LOCALE_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
   fr: normalizeFrenchTypography,
   ru: normalizeRussianTypography,
+  hi: normalizeHindiTypography,
 };
 
 /** The locale's typography on the text its reader sees; source_name stays as matched. */

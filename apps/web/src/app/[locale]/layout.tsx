@@ -1,5 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Fraunces, Inter, Lora } from "next/font/google";
+import {
+  Fraunces,
+  Inter,
+  Lora,
+  Noto_Sans_Devanagari,
+  Noto_Serif_Devanagari,
+} from "next/font/google";
 import { NextIntlClientProvider, hasLocale } from "next-intl";
 import { getMessages, getTranslations, setRequestLocale } from "next-intl/server";
 import { notFound } from "next/navigation";
@@ -15,7 +21,12 @@ import {
 } from "@bartendingapp/shared";
 import { routing } from "@/i18n/routing";
 import { SITE_URL } from "@/lib/site-url";
-import { DISPLAY_FONT_BY_LOCALE, type DisplayFont } from "@/lib/display-font";
+import {
+  BODY_SCRIPT_FONT_BY_LOCALE,
+  DISPLAY_FONT_BY_LOCALE,
+  type BodyScriptFont,
+  type DisplayFont,
+} from "@/lib/display-font";
 import "../globals.css";
 import { SiteNav } from "@/components/site-nav";
 import { SiteFooter } from "@/components/site-footer";
@@ -38,7 +49,36 @@ const lora = Lora({
   preload: false,
 });
 
-const DISPLAY_FONTS: Record<DisplayFont, { readonly variable: string }> = { fraunces, lora };
+// Hindi headings, brand wordmark included (spec 0048 AC-10). One weight; a
+// 700 on /hi is synthesized from it. Not preloaded, like Lora.
+const notoSerifDevanagari = Noto_Serif_Devanagari({
+  variable: "--font-display-loaded",
+  subsets: ["devanagari", "latin"],
+  weight: ["600"],
+  display: "swap",
+  preload: false,
+});
+
+const DISPLAY_FONTS: Record<DisplayFont, { readonly variable: string }> = {
+  fraunces,
+  lora,
+  notoSerifDevanagari,
+};
+
+// Devanagari body text on /hi, after Inter in the :lang(hi) --font-body, so
+// Latin characters keep Inter (spec 0048 AC-10). Not preloaded.
+const notoSansDevanagari = Noto_Sans_Devanagari({
+  variable: "--font-body-script",
+  subsets: ["devanagari"],
+  weight: ["400", "500", "600"],
+  display: "swap",
+  preload: false,
+});
+
+const BODY_SCRIPT_FONT_CLASS: Record<BodyScriptFont, string> = {
+  none: "",
+  notoSansDevanagari: notoSansDevanagari.variable,
+};
 
 const inter = Inter({
   variable: "--font-body-loaded",
@@ -121,7 +161,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   return (
     <html
       lang={LOCALE_HREFLANG[locale]}
-      className={`${DISPLAY_FONTS[DISPLAY_FONT_BY_LOCALE[locale]].variable} ${inter.variable}`}
+      className={`${DISPLAY_FONTS[DISPLAY_FONT_BY_LOCALE[locale]].variable} ${inter.variable} ${BODY_SCRIPT_FONT_CLASS[BODY_SCRIPT_FONT_BY_LOCALE[locale]]}`.trim()}
       suppressHydrationWarning
     >
       <head>

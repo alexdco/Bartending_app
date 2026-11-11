@@ -19,6 +19,14 @@ describe("unitLabel (spec 0047 AC-13)", () => {
     expect(unitLabel("cl", "ru")).toBe("сл");
   });
 
+  it("writes the unit toggle labels in Devanagari with no dots for hi (spec 0048 AC-13)", () => {
+    expect([unitLabel("oz", "hi"), unitLabel("ml", "hi"), unitLabel("cl", "hi")]).toEqual([
+      "औंस",
+      "मिली",
+      "सेली",
+    ]);
+  });
+
   it("keeps the Latin labels in every other locale", () => {
     for (const locale of ["en", "es", "pt", "fr"] as const) {
       expect([unitLabel("oz", locale), unitLabel("ml", locale), unitLabel("cl", locale)]).toEqual([
