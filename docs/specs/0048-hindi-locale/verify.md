@@ -17,11 +17,11 @@ _Steps derived from spec 0048 acceptance criteria. `/check verify` runs these; `
 ## Build step 2 (slug source): your steps before it counts as landed
 
 - [ ] Before the migration, snapshot every changed function in `es`, `pt`, `fr`, `ru`, once as `anon` and once as `authenticated` (in the SQL editor: `begin; select set_config('request.jwt.claims', '{"sub":"<test user id>","role":"authenticated"}', true); set local role authenticated; ... rollback;`, and `set local role anon` for the anon run). Cover `search_recipes('margarita', null, 20, 0, l)`, `search_recipes('', null, 50, 0, l)`, `classic_recipes(10, l)`, `popular_recipes_by_region(<a region>, l)`, `fetch_recipes_by_ids(array[<two ids>], l)`, `fetch_recipe_detail(<Margarita id>, l)`, and, as `authenticated` only, `recommend_recipes('{}', null, 20, 0, l)`, `match_recipes_to_pantry(0.25, 20, 0, l)`, `fetch_favorite_recipes(l, 20, 0)` → save the output → AC-5
-- [ ] Apply `supabase/migrations/20261111130000_recipe_read_base_name.sql` in the SQL editor → it commits with no error → AC-9
-- [ ] Run the check in the migration header → no rows (`base_name` equals `recipes.name`) → AC-9
-- [ ] `select p.proname, p.proacl, p.proconfig, p.prosecdef from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in (<the eight>)` → each ACL is `postgres`, `anon`, `authenticated`, `service_role` with no public entry; `search_path=""`; `prosecdef` false → AC-5
+- [x] Apply `supabase/migrations/20261111130000_recipe_read_base_name.sql` in the SQL editor → it commits with no error → AC-9
+- [x] Run the check in the migration header → no rows (`base_name` equals `recipes.name`) → AC-9
+- [x] `select p.proname, p.proacl, p.proconfig, p.prosecdef from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in (<the eight>)` → each ACL is `postgres`, `anon`, `authenticated`, `service_role` with no public entry; `search_path=""`; `prosecdef` false → AC-5
 - [ ] Rerun the snapshot as both roles → every column identical to the saved output; the only difference is the added `base_name` → AC-5
-- [ ] Run the 0045 structure query with `hi|hindi` in the pattern → no rows → AC-4
+- [x] Run the 0045 structure query with `hi|hindi` in the pattern → no rows → AC-4 (checked 2026-11-11 after the base_name migration; also `base_name = recipes.name` across fetch_recipe_detail `ru`, search_recipes `fr`, classic_recipes `es`)
 - [ ] After the web deploy (migration first), browse `/en`, `/es`, `/ru` search, home, popular, and a recipe page → card links and canonicals unchanged, no 308 on click → AC-5, AC-9
 - [ ] Once the one `hi` recipe from step 1 exists: on `/hi`, its card links to `<english-slug>-<uuid>`, clicking returns 200 with no 308, and the page canonical and the sitemap's `/hi` entry use the same slug → AC-9
 
