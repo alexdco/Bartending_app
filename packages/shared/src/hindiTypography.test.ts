@@ -13,6 +13,12 @@ describe("normalizeHindiTypography", () => {
     expect(normalizeHindiTypography("1 ली. पानी")).toBe("1 ली पानी");
   });
 
+  it("writes Devanagari digits as Western digits", () => {
+    expect(normalizeHindiTypography("४५ मिली जिन")).toBe("45 मिली जिन");
+    expect(normalizeHindiTypography("८-१० पत्तियाँ, १.५ औंस")).toBe("8-10 पत्तियाँ, 1.5 औंस");
+    expect(normalizeHindiTypography("१ ली. पानी")).toBe("1 ली पानी");
+  });
+
   it("removes the space before a danda", () => {
     expect(normalizeHindiTypography("डालें ।")).toBe("डालें।");
   });
@@ -42,7 +48,7 @@ describe("normalizeHindiTypography", () => {
   });
 
   it("is idempotent", () => {
-    const messy = 'बर्फ़ डालें । 30 मि.ली. "रम" मिलाएँ. डॉ. शर्मा कहते हैं...';
+    const messy = 'बर्फ़ डालें । ३० मि.ली. "रम" मिलाएँ. डॉ. शर्मा कहते हैं...';
     const once = normalizeHindiTypography(messy);
     expect(once).toBe("बर्फ़ डालें। 30 मिली “रम” मिलाएँ। डॉ. शर्मा कहते हैं...");
     expect(normalizeHindiTypography(once)).toBe(once);

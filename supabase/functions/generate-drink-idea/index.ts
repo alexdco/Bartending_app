@@ -147,6 +147,7 @@ function normalizeHindiTypography(text: string): string {
   ];
   return text
     .normalize("NFC")
+    .replace(/[\u0966-\u096F]/g, (digit) => String(digit.charCodeAt(0) - 0x0966))
     .replace(/\u092E\u093F\.\u0932\u0940\./g, "\u092E\u093F\u0932\u0940")
     .replace(/\u0938\u0947\u0902\.\u0932\u0940\./g, "\u0938\u0947\u0932\u0940")
     .replace(/(?<=\d )\u0932\u0940\./g, "\u0932\u0940")

@@ -16,6 +16,10 @@ const DOTTED_UNITS: readonly (readonly [RegExp, string])[] = [
   [/(?<=\d )ली\./g, "ली"],
 ];
 
+// Devanagari digits ० to ९ (U+0966 to U+096F). Haiku writes them in measures
+// and drink ideas although the prompt asks for Western digits (AC-1).
+const DEVANAGARI_DIGIT = /[०-९]/g;
+
 /** Words written with an abbreviation dot that never ends a sentence. */
 const ABBREVIATIONS: ReadonlySet<string> = new Set(["डॉ", "श्री", "सं", "पृ"]);
 
@@ -30,17 +34,20 @@ function endsAbbreviation(textBefore: string): boolean {
 }
 
 /**
- * Applies Hindi typography, in order: Unicode NFC; dotted units to dotless
- * (`मि.ली.` → `मिली`); no space before `।`; a sentence ending full stop after
+ * Applies Hindi typography, in order: Unicode NFC; Devanagari digits to
+ * Western (`३०` → `30`); dotted units to dotless (`मि.ली.` → `मिली`); no
+ * space before `।`; a sentence ending full stop after
  * Devanagari becomes `।`; a pair of straight `"…"` quotes becomes “ … ”.
  * Abbreviations (`डॉ.`), ellipses, `|`, decimals, URLs, Latin text, and an
  * unpaired quote are left alone.
  */
 export function normalizeHindiTypography(text: string): string {
-  const nfc = text.normalize("NFC");
+  const westernDigits = text
+    .normalize("NFC")
+    .replace(DEVANAGARI_DIGIT, (digit: string) => String(digit.charCodeAt(0) - 0x0966));
   const dotless = DOTTED_UNITS.reduce(
     (current, [pattern, replacement]) => current.replace(pattern, replacement),
-    nfc,
+    westernDigits,
   );
   return dotless
     .replace(SENTENCE_FULL_STOP, (dot: string, offset: number, whole: string) =>

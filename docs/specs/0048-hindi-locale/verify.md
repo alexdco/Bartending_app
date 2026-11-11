@@ -47,6 +47,10 @@ _2026-11-11: you approved `LOCALE_AI_TERMS.hi` and `HINDI_INSTRUCTION` with fixe
 
 _2026-11-11: review sheet `packages/shared/scripts/tagging/hindi-review.csv` (gitignored, 2,269 rows): 648 web and 126 mobile strings, 4 unit labels, 7 drink idea limit lines, 65 lines from 5 sampled drink ideas (the edge function's exact prompt and model, run locally), and 1,419 proposed notes. An automated pre pass flags 58 rows: in notes, 26 grapefruit written as अंगूर (grape), 13 bare नींबू, 12 हरा/पीला before a postposition (likely हरे/पीले), 2 missing egg white, 2 बर्फ without nukta, 1 loanword; in drink ideas, 2 हरा नींबू का. The catalog's ingredient names are right (चकोतरा), but 6 recipes' Hindi instructions also say अंगूर for grapefruit._
 
+_2026-11-11: the pre pass missed Devanagari digits (`४५ मिली`), which AC-1 rules out: 23 drink idea lines, 2 notes, and in the live catalog 88 `hi` measure rows and 7 `hi` recipe rows. `normalizeHindiTypography` (and the edge function's hand copy) now writes them as 0 to 9; the review sheet and `recipe-notes-proposals.hi.json` were rewritten the same way._
+
+- [ ] Run the digit update in the SQL editor (`translate()` over `hi` rows of `recipe_ingredient_translations.measure` and the `recipe_translations` text columns) → both closing counts are 0 → AC-1
+- [ ] Deploy `generate-drink-idea` (version 13) with the digit rule; a Hindi drink idea shows `45 मिली`, not `४५ मिली` → AC-1, AC-17
 - [ ] Native reviewer fills the `fix` column: UI strings (age gate and privacy first), the placeholder list rows, unit and limit copy, the drink idea samples, and every note → AC-1, AC-12, AC-13, AC-15, AC-17
 - [ ] Fixes applied to `hi.json` (web, mobile), `drinkIdeaLimitMessage.ts`, the unit labels, and `recipe-notes-proposals.hi.json`; tests pass → AC-1, AC-13
 - [ ] 360 px layout check on web and on both phones with the reviewed strings → AC-10, AC-20
