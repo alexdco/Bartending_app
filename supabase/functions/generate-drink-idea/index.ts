@@ -105,6 +105,8 @@ function normalizeFrenchTypography(text: string): string {
 // AC-17); change both in the same commit.
 const RUSSIAN_INSTRUCTION =
   "Address the reader with lowercase \u00AB\u0432\u044B\u00BB. Lime is \u00AB\u043B\u0430\u0439\u043C\u00BB and lemon is \u00AB\u043B\u0438\u043C\u043E\u043D\u00BB. " +
+  // Lime juice «сок лайма», wedge or wheel «долька лайма» or «кружок лайма», never «лимонный».
+  "Lime juice is \u00AB\u0441\u043E\u043A \u043B\u0430\u0439\u043C\u0430\u00BB and a lime wedge or wheel is \u00AB\u0434\u043E\u043B\u044C\u043A\u0430 \u043B\u0430\u0439\u043C\u0430\u00BB or \u00AB\u043A\u0440\u0443\u0436\u043E\u043A \u043B\u0430\u0439\u043C\u0430\u00BB; never use \u00AB\u043B\u0438\u043C\u043E\u043D\u043D\u044B\u0439\u00BB for lime. " +
   "Use \u00AB \u00BB quotes and a spaced em dash. ";
 
 // Hand copy of normalizeRussianTypography in packages/shared/src/russianTypography.ts

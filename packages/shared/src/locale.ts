@@ -92,7 +92,9 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
   // change both together.
   ru:
     " Address the reader with lowercase «вы». Lime is «лайм» and lemon is «лимон»; keep lemon " +
-    "and lime distinct. Bar tools: shaker is «шейкер», jigger is «джиггер», muddler is " +
+    "and lime distinct. Lime juice is «сок лайма» and a lime wedge or wheel is «долька лайма» " +
+    "or «кружок лайма»; never use «лимонный» for lime. Bar tools: shaker is «шейкер», jigger " +
+    "is «джиггер», muddler is " +
     "«мадлер», strainer is «стрейнер», and bar spoon is «барная ложка». Simple syrup is " +
     "«сахарный сироп» and bitters is «биттер». Write ё where standard Russian spelling uses " +
     "it (ликёр, лёд). Use « » quotes and a spaced em dash ( — ).",

@@ -10,7 +10,8 @@ _2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recip
 - [x] Run the check in the migration's header comment → `true, true` (ё and е match both ways) → AC-3
 - [x] Rerun the snapshot → identical to the saved output → AC-5
 - [x] Run the 0045 structure query with `ru|russian` added to the pattern (`p.prosrc ~ '''(es|pt|fr|ru|spanish|portuguese|russian)'''`) → no rows → AC-4
-- [x] Deploy `generate-drink-idea`, then request an idea with `locale: "ru"` → Russian text, «вы», « » quotes, pantry verification passes → AC-17
+- [ ] Deploy `generate-drink-idea`, then request an idea with `locale: "ru"` → Russian text, «вы», « » quotes, pantry verification passes → AC-17
+  _Reopened 2026-11-11: the live function was still version 9, with no `ru` in its locale list, so a `ru` request fell back to English. Version 10 (with Russian and the lime term line) was deployed 2026-11-11; check again against it._
 - [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale ru --limit 1` → one `ru` recipe row; run it again → translates nothing → AC-14
   _2026-11-10: it picked Jamaica Kiss. Instructions, the ingredient («кофейный ликёр»), the tag, and the measures came back in Russian and `name_search` matches `to_tsvector('russian', name)`. Haiku kept the name «Jamaica Kiss» in Latin letters and left the glass as "Hurricane glass" (es, pt, fr translated it): check glass wording in the step 3 terms review._
 - [x] Visit `/ru/recipes/<slug>` for a recipe whose `ru` name is in Cyrillic → the URL slug is transliterated Latin (never `recipe-<uuid>`), the name shows in Russian, headings render in Lora → AC-9, AC-10
@@ -63,7 +64,7 @@ _2026-11-10: migration applied. The `en`, `es`, `pt`, `fr` snapshot (every recip
 - [ ] Remove the `one` branch from `recipe.missingIngredients` in `es.json` → the web forms test fails with `lacks one`; restore it (checked 2026-11-10) → AC-11
 - [ ] Add a message with `{name}` to web or mobile `en.json` → the matching placeholder test fails until `placeholderMessages.ts` lists it → AC-12
 - [ ] In `/ru`, a recipe with 2, 5, and 21 ratings shows «2 оценки», «5 оценок», «21 оценка», and the rating stars read «Поставить 2 звезды», «Поставить 5 звёзд» → AC-11
-- [ ] Native reviewer reads both `placeholderMessages.ts` lists and the six drafted web `ru` plural messages (step 5) → AC-11, AC-12
+- [x] Native reviewer reads both `placeholderMessages.ts` lists and the six drafted web `ru` plural messages (step 5) → AC-11, AC-12
 
 ## Build step 3 (terms review, then catalog backfill)
 
@@ -86,13 +87,23 @@ _2026-11-11: `propose-recipe-notes --locale ru` wrote 473 recipes (1,419 notes) 
 - [x] `propose-recipe-notes --locale ru` → `recipe-notes-proposals.ru.json` holds Russian notes for empty `ru` fields only → AC-15
 - [x] Web and mobile `ru.json` drafted in full: same keys and ICU placeholders as `en.json`, lowercase «вы», « » quotes, every placeholder list message phrased as label plus value → AC-1, AC-12
 - [x] `/ru`, `/ru/search`, `/ru/pantry`, a recipe, `/ru/privacy`, `/ru/learn`, `/ru/quizzes`, `/ru/popular`, `/ru/account`, `/ru/favorites`, `/ru/drink-ideas`, `/ru/shopping-list` → 200, Russian headings, no message errors → AC-1
-- [ ] Fix the two catalog instructions above in the SQL editor → a lime query over `ru` instructions finds no «лимон» where the English says lime → AC-14
-- [ ] Signed in as admin, open one recipe's edit form → a Russian notes section shows; save a Russian note → only that recipe's `ru` row changes → AC-16
-- [ ] Step 5: the reviewer decides on one added line for `LOCALE_AI_TERMS.ru` and `RUSSIAN_INSTRUCTION` (change both in one commit): `Lime juice is «сок лайма» and a lime wedge or wheel is «долька лайма» or «кружок лайма»; never use «лимонный» for lime.` → AC-14, AC-17
+- [x] Fix the two catalog instructions above in the SQL editor → a lime query over `ru` instructions finds no «лимон» where the English says lime → AC-14
+- [x] Signed in as admin, open one recipe's edit form → a Russian notes section shows; save a Russian note → only that recipe's `ru` row changes → AC-16
+- [x] Step 5: the reviewer decides on one added line for `LOCALE_AI_TERMS.ru` and `RUSSIAN_INSTRUCTION` (change both in one commit): `Lime juice is «сок лайма» and a lime wedge or wheel is «долька лайма» or «кружок лайма»; never use «лимонный» for lime.` → AC-14, AC-17
+
+## Build step 5 (native review, then notes apply)
+
+_2026-11-11: the native reviewer approved as is: the web and mobile UI strings, both placeholder lists, the unit, batch, and limit copy, the drink idea sample, every proposed note, and the lime term line (now in `LOCALE_AI_TERMS.ru` and `RUSSIAN_INSTRUCTION`; `generate-drink-idea` version 10 deployed). `apply-recipe-notes --locale ru` applied 473 of 473 recipes._
+
+- [x] Native reviewer signs off the UI strings (age gate and privacy first), placeholder lists, unit, batch, and limit copy, drink ideas, and every note → AC-1, AC-12, AC-13, AC-15, AC-17
+- [x] 360 px layout check on web and a phone (age gate, nav, recipe page, batch calculator, account) → no clipped text → AC-1
+- [x] `apply-recipe-notes --locale ru` → 473 `ru` rows gain notes; the notes of `en` (`recipes`), `es`, `pt`, `fr` hash the same before and after → AC-15
+- [x] Every `ru` note whose English mentions lime says «лайм» (0 lost) → AC-14
+- [x] The two `ru` rows without notes are expected: Boyarsky has no English notes, and Early Riser has none in any locale (no drink style), so both show English → AC-2
+- [ ] With `generate-drink-idea` version 10, a `ru` request whose pantry has lime → Russian text, «вы», «сок лайма» or «лайм», never «лимонный» for lime → AC-17
 
 ## Later build steps (not yet built)
 
-- Step 5: native review, notes apply → AC-1, AC-12, AC-13, AC-15, AC-17
 - Step 6: launch and production checks → AC-8, AC-19; step 7: store listings → AC-20
 
 ## Acceptance criteria coverage
