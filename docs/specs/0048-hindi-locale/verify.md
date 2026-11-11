@@ -39,7 +39,7 @@ _2026-11-11: you approved `LOCALE_AI_TERMS.hi` and `HINDI_INSTRUCTION` with fixe
 
 - [x] Hindi typography in the notes run → `localeTypography("hi")` already returns `normalizeHindiTypography` for `propose-recipe-notes` (no change needed) → AC-1, AC-15
 - [x] `pnpm --filter @bartendingapp/shared propose-recipe-notes --locale hi` → 473 proposals in `scripts/tagging/recipe-notes-proposals.hi.json`, NFC, every sentence ends in । → AC-15 (for step 5 review: 12 note lines keep a bare नींबू, for example «नींबू स्वाद वाले रम», «कड़वा नींबू» for bitter lemon, «नींबू का पहिया»; fix them in the review before the apply)
-- [ ] Admin recipe form on one recipe → a Hindi notes section appears; saving it changes only that recipe's `hi` row → AC-16
+- [x] Admin recipe form on one recipe → a Hindi notes section appears; saving it changes only that recipe's `hi` row → AC-16 (2026-11-11 on Japanese Fizz, local build: the Hindi tip `बर्फ़ के साथ ज़ोर से शेक करें।` stored in NFC; an md5 over every other `recipe_translations` row's notes and `updated_at` matched before and after. `recipes.updated_at` moved 2 s later from a separate Save recipe click, with the English text unchanged; no trigger links the two tables)
 - [x] Web `messages/hi.json` and mobile `locales/hi.json` drafted in full: everyday Hindi, आप, danda, Western digits, ICU `one`/`other` and `_one`/`_other` → AC-1, AC-11 (only the brand, sample placeholders, and Service shorthand stay in Latin letters; key parity, plural forms, and placeholder tests pass)
 - [x] Every message on the placeholder list is label plus value (`लोकप्रिय: {region}`, `पसंदीदा: {name}`, `सवाल {number}/{total}`) → AC-12 (the native reviewer checks the list in step 5)
 
