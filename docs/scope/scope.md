@@ -951,7 +951,7 @@ Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); 
 - [x] Design it (spec): `/architect hindi locale`
 - [ ] Build it: `/develop hindi locale`
   - [x] Prerequisite, repo wide: register the web type scale with Tailwind (`/develop` from spec [0049](../specs/0049-type-scale-reaches-tailwind/index.md): `@theme inline` type entries, Prettier clean generator, the `@theme` test, the compiled CSS check, the visual pass), its own commit; unblocks 0048 AC-10
-  - [ ] Thin thread, unlaunched: the `hi` row, `locale.ts` entries, `normalizeHindiTypography`, Noto fonts and `:lang(hi)` tokens, `SHARE_IMAGE_LOCALE`, the edge function's Hindi, mobile registration and the phone checks, one recipe translated, satisfies AC-3, AC-4, AC-6, AC-7, AC-10, AC-11, AC-17 to AC-20, AC-23
+  - [x] Thin thread, unlaunched: the `hi` row, `locale.ts` entries, `normalizeHindiTypography`, Noto fonts and `:lang(hi)` tokens, `SHARE_IMAGE_LOCALE`, the edge function's Hindi, mobile registration and the phone checks, one recipe translated, satisfies AC-3, AC-4, AC-6, AC-7, AC-10, AC-11, AC-17 to AC-20, AC-23 (generate-drink-idea version 11; Japanese Fizz and Jamaica Kiss translated; review notes in verify.md)
   - [x] Slug source: `base_name` on the eight recipe read functions and the English name slug fallback, satisfies AC-5, AC-9 (migration applied 2026-11-11; the `/hi` no redirect click check waits on step 1's translated recipe)
   - [ ] Content: terms review, full catalog backfill, the `--locale hi` notes proposal, and the Hindi UI strings, satisfies AC-1, AC-2, AC-12, AC-14 to AC-16
   - [ ] Native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-12, AC-13, AC-15, AC-17, AC-20
