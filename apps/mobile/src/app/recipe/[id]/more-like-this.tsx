@@ -55,6 +55,7 @@ export default function MoreLikeThisScreen() {
                   recipe={{
                     id: recipe.id,
                     name: recipe.name,
+                    baseName: recipe.baseName,
                     imageUrl: recipe.imageUrl,
                     alcoholicStatus: recipe.alcoholicStatus,
                   }}

@@ -83,5 +83,6 @@ export async function fetchFavoriteRecipes(
     name: row.name,
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
+    baseName: row.base_name,
   }));
 }

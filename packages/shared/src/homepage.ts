@@ -40,5 +40,6 @@ export async function fetchClassicRecipes(
     name: row.name,
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
+    baseName: row.base_name,
   }));
 }

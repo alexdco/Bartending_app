@@ -11,6 +11,8 @@ export type AlcoholicStatusFilter = "alcoholic" | "non_alcoholic" | "optional";
 export interface RecipeSearchResult {
   id: string;
   name: string;
+  /** The English recipes.name, only for slugs (spec 0048 AC-9). */
+  baseName: string;
   imageUrl: string | null;
   alcoholicStatus: string;
 }
@@ -52,6 +54,7 @@ export async function searchRecipes(
     name: row.name,
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
+    baseName: row.base_name,
   }));
 }
 
@@ -112,6 +115,8 @@ export interface RecipeIngredientDetail {
 export interface RecipeDetail {
   id: string;
   name: string;
+  /** The English recipes.name, only for slugs (spec 0048 AC-9). */
+  baseName: string;
   instructions: string;
   imageUrl: string | null;
   alcoholicStatus: string;
@@ -179,6 +184,7 @@ export async function fetchRecipeDetail(
   return {
     id: data.id,
     name: data.name,
+    baseName: data.base_name,
     instructions: data.instructions,
     imageUrl: data.image_url,
     alcoholicStatus: data.alcoholic_status,
@@ -217,6 +223,7 @@ export async function fetchRecipesByIds(
     name: row.name,
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
+    baseName: row.base_name,
   }));
 }
 

@@ -189,6 +189,7 @@ export default function DrinkIdeasScreen() {
                       recipe={{
                         id: match.id,
                         name: match.name,
+                        baseName: match.baseName,
                         imageUrl: match.imageUrl,
                         alcoholicStatus: match.alcoholicStatus,
                       }}
@@ -209,6 +210,7 @@ export default function DrinkIdeasScreen() {
                       recipe={{
                         id: match.id,
                         name: match.name,
+                        baseName: match.baseName,
                         imageUrl: match.imageUrl,
                         alcoholicStatus: match.alcoholicStatus,
                       }}

@@ -10,6 +10,8 @@ export interface MissingIngredient {
 export interface DrinkIdeaMatch {
   id: string;
   name: string;
+  /** The English recipes.name, only for slugs (spec 0048 AC-9). */
+  baseName: string;
   imageUrl: string | null;
   alcoholicStatus: string;
   missingRatio: number;
@@ -51,6 +53,7 @@ export async function fetchDrinkIdeaMatches(
     name: row.name,
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
+    baseName: row.base_name,
     missingRatio: row.missing_ratio,
     missingIngredients: (row.missing_ingredients as MissingIngredient[] | null) ?? [],
   }));

@@ -69,7 +69,7 @@ async function resolveRecipe(slugParam: string, locale: Locale) {
 
   // Throws like Next's own permanentRedirect, but next-intl doesn't type it as never.
   return permanentRedirect({
-    href: `/recipes/${buildRecipeSlugPath(target.id, target.name)}`,
+    href: `/recipes/${buildRecipeSlugPath(target.id, target.name, target.baseName)}`,
     locale,
   }) as never;
 }
@@ -77,7 +77,7 @@ async function resolveRecipe(slugParam: string, locale: Locale) {
 /** The slug in another locale, from the light name lookup rather than a full detail fetch. */
 async function resolveSlugForLocale(id: string, locale: Locale): Promise<string | null> {
   const [recipe] = await fetchRecipesByIds(supabasePublic, [id], locale);
-  return recipe ? buildRecipeSlugPath(recipe.id, recipe.name) : null;
+  return recipe ? buildRecipeSlugPath(recipe.id, recipe.name, recipe.baseName) : null;
 }
 
 export async function generateMetadata({
@@ -91,7 +91,7 @@ export async function generateMetadata({
 
   const canonicalPath = localizedPath(
     locale,
-    `/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`,
+    `/recipes/${buildRecipeSlugPath(recipe.id, recipe.name, recipe.baseName)}`,
   );
   const ingredientNames = recipe.ingredients.map((ingredient) => ingredient.name).join(", ");
   const t = await getTranslations("recipe");
@@ -137,7 +137,7 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
   const t = await getTranslations("recipe");
   const recipe = await resolveRecipe(slug, locale);
 
-  const canonicalSlugPath = buildRecipeSlugPath(recipe.id, recipe.name);
+  const canonicalSlugPath = buildRecipeSlugPath(recipe.id, recipe.name, recipe.baseName);
   if (slug !== canonicalSlugPath) {
     permanentRedirect({ href: `/recipes/${canonicalSlugPath}`, locale });
   }
@@ -181,7 +181,11 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
 
       <AllergenSection ingredients={recipe.ingredients} />
 
-      <RecommendationsSection recipeId={recipe.id} recipeName={recipe.name} />
+      <RecommendationsSection
+        recipeId={recipe.id}
+        recipeName={recipe.name}
+        recipeBaseName={recipe.baseName}
+      />
 
       <CommentSection recipeId={recipe.id} />
     </main>

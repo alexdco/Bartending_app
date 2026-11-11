@@ -109,6 +109,7 @@ export default function PopularScreen() {
                       recipe={{
                         id: recipe.id,
                         name: recipe.name,
+                        baseName: recipe.baseName,
                         imageUrl: recipe.imageUrl,
                         alcoholicStatus: recipe.alcoholicStatus,
                       }}

@@ -5,6 +5,8 @@ import { DEFAULT_LOCALE, type Locale } from "./locale";
 export interface PopularRecipe {
   id: string;
   name: string;
+  /** The English recipes.name, only for slugs (spec 0048 AC-9). */
+  baseName: string;
   imageUrl: string | null;
   alcoholicStatus: string;
   popularityRank: number;
@@ -39,6 +41,7 @@ export async function fetchPopularByRegion(
     name: row.name,
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
+    baseName: row.base_name,
     popularityRank: row.popularity_rank,
   }));
 }

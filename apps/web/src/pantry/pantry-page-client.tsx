@@ -175,6 +175,7 @@ export function PantryPageClient() {
                   recipe={{
                     id: match.id,
                     name: match.name,
+                    baseName: match.baseName,
                     imageUrl: match.imageUrl,
                     alcoholicStatus: match.alcoholicStatus,
                   }}

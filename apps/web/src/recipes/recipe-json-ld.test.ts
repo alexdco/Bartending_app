@@ -9,6 +9,7 @@ const commentPhotoUrl =
 const recipe: RecipeDetail = {
   id: "d6aa9b01-16e2-49e9-a02b-5386edd831a8",
   name: "Margarita",
+  baseName: "Margarita",
   instructions: "Shake with ice and strain.",
   imageUrl: recipeImage,
   alcoholicStatus: "alcoholic",

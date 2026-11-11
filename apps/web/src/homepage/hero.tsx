@@ -35,7 +35,7 @@ export function Hero() {
       }
 
       const pick = results[Math.floor(Math.random() * results.length)];
-      router.push(`/recipes/${buildRecipeSlugPath(pick.id, pick.name)}`);
+      router.push(`/recipes/${buildRecipeSlugPath(pick.id, pick.name, pick.baseName)}`);
     } finally {
       setIsSurprising(false);
     }

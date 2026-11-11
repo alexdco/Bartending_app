@@ -76,7 +76,8 @@ function AdminCommentRow({ comment }: { comment: AdminComment }) {
     <div className="flex flex-col gap-one rounded-medium border border-border p-three">
       <div className="flex items-center justify-between gap-two">
         <Link
-          href={`/recipes/${buildRecipeSlugPath(comment.recipeId, comment.recipeName)}`}
+          // recipeName is the English recipes.name (a direct embed), so it is its own base name.
+          href={`/recipes/${buildRecipeSlugPath(comment.recipeId, comment.recipeName, comment.recipeName)}`}
           className="underline"
         >
           <Text variant="label">{comment.recipeName}</Text>

@@ -64,7 +64,7 @@ export function RecipeCard({ recipe, missingIngredientNames }: RecipeCardProps) 
       />
       <Text variant="subheading" as="h3">
         <Link
-          href={`/recipes/${buildRecipeSlugPath(recipe.id, recipe.name)}`}
+          href={`/recipes/${buildRecipeSlugPath(recipe.id, recipe.name, recipe.baseName)}`}
           className="after:absolute after:inset-0 after:rounded-large after:content-[''] focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:outline-offset-2 focus-visible:after:outline-focus"
         >
           {recipe.name}

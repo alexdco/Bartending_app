@@ -85,8 +85,23 @@ export function slugify(input: string, fallback: "recipe" | "region" | "article"
   return slug.length > 0 ? slug : fallback;
 }
 
-export function buildRecipeSlugPath(id: string, name: string): string {
-  return `${slugify(name, "recipe")}-${id}`;
+/**
+ * A letter from a script with no transliteration table (anything but Latin
+ * and Cyrillic; Common and Inherited cover digits, punctuation, and combining
+ * marks), so its slug would come out empty or partial.
+ */
+const UNTRANSLITERATED_LETTER_PATTERN =
+  /(?![\p{Script=Latin}\p{Script=Cyrillic}\p{Script=Common}\p{Script=Inherited}])\p{L}/u;
+
+/**
+ * `<slug>-<id>`, from `name` (the page locale's name) unless it holds a
+ * letter from a script slugify cannot spell, such as Devanagari; then from
+ * `baseName`, the English recipes.name (spec 0048 AC-9). The source depends
+ * on the characters, not the page locale, so one name always gets one slug.
+ */
+export function buildRecipeSlugPath(id: string, name: string, baseName: string): string {
+  const slugSource = UNTRANSLITERATED_LETTER_PATTERN.test(name) ? baseName : name;
+  return `${slugify(slugSource, "recipe")}-${id}`;
 }
 
 export function extractIdFromRecipeSlug(slugParam: string): string | null {

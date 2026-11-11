@@ -47,7 +47,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   const recipeEntries = recipes.flatMap((recipe) =>
     localizedEntries(
-      (locale) => `/recipes/${buildRecipeSlugPath(recipe.id, recipe.namesByLocale[locale])}`,
+      (locale) =>
+        `/recipes/${buildRecipeSlugPath(
+          recipe.id,
+          recipe.namesByLocale[locale],
+          recipe.namesByLocale.en,
+        )}`,
     ),
   );
 

@@ -14,6 +14,17 @@ _Steps derived from spec 0048 acceptance criteria. `/check verify` runs these; `
 - [ ] Search `/hi` for that recipe's Hindi name in an inflected form, then for its English name → both find it → AC-3
 - [ ] On an iPhone and an Android phone with the app language set to हिन्दी (dev or preview build): the recipe screen, pantry, and account screen show intact conjuncts (क्ष, त्र, र्ग) and no clipped vowel signs; a rating count of 1 and 2 both read correctly. Add `LINE_HEIGHT_SCALE_BY_LOCALE` only if a line clips → AC-11, AC-20
 
+## Build step 2 (slug source): your steps before it counts as landed
+
+- [ ] Before the migration, snapshot every changed function in `es`, `pt`, `fr`, `ru`, once as `anon` and once as `authenticated` (in the SQL editor: `begin; select set_config('request.jwt.claims', '{"sub":"<test user id>","role":"authenticated"}', true); set local role authenticated; ... rollback;`, and `set local role anon` for the anon run). Cover `search_recipes('margarita', null, 20, 0, l)`, `search_recipes('', null, 50, 0, l)`, `classic_recipes(10, l)`, `popular_recipes_by_region(<a region>, l)`, `fetch_recipes_by_ids(array[<two ids>], l)`, `fetch_recipe_detail(<Margarita id>, l)`, and, as `authenticated` only, `recommend_recipes('{}', null, 20, 0, l)`, `match_recipes_to_pantry(0.25, 20, 0, l)`, `fetch_favorite_recipes(l, 20, 0)` → save the output → AC-5
+- [ ] Apply `supabase/migrations/20261111130000_recipe_read_base_name.sql` in the SQL editor → it commits with no error → AC-9
+- [ ] Run the check in the migration header → no rows (`base_name` equals `recipes.name`) → AC-9
+- [ ] `select p.proname, p.proacl, p.proconfig, p.prosecdef from pg_proc p where p.pronamespace = 'public'::regnamespace and p.proname in (<the eight>)` → each ACL is `postgres`, `anon`, `authenticated`, `service_role` with no public entry; `search_path=""`; `prosecdef` false → AC-5
+- [ ] Rerun the snapshot as both roles → every column identical to the saved output; the only difference is the added `base_name` → AC-5
+- [ ] Run the 0045 structure query with `hi|hindi` in the pattern → no rows → AC-4
+- [ ] After the web deploy (migration first), browse `/en`, `/es`, `/ru` search, home, popular, and a recipe page → card links and canonicals unchanged, no 308 on click → AC-5, AC-9
+- [ ] Once the one `hi` recipe from step 1 exists: on `/hi`, its card links to `<english-slug>-<uuid>`, clicking returns 200 with no 308, and the page canonical and the sitemap's `/hi` entry use the same slug → AC-9
+
 ## UI / manual
 - [ ] Network panel on `/hi` → both Noto font files load; on `/en`, `/fr`, `/ru` → no Noto request → AC-10
 - [ ] On `/hi`, nav, buttons, labels, and footer use the taller line heights with no clipped matras at 360 px → AC-10 (unblocked by spec 0049, 2026-11-11: `/hi` computes the Hindi line heights on bare `text-<role>` and `leading-<role>`; the matra check itself is still yours)
@@ -25,6 +36,7 @@ _Steps derived from spec 0048 acceptance criteria. `/check verify` runs these; `
 
 ## Commands
 - [ ] `pnpm --filter @bartendingapp/shared test` → locale parity, Hindi hand copy, typography, unit, batch, and limit copy tests pass → AC-1, AC-6, AC-13, AC-17, AC-23
+- [ ] `pnpm --filter @bartendingapp/shared exec vitest run src/seo.test.ts` → the `buildRecipeSlugPath` tests pass (Devanagari falls back to the English name; Latin, Cyrillic, `µ`, and `ʼ` names keep their own slug) → AC-5, AC-9
 - [ ] `pnpm --filter web test` → display font, share image locale, and plural forms tests pass → AC-10, AC-11, AC-19
 - [ ] `pnpm --filter mobile test` → locale key parity and Hindi plurals (0 and 1 → `_one`, 2 and 5 → `_other`) pass → AC-11
 

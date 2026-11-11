@@ -5,6 +5,8 @@ import { DEFAULT_LOCALE, type Locale } from "./locale";
 export interface RecommendedRecipe {
   id: string;
   name: string;
+  /** The English recipes.name, only for slugs (spec 0048 AC-9). */
+  baseName: string;
   imageUrl: string | null;
   alcoholicStatus: string;
   score: number;
@@ -47,6 +49,7 @@ export async function fetchRecipeRecommendations(
     name: row.name,
     imageUrl: row.image_url,
     alcoholicStatus: row.alcoholic_status,
+    baseName: row.base_name,
     score: row.score,
   }));
 }

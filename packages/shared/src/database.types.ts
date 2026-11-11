@@ -1494,6 +1494,7 @@ export type Database = {
         Args: { locale?: string; page_limit?: number };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           id: string;
           image_url: string;
           name: string;
@@ -1540,6 +1541,7 @@ export type Database = {
         };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           id: string;
           image_url: string;
           name: string;
@@ -1556,6 +1558,7 @@ export type Database = {
         Args: { p_id: string; p_locale?: string };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           bartender_tip: string;
           difficulty: string;
           drink_style: string;
@@ -1578,6 +1581,7 @@ export type Database = {
         Args: { p_ids: string[]; p_locale?: string };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           id: string;
           image_url: string;
           name: string;
@@ -1653,6 +1657,7 @@ export type Database = {
         };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           id: string;
           image_url: string;
           missing_ingredients: Json;
@@ -1666,6 +1671,7 @@ export type Database = {
         Args: { locale?: string; region_filter: string };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           id: string;
           image_url: string;
           name: string;
@@ -1693,6 +1699,7 @@ export type Database = {
         };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           id: string;
           image_url: string;
           name: string;
@@ -1761,6 +1768,7 @@ export type Database = {
         };
         Returns: {
           alcoholic_status: string;
+          base_name: string;
           id: string;
           image_url: string;
           name: string;

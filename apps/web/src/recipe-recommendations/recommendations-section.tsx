@@ -18,9 +18,11 @@ const MAX_VISIBLE_RECOMMENDATIONS = 8;
 export function RecommendationsSection({
   recipeId,
   recipeName,
+  recipeBaseName,
 }: {
   recipeId: string;
   recipeName: string;
+  recipeBaseName: string;
 }) {
   const t = useTranslations("recommendations");
   const tCommon = useTranslations("common");
@@ -56,6 +58,7 @@ export function RecommendationsSection({
                 recipe={{
                   id: recipe.id,
                   name: recipe.name,
+                  baseName: recipe.baseName,
                   imageUrl: recipe.imageUrl,
                   alcoholicStatus: recipe.alcoholicStatus,
                 }}
@@ -63,7 +66,7 @@ export function RecommendationsSection({
             ))}
           </div>
           <Link
-            href={`/recipes/${buildRecipeSlugPath(recipeId, recipeName)}/more-like-this`}
+            href={`/recipes/${buildRecipeSlugPath(recipeId, recipeName, recipeBaseName)}/more-like-this`}
             className="text-label font-medium text-accent hover:underline"
           >
             {t("seeMore")}

@@ -51,6 +51,7 @@ export function DrinkIdeasCarousel({ onSessionError }: { onSessionError: () => v
           recipe={{
             id: match.id,
             name: match.name,
+            baseName: match.baseName,
             imageUrl: match.imageUrl,
             alcoholicStatus: match.alcoholicStatus,
           }}

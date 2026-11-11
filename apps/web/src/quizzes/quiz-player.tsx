@@ -91,7 +91,8 @@ function scoreAnswers(quiz: QuizDetail, answers: QuizAnswers): number {
 function sourceHref(source: QuizQuestionSource): string {
   return source.kind === "article"
     ? `/learn/${source.category}/${buildLearnArticleSlugPath(source.id, source.title)}`
-    : `/recipes/${buildRecipeSlugPath(source.id, source.name)}`;
+    : // A recipe source name is the English recipes.name (a direct embed), so it is its own base name.
+      `/recipes/${buildRecipeSlugPath(source.id, source.name, source.name)}`;
 }
 
 const SOURCE_LINK_CLASS = "text-text underline decoration-accent decoration-2 underline-offset-2";

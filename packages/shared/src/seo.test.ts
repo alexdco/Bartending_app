@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildLearnArticleSlugPath,
+  buildRecipeSlugPath,
   extractIdFromRecipeSlug,
   localizedPath,
   resolveSiteUrl,
@@ -99,5 +100,36 @@ describe("buildLearnArticleSlugPath and extractIdFromRecipeSlug", () => {
 
   it("extracts null from a slug with no trailing uuid (covers AC-5, not found routing)", () => {
     expect(extractIdFromRecipeSlug("what-is-a-jigger")).toBeNull();
+  });
+});
+
+describe("buildRecipeSlugPath (spec 0048 AC-9)", () => {
+  const id = "d6aa9b01-16e2-49e9-a02b-5386edd831a8";
+
+  it("uses the English base name for a Devanagari name", () => {
+    expect(buildRecipeSlugPath(id, "मार्गरीटा", "Margarita")).toBe(`margarita-${id}`);
+  });
+
+  it("uses the base name when any letter is Devanagari, even beside Latin", () => {
+    expect(buildRecipeSlugPath(id, "B-52 शॉट", "B-52 Shot")).toBe(`b-52-shot-${id}`);
+  });
+
+  it("keeps a Cyrillic name as its own slug", () => {
+    expect(buildRecipeSlugPath(id, "Белый русский", "White Russian")).toBe(`belyy-russkiy-${id}`);
+  });
+
+  it("keeps a Latin name with accents as its own slug", () => {
+    expect(buildRecipeSlugPath(id, "Piña Colada", "Pina Colada")).toBe(`pina-colada-${id}`);
+  });
+
+  it("keeps a Latin name with a Greek micro sign or a modifier apostrophe as its own slug", () => {
+    expect(buildRecipeSlugPath(id, "µ Sour", "Other")).toBe(`sour-${id}`);
+    expect(buildRecipeSlugPath(id, "Cafeʼ Royale", "Other")).toBe(`cafe-royale-${id}`);
+  });
+
+  it("matches slugify of the name whenever the name is Latin or Cyrillic", () => {
+    for (const name of ["Negroni", "Crème de Cassis & Café", "Маргарита", "Мохито Mojito", "!!!"]) {
+      expect(buildRecipeSlugPath(id, name, "Different")).toBe(`${slugify(name, "recipe")}-${id}`);
+    }
   });
 });
