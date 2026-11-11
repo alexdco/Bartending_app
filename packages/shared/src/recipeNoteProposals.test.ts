@@ -247,6 +247,17 @@ describe("proposalsFromLocaleReply", () => {
     });
   });
 
+  it("gives Russian notes Russian quotes and dashes (spec 0047 AC-1)", () => {
+    const result = proposalsFromLocaleReply(
+      [pick],
+      reply({ bartender_tip: 'Взбейте "сильно" - и сразу подавайте.' }),
+      localeTypography("ru"),
+    );
+    expect(result.ok && result.proposals[0]?.notes.bartender_tip).toBe(
+      "Взбейте «сильно» — и сразу подавайте.",
+    );
+  });
+
   it("runs the punctuation pass on each requested note before validation", () => {
     const result = proposalsFromLocaleReply(
       [pick],

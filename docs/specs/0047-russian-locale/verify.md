@@ -78,9 +78,21 @@ _2026-11-10: backfill run twice. All 475 live recipes, every ingredient, and eve
 - [x] Lime and lemon: every `ru` ingredient name for an English name containing "lime" uses «лайм», and "lemon" uses «лимон», never mixed → AC-14
 - [x] `select count(*) from public.recipe_translations where locale = 'ru' and name ~ '[Ѐ-ӿ]'` → above 0, then do the two open step 1 checks (Cyrillic slug, ё search) with one of those recipes → AC-3, AC-9
 
+## Build step 4 (notes proposal and UI strings)
+
+_2026-11-11: `propose-recipe-notes --locale ru` wrote 473 recipes (1,419 notes) to `packages/shared/scripts/tagging/recipe-notes-proposals.ru.json`: all Cyrillic, none over 240 characters, no straight quotes or spaced hyphens. Haiku wrote «лимонный» (the lemon adjective) for lime in 15 notes, «со льдом» (with ice) for lime in one, and «лимон» for "citrus" in three; those 19 were fixed by hand in the file. The same slip is in two catalog instructions (Rum Old-fashioned: lime peel as «лимонной цедры»; Rosemary Blue: lemon wedge as «лаймовый дольку»)._
+
+- [x] `recipeNoteProposals.test.ts` → Russian notes get « » quotes and a no break space before the em dash → AC-1, AC-15
+- [x] `propose-recipe-notes --locale ru` → `recipe-notes-proposals.ru.json` holds Russian notes for empty `ru` fields only → AC-15
+- [x] Web and mobile `ru.json` drafted in full: same keys and ICU placeholders as `en.json`, lowercase «вы», « » quotes, every placeholder list message phrased as label plus value → AC-1, AC-12
+- [x] `/ru`, `/ru/search`, `/ru/pantry`, a recipe, `/ru/privacy`, `/ru/learn`, `/ru/quizzes`, `/ru/popular`, `/ru/account`, `/ru/favorites`, `/ru/drink-ideas`, `/ru/shopping-list` → 200, Russian headings, no message errors → AC-1
+- [ ] Fix the two catalog instructions above in the SQL editor → a lime query over `ru` instructions finds no «лимон» where the English says lime → AC-14
+- [ ] Signed in as admin, open one recipe's edit form → a Russian notes section shows; save a Russian note → only that recipe's `ru` row changes → AC-16
+- [ ] Step 5: the reviewer decides on one added line for `LOCALE_AI_TERMS.ru` and `RUSSIAN_INSTRUCTION` (change both in one commit): `Lime juice is «сок лайма» and a lime wedge or wheel is «долька лайма» or «кружок лайма»; never use «лимонный» for lime.` → AC-14, AC-17
+
 ## Later build steps (not yet built)
 
-- Steps 4 to 5: terms review, full backfill, notes proposal, full UI strings, native review, notes apply, admin Russian notes section → AC-1, AC-2, AC-12 to AC-16
+- Step 5: native review, notes apply → AC-1, AC-12, AC-13, AC-15, AC-17
 - Step 6: launch and production checks → AC-8, AC-19; step 7: store listings → AC-20
 
 ## Acceptance criteria coverage
