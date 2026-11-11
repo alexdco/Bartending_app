@@ -113,6 +113,25 @@
   --radius-large: var(--radius-large);
   --radius-full: var(--radius-full);
 
+  --text-display: var(--text-display);
+  --text-display--line-height: var(--leading-display);
+  --leading-display: var(--leading-display);
+  --text-heading: var(--text-heading);
+  --text-heading--line-height: var(--leading-heading);
+  --leading-heading: var(--leading-heading);
+  --text-subheading: var(--text-subheading);
+  --text-subheading--line-height: var(--leading-subheading);
+  --leading-subheading: var(--leading-subheading);
+  --text-body: var(--text-body);
+  --text-body--line-height: var(--leading-body);
+  --leading-body: var(--leading-body);
+  --text-body-small: var(--text-body-small);
+  --text-body-small--line-height: var(--leading-body-small);
+  --leading-body-small: var(--leading-body-small);
+  --text-label: var(--text-label);
+  --text-label--line-height: var(--leading-label);
+  --leading-label: var(--leading-label);
+
   --font-display: var(--font-display);
   --font-body: var(--font-body);
 

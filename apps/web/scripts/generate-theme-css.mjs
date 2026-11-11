@@ -19,9 +19,11 @@ import {
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const outPath = resolve(__dirname, "../src/app/theme.generated.css");
 
-function colorVars(theme) {
+// Prettier lowercases hex and reindents nested blocks, so emit its output
+// directly; otherwise every regeneration leaves the file dirty in git.
+function colorVars(theme, indent = "  ") {
   return Object.entries(theme)
-    .map(([name, value]) => `  --color-${kebab(name)}: ${value};`)
+    .map(([name, value]) => `${indent}--color-${kebab(name)}: ${value.toLowerCase()};`)
     .join("\n");
 }
 
@@ -45,6 +47,21 @@ const typeLineHeightVars = Object.entries(typeScale)
   .map(([name, { lineHeight }]) => `  --leading-${kebab(name)}: ${lineHeight};`)
   .join("\n");
 
+// Tailwind v4 only creates text-<role> and leading-<role> utilities for keys
+// registered in @theme. The paired --text-<role>--line-height gives a bare
+// text-<role> its token line height, so locale overrides of --leading-* (the
+// :root:lang(hi) block in globals.css) reach every sized element.
+const typeThemeVars = Object.keys(typeScale)
+  .map(kebab)
+  .map((role) =>
+    [
+      `  --text-${role}: var(--text-${role});`,
+      `  --text-${role}--line-height: var(--leading-${role});`,
+      `  --leading-${role}: var(--leading-${role});`,
+    ].join("\n"),
+  )
+  .join("\n");
+
 const css = `/* GENERATED FILE. Do not edit by hand.
    Source: packages/shared/src/tokens.ts
    Regenerate: pnpm --filter web run generate-theme (runs automatically before dev/build) */
@@ -63,7 +80,7 @@ ${typeLineHeightVars}
 
 @media (prefers-color-scheme: light) {
   :root:not([data-theme="dark"]) {
-${colorVars(colors.light)}
+${colorVars(colors.light, "    ")}
   }
 }
 
@@ -100,6 +117,8 @@ ${colorVars(colors.dark)}
   --radius-medium: var(--radius-medium);
   --radius-large: var(--radius-large);
   --radius-full: var(--radius-full);
+
+${typeThemeVars}
 
   --font-display: var(--font-display);
   --font-body: var(--font-body);

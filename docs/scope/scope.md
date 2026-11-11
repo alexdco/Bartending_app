@@ -950,6 +950,7 @@ Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); 
 **Done when:** `/hi` pages and the mobile app read in Hindi with correct Devanagari rendering (untranslated content falls back to English), Hindi search returns sensible results, and Hindi is launched in the switcher, detection, sitemap, and hreflang.
 - [x] Design it (spec): `/architect hindi locale`
 - [ ] Build it: `/develop hindi locale`
+  - [x] Prerequisite, repo wide: register the web type scale with Tailwind (`/develop` from spec [0049](../specs/0049-type-scale-reaches-tailwind/index.md): `@theme inline` type entries, Prettier clean generator, the `@theme` test, the compiled CSS check, the visual pass), its own commit; unblocks 0048 AC-10
   - [ ] Thin thread, unlaunched: the `hi` row, `locale.ts` entries, `normalizeHindiTypography`, Noto fonts and `:lang(hi)` tokens, `SHARE_IMAGE_LOCALE`, the edge function's Hindi, mobile registration and the phone checks, one recipe translated, satisfies AC-3, AC-4, AC-6, AC-7, AC-10, AC-11, AC-17 to AC-20, AC-23
   - [ ] Slug source: `base_name` on the eight recipe read functions and the English name slug fallback, satisfies AC-5, AC-9
   - [ ] Content: terms review, full catalog backfill, the `--locale hi` notes proposal, and the Hindi UI strings, satisfies AC-1, AC-2, AC-12, AC-14 to AC-16
@@ -957,7 +958,7 @@ Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); 
   - [ ] Launch (after 69 and 70 verify): `hi` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-8, AC-21, AC-22
 - [ ] Verify it: `/check verify hindi locale`
 - [ ] Test it: `/test hindi locale`
-Spec [0048](../specs/0048-hindi-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
+Spec [0048](../specs/0048-hindi-locale/index.md) · prerequisite [0049](../specs/0049-type-scale-reaches-tailwind/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 72. Japanese · needs a decision
 Adds Japanese (`ja`). No word spaces and no Postgres stemmer, so search needs `pg_trgm` or a tokenizer; CJK fonts and line breaking on web and mobile. The spec should settle the CJK search approach for features 73 and 74 too.

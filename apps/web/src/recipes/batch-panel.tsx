@@ -213,7 +213,7 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
 
       <div className="flex flex-col gap-one">
         <Text variant="label">{t("unit")}</Text>
-        <div className="flex gap-one" role="group" aria-label={t("unit")}>
+        <div className="flex flex-wrap gap-one" role="group" aria-label={t("unit")}>
           {BATCH_UNITS.map((candidate) => (
             <Chip
               key={candidate}

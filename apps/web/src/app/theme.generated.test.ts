@@ -101,3 +101,16 @@ describe("theme.generated.css scale tokens", () => {
     }
   });
 });
+
+// covers (spec 0049): AC-5
+describe("theme.generated.css type scale in @theme", () => {
+  it("registers every type role with Tailwind as a size, a paired line height, and a leading", () => {
+    const themeBlock = declarationsOf("@theme inline");
+    for (const name of Object.keys(typeScale)) {
+      const role = kebab(name);
+      expect(themeBlock.get(`--text-${role}`), role).toBe(`var(--text-${role})`);
+      expect(themeBlock.get(`--text-${role}--line-height`), role).toBe(`var(--leading-${role})`);
+      expect(themeBlock.get(`--leading-${role}`), role).toBe(`var(--leading-${role})`);
+    }
+  });
+});

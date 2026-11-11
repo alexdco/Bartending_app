@@ -16,7 +16,7 @@ _Steps derived from spec 0048 acceptance criteria. `/check verify` runs these; `
 
 ## UI / manual
 - [ ] Network panel on `/hi` → both Noto font files load; on `/en`, `/fr`, `/ru` → no Noto request → AC-10
-- [ ] On `/hi`, nav, buttons, labels, and footer use the taller line heights with no clipped matras at 360 px → AC-10 (blocked: the web type scale tokens never reach Tailwind, see Open items)
+- [ ] On `/hi`, nav, buttons, labels, and footer use the taller line heights with no clipped matras at 360 px → AC-10 (unblocked by spec 0049, 2026-11-11: `/hi` computes the Hindi line heights on bare `text-<role>` and `leading-<role>`; the matra check itself is still yours)
 - [ ] On `/en`, open the language menu → in dev it has no हिन्दी; the option markup carries `lang` → AC-7, AC-10
 - [ ] `/hi/opengraph-image/card` is byte identical to `/en/opengraph-image/card`; its alt is the English tagline; `/ru` card unchanged → AC-19
 - [ ] Before launch: `Accept-Language: hi-IN` on `/` lands on `/en`; the sitemap and hreflang alternates have no `hi`; `/hi/` renders `noindex` with a self canonical → AC-7
@@ -43,8 +43,8 @@ _Steps derived from spec 0048 acceptance criteria. `/check verify` runs these; `
 - [ ] Unit toggle and batch labels on `/hi` → औंस, मिली, सेली, ली; measures keep the dot decimal → AC-13
 
 ## Open items
-- The web type scale is not wired: `theme.generated.css` sets `--text-*` and `--leading-*` on `:root` but `@theme inline` registers neither, so `text-display`, `leading-body`, and the rest compile to nothing in every locale. The `:root:lang(hi)` overrides are in place and take effect once the tokens are registered. Routed to `/architect`.
+- Resolved 2026-11-11 by spec 0049: `@theme inline` now registers `--text-*`, `--text-*--line-height`, and `--leading-*`, so the `:root:lang(hi)` overrides reach every sized element.
 - Spec test scenario wording: NFC keeps ज़ as U+091C U+093C (U+095B is a composition exclusion), so the typography test asserts both spellings normalize to the two code point form, not to a precomposed one.
 
 ## Acceptance-criteria coverage
-- AC-1 commands, value sourcing (typography) · AC-2 step 1 page visit, value sourcing · AC-3 migration check, search, value sourcing · AC-4 structure query · AC-5 snapshots, UI regression · AC-6 parity test · AC-7 gating · AC-8 value sourcing (post launch steps come in step 6) · AC-9 step 2 · AC-10 fonts, line heights (blocked), switcher · AC-11 plural tests, devices · AC-12 step 4 · AC-13 labels · AC-14 translate run · AC-15, AC-16 step 4 · AC-17 drink idea · AC-18 stored preference · AC-19 share card · AC-20 devices · AC-21, AC-22 launch · AC-23 NFC checks
+- AC-1 commands, value sourcing (typography) · AC-2 step 1 page visit, value sourcing · AC-3 migration check, search, value sourcing · AC-4 structure query · AC-5 snapshots, UI regression · AC-6 parity test · AC-7 gating · AC-8 value sourcing (post launch steps come in step 6) · AC-9 step 2 · AC-10 fonts, line heights, switcher · AC-11 plural tests, devices · AC-12 step 4 · AC-13 labels · AC-14 translate run · AC-15, AC-16 step 4 · AC-17 drink idea · AC-18 stored preference · AC-19 share card · AC-20 devices · AC-21, AC-22 launch · AC-23 NFC checks
