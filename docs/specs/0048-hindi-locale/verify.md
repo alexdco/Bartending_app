@@ -57,6 +57,17 @@ _2026-11-11: the pre pass missed Devanagari digits (`४५ मिली`), whic
 - [x] 360 px layout check on web and on both phones with the reviewed strings → AC-10, AC-20 (web half passed 2026-11-11 in headless Chrome at 360 px over `/hi` home, search, a recipe, pantry, drink ideas, favorites, shopping list, account, popular, learn, quizzes, and privacy: no page scrolls sideways, no Devanagari element clips, conjuncts and matras intact in the screenshots. The only clipped element is the visually hidden skip link. Separately, `/privacy` cuts text off on the right at 360 px in every locale, `/en` included, so it predates Hindi. Phone half signed off by you 2026-11-11, with steps 3 to 5)
 - [x] `apply-recipe-notes --locale hi` → only `hi` rows change; the `en`, `es`, `pt`, `fr`, `ru` notes snapshot is identical before and after → AC-15 (2026-11-11: 473 of 473 applied; an md5 over each other locale's notes and `updated_at` matched before and after; 473 of 475 `hi` rows carry notes, all pass AC-14, NFC, and digits; Japanese Fizz has its reviewed tip)
 
+## Build step 6 (launch): your steps before it counts as landed
+
+- [x] `"hi"` added to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit (e7c2722, 2026-11-11); the `notesByLocale` fixture already had its `hi` block; a `launched Hindi` test covers `hi-IN` → `hi` and `en-IN`, `mr-IN`, `ne-NP` → `en`; repo wide `pnpm test` 859 passed → AC-8, AC-21
+- [x] Pending default notes file → none to regenerate (`recipe-notes-proposals.json` dates from 2026-10-29 and carries only `es`, already applied) → AC-21
+- [ ] Deploy web, then fetch `/sitemap.xml` in production → every page lists a `/hi` entry, and its hreflang alternates include `hi` → AC-8, AC-21
+- [ ] Production `/en` page source → `<link rel="alternate" hreflang="hi" href="./hi…">`; `/hi` no longer renders `noindex` → AC-8, AC-21
+- [ ] `curl -sI -H "Accept-Language: hi-IN" <site>/` → redirects to `/hi`; with `en-IN` → `/en`; with `mr-IN` → `/en` → AC-7, AC-8
+- [ ] The language switcher on `/en` lists हिन्दी, and choosing it lands on `/hi` → AC-8
+- [ ] Ship a mobile build (EAS); on a phone, the language setting offers हिन्दी and the app reads in Hindi → AC-8, AC-21
+- [ ] Run `translate-catalog` with no `--locale` once after launch → it now includes `hi` and translates nothing new → AC-14, AC-21
+
 ## UI / manual
 - [x] Network panel on `/hi` → both Noto font files load; on `/en`, `/fr`, `/ru` → no Noto request → AC-10
 - [x] On `/hi`, nav, buttons, labels, and footer use the taller line heights with no clipped matras at 360 px → AC-10 (unblocked by spec 0049, 2026-11-11: `/hi` computes the Hindi line heights on bare `text-<role>` and `leading-<role>`; the matra check itself is still yours)
