@@ -240,6 +240,30 @@ describe("launched Hindi", () => {
   });
 });
 
+// Japanese is launched (spec 0050 AC-9, AC-23).
+describe("launched Japanese", () => {
+  it("is launched and translated by the import job", () => {
+    expect(isLaunchedLocale("ja")).toBe(true);
+    expect(CATALOG_TRANSLATION_LOCALES).toContain("ja");
+  });
+
+  it("maps ja and ja-JP to ja", () => {
+    for (const header of ["ja", "ja-JP"]) {
+      expect(parseAcceptLanguage(header)).toBe("ja");
+      expect(resolveRedirectLocale(null, header)).toBe("ja");
+    }
+  });
+
+  it("never picks ja for English in Japan", () => {
+    expect(resolveRedirectLocale(null, "en-JP")).toBe("en");
+  });
+
+  it("keeps a stored ja, ahead of the header", () => {
+    expect(resolveStoredLocale("ja")).toBe("ja");
+    expect(resolveRedirectLocale("ja", "es")).toBe("ja");
+  });
+});
+
 describe("resolveRedirectLocale", () => {
   it("prefers a launched stored locale, then the header, then English", () => {
     expect(resolveRedirectLocale("es", "en-US")).toBe("es");
@@ -266,12 +290,14 @@ describe("hreflangAlternates", () => {
       fr: "/fr",
       ru: "/ru",
       hi: "/hi",
+      ja: "/ja",
     };
     expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("fr", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("ru", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("hi", (locale) => `/${locale}`)).toEqual(expected);
+    expect(hreflangAlternates("ja", (locale) => `/${locale}`)).toEqual(expected);
   });
 });
 
