@@ -17,6 +17,7 @@ import type { Database } from "./database.types";
 import { normalizeFrenchTypography } from "./frenchTypography";
 import { normalizeRussianTypography } from "./russianTypography";
 import { normalizeHindiTypography } from "./hindiTypography";
+import { normalizeJapaneseTypography } from "./japaneseTypography";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LOCALE_AI_LANGUAGE,
@@ -74,12 +75,14 @@ export interface NameInput {
 /**
  * The punctuation pass a locale's AI output gets before it is stored: French
  * typography for `fr` (spec 0046 AC-1), Russian for `ru` (spec 0047 AC-1),
- * Hindi for `hi` (spec 0048 AC-1), unchanged text for every other locale.
+ * Hindi for `hi` (spec 0048 AC-1), Japanese for `ja` (spec 0050 AC-1),
+ * unchanged text for every other locale.
  */
 export function localeTypography(locale: Locale): (text: string) => string {
   if (locale === "fr") return normalizeFrenchTypography;
   if (locale === "ru") return normalizeRussianTypography;
   if (locale === "hi") return normalizeHindiTypography;
+  if (locale === "ja") return normalizeJapaneseTypography;
   return (text) => text;
 }
 

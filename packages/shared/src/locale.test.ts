@@ -19,6 +19,7 @@ import {
 } from "./locale";
 import { normalizeRussianTypography } from "./russianTypography";
 import { normalizeHindiTypography } from "./hindiTypography";
+import { normalizeJapaneseTypography } from "./japaneseTypography";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const migrationsDir = join(repoRoot, "supabase/migrations");
@@ -386,6 +387,65 @@ describe("generate-drink-idea's Hindi hand copies", () => {
       "",
     ];
     expect(samples.map(typeset)).toEqual(samples.map(normalizeHindiTypography));
+  });
+});
+
+// Spec 0050 AC-18, AC-22: the same hand copy check for Japanese.
+describe("generate-drink-idea's Japanese hand copies", () => {
+  const source = readFileSync(drinkIdeaFunction, "utf8");
+
+  /** The decoded text of the edge function's JAPANESE_INSTRUCTION constant. */
+  const japaneseInstruction = (): string => {
+    const body = /const JAPANESE_INSTRUCTION =([\s\S]*?);\n/.exec(source)?.[1];
+    if (body === undefined) throw new Error("No JAPANESE_INSTRUCTION in generate-drink-idea");
+    return [...body.matchAll(/"((?:[^"\\]|\\.)*)"/g)]
+      .map(([, literal]) => JSON.parse(`"${literal ?? ""}"`) as string)
+      .join("");
+  };
+
+  /** The edge function's normalizeJapaneseTypography, with its type annotations removed. */
+  const edgeTypography = (): ((text: string) => string) => {
+    const fn = /function normalizeJapaneseTypography\(text: string\): string \{[\s\S]*?\n\}\n/.exec(
+      source,
+    )?.[0];
+    if (fn === undefined) throw new Error("No normalizeJapaneseTypography in generate-drink-idea");
+    const plain = fn.replace("(text: string): string", "(text)").replace(/: string\)/g, ")");
+    return new Function(`${plain}\nreturn normalizeJapaneseTypography;`)() as (
+      text: string,
+    ) => string;
+  };
+
+  it.each(["です・ます", "«ライム»", "«レモン»", "«・»", "«。»", "«、»", "«「」»"])(
+    "both copies pin %s",
+    (term) => {
+      expect(LOCALE_AI_TERMS.ja).toContain(term);
+      expect(japaneseInstruction()).toContain(term);
+    },
+  );
+
+  it("stores both copies in Unicode NFC with no half width katakana or full width digits", () => {
+    for (const copy of [LOCALE_AI_TERMS.ja, japaneseInstruction()]) {
+      expect(copy).toBe(copy.normalize("NFC"));
+      expect(copy).not.toMatch(/[｡-ﾟ０-９]/);
+    }
+  });
+
+  it("types Japanese exactly like the shared normalizeJapaneseTypography", () => {
+    const typeset = edgeTypography();
+    const samples = [
+      "氷を入れます.シェイクします.",
+      "ジンを30ml.\n氷を入れます.",
+      'ジン,ライム "ギムレット" 本当に? 乾杯!',
+      "入れます。 次に",
+      "ｼﾞﾝ･ﾄﾆｯｸ １５ml",
+      "ジン",
+      "1.5 B-52 Dr. Smith https://example.com/a.b",
+      "Shake well. Strain.",
+      'Say "hi", then go!',
+      "ジン(ドライ):30ml 本当に！？",
+      "",
+    ];
+    expect(samples.map(typeset)).toEqual(samples.map(normalizeJapaneseTypography));
   });
 });
 

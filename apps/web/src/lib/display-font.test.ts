@@ -7,14 +7,17 @@ import {
   BODY_SCRIPT_FONT_BY_LOCALE,
   DISPLAY_FONT_BY_LOCALE,
   DISPLAY_FONT_FILES,
+  SCRIPT_FONT_STYLESHEET_BY_LOCALE,
   isShareImageFont,
 } from "./display-font";
 import { SHARE_IMAGE_LOCALE } from "./open-graph";
+import { SCRIPT_FONT_STYLESHEETS } from "../../scripts/script-fonts.config.mjs";
 
 // Spec 0047 AC-10: Russian headings use Lora (Fraunces has no Cyrillic).
 // Spec 0048 AC-10: Hindi headings use Noto Serif Devanagari and Hindi body
-// text adds Noto Sans Devanagari. Every other locale keeps Fraunces and Inter
-// alone, so only /ru downloads Lora and only /hi downloads the Noto fonts.
+// text adds Noto Sans Devanagari. Spec 0050 AC-11: Japanese does the same
+// with Noto Serif JP and Noto Sans JP. Every other locale keeps Fraunces and
+// Inter alone, so only /ru downloads Lora and only /hi and /ja download Noto.
 
 describe("DISPLAY_FONT_BY_LOCALE", () => {
   it("gives Russian headings Lora", () => {
@@ -25,8 +28,14 @@ describe("DISPLAY_FONT_BY_LOCALE", () => {
     expect(DISPLAY_FONT_BY_LOCALE.hi).toBe("notoSerifDevanagari");
   });
 
+  it("gives Japanese headings Noto Serif JP", () => {
+    expect(DISPLAY_FONT_BY_LOCALE.ja).toBe("notoSerifJp");
+  });
+
   it("keeps every other locale on Fraunces", () => {
-    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "ru" && locale !== "hi");
+    const others = SUPPORTED_LOCALES.filter(
+      (locale) => locale !== "ru" && locale !== "hi" && locale !== "ja",
+    );
     expect(others.map((locale) => DISPLAY_FONT_BY_LOCALE[locale])).toEqual(
       others.map(() => "fraunces"),
     );
@@ -34,19 +43,37 @@ describe("DISPLAY_FONT_BY_LOCALE", () => {
 });
 
 describe("BODY_SCRIPT_FONT_BY_LOCALE", () => {
-  it("adds Noto Sans Devanagari for Hindi only", () => {
+  it("adds Noto Sans Devanagari for Hindi and Noto Sans JP for Japanese only", () => {
     expect(BODY_SCRIPT_FONT_BY_LOCALE.hi).toBe("notoSansDevanagari");
-    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "hi");
+    expect(BODY_SCRIPT_FONT_BY_LOCALE.ja).toBe("notoSansJp");
+    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "hi" && locale !== "ja");
     expect(others.map((locale) => BODY_SCRIPT_FONT_BY_LOCALE[locale])).toEqual(
       others.map(() => "none"),
     );
   });
 });
 
-describe("SHARE_IMAGE_LOCALE (spec 0048 AC-19)", () => {
-  it("maps Hindi to the English card and every other locale to itself", () => {
+describe("SCRIPT_FONT_STYLESHEET_BY_LOCALE (spec 0050 AC-11)", () => {
+  it("links the Japanese stylesheet on /ja and none anywhere else", () => {
+    expect(SCRIPT_FONT_STYLESHEET_BY_LOCALE.ja).toBe("/fonts/ja/fonts.css");
+    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "ja");
+    expect(others.map((locale) => SCRIPT_FONT_STYLESHEET_BY_LOCALE[locale])).toEqual(
+      others.map(() => null),
+    );
+  });
+
+  it("points every stylesheet at a fetched config entry", () => {
+    const fetched = SCRIPT_FONT_STYLESHEETS.map(({ dir }) => `/fonts/${dir}/fonts.css`);
+    const linked = Object.values(SCRIPT_FONT_STYLESHEET_BY_LOCALE).filter((path) => path !== null);
+    expect(linked.filter((path) => !fetched.includes(path))).toEqual([]);
+  });
+});
+
+describe("SHARE_IMAGE_LOCALE (spec 0048 AC-19, spec 0050 AC-20)", () => {
+  it("maps Hindi and Japanese to the English card and every other locale to itself", () => {
     expect(SHARE_IMAGE_LOCALE.hi).toBe("en");
-    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "hi");
+    expect(SHARE_IMAGE_LOCALE.ja).toBe("en");
+    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "hi" && locale !== "ja");
     expect(others.map((locale) => SHARE_IMAGE_LOCALE[locale])).toEqual(others);
   });
 

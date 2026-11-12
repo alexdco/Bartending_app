@@ -82,7 +82,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 69 | French | Slice 39 | in-progress |
 | 70 | Russian | Slice 39 | done |
 | 71 | Hindi | Slice 39 | in-progress |
-| 72 | Japanese | Slice 39 | planned |
+| 72 | Japanese | Slice 39 | in-progress |
 | 73 | Korean | Slice 39 | planned |
 | 74 | Simplified Chinese | Slice 39 | planned |
 | 75 | Arabic | Slice 39 | planned |
@@ -856,8 +856,8 @@ Keep the catalog right as it changes: decide whether the import job or an admin 
 - [ ] Design it (spec): `/architect catalog freshness rules`
 
 ### 60. Store listing copy and app icon
-Store title, subtitle, keywords, and description in English, Spanish, Brazilian Portuguese, and French, plus a designed app icon and an iOS Icon Composer `.icon` dropped in as `assets/brand/mark.svg` (from specs 0037, 0045, and 0046, features 45, 54, and 69).
-**Done when:** listing copy exists for all four locales within each store's length limits, and the designed icon replaces the placeholder in both store builds.
+Store title, subtitle, keywords, and description in English, Spanish, Brazilian Portuguese, French, and Japanese, plus a designed app icon and an iOS Icon Composer `.icon` dropped in as `assets/brand/mark.svg` (from specs 0037, 0045, 0046, and 0050, features 45, 54, 69, and 72).
+**Done when:** listing copy exists for all five locales within each store's length limits, and the designed icon replaces the placeholder in both store builds.
 - [ ] Build it: `/develop store listing copy and app icon`
 
 ### 61. Automated accessibility checks · needs a decision
@@ -960,18 +960,27 @@ Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); 
 - [ ] Test it: `/test hindi locale`
 Spec [0048](../specs/0048-hindi-locale/index.md) · prerequisite [0049](../specs/0049-type-scale-reaches-tailwind/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
-### 72. Japanese · needs a decision
-Adds Japanese (`ja`). No word spaces and no Postgres stemmer, so search needs `pg_trgm` or a tokenizer; CJK fonts and line breaking on web and mobile. The spec should settle the CJK search approach for features 73 and 74 too.
+### 72. Japanese · in-progress
+Adds Japanese (`ja`) on the Hindi path with the `simple` search config, plus a locale agnostic CJK "contains" search tier (`search_fold`, `has_cjk`) in `search_recipes` and `search_ingredients` that fires only for queries with Han, kana, or Hangul characters, so Korean and Chinese reuse it. Noto Sans JP and Noto Serif JP on `/ja` only; English name slugs through `base_name`; the `/ja` share image stays English. Built unlaunched; launch waits only on Japanese's own sign offs.
 **Done when:** `/ja` pages and the mobile app read in Japanese (untranslated content falls back to English), searching a Japanese drink or ingredient name finds it, and Japanese is launched in the switcher, detection, sitemap, and hreflang.
-- [ ] Design it (spec): `/architect japanese locale`
+- [x] Design it (spec): `/architect japanese locale`
+- [ ] Build it: `/develop japanese locale`
+  - [ ] Thin thread, unlaunched: the `ja` row, `locale.ts` entries, `normalizeJapaneseTypography` and its edge function copy with the hand copies test, the `/ja` only Noto JP stylesheet (build time fetch plus postbuild check) and `:lang(ja)` CSS, `SHARE_IMAGE_LOCALE`, the named test updates, mobile registration and the English set phone checks, one recipe translated, satisfies AC-5, AC-7, AC-8, AC-10 to AC-12, AC-18 to AC-22
+  - [ ] CJK search tier: `search_fold`, `has_cjk`, and the contains tier in `search_recipes` and `search_ingredients`, with the six locale before and after snapshot and the widened structure query, satisfies AC-3 to AC-6 (migration `20261111150000_cjk_search.sql` applied 2026-11-11; after apply snapshot in 7 locales as `anon` and `authenticated` shows 0 differences, grants, folds, and structure query pass; live `ja` searches wait on the `ja` row and translated recipes)
+  - [ ] Content: terms review, full catalog backfill, the `--locale ja` notes proposal, and the Japanese UI strings, satisfies AC-1, AC-2, AC-13, AC-15 to AC-17
+  - [ ] Native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-13, AC-14, AC-16, AC-18, AC-21
+  - [ ] Launch (after the native review sign off): `ja` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit with the launch tests, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-9, AC-23, AC-24
+- [ ] Verify it: `/check verify japanese locale`
+- [ ] Test it: `/test japanese locale`
+Spec [0050](../specs/0050-japanese-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 73. Korean · needs a decision
-Adds Korean (`ko`). No Postgres stemmer; reuses the CJK search approach chosen in feature 72.
+Adds Korean (`ko`). No Postgres stemmer; reuses the CJK search from spec 0050 (a `('ko', 'simple')` row; `has_cjk` already covers Hangul, so no SQL function change), plus a body font in `BODY_SCRIPT_FONT_BY_LOCALE`, a heading font in `DISPLAY_FONT_BY_LOCALE`, and `SHARE_IMAGE_LOCALE.ko = "en"`.
 **Done when:** `/ko` pages and the mobile app read in Korean (untranslated content falls back to English), Korean search finds drinks and ingredients, and Korean is launched in the switcher, detection, sitemap, and hreflang.
 - [ ] Design it (spec): `/architect korean locale`
 
 ### 74. Simplified Chinese · needs a decision
-Adds Simplified Chinese (`zh`, hreflang `zh-CN`). No word spaces; reuses the CJK search approach chosen in feature 72. The spec should decide whether the URL code is `zh` or `zh-cn`, leaving room for Traditional Chinese later.
+Adds Simplified Chinese (`zh`, hreflang `zh-CN`). No word spaces; reuses the CJK search from spec 0050 (a `('zh', 'simple')` row, no SQL function change) and its font and share image maps. The spec should decide whether search folds Traditional to Simplified characters, and whether the URL code is `zh` or `zh-cn`, leaving room for Traditional Chinese later.
 **Done when:** `/zh` pages and the mobile app read in Simplified Chinese (untranslated content falls back to English), Chinese search finds drinks and ingredients, and Simplified Chinese is launched in the switcher, detection, sitemap, and hreflang.
 - [ ] Design it (spec): `/architect simplified chinese locale`
 
@@ -986,7 +995,7 @@ A separate `pt-PT` locale beside today's Brazilian `pt`, which needs region awar
 - [ ] Design it (spec): `/architect european portuguese locale`
 
 ### 77. Accent insensitive search · needs a decision
-Search ignores accents only for French translated recipe names (spec 0046). Ingredient search, the trigram tier, English base names, and Spanish and Portuguese stay accent sensitive, so "peche" may miss "pêche" and "limon" may miss "limón" (from spec 0046, feature 69).
+Search ignores accents only for French translated recipe names (spec 0046). Ingredient search, the trigram tier, English base names, and Spanish and Portuguese stay accent sensitive, so "peche" may miss "pêche" and "limon" may miss "limón" (from spec 0046, feature 69). Spec 0050 added a CJK only contains tier on translated names with an immutable `search_fold` helper; a trigram tier on translated names here should reuse or extend `search_fold` rather than add a second normalizer.
 **Done when:** recipe and ingredient search match with or without accents in every locale, with a before and after snapshot showing no other result changes, and trigram search stays fast.
 - [ ] Design it (spec): `/architect accent insensitive search`
 

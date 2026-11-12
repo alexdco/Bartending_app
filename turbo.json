@@ -11,7 +11,8 @@
     },
     "build": {
       "dependsOn": ["^build"],
-      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+      "inputs": ["$TURBO_DEFAULT$", "scripts/script-fonts.config.mjs"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**", "public/fonts/**"]
     },
     "lint": {
       "dependsOn": ["^build"]

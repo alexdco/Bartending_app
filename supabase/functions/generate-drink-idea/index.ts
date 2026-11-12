@@ -70,7 +70,7 @@ async function guestIpHash(headers: Headers, secret: string, userId: string): Pr
   return hashIpBucket(ipBucket(clientIp), secret);
 }
 
-const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = "en";
 
@@ -81,6 +81,7 @@ const LOCALE_NAMES: Record<Locale, string> = {
   fr: "French as written in France",
   ru: "Russian",
   hi: "Hindi",
+  ja: "Japanese",
 };
 
 // Hand copy of LOCALE_AI_TERMS.fr in packages/shared/src/locale.ts (this Deno
@@ -168,16 +169,60 @@ function normalizeHindiTypography(text: string): string {
     .replace(/"([^"\n]+)"/g, (_match, inner: string) => `\u201C${inner.trim()}\u201D`);
 }
 
+// Hand copy of LOCALE_AI_TERMS.ja in packages/shared/src/locale.ts (spec 0050
+// AC-18); change both in the same commit.
+// Polite \u3067\u3059\u30FB\u307E\u3059 Japanese, lime \u00AB\u30E9\u30A4\u30E0\u00BB, lemon \u00AB\u30EC\u30E2\u30F3\u00BB, katakana cocktail names
+// with \u00AB\u30FB\u00BB, half width digits, \u00AB\u3002\u00BB \u00AB\u3001\u00BB and \u00AB\u300C\u300D\u00BB.
+const JAPANESE_INSTRUCTION =
+  "Write natural Japanese in the \u3067\u3059\u30FB\u307E\u3059 polite form. " +
+  "Lime is \u00AB\u30E9\u30A4\u30E0\u00BB and lemon is \u00AB\u30EC\u30E2\u30F3\u00BB. " +
+  "Write cocktail names in katakana with \u00AB\u30FB\u00BB between words. " +
+  "Use half width digits, \u00AB\u3002\u00BB and \u00AB\u3001\u00BB, and \u00AB\u300C\u300D\u00BB for quotes. ";
+
+// Hand copy of normalizeJapaneseTypography in packages/shared/src/japaneseTypography.ts
+// (spec 0050 AC-18, AC-22); change both in the same commit. Self contained,
+// since locale.test.ts extracts and runs it.
+function normalizeJapaneseTypography(text: string): string {
+  const japanese = "\\u3005\\u3040-\\u30FF\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF";
+  const punctuated = `${japanese}\\u3001-\\u303F\\uFF01\\uFF1F`;
+  const hasJapanese = new RegExp(`[${japanese}]`);
+  const japaneseBeforeDot = new RegExp(`[${japanese}\\u300D]`);
+  return text
+    .normalize("NFC")
+    .replace(/[\uFF61-\uFF9F]+/g, (run) => run.normalize("NFKC"))
+    .replace(/[\uFF10-\uFF19]/g, (digit) => String.fromCharCode(digit.charCodeAt(0) - 0xfee0))
+    .replace(
+      new RegExp(`(?<=[${japanese}\\u300DA-Za-z0-9%)])\\.(?=$|\\r?\\n|[ \\t]*[${japanese}])`, "g"),
+      (dot, offset, whole) => {
+        const start = whole.lastIndexOf("\n", offset - 1) + 1;
+        const end = whole.indexOf("\n", offset);
+        return japaneseBeforeDot.test(whole.charAt(offset - 1)) ||
+          hasJapanese.test(whole.slice(start, end === -1 ? undefined : end))
+          ? "\u3002"
+          : dot;
+      },
+    )
+    .replace(new RegExp(`(?<=[${japanese}]),`, "g"), "\u3001")
+    .replace(new RegExp(`(?<=[${japanese}])!`, "g"), "\uFF01")
+    .replace(new RegExp(`(?<=[${japanese}])\\?`, "g"), "\uFF1F")
+    .replace(new RegExp(`(?<=[${punctuated}]) +(?=[${punctuated}])`, "g"), "")
+    .replace(/"([^"\n]+)"/g, (pair, inner) =>
+      hasJapanese.test(inner) ? `\u300C${inner.trim()}\u300D` : pair,
+    );
+}
+
 const LOCALE_INSTRUCTIONS: Partial<Record<Locale, string>> = {
   fr: FRENCH_INSTRUCTION,
   ru: RUSSIAN_INSTRUCTION,
   hi: HINDI_INSTRUCTION,
+  ja: JAPANESE_INSTRUCTION,
 };
 
 const LOCALE_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
   fr: normalizeFrenchTypography,
   ru: normalizeRussianTypography,
   hi: normalizeHindiTypography,
+  ja: normalizeJapaneseTypography,
 };
 
 /** The locale's typography on the text its reader sees; source_name stays as matched. */

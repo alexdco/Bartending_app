@@ -4,10 +4,12 @@
   "private": true,
   "scripts": {
     "generate-theme": "tsx ./scripts/generate-theme-css.mjs",
-    "predev": "pnpm run generate-theme",
+    "fetch-script-fonts": "tsx ./scripts/fetch-script-fonts.mjs",
+    "predev": "pnpm run generate-theme && tsx ./scripts/fetch-script-fonts.mjs --dev",
     "dev": "next dev",
-    "prebuild": "pnpm run generate-theme",
+    "prebuild": "pnpm run generate-theme && tsx ./scripts/fetch-script-fonts.mjs",
     "build": "next build",
+    "postbuild": "tsx ./scripts/check-script-font-css.mjs",
     "start": "next start",
     "lint": "eslint",
     "typecheck": "tsc --noEmit"

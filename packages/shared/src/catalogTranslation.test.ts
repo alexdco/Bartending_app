@@ -98,6 +98,13 @@ describe("localeTypography", () => {
     );
   });
 
+  // covers: spec 0050 AC-1, AC-22
+  it("applies Japanese typography to ja output", () => {
+    expect(localeTypography("ja")('"ギムレット"にｼﾞﾝを１５ml入れます.')).toBe(
+      "「ギムレット」にジンを15ml入れます。",
+    );
+  });
+
   // covers: spec 0047 AC-1
   it("applies Russian typography to ru output", () => {
     expect(localeTypography("ru")('Коктейль "Мохито" - классика.')).toBe(

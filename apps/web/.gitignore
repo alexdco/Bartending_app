@@ -17,6 +17,9 @@
 /.next/
 /out/
 
+# self hosted script fonts, fetched at build (spec 0050 AC-11)
+/public/fonts/
+
 # production
 /build
 

@@ -14,7 +14,7 @@ export const AGE_GATE_VERSION = "1";
 
 const EXEMPT_PATHS = ["privacy", "auth/callback"] as const;
 
-// Today this is exactly ^(?:/(?:en|es|pt|fr|ru|hi))?/(?:privacy|auth/callback)/?$
+// Today this is exactly ^(?:/(?:en|es|pt|fr|ru|hi|ja))?/(?:privacy|auth/callback)/?$
 export const AGE_GATE_EXEMPT_PATTERN = new RegExp(
   `^(?:/(?:${SUPPORTED_LOCALES.join("|")}))?/(?:${EXEMPT_PATHS.join("|")})/?$`,
 );

@@ -2,10 +2,11 @@ import type { Locale } from "@bartendingapp/shared";
 
 // The heading font per locale (spec 0047 AC-10). Fraunces has no Cyrillic, so
 // Russian headings use Lora; it has no Devanagari either, so Hindi headings
-// use Noto Serif Devanagari (spec 0048 AC-10). A Record, so every new locale
-// must pick one; a new script adds its font here and in layout.tsx.
+// use Noto Serif Devanagari (spec 0048 AC-10), and Japanese headings use Noto
+// Serif JP (spec 0050 AC-11). A Record, so every new locale must pick one; a
+// new script adds its font here and in layout.tsx.
 
-export type DisplayFont = "fraunces" | "lora" | "notoSerifDevanagari";
+export type DisplayFont = "fraunces" | "lora" | "notoSerifDevanagari" | "notoSerifJp";
 
 export const DISPLAY_FONT_BY_LOCALE: Record<Locale, DisplayFont> = {
   en: "fraunces",
@@ -14,14 +15,15 @@ export const DISPLAY_FONT_BY_LOCALE: Record<Locale, DisplayFont> = {
   fr: "fraunces",
   ru: "lora",
   hi: "notoSerifDevanagari",
+  ja: "notoSerifJp",
 };
 
 /**
  * The body font for a script Inter lacks, layered after Inter in
- * `--font-body` (spec 0048 AC-10). "none" keeps Inter alone, and the font is
- * downloaded only on pages whose locale names it.
+ * `--font-body` (spec 0048 AC-10, spec 0050 AC-11). "none" keeps Inter alone,
+ * and the font is downloaded only on pages whose locale names it.
  */
-export type BodyScriptFont = "none" | "notoSansDevanagari";
+export type BodyScriptFont = "none" | "notoSansDevanagari" | "notoSansJp";
 
 export const BODY_SCRIPT_FONT_BY_LOCALE: Record<Locale, BodyScriptFont> = {
   en: "none",
@@ -30,6 +32,24 @@ export const BODY_SCRIPT_FONT_BY_LOCALE: Record<Locale, BodyScriptFont> = {
   fr: "none",
   ru: "none",
   hi: "notoSansDevanagari",
+  ja: "notoSansJp",
+};
+
+/**
+ * The self hosted font stylesheet a locale's layout links, or null (spec 0050
+ * AC-11). CJK fonts ship this way, never through next/font in the shared
+ * layout, which would put their @font-face rules into every locale's CSS. Each
+ * path is an entry in scripts/script-fonts.config.mjs. A Record, so Korean and
+ * Chinese must each choose.
+ */
+export const SCRIPT_FONT_STYLESHEET_BY_LOCALE: Record<Locale, string | null> = {
+  en: null,
+  es: null,
+  pt: null,
+  fr: null,
+  ru: null,
+  hi: null,
+  ja: "/fonts/ja/fonts.css",
 };
 
 /** The display fonts the share image bundles; a locale without one maps away in SHARE_IMAGE_LOCALE. */

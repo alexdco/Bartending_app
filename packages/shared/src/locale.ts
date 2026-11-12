@@ -6,9 +6,9 @@
 // Specs: docs/specs/0020-multi-language-support/index.md,
 // docs/specs/0045-language-agnostic-locales-portuguese/index.md,
 // docs/specs/0046-french-locale.md, docs/specs/0047-russian-locale.md,
-// docs/specs/0048-hindi-locale/index.md
+// docs/specs/0048-hindi-locale/index.md, docs/specs/0050-japanese-locale/index.md
 
-export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -53,6 +53,9 @@ export const LOCALE_TEXT_SEARCH_CONFIG: Record<Locale, string> = {
   ru: "russian",
   // Built in; it stems "संतरा" and "संतरे" alike (spec 0048 AC-3).
   hi: "hindi",
+  // No Japanese stemmer; `simple` splits names at ・, and the locale agnostic
+  // CJK contains tier in the search functions finds the rest (spec 0050 AC-3).
+  ja: "simple",
 };
 
 /** BCP 47 codes for hreflang, the sitemap, and <html lang>. URLs keep the bare code. */
@@ -63,6 +66,7 @@ export const LOCALE_HREFLANG: Record<Locale, string> = {
   fr: "fr",
   ru: "ru",
   hi: "hi",
+  ja: "ja",
 };
 
 /** The language named in AI translation and recipe notes prompts. */
@@ -73,6 +77,7 @@ export const LOCALE_AI_LANGUAGE: Record<Locale, string> = {
   fr: "French as written in France",
   ru: "Russian",
   hi: "Hindi",
+  ja: "Japanese",
 };
 
 /**
@@ -125,6 +130,20 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "glass is «ओल्ड फ़ैशन्ड गिलास». Use Western " +
     "digits (0 to 9), write units without dots (मिली, सेली, ली, औंस), end sentences with " +
     "«।», and use “ ” quotes.",
+  // Drafted for the native review (spec 0050), which approves it before the
+  // backfill. generate-drink-idea carries a hand copy of the register,
+  // citrus, name, and punctuation sentences: change both together.
+  ja:
+    " Write natural Japanese in the です・ます polite form. Lime is «ライム» and lemon is " +
+    "«レモン»; keep lemon and lime distinct. Write cocktail names in katakana with «・» between " +
+    "words (ジン・トニック), using the established Japanese name where one exists. Bar tools: " +
+    "shaker is «シェーカー», jigger is «メジャーカップ», muddler is «ペストル», strainer is " +
+    "«ストレーナー», and bar spoon is «バースプーン». Simple syrup is «シンプルシロップ», " +
+    "bitters is «ビターズ», and ice is «氷». Write glass names in katakana, for example old " +
+    "fashioned glass is «ロックグラス», cocktail glass is «カクテルグラス», collins glass is " +
+    "«コリンズグラス», and highball glass is «ハイボールグラス». Use half width digits, write " +
+    "units as ml, cl, L, and «オンス», punctuate with «。» and «、», use «「」» for quotes, and " +
+    "put no spaces between Japanese words.",
 };
 
 /** Each language's own name, shown in the switcher whatever the active language. */
@@ -135,6 +154,7 @@ export const LOCALE_NATIVE_NAME: Record<Locale, string> = {
   fr: "Français",
   ru: "Русский",
   hi: "हिन्दी",
+  ja: "日本語",
 };
 
 export function isSupportedLocale(value: string | null | undefined): value is Locale {

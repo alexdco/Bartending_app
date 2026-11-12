@@ -8,6 +8,7 @@ describe("requiredPluralForms", () => {
     ["pt", ["one", "other"]],
     ["fr", ["one", "other"]],
     ["ru", ["one", "few", "many", "other"]],
+    ["ja", ["other"]],
   ] as const)("%s needs %j", (locale, forms) => {
     expect(requiredPluralForms(locale)).toEqual(forms);
   });

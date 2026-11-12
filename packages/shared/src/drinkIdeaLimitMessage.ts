@@ -121,6 +121,25 @@ const COPY: Record<Locale, Copy> = {
       before: "आज ड्रिंक आइडिया की बहुत माँग है। बाद में फिर कोशिश करें। फिर से उपलब्ध: {time}",
     },
   },
+  // Hand written polite Japanese (spec 0050 AC-14), pending native review.
+  // Japanese nouns don't change form, so {time}以降 reads naturally (AC-13).
+  ja: {
+    signIn: "ログイン",
+    signInLimit: {
+      before: "今日の無料ドリンクアイデアを使い切りました。",
+      after: "すると今日さらに使えます。または{time}以降にもう一度お試しください。",
+    },
+    limit: {
+      before: "今日のドリンクアイデアの上限に達しました。{time}以降にもう一度お試しください。",
+    },
+    busySignIn: {
+      before: "今日はドリンクアイデアが大変混み合っています。",
+      after: "すると続けられます。または{time}以降にもう一度お試しください。",
+    },
+    busy: {
+      before: "今日はドリンクアイデアが大変混み合っています。{time}以降にもう一度お試しください。",
+    },
+  },
 };
 
 function copyCase(limitReason: DrinkIdeaLimitReason, signInHelps: boolean): CopyCase {

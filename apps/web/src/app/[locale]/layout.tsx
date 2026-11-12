@@ -24,6 +24,7 @@ import { SITE_URL } from "@/lib/site-url";
 import {
   BODY_SCRIPT_FONT_BY_LOCALE,
   DISPLAY_FONT_BY_LOCALE,
+  SCRIPT_FONT_STYLESHEET_BY_LOCALE,
   type BodyScriptFont,
   type DisplayFont,
 } from "@/lib/display-font";
@@ -63,6 +64,9 @@ const DISPLAY_FONTS: Record<DisplayFont, { readonly variable: string }> = {
   fraunces,
   lora,
   notoSerifDevanagari,
+  // No class: the /ja stylesheet (SCRIPT_FONT_STYLESHEET_BY_LOCALE) and the
+  // :root:lang(ja) block in globals.css supply Noto Serif JP (spec 0050 AC-11).
+  notoSerifJp: { variable: "" },
 };
 
 // Devanagari body text on /hi, after Inter in the :lang(hi) --font-body, so
@@ -78,6 +82,8 @@ const notoSansDevanagari = Noto_Sans_Devanagari({
 const BODY_SCRIPT_FONT_CLASS: Record<BodyScriptFont, string> = {
   none: "",
   notoSansDevanagari: notoSansDevanagari.variable,
+  // No class: the /ja stylesheet and :root:lang(ja) supply Noto Sans JP.
+  notoSansJp: "",
 };
 
 const inter = Inter({
@@ -157,6 +163,7 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
   setRequestLocale(locale);
 
   const messages = await getMessages();
+  const scriptFontStylesheet = SCRIPT_FONT_STYLESHEET_BY_LOCALE[locale];
 
   return (
     <html
@@ -167,6 +174,13 @@ export default async function LocaleLayout({ children, params }: LayoutProps<"/[
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
         <script dangerouslySetInnerHTML={{ __html: ageGateInitScript }} />
+        {scriptFontStylesheet && (
+          // A static, self hosted font stylesheet linked for its locale only,
+          // so no other locale downloads its CJK @font-face rules (spec 0050
+          // AC-11). Render blocking on purpose: headings never flash in the
+          // wrong family before the rules arrive.
+          <link rel="stylesheet" href={scriptFontStylesheet} />
+        )}
       </head>
       <body>
         <NextIntlClientProvider messages={messages}>

@@ -42,6 +42,11 @@ const notesByLocale: Record<
     bartender_tip: "खूब बर्फ़ के साथ ज़ोर से हिलाएँ, ताकि यह ठंडा और हल्का पतला बने।",
     presentation_tip: "किनारे के सिर्फ़ आधे हिस्से पर नमक लगाएँ, ताकि हर घूँट मेहमान की पसंद रहे।",
   },
+  ja: {
+    drink_style_note: " ライムとオレンジリキュールでバランスを取ったテキーラ・サワーです。 ",
+    bartender_tip: "たっぷりの氷で強くシェイクし、よく冷やして少し薄めます。",
+    presentation_tip: "グラスの縁の半分だけに塩をつけると、ゲストが好みで選べます。",
+  },
 };
 
 // One block per CATALOG_TRANSLATION_LOCALES code, so the fixture stays valid at launch.

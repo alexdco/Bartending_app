@@ -106,6 +106,24 @@ describe("drinkIdeaLimitMessage", () => {
     },
   );
 
+  // covers: spec 0050 AC-13, AC-14
+  it.each([
+    ["user_limit", true],
+    ["user_limit", false],
+    ["global_limit", true],
+    ["global_limit", false],
+  ] as const)(
+    "writes the Japanese %s copy with the time before 以降 (sign in helps: %s)",
+    (limitReason, signInHelps) => {
+      const message = drinkIdeaLimitMessage(
+        { limitReason, signInHelps, resetsAt: RESETS_AT },
+        { copyLocale: "ja", formatLocale: "ja", timeZone: "UTC" },
+      );
+      expect(message?.signInText).toBe(signInHelps ? "ログイン" : undefined);
+      expect(join(message)).toMatch(/2026.*以降にもう一度お試しください。$/u);
+    },
+  );
+
   it("shows the reset time in the given time zone", () => {
     const message = drinkIdeaLimitMessage(
       { limitReason: "user_limit", signInHelps: false, resetsAt: RESETS_AT },
