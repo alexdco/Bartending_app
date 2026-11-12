@@ -91,5 +91,12 @@ For step 5 review: the model uses ・ in ingredient names unevenly (フレッシ
 
 _2026-11-12: you chose to apply the notes before the native review, unlike AC-16's order. The only edit before the apply was Gin Rickey's bartender tip, which now names the lemon its source names (ジンとレモンを注いだ後に). The review still owes a read of every applied note; fix any it finds with the admin form or a rerun of the apply on an edited file._
 
-- [ ] Native reviewer reads the UI strings, the placeholder list, unit, batch, and limit copy, a sample of drink ideas, and every note → AC-1, AC-13, AC-14, AC-16, AC-18 (open items: the 28 noun ending style notes, the uneven ・ in ingredient names, and the drink idea lines noted under Edge function)
+- [x] Native reviewer reads the UI strings, the placeholder list, unit, batch, and limit copy, a sample of drink ideas, and every note → AC-1, AC-13, AC-14, AC-16, AC-18 (signed off by you 2026-11-12, with no further changes; the 28 noun ending style notes, the uneven ・ in ingredient names, and the drink idea lines under Edge function were accepted as they are)
+
+## Build step 6 (launch)
+
+- [x] One commit adds `"ja"` to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES`, with `ja` in the `hreflangAlternates` launched map and a "launched Japanese" describe block (`ja` and `ja-JP` detection, `en-JP` stays English, a stored `ja` kept) → AC-9, AC-23 (b050747, 2026-11-12; `pnpm test` 914 pass. The `notesByLocale` fixture already had its `ja` block from step 1)
+- [ ] Ship a mobile build with the launch → AC-23
+- [ ] Production: `Accept-Language: ja-JP` lands on `/ja`; the menu shows 日本語; the sitemap and every hreflang alternate list `ja`; `/ja` pages drop `noindex` → AC-9, AC-23
+- [ ] Feature 60 store listings in Japanese → AC-24 (does not hold up the web launch)
 - [x] `pnpm --filter @bartendingapp/shared apply-recipe-notes --locale ja` → only `ja` rows change → AC-16 (2026-11-12: 473 of 473 applied; 473 `ja` rows hold notes, all NFC, and no recipe with English notes lacks Japanese ones. An md5 over every non `ja` `recipe_translations` row's notes and `updated_at`, and one over `recipes` notes, matched before and after)
