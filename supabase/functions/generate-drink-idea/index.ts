@@ -133,7 +133,10 @@ const HINDI_INSTRUCTION =
   "Write everyday Hindi in Devanagari and address the reader as \u00AB\u0906\u092A\u00BB. Never mix Latin letters into a Hindi word. " +
   "Lime is \u00AB\u0939\u0930\u093E \u0928\u0940\u0902\u092C\u0942\u00BB and lemon is \u00AB\u092A\u0940\u0932\u093E \u0928\u0940\u0902\u092C\u0942\u00BB, inflected as grammar needs (\u0939\u0930\u0947, \u0939\u0930\u0940, \u092A\u0940\u0932\u0947, \u092A\u0940\u0932\u0940); never write \u00AB\u0928\u0940\u0902\u092C\u0942\u00BB alone. " +
   "Lemonade is \u00AB\u092A\u0940\u0932\u0947 \u0928\u0940\u0902\u092C\u0942 \u0915\u093E \u0936\u0930\u092C\u0924\u00BB and lemon-lime soda is \u00AB\u092A\u0940\u0932\u0947 \u0914\u0930 \u0939\u0930\u0947 \u0928\u0940\u0902\u092C\u0942 \u0935\u093E\u0932\u093E \u0938\u094B\u0921\u093E\u00BB, never \u00AB\u0928\u0940\u0902\u092C\u0942 \u092A\u093E\u0928\u0940\u00BB. " +
-  // Phrased so ice is wording only: a bare "Ice is \u00AB\u092C\u0930\u094D\u092B\u093C\u00BB" made Haiku list ice as an
+  // Grapefruit \u00AB\u091A\u0915\u094B\u0924\u0930\u093E\u00BB, never \u00AB\u0905\u0902\u0917\u0942\u0930\u00BB (grape); cranberry \u00AB\u0915\u094D\u0930\u0948\u0928\u092C\u0947\u0930\u0940\u00BB, never \u00AB\u0915\u0930\u0902\u091F\u00BB.
+  "Grapefruit is \u00AB\u091A\u0915\u094B\u0924\u0930\u093E\u00BB (\u091A\u0915\u094B\u0924\u0930\u0947 as grammar needs), never \u00AB\u0905\u0902\u0917\u0942\u0930\u00BB, which means grape. " +
+  "Cranberry is \u00AB\u0915\u094D\u0930\u0948\u0928\u092C\u0947\u0930\u0940\u00BB, never \u00AB\u0915\u0930\u0902\u091F\u00BB. " +
+  // Phrased so ice is wording only: a bare ice sentence made Haiku list ice as an
   // ingredient in about half of runs, which fails the pantry check (0007 AC-8).
   "When a step mentions ice, write \u00AB\u092C\u0930\u094D\u092B\u093C\u00BB; ice is never an ingredient unless the list above names it. " +
   "Keep bar tool and glass names as Devanagari loanwords. " +

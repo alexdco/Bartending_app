@@ -114,6 +114,9 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "पीली, as in «हरे नींबू का रस»); keep lemon and lime distinct, never write «नींबू» alone, " +
     "and never use the loanwords «लाइम» or «लेमन». Lemonade is «पीले नींबू का शरबत» and " +
     "lemon-lime soda is «पीले और हरे नींबू वाला सोडा», never «नींबू पानी». " +
+    "Grapefruit is «चकोतरा» (चकोतरे as grammar needs, as in «चकोतरे का रस»), never " +
+    "«अंगूर», which means grape, and never the loanword «ग्रेपफ्रूट». Cranberry is " +
+    "«क्रैनबेरी», never «करंट». " +
     "Bar tools: shaker is «शेकर», jigger is «जिगर», muddler is «मडलर», strainer is " +
     "«स्ट्रेनर», and bar spoon is «बार स्पून». Simple syrup is «शुगर सिरप», bitters is " +
     "«बिटर्स», and ice is «बर्फ़». Write glass names as Devanagari loanwords, for example " +
