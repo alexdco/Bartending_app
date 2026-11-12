@@ -21,7 +21,7 @@ _Steps derived from spec 0050 acceptance criteria. `/check verify` runs these; `
 - [ ] Set a test user's `user_preferences.locale` to `'ja'` → accepted; detection ignores it and leaves it in place → AC-19
 
 ### Edge function
-- [ ] Deploy `generate-drink-idea`; a `locale: "ja"` request returns polite Japanese with 。 and passes pantry verification → AC-18 (deployed as version 16 on 2026-11-11, `verify_jwt` still true; the `ja` request check is still owed)
+- [x] Deploy `generate-drink-idea`; a `locale: "ja"` request returns polite Japanese with 。 and passes pantry verification → AC-18 (deployed as version 16 on 2026-11-11, `verify_jwt` still true. 2026-11-12, two live requests as the test account, 4 item pantry: both 200, so every `source_name` passed the pantry check; ライム・ボタニカル and ライム・ウォッカ・フレッシュ, ます form, 。 and 、, ライム, half width `ml` amounts. For step 5 review: run 1 wrote シェイカー where the catalog pins シェーカー (the edge sentence pins no bar tools), the awkward 「力強くシェイクします、約15秒間。」, and 「クープグラスに氷を敷き詰めます」, ice in a coupe)
 
 ### Catalog
 - [x] `translate-catalog --locale ja --limit 1` → one `ja` recipe row, NFC, no half width katakana, no full width digits → AC-22 (2026-11-11: Jamaica Kiss → ジャマイカ・キス, plus one ingredient, one tag, three measures; all NFC, no half width katakana, no full width digits)
@@ -84,5 +84,5 @@ For step 5 review: the model uses ・ in ingredient names unevenly (フレッシ
 
 - [x] Japanese typography in the notes run → `localeTypography("ja")` already returns `normalizeJapaneseTypography` (wired in step 1) → AC-1, AC-16
 - [x] `pnpm --filter @bartendingapp/shared propose-recipe-notes --locale ja` → 473 proposals in `scripts/tagging/recipe-notes-proposals.ja.json` (gitignored) → AC-16 (2026-11-12: 1,419 note lines, 0 non NFC, every line ends in 。 or another Japanese closer, 0 half width katakana, 0 full width digits, 0 ASCII punctuation after Japanese, 0 spaces between Japanese words. For step 5 review: 28 style notes end on a noun (体言止め, such as Brigadier and Bumble Bee) rather than です・ます, and Gin Rickey's bartender tip drops the lemon its source names)
-- [ ] Admin recipe form on one recipe → a Japanese notes section appears; saving it changes only that recipe's `ja` row → AC-17
+- [x] Admin recipe form on one recipe → a Japanese notes section appears; saving it changes only that recipe's `ja` row → AC-17 (2026-11-12 on Jamaica Kiss, as the test admin: `admin_set_recipe_translation_notes` with `p_locale = 'ja'` and the recipe's three proposed notes, the same call `saveRecipeTranslationNotes` makes; stored in NFC. An md5 over every other `recipe_translations` row's notes and `updated_at` (2,869 rows) matched before and after, and `recipes.updated_at` did not move. The form builds its sections from `NON_DEFAULT_LOCALES`, which holds `ja`; the click through in the browser is left to /check verify)
 - [x] Web `messages/ja.json` and mobile `locales/ja.json` drafted in full: polite Japanese, `other` only plurals → AC-1, AC-12 (commit 87495d7)
