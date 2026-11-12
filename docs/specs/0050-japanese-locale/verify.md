@@ -59,11 +59,30 @@ _Steps derived from spec 0050 acceptance criteria. `/check verify` runs these; `
 ### Live `ja` search (after the `ja` row and translated recipes exist; pick names from the real catalog)
 - [x] The katakana, hiragana, and half width forms of one drink word return the same recipes → AC-3 (2026-11-11: ジャマイカ, じゃまいか, ｼﾞｬﾏｲｶ, and キス each find ジャマイカ・キス)
 - [x] A name written with ・ is found by the same query without it → AC-3 (2026-11-11: ジャマイカキス and ジャマイカ キス find ジャマイカ・キス)
-- [ ] A one kanji query finds a recipe whose `ja` name contains it; within the CJK tier a prefix match lists before a contains match, ties by fame → AC-3
+- [x] A one kanji query finds a recipe whose `ja` name contains it; within the CJK tier a prefix match lists before a contains match, ties by fame → AC-3 (2026-11-12, after the backfill: 母 finds オーウェンの祖母の復讐 and 南 finds ラッシー・南インドの飲み物, the only kanji names besides 手作りカルーア; じん lists every ジン… name first, then ピンク・ジン and ラモス・ジン・フィズ, then the gin ingredient tier, 50 rows, no duplicates)
 - [x] `Margarita` on `ja` still finds the recipe through the English name → AC-3 (2026-11-11: checked with Jamaica Kiss on `ja`)
-- [ ] `B-52ショット` (or another mixed query) returns each recipe at most once → AC-3
-- [ ] `search_ingredients` with a one kanji query lists the ingredients containing it, prefix first; staples hidden unless `include_staples` → AC-4
+- [x] `B-52ショット` (or another mixed query) returns each recipe at most once → AC-3 (2026-11-12: B-52 is ビー・52 in `ja`; ビー・52, ビー52, スパイス75, and マルティネス 2 each return their recipe once, 0 duplicates)
+- [x] `search_ingredients` with a one kanji query lists the ingredients containing it, prefix first; staples hidden unless `include_staples` → AC-4 (2026-11-12: 卵 → 卵, 卵白, 卵黄; 氷 → nothing, and 氷 with `include_staples` → 氷)
 - [x] A recipe is found through a Japanese ingredient name in the ingredient tier → AC-4 (2026-11-11: コーヒー and こーひー find Fancy White Russian through コーヒーリキュール)
 
 ## Acceptance-criteria coverage (step 2)
 - AC-3 fold checks, live `ja` searches, `・` and `en` checks · AC-4 ingredient searches · AC-5 structure query · AC-6 pre apply side by side plus post apply snapshot
+
+## Build step 3 (terms review, then catalog backfill)
+
+_2026-11-12: you approved `LOCALE_AI_TERMS.ja` and `JAPANESE_INSTRUCTION` as drafted. No extra pins were needed after the backfill: grapefruit, cranberry, lemonade, and egg white came out as plain katakana or kanji (グレープフルーツ, クランベリー, レモネード, 卵白)._
+
+- [x] Native reviewer approves `LOCALE_AI_TERMS.ja` and `JAPANESE_INSTRUCTION` in `generate-drink-idea` → AC-15, AC-18
+- [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale ja` → every live recipe, ingredient, and tag has a `ja` row → AC-2, AC-15 (2026-11-12: 474 recipes, 0 skipped; 475 recipe rows for 475 live recipes, 398 ingredients, 395 tags, 1,829 measure rows)
+- [x] Run it again → translates nothing → AC-15 (0 ingredients, 0 tags, 0 recipes)
+- [x] Every `ja` row is NFC with no half width katakana or full width digits, and `name_search` equals `to_tsvector('simple', name)` → AC-3, AC-22 (0 non NFC rows across the four tables, 0 bad characters, 0 mismatches; only AT&T keeps a Latin name)
+- [x] Lime and lemon: every ingredient, recipe name, and recipe instruction whose English says lime has ライム, and lemon has レモン, with no swap → AC-15 (the only lemon misses are lemonade names, レモネード, which is right)
+
+For step 5 review: the model uses ・ in ingredient names unevenly (フレッシュライムジュース next to フレッシュ・ライムジュース). Search folds the dot away, so it only matters for looks.
+
+## Build step 4 (notes proposal and UI strings)
+
+- [x] Japanese typography in the notes run → `localeTypography("ja")` already returns `normalizeJapaneseTypography` (wired in step 1) → AC-1, AC-16
+- [x] `pnpm --filter @bartendingapp/shared propose-recipe-notes --locale ja` → 473 proposals in `scripts/tagging/recipe-notes-proposals.ja.json` (gitignored) → AC-16 (2026-11-12: 1,419 note lines, 0 non NFC, every line ends in 。 or another Japanese closer, 0 half width katakana, 0 full width digits, 0 ASCII punctuation after Japanese, 0 spaces between Japanese words. For step 5 review: 28 style notes end on a noun (体言止め, such as Brigadier and Bumble Bee) rather than です・ます, and Gin Rickey's bartender tip drops the lemon its source names)
+- [ ] Admin recipe form on one recipe → a Japanese notes section appears; saving it changes only that recipe's `ja` row → AC-17
+- [x] Web `messages/ja.json` and mobile `locales/ja.json` drafted in full: polite Japanese, `other` only plurals → AC-1, AC-12 (commit 87495d7)
