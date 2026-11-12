@@ -946,7 +946,7 @@ Adds Russian (`ru`). Built in `russian` search config; first Cyrillic locale and
 Spec [0047](../specs/0047-russian-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 71. Hindi · in-progress
-Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); Noto Sans and Noto Serif Devanagari on web; recipe slugs fall back to the English name through a new locale agnostic `base_name` on the recipe read functions; the `/hi` share image stays English. Built now, unlaunched; launch waits for features 69 and 70 to pass `/check verify`.
+Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); Noto Sans and Noto Serif Devanagari on web; recipe slugs fall back to the English name through a new locale agnostic `base_name` on the recipe read functions; the `/hi` share image stays English. Built now, unlaunched; launch waits on the native review and notes apply, not on features 69 and 70.
 **Done when:** `/hi` pages and the mobile app read in Hindi with correct Devanagari rendering (untranslated content falls back to English), Hindi search returns sensible results, and Hindi is launched in the switcher, detection, sitemap, and hreflang.
 - [x] Design it (spec): `/architect hindi locale`
 - [ ] Build it: `/develop hindi locale`
@@ -955,7 +955,7 @@ Adds Hindi (`hi`). Built in `hindi` search config (confirmed on Postgres 17.6); 
   - [x] Slug source: `base_name` on the eight recipe read functions and the English name slug fallback, satisfies AC-5, AC-9 (migration applied 2026-11-11; the `/hi` no redirect click check waits on step 1's translated recipe)
   - [x] Content: terms review, full catalog backfill, the `--locale hi` notes proposal, and the Hindi UI strings, satisfies AC-1, AC-2, AC-12, AC-14 to AC-16 (lemonade and lemon-lime soda pinned; generate-drink-idea version 12; admin form check passed; 12 note lines for review still open in verify.md)
   - [ ] Native review of strings, labels, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-12, AC-13, AC-15, AC-17, AC-20
-  - [ ] Launch (after 69 and 70 verify): `hi` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-8, AC-21, AC-22
+  - [ ] Launch (after the native review sign off): `hi` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-8, AC-21, AC-22
 - [ ] Verify it: `/check verify hindi locale`
 - [ ] Test it: `/test hindi locale`
 Spec [0048](../specs/0048-hindi-locale/index.md) · prerequisite [0049](../specs/0049-type-scale-reaches-tailwind/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
