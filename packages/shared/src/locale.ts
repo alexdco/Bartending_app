@@ -26,7 +26,7 @@ export const NON_DEFAULT_LOCALES: readonly NonDefaultLocale[] = SUPPORTED_LOCALE
  * Every supported locale still routes; only discovery is gated. A new locale
  * joins at launch, in the same commit as CATALOG_TRANSLATION_LOCALES.
  */
-export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt", "fr", "ru"];
+export const LAUNCHED_LOCALES: readonly Locale[] = ["en", "es", "pt", "fr", "ru", "hi"];
 
 /**
  * The locales the import job translates new catalog rows into, and the
@@ -38,6 +38,7 @@ export const CATALOG_TRANSLATION_LOCALES = [
   "pt",
   "fr",
   "ru",
+  "hi",
 ] as const satisfies readonly NonDefaultLocale[];
 
 export type CatalogTranslationLocale = (typeof CATALOG_TRANSLATION_LOCALES)[number];

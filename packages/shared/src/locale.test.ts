@@ -211,6 +211,34 @@ describe("launched Russian", () => {
   });
 });
 
+// Hindi is launched (spec 0048 AC-8, AC-21).
+describe("launched Hindi", () => {
+  it("is launched and translated by the import job", () => {
+    expect(isLaunchedLocale("hi")).toBe(true);
+    expect(CATALOG_TRANSLATION_LOCALES).toContain("hi");
+  });
+
+  it("maps hi and hi-IN to hi", () => {
+    for (const header of ["hi", "hi-IN"]) {
+      expect(parseAcceptLanguage(header)).toBe("hi");
+      expect(resolveRedirectLocale(null, header)).toBe("hi");
+    }
+  });
+
+  it("never picks hi for Indian English, Marathi, or Nepali", () => {
+    for (const header of ["en-IN", "mr-IN", "ne-NP"]) {
+      expect(resolveRedirectLocale(null, header)).toBe("en");
+    }
+    expect(parseAcceptLanguage("mr-IN")).toBeNull();
+    expect(parseAcceptLanguage("ne-NP")).toBeNull();
+  });
+
+  it("keeps a stored hi, ahead of the header", () => {
+    expect(resolveStoredLocale("hi")).toBe("hi");
+    expect(resolveRedirectLocale("hi", "es")).toBe("hi");
+  });
+});
+
 describe("resolveRedirectLocale", () => {
   it("prefers a launched stored locale, then the header, then English", () => {
     expect(resolveRedirectLocale("es", "en-US")).toBe("es");
@@ -230,11 +258,19 @@ describe("resolveRedirectLocale", () => {
 
 describe("hreflangAlternates", () => {
   it("lists launched locales by hreflang code, with pt as pt-BR", () => {
-    const expected = { en: "/en", es: "/es", "pt-BR": "/pt", fr: "/fr", ru: "/ru" };
+    const expected = {
+      en: "/en",
+      es: "/es",
+      "pt-BR": "/pt",
+      fr: "/fr",
+      ru: "/ru",
+      hi: "/hi",
+    };
     expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("fr", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("ru", (locale) => `/${locale}`)).toEqual(expected);
+    expect(hreflangAlternates("hi", (locale) => `/${locale}`)).toEqual(expected);
   });
 });
 
