@@ -57,8 +57,15 @@ _Steps derived from spec 0051 acceptance criteria. `/check verify` runs these; `
 - [x] Korean typography in the notes run → `localeTypography("ko")` already returns `normalizeKoreanTypography` (wired in step 1) → AC-1
 - [x] `pnpm --filter @bartendingapp/shared propose-recipe-notes --locale ko` → 473 proposals in `scripts/tagging/recipe-notes-proposals.ko.json` (gitignored) → AC-15 (2026-11-13: 1,419 note lines, every source field has a Korean line, all end in -요, 0 합니다체, 0 Hanja, 0 Japanese or full width punctuation, 0 non NFC, 0 spaces before punctuation, 0 straight quotes, none over 240 characters)
 - [x] Fixed in the proposals file before the apply (2026-11-13, Claude Opus 5.5): three lemon and lime swaps (The Laverstoke's bartender tip said 레몬 for lime, Dry Martini's presentation tip said 라임 for lemon, Caipirinha's said 레몬 휠 for a lime wheel); Bible Belt's style note added a lime its source doesn't name; Oatmeal Cookie's presentation tip left "jar" in English (now 메이슨 자); one 코업 글라스 is now 쿠프 글라스. For step 4: 29 notes call a coupe 칵테일 글라스, which is not wrong but is less specific than 쿠프 글라스, and some phrasing is literal (타르트한 신맛 for "tart")
-- [ ] Admin recipe form on one recipe → a Korean notes section appears; saving it changes only that recipe's `ko` row → AC-16 (needs the test admin's session; the form builds its sections from `NON_DEFAULT_LOCALES`, which holds `ko`)
+- [ ] Admin recipe form on one recipe → a Korean notes section appears; saving it changes only that recipe's `ko` row → AC-16 (needs the test admin's session; the form builds its sections from `NON_DEFAULT_LOCALES`, which holds `ko`; 2026-11-13: run by you before the apply, but the apply then rewrote Jamaica Kiss's `ko` row in the same batch as every other note, so the database can't show the admin save on its own. It still needs a confirmed save, or a click through in /check verify)
 - [x] Web `messages/ko.json` and mobile `locales/ko.json` drafted in full: 해요체, short noun labels, `other` only plurals → AC-1, AC-12 (commit fad5564, 2026-11-13: every English key present, placeholders and rich text tags match the English, 0 합니다체; the only strings left as in English are `home.siteName` (Cocktailist), `batch.percent` (`{value}%`), and `service.emailPlaceholder`; the `ko` strings scans pass)
+
+## Step 4: notes apply
+
+- [x] `generate-drink-idea` redeployed with the review pins → version 20 (2026-11-13, by you)
+- [x] `pnpm --filter @bartendingapp/shared apply-recipe-notes --locale ko` → only `ko` rows change → AC-15 (2026-11-13, by you: 473 `ko` rows hold notes, all NFC, 0 Hanja, 0 합니다체, 0 of the pinned spelling variants. No non `ko` `recipe_translations` row is newer than 2026-11-12, and an md5 over `recipes` notes matches the one taken before the apply (`9309bb3f`). Early Riser is the one recipe with English notes and no `ko` notes; no locale has notes for it, the same as Japanese)
+- [ ] 360 px check on web and both phones again → AC-11, AC-21
+- [ ] Two more live drink ideas after the limit resets (00:00 UTC), confirming the version 20 pins (붓다, 글라스, 셰이크, 온스)
 
 ## Recorded during the build
 
