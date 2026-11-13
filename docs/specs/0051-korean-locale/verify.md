@@ -67,6 +67,13 @@ _Steps derived from spec 0051 acceptance criteria. `/check verify` runs these; `
 - [ ] 360 px check on web and both phones again → AC-11, AC-21
 - [ ] Two more live drink ideas after the limit resets (00:00 UTC), confirming the version 20 pins (붓다, 글라스, 셰이크, 온스)
 
+## Step 5: launch
+
+- [x] One commit adds `"ko"` to `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES`, with `ko` in the `hreflangAlternates` launched map and a "launched Korean" describe block (`ko` and `ko-KR` detection, `en-KR` stays English, a stored `ko` kept) → AC-8, AC-23 (fbe627d, 2026-11-13; `pnpm test` 979 pass. The `notesByLocale` fixture already had its `ko` block from step 1. Made while three step 3 and 4 checks were still open: the AC-16 admin save, the 360 px and phone check, and two drink ideas after the limit reset; they gate the merge, not this commit)
+- [ ] Ship a mobile build with the launch → AC-23
+- [ ] Production: `Accept-Language: ko-KR` lands on `/ko`; the menu shows 한국어; the sitemap and every hreflang alternate list `ko`; `/ko` pages drop `noindex` → AC-8, AC-23
+- [ ] Feature 60 store listings in Korean → AC-24 (does not hold up the web launch)
+
 ## Recorded during the build
 
 - Face counts (build step 1, AC-10): on 2026-11-12, Google returned 124 `@font-face` rules for `Noto+Sans+KR:wght@100..900` and 124 for `Noto+Serif+KR:wght@600` (Noto Sans JP and Noto Serif JP: 124 each). Both are above the default `MIN_FACES_PER_FAMILY` of 100, so the `ko` entry in `script-fonts.config.mjs` sets no `minFacesPerFamily`. The first `fetch-script-fonts.mjs` run wrote `/fonts/ko/fonts.css` and 248 font files, and reported `/fonts/ja/` as current.
