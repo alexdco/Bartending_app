@@ -154,7 +154,10 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
   // Checked by the AI terms pass (spec 0051 AC-20) on 2026-11-13, before the
   // backfill; the -요 ending and lemon-lime soda sentences were added after
   // the backfill (69 of 475 recipes came back in 합니다체, and the soda as
-  // 레모네이드). generate-drink-idea carries a hand copy of the register,
+  // 레모네이드), and the 붓다, 글라스, 셰이크, and 온스 sentence after the
+  // step 4 drink ideas (붓어요, 글래스, 셔이크, and oz in 8 live ideas), and
+  // the spelling sentence after the step 4 catalog sample (베르무스 next to
+  // 베르무트, 데킬라 next to 테킬라, and Half-and-Half as 헤비 크림). generate-drink-idea carries a hand copy of the register,
   // citrus, name, tool, and punctuation sentences: change both together.
   ko:
     " Write natural Korean in the 해요체 polite form, ending every sentence in -요 (넣어요, " +
@@ -170,8 +173,11 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "a tablespoon is «테이블스푼»; use the same word in the measures and the steps. " +
     "Write glass names in Hangul, for example old fashioned glass " +
     "is «록 글라스», cocktail glass is «칵테일 글라스», collins glass is «콜린스 글라스», and " +
-    "highball glass is «하이볼 글라스». Use half width digits, write units as ml, cl, L, and " +
-    "«온스», use Western punctuation (. , ? !) with no space before it, and use «“ ”» for quotes.",
+    "highball glass is «하이볼 글라스». Conjugate 붓다 as «부어요», never «붓어요» or «붓아요». " +
+    "Spell vermouth «베르무트», tequila «테킬라», amaretto «아마레토», Southern Comfort " +
+    "«서던 컴포트», champagne «샴페인», half-and-half «하프 앤 하프» (not heavy cream), and " +
+    "mason jar «메이슨 자». Write glass as «글라스», never «글래스», shake as «셰이크», and ounces as «온스», never oz. " +
+    "Use half width digits, write units as ml, cl, L, and «온스», use Western punctuation (. , ? !) with no space before it, and use «“ ”» for quotes.",
 };
 
 /** Each language's own name, shown in the switcher whatever the active language. */

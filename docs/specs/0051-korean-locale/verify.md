@@ -70,26 +70,26 @@ This replaces the native review (AC-20). Run it in a Claude Code session on Opus
 
 ### Checklist
 
-- [ ] **Register**: 해요체 throughout (저장했어요, 검색해 보세요). No 합니다체 (저장했습니다) and no 반말 (저장했어).
-- [ ] **Labels and buttons**: short nouns (저장, 검색, 로그인), not sentences.
-- [ ] **No Hanja**: no Chinese characters anywhere.
-- [ ] **Pinned terms used exactly**: lime 라임, lemon 레몬 (never mixed up), shaker 셰이커, jigger 지거, muddler 머들러, strainer 스트레이너, bar spoon 바 스푼, simple syrup 심플 시럽, bitters 비터스, ice 얼음, 록 글라스, 칵테일 글라스, 콜린스 글라스, 하이볼 글라스; units `ml`, `cl`, `L`, 온스.
-- [ ] **Drink names**: in Hangul as Korean bars and menus write them (마가리타, 모히토, 진토닉, 올드 패션드); the established name first, else the standard loanword spelling. No middle dot between words.
-- [ ] **Placeholders**: `{name}`, `{count}`, `{{count}}`, `{time}` intact, and the sentence still reads naturally with a value inserted. A particle after a placeholder is written `{name}이(가)` style, or the sentence is reworded to avoid it.
-- [ ] **Nothing left in English** except brand names (Cocktailist) and units.
-- [ ] **Legal text** (age gate, privacy) says exactly what the English says, no more and no less.
+- [x] **Register**: 해요체 throughout (저장했어요, 검색해 보세요). No 합니다체 (저장했습니다) and no 반말 (저장했어).
+- [x] **Labels and buttons**: short nouns (저장, 검색, 로그인), not sentences.
+- [x] **No Hanja**: no Chinese characters anywhere.
+- [x] **Pinned terms used exactly**: lime 라임, lemon 레몬 (never mixed up), shaker 셰이커, jigger 지거, muddler 머들러, strainer 스트레이너, bar spoon 바 스푼, simple syrup 심플 시럽, bitters 비터스, ice 얼음, 록 글라스, 칵테일 글라스, 콜린스 글라스, 하이볼 글라스; units `ml`, `cl`, `L`, 온스.
+- [x] **Drink names**: in Hangul as Korean bars and menus write them (마가리타, 모히토, 진토닉, 올드 패션드); the established name first, else the standard loanword spelling. No middle dot between words.
+- [x] **Placeholders**: `{name}`, `{count}`, `{{count}}`, `{time}` intact, and the sentence still reads naturally with a value inserted. A particle after a placeholder is written `{name}이(가)` style, or the sentence is reworded to avoid it.
+- [x] **Nothing left in English** except brand names (Cocktailist) and units.
+- [x] **Legal text** (age gate, privacy) says exactly what the English says, no more and no less.
 - [ ] **Notes**: each note matches the recipe's facts (spirit, method, glass, garnish).
-- [ ] **Typography**: half width digits, Western punctuation (. , ? !) with no space before it, “ ” for quotes, no `。` `、` `「」`.
+- [x] **Typography**: half width digits, Western punctuation (. , ? !) with no space before it, “ ” for quotes, no `。` `、` `「」`.
 
 ### Inputs, in order
 
 - [x] Before the backfill (build step 2): `LOCALE_AI_TERMS.ko` in `packages/shared/src/locale.ts` and the `KOREAN_INSTRUCTION` sentence in `supabase/functions/generate-drink-idea/index.ts`. Fixes land in both in one commit. (2026-11-13, Claude Opus 5.5 in Claude Code. Register, no Hanja, citrus, names, middle dot, digits, punctuation, quotes, and NFC pass as drafted. Three fixes, made together: (1) the edge sentence pinned no bar tools, and a live idea stirred with 막대 instead of 바 스푼, so it now pins 셰이커, 스트레이너, 머들러, 지거, 바 스푼 and Hangul glass names, phrased as step wording like the Hindi tool sentence so no tool becomes an ingredient; ice and simple syrup stay out of the edge copy for the same reason. (2) The edge sentence now says to keep lemon and lime distinct, as the shared terms do. (3) The Jamaica Kiss row said 샷 in the measures and 한 잔 in the steps, so the shared terms now pin shot 샷, dash 대시, teaspoon 티스푼, tablespoon 테이블스푼, with the same word in measures and steps. The hand copies test now pins the tools and the lemon and lime sentence in both copies. Accepted, not a terms issue: run 1's "strain a shaken drink over ice into a cocktail glass" is drink logic, left for the 10 live ideas in step 4.)
-- [ ] Build step 4: the full `apps/web/messages/ko.json` and `apps/mobile/src/i18n/locales/ko.json`.
-- [ ] The placeholder message list from spec 0047 AC-12 (`apps/web/src/i18n/placeholderMessages.ts`).
-- [ ] The unit, batch, and drink idea limit copy (`units.ts`, `batch.ts`, `drinkIdeaLimitMessage.ts`, and the batch strings in both `ko.json` files).
-- [ ] A 30 recipe sample of the catalog backfill (name, instructions, glass, measures, ingredient and tag names).
-- [ ] 10 live drink ideas from `generate-drink-idea` with `locale: "ko"`.
-- [ ] Every note in `recipe-notes-proposals.ko.json`, before `apply-recipe-notes --locale ko` runs.
+- [x] Build step 4: the full `apps/web/messages/ko.json` and `apps/mobile/src/i18n/locales/ko.json`. (2026-11-13: read in full against the checklist; no changes. Note that the same model drafted them in step 3, so this pass is a self review, not a second model)
+- [x] The placeholder message list from spec 0047 AC-12 (`apps/web/src/i18n/placeholderMessages.ts`). (2026-11-13: every listed message reads naturally with a value inserted; particles after a value are ones that do not change with it (에서, 이후에), written 와(과) and (으)로 style, or reworded as label plus value)
+- [x] The unit, batch, and drink idea limit copy (`units.ts`, `batch.ts`, `drinkIdeaLimitMessage.ts`, and the batch strings in both `ko.json` files).
+- [x] A 30 recipe sample of the catalog backfill (name, instructions, glass, measures, ingredient and tag names). (2026-11-13, ordered by `md5(id || 'ko-sample')`. Findings, each then counted across the whole catalog: 붓아요 (a second misconjugation of 붓다) in 5 recipes, Gin Squirt as 진 스커트, Half-and-Half as 헤비 크림, and uneven spellings: 베르무스 next to 베르무트, 데킬라 next to 테킬라, 아마레또 next to 아마레토, 샹파뉴 next to 샴페인 in the steps, 메이슨 항아리 for mason jar. Pinned in both copies of the terms and rerun with `--ids` (5 ingredients and 27 recipes, then the 6 rows that kept the old form, rerun once more). After: 0 of each variant across the four tables, Half-and-Half is 하프 앤 하프, Gin Squirt is 진 스쿼트, and Hanja, middle dot, NFC, and `name_search` still 0. Accepted: 잔 for an unnamed "glass" in steps, Corpse Reviver as 코퍼스 리바이버)
+- [ ] 10 live drink ideas from `generate-drink-idea` with `locale: "ko"`. (2026-11-13, as the test account, pantry Simple Syrup, Vodka, Lime Vodka, Lime Juice: 8 ideas, all 200 and past the pantry check, before the daily limit (10 for a signed in user, 2 used earlier today). 해요체 throughout, no Hanja, no middle dot, 라임 and the pinned tools used. Findings: 붓어요 in 4 of 8, 칵테일 글래스 in 3 (one garbled as 코쿨테일 글래스), 셔이크 once, and oz in 4 of 8 against the pinned 온스. Pinned in both copies; the edge function needs a redeploy, then 2 more ideas after the limit resets at 00:00 UTC to confirm. Accepted: run 5 is called 스파클 with nothing sparkling, which is drink logic)
+- [x] Every note in `recipe-notes-proposals.ko.json`, before `apply-recipe-notes --locale ko` runs. (2026-11-13: all 1,419 lines through the automated checks in step 3, the lemon and lime comparison against each source, and the spelling variants above: 48 swaps to 베르무트, 테킬라, 아마레토, 샴페인, 서던, and 메이슨 자. The four 헤비 크림 notes match sources that say heavy cream. Not every note was read for facts one by one)
 
 ### How fixes land
 
@@ -101,6 +101,6 @@ This replaces the native review (AC-20). Run it in a Claude Code session on Opus
 
 ### Sign off
 
-- Model:
-- Date:
-- Findings and outcome:
+- Model: Claude Opus 5.5, in Claude Code
+- Date: 2026-11-13
+- Findings and outcome: the findings above are fixed, except that two drink ideas are still owed after the redeploy and the limit reset. Open: the Notes item (facts checked by lemon and lime and by spelling, not note by note), and the 360 px and phone checks.

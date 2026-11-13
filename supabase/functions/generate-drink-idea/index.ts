@@ -225,6 +225,9 @@ const KOREAN_INSTRUCTION =
   // Phrased as wording for the steps, like the Hindi tool sentence, so no tool
   // turns into an ingredient and fails the pantry check (0007 AC-8).
   "When a step names a bar tool, write shaker \u00AB\uC170\uC774\uCEE4\u00BB, strainer \u00AB\uC2A4\uD2B8\uB808\uC774\uB108\u00BB, muddler \u00AB\uBA38\uB4E4\uB7EC\u00BB, jigger \u00AB\uC9C0\uAC70\u00BB, and bar spoon \u00AB\uBC14 \uC2A4\uD47C\u00BB, and write glass names in Hangul. " +
+  "Conjugate \uBD93\uB2E4 as \u00AB\uBD80\uC5B4\uC694\u00BB, never \u00AB\uBD93\uC5B4\uC694\u00BB or \u00AB\uBD93\uC544\uC694\u00BB. " +
+  "Spell vermouth \u00AB\uBCA0\uB974\uBB34\uD2B8\u00BB, tequila \u00AB\uD14C\uD0AC\uB77C\u00BB, amaretto \u00AB\uC544\uB9C8\uB808\uD1A0\u00BB, Southern Comfort \u00AB\uC11C\uB358 \uCEF4\uD3EC\uD2B8\u00BB, champagne \u00AB\uC0F4\uD398\uC778\u00BB, half-and-half \u00AB\uD558\uD504 \uC564 \uD558\uD504\u00BB (not heavy cream), and mason jar \u00AB\uBA54\uC774\uC2A8 \uC790\u00BB. " +
+  "Write glass as \u00AB\uAE00\uB77C\uC2A4\u00BB, never \u00AB\uAE00\uB798\uC2A4\u00BB, shake as \u00AB\uC170\uC774\uD06C\u00BB, and ounces as \u00AB\uC628\uC2A4\u00BB, never oz. " +
   "Use half width digits, Western punctuation with no space before it, and \u00AB\u201C \u201D\u00BB for quotes. ";
 
 // Hand copies of normalizeKoreanTypography and normalizeKoreanName in
