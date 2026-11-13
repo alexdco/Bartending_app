@@ -265,6 +265,30 @@ describe("launched Japanese", () => {
   });
 });
 
+// Korean is launched (spec 0051 AC-8, AC-23).
+describe("launched Korean", () => {
+  it("is launched and translated by the import job", () => {
+    expect(isLaunchedLocale("ko")).toBe(true);
+    expect(CATALOG_TRANSLATION_LOCALES).toContain("ko");
+  });
+
+  it("maps ko and ko-KR to ko", () => {
+    for (const header of ["ko", "ko-KR"]) {
+      expect(parseAcceptLanguage(header)).toBe("ko");
+      expect(resolveRedirectLocale(null, header)).toBe("ko");
+    }
+  });
+
+  it("never picks ko for English in Korea", () => {
+    expect(resolveRedirectLocale(null, "en-KR")).toBe("en");
+  });
+
+  it("keeps a stored ko, ahead of the header", () => {
+    expect(resolveStoredLocale("ko")).toBe("ko");
+    expect(resolveRedirectLocale("ko", "es")).toBe("ko");
+  });
+});
+
 describe("resolveRedirectLocale", () => {
   it("prefers a launched stored locale, then the header, then English", () => {
     expect(resolveRedirectLocale("es", "en-US")).toBe("es");
@@ -292,6 +316,7 @@ describe("hreflangAlternates", () => {
       ru: "/ru",
       hi: "/hi",
       ja: "/ja",
+      ko: "/ko",
     };
     expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual(expected);
@@ -299,6 +324,7 @@ describe("hreflangAlternates", () => {
     expect(hreflangAlternates("ru", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("hi", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("ja", (locale) => `/${locale}`)).toEqual(expected);
+    expect(hreflangAlternates("ko", (locale) => `/${locale}`)).toEqual(expected);
   });
 });
 
