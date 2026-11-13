@@ -87,10 +87,11 @@ export function rewriteFontStylesheet(
   return { ok: true, css: rewritten.trim() + "\n", files };
 }
 
-// Matches one minified @font-face rule naming a Noto JP family (next/font
-// renames it __Noto_Sans_JP_<hash>), Google's font host, or the /ja font dir.
+// Matches one minified @font-face rule naming a Noto CJK family, JP or KR
+// (next/font renames it __Noto_Sans_JP_<hash>), Google's font host, or the
+// /ja or /ko font dir (spec 0050 AC-11, spec 0051 AC-10).
 const SCRIPT_FONT_FACE =
-  /@font-face\{[^}]*(Noto[ _]+(Sans|Serif)[ _]+JP|fonts\.gstatic\.com|\/fonts\/ja\/)/i;
+  /@font-face\{[^}]*(Noto[ _]+(Sans|Serif)[ _]+(JP|KR)|fonts\.gstatic\.com|\/fonts\/(ja|ko)\/)/i;
 
 export interface BuiltCssFile {
   readonly name: string;
@@ -98,10 +99,11 @@ export interface BuiltCssFile {
 }
 
 /**
- * The postbuild check (spec 0050 AC-11): the built CSS every locale loads
- * carries no Noto JP @font-face rule. An empty list fails, so a changed build
- * output layout can't make the check pass vacuously. Font family names in
- * variables (the :root:lang(ja) block) are not @font-face rules and pass.
+ * The postbuild check (spec 0050 AC-11, spec 0051 AC-10): the built CSS every
+ * locale loads carries no Noto CJK @font-face rule. An empty list fails, so a
+ * changed build output layout can't make the check pass vacuously. Font family
+ * names in variables (the :root:lang(ja) and :root:lang(ko) blocks) are not
+ * @font-face rules and pass.
  */
 export function checkBuiltCss(
   files: readonly BuiltCssFile[],
@@ -112,5 +114,5 @@ export function checkBuiltCss(
     .map(({ name }) => name);
   return offending.length === 0
     ? { ok: true }
-    : { ok: false, error: `Noto JP @font-face rules in shared CSS: ${offending.join(", ")}` };
+    : { ok: false, error: `Noto CJK @font-face rules in shared CSS: ${offending.join(", ")}` };
 }

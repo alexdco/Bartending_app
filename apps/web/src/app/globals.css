@@ -146,6 +146,32 @@
   word-break: auto-phrase;
 }
 
+/* Korean (spec 0051 AC-10, AC-11): Noto Sans KR after Inter in body text and
+   Noto Serif KR 600 for headings (a 700 heading is synthesized from 600). The
+   @font-face rules come from /fonts/ko/fonts.css, linked on /ko only, and no
+   next/font class sets these variables here. The system tails cover offline
+   dev. Korean puts spaces between words, so keep-all breaks lines only at
+   those spaces; overflow-wrap: anywhere still wraps an unspaced run longer
+   than the line (a URL, a long name) and lowers the min content width, so a
+   long word in a flex or grid child can't push it past the screen. Headings
+   inherit both. */
+:root:lang(ko) {
+  --font-body-script: "Noto Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", "Noto Sans CJK KR";
+  --font-display-loaded: "Noto Serif KR", "AppleMyungjo", "Batang", "Noto Serif CJK KR";
+  --font-body: var(--font-body-loaded), var(--font-body-script), var(--font-body-fallback);
+  --leading-display: 1.3;
+  --leading-heading: 1.4;
+  --leading-subheading: 1.45;
+  --leading-body: 1.75;
+  --leading-body-small: 1.65;
+  --leading-label: 1.5;
+}
+
+:root:lang(ko) body {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+
 /* Age gate (spec 0037). The inline head script sets html[data-age] before
    paint; these rules are unlayered so they win over Tailwind utilities. The
    page stays visible under the scrim, never display: none or visibility:

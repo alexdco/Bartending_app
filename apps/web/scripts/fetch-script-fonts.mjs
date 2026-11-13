@@ -7,8 +7,8 @@
 // Skips an entry when fonts.css exists, every file it names is on disk, and
 // stamp.json matches the entry; otherwise refetches it from scratch. --force
 // always refetches. Any failure exits non zero and fails the build; with
-// --dev it warns and exits 0, so offline dev still starts (the :lang(ja)
-// fallback stacks in globals.css cover it).
+// --dev it warns and exits 0, so offline dev still starts (the :lang(ja) and
+// :lang(ko) fallback stacks in globals.css cover it).
 
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
@@ -84,7 +84,11 @@ async function fetchEntry(entry) {
     `https://fonts.googleapis.com/css2?${query}&display=swap`,
     (response) => response.text(),
   );
-  const result = rewriteFontStylesheet(css, `fonts/${entry.dir}`, MIN_FACES_PER_FAMILY);
+  const result = rewriteFontStylesheet(
+    css,
+    `fonts/${entry.dir}`,
+    entry.minFacesPerFamily ?? MIN_FACES_PER_FAMILY,
+  );
   if (!result.ok) throw new Error(`/fonts/${entry.dir}/: ${result.error}`);
 
   await inBatches(result.files, CONCURRENCY, async ({ url, path }) => {
@@ -105,7 +109,7 @@ try {
 } catch (error) {
   if (dev) {
     console.warn(
-      `Warning: script fonts not fetched, /ja falls back to system fonts. ${error.message}`,
+      `Warning: script fonts not fetched, script font locales fall back to system fonts. ${error.message}`,
     );
   } else {
     console.error(`Script font fetch failed: ${error.message}`);

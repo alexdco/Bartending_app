@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  localeNameTypography,
   localeTypography,
   nameTranslationPrompt,
   needsRecipeTranslation,
   translatableMeasures,
 } from "./catalogTranslation";
-import { LOCALE_AI_TERMS } from "./locale";
+import { LOCALE_AI_TERMS, SUPPORTED_LOCALES } from "./locale";
 
 // covers: spec 0047 AC-2. The Russian terms (address the reader, « » quotes)
 // once turned whole batches of tag names into quoted sentences.
@@ -103,6 +104,28 @@ describe("localeTypography", () => {
     expect(localeTypography("ja")('"ギムレット"にｼﾞﾝを１５ml入れます.')).toBe(
       "「ギムレット」にジンを15ml入れます。",
     );
+  });
+
+  // covers: spec 0051 AC-1, AC-22
+  it("applies Korean typography to ko output, keeping middle dots in prose", () => {
+    expect(localeTypography("ko")('"김렛"에 진을 １５ml 넣어요 。 얼음·라임')).toBe(
+      "“김렛”에 진을 15ml 넣어요. 얼음·라임",
+    );
+  });
+
+  // covers: spec 0051 AC-3, AC-14
+  it("removes a middle dot next to Hangul from ko names only", () => {
+    expect(localeNameTypography("ko")("진·토닉")).toBe("진 토닉");
+    expect(localeTypography("ko")("진·토닉")).toBe("진·토닉");
+  });
+
+  it("gives every other locale its localeTypography for names", () => {
+    const samples = ['"Gin" · Tonic .', "진·토닉", "ジン・トニック.", "Gin: 30 ml !", ""];
+    for (const locale of SUPPORTED_LOCALES.filter((l) => l !== "ko")) {
+      expect(samples.map(localeNameTypography(locale))).toEqual(
+        samples.map(localeTypography(locale)),
+      );
+    }
   });
 
   // covers: spec 0047 AC-1

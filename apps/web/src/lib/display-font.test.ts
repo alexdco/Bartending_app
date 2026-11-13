@@ -16,8 +16,9 @@ import { SCRIPT_FONT_STYLESHEETS } from "../../scripts/script-fonts.config.mjs";
 // Spec 0047 AC-10: Russian headings use Lora (Fraunces has no Cyrillic).
 // Spec 0048 AC-10: Hindi headings use Noto Serif Devanagari and Hindi body
 // text adds Noto Sans Devanagari. Spec 0050 AC-11: Japanese does the same
-// with Noto Serif JP and Noto Sans JP. Every other locale keeps Fraunces and
-// Inter alone, so only /ru downloads Lora and only /hi and /ja download Noto.
+// with Noto Serif JP and Noto Sans JP, and spec 0051 AC-10 Korean with Noto
+// Serif KR and Noto Sans KR. Every other locale keeps Fraunces and Inter
+// alone, so only /ru downloads Lora and only /hi, /ja, and /ko download Noto.
 
 describe("DISPLAY_FONT_BY_LOCALE", () => {
   it("gives Russian headings Lora", () => {
@@ -32,9 +33,13 @@ describe("DISPLAY_FONT_BY_LOCALE", () => {
     expect(DISPLAY_FONT_BY_LOCALE.ja).toBe("notoSerifJp");
   });
 
+  it("gives Korean headings Noto Serif KR", () => {
+    expect(DISPLAY_FONT_BY_LOCALE.ko).toBe("notoSerifKr");
+  });
+
   it("keeps every other locale on Fraunces", () => {
     const others = SUPPORTED_LOCALES.filter(
-      (locale) => locale !== "ru" && locale !== "hi" && locale !== "ja",
+      (locale) => locale !== "ru" && locale !== "hi" && locale !== "ja" && locale !== "ko",
     );
     expect(others.map((locale) => DISPLAY_FONT_BY_LOCALE[locale])).toEqual(
       others.map(() => "fraunces"),
@@ -43,20 +48,24 @@ describe("DISPLAY_FONT_BY_LOCALE", () => {
 });
 
 describe("BODY_SCRIPT_FONT_BY_LOCALE", () => {
-  it("adds Noto Sans Devanagari for Hindi and Noto Sans JP for Japanese only", () => {
+  it("adds Noto Sans Devanagari, JP, and KR for Hindi, Japanese, and Korean only", () => {
     expect(BODY_SCRIPT_FONT_BY_LOCALE.hi).toBe("notoSansDevanagari");
     expect(BODY_SCRIPT_FONT_BY_LOCALE.ja).toBe("notoSansJp");
-    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "hi" && locale !== "ja");
+    expect(BODY_SCRIPT_FONT_BY_LOCALE.ko).toBe("notoSansKr");
+    const others = SUPPORTED_LOCALES.filter(
+      (locale) => locale !== "hi" && locale !== "ja" && locale !== "ko",
+    );
     expect(others.map((locale) => BODY_SCRIPT_FONT_BY_LOCALE[locale])).toEqual(
       others.map(() => "none"),
     );
   });
 });
 
-describe("SCRIPT_FONT_STYLESHEET_BY_LOCALE (spec 0050 AC-11)", () => {
-  it("links the Japanese stylesheet on /ja and none anywhere else", () => {
+describe("SCRIPT_FONT_STYLESHEET_BY_LOCALE (spec 0050 AC-11, spec 0051 AC-10)", () => {
+  it("links the Japanese stylesheet on /ja, the Korean one on /ko, and none anywhere else", () => {
     expect(SCRIPT_FONT_STYLESHEET_BY_LOCALE.ja).toBe("/fonts/ja/fonts.css");
-    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "ja");
+    expect(SCRIPT_FONT_STYLESHEET_BY_LOCALE.ko).toBe("/fonts/ko/fonts.css");
+    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "ja" && locale !== "ko");
     expect(others.map((locale) => SCRIPT_FONT_STYLESHEET_BY_LOCALE[locale])).toEqual(
       others.map(() => null),
     );
@@ -69,11 +78,14 @@ describe("SCRIPT_FONT_STYLESHEET_BY_LOCALE (spec 0050 AC-11)", () => {
   });
 });
 
-describe("SHARE_IMAGE_LOCALE (spec 0048 AC-19, spec 0050 AC-20)", () => {
-  it("maps Hindi and Japanese to the English card and every other locale to itself", () => {
+describe("SHARE_IMAGE_LOCALE (spec 0048 AC-19, spec 0050 AC-20, spec 0051 AC-19)", () => {
+  it("maps Hindi, Japanese, and Korean to the English card and every other locale to itself", () => {
     expect(SHARE_IMAGE_LOCALE.hi).toBe("en");
     expect(SHARE_IMAGE_LOCALE.ja).toBe("en");
-    const others = SUPPORTED_LOCALES.filter((locale) => locale !== "hi" && locale !== "ja");
+    expect(SHARE_IMAGE_LOCALE.ko).toBe("en");
+    const others = SUPPORTED_LOCALES.filter(
+      (locale) => locale !== "hi" && locale !== "ja" && locale !== "ko",
+    );
     expect(others.map((locale) => SHARE_IMAGE_LOCALE[locale])).toEqual(others);
   });
 

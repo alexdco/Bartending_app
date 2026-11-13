@@ -1,5 +1,5 @@
 // Postbuild check (spec 0050 AC-11): the built CSS every locale loads carries
-// no Noto JP @font-face rule, and the /ja stylesheet and every file it names
+// no Noto CJK @font-face rule, and each script font stylesheet and every file it names
 // exist. Fails the build with the offending file names otherwise. The rule
 // matching lives in checkBuiltCss (src/lib/font-stylesheet.ts), tested there.
 

@@ -29,6 +29,9 @@ export function Text({ variant = "body", muted = false, style, ...rest }: TextPr
         },
         style,
       ]}
+      // Korean wraps between words on iOS, not mid word; no effect on text
+      // without Hangul (spec 0051 AC-11). Before rest, so a caller can override.
+      lineBreakStrategyIOS="hangul-word"
       {...rest}
     />
   );

@@ -140,6 +140,25 @@ const COPY: Record<Locale, Copy> = {
       before: "今日はドリンクアイデアが大変混み合っています。{time}以降にもう一度お試しください。",
     },
   },
+  // Hand written 해요체 Korean (spec 0051 AC-13), checked by the AI second
+  // pass (AC-20). {time} 이후에 needs no particle that changes with the time.
+  ko: {
+    signIn: "로그인",
+    signInLimit: {
+      before: "오늘 무료 드링크 아이디어를 모두 사용했어요. ",
+      after: "하면 오늘 더 사용할 수 있어요. 또는 {time} 이후에 다시 시도해 보세요.",
+    },
+    limit: {
+      before: "오늘 드링크 아이디어 한도에 도달했어요. {time} 이후에 다시 시도해 보세요.",
+    },
+    busySignIn: {
+      before: "오늘은 드링크 아이디어 요청이 너무 많아요. ",
+      after: "하면 계속 사용할 수 있어요. 또는 {time} 이후에 다시 시도해 보세요.",
+    },
+    busy: {
+      before: "오늘은 드링크 아이디어 요청이 너무 많아요. {time} 이후에 다시 시도해 보세요.",
+    },
+  },
 };
 
 function copyCase(limitReason: DrinkIdeaLimitReason, signInHelps: boolean): CopyCase {

@@ -83,11 +83,12 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 70 | Russian | Slice 39 | done |
 | 71 | Hindi | Slice 39 | in-progress |
 | 72 | Japanese | Slice 39 | in-progress |
-| 73 | Korean | Slice 39 | planned |
+| 73 | Korean | Slice 39 | in-progress |
 | 74 | Simplified Chinese | Slice 39 | planned |
 | 75 | Arabic | Slice 39 | planned |
 | 76 | European Portuguese | Slice 39 | planned |
 | 77 | Accent insensitive search | Slice 39 | planned |
+| 78 | Korean initial consonant search | Slice 39 | planned |
 
 ## Foundations
 
@@ -974,10 +975,18 @@ Adds Japanese (`ja`) on the Hindi path with the `simple` search config, plus a l
 - [ ] Test it: `/test japanese locale`
 Spec [0050](../specs/0050-japanese-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
-### 73. Korean · needs a decision
-Adds Korean (`ko`). No Postgres stemmer; reuses the CJK search from spec 0050 (a `('ko', 'simple')` row; `has_cjk` already covers Hangul, so no SQL function change), plus a body font in `BODY_SCRIPT_FONT_BY_LOCALE`, a heading font in `DISPLAY_FONT_BY_LOCALE`, and `SHARE_IMAGE_LOCALE.ko = "en"`.
+### 73. Korean · in-progress
+Adds Korean (`ko`) on the Japanese path in 해요체, with no SQL function change: a `('ko', 'simple')` row reuses spec 0050's CJK contains search. `normalizeKoreanTypography` for all Korean AI text, plus `normalizeKoreanName` on name fields so a middle dot never hides a drink name from search. Noto Sans KR and Noto Serif KR 600 on `/ko` only, from a second self hosted font entry; `word-break: keep-all` on web and `hangul-word` on iOS. English name slugs and an English share image. No human review: an Opus second pass against a checklist in verify.md gates launch.
 **Done when:** `/ko` pages and the mobile app read in Korean (untranslated content falls back to English), Korean search finds drinks and ingredients, and Korean is launched in the switcher, detection, sitemap, and hreflang.
-- [ ] Design it (spec): `/architect korean locale`
+- [x] Design it (spec): `/architect korean locale`
+- [ ] Build it: `/develop korean locale`
+  - [ ] Thin thread, unlaunched: the `ko` row, `locale.ts` entries, both Korean normalizers with `localeNameTypography` and the edge function copies with the hand copies test, the `ko` font entry with the per entry face minimum and widened postbuild matcher, `:lang(ko)` CSS, the iOS `hangul-word` Text prop, the `ko` strings scan, mobile registration, one recipe translated, and the English set phone checks, satisfies AC-4 to AC-7, AC-9 to AC-12, AC-17 to AC-19, AC-21, AC-22
+  - [ ] Content: the AI terms pass, full catalog backfill with the Hanja, dot, lime, and lemon checks, the live `ko` searches, the `--locale ko` notes proposal, and the Korean UI strings, satisfies AC-1 to AC-3, AC-13 to AC-16
+  - [ ] AI second pass (Opus, the verify.md checklist) over strings, catalog sample, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-15, AC-17, AC-20, AC-21
+  - [ ] Launch (after the AI pass is recorded): `ko` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit with the launch tests, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-8, AC-23, AC-24
+- [ ] Verify it: `/check verify korean locale`
+- [ ] Test it: `/test korean locale`
+Spec [0051](../specs/0051-korean-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 74. Simplified Chinese · needs a decision
 Adds Simplified Chinese (`zh`, hreflang `zh-CN`). No word spaces; reuses the CJK search from spec 0050 (a `('zh', 'simple')` row, no SQL function change) and its font and share image maps. The spec should decide whether search folds Traditional to Simplified characters, and whether the URL code is `zh` or `zh-cn`, leaving room for Traditional Chinese later.
@@ -998,6 +1007,11 @@ A separate `pt-PT` locale beside today's Brazilian `pt`, which needs region awar
 Search ignores accents only for French translated recipe names (spec 0046). Ingredient search, the trigram tier, English base names, and Spanish and Portuguese stay accent sensitive, so "peche" may miss "pêche" and "limon" may miss "limón" (from spec 0046, feature 69). Spec 0050 added a CJK only contains tier on translated names with an immutable `search_fold` helper; a trigram tier on translated names here should reuse or extend `search_fold` rather than add a second normalizer.
 **Done when:** recipe and ingredient search match with or without accents in every locale, with a before and after snapshot showing no other result changes, and trigram search stays fast.
 - [ ] Design it (spec): `/architect accent insensitive search`
+
+### 78. Korean initial consonant search · needs a decision
+Korean users often search by initial consonants only (ㅁㄱㄹㅌ for 마가리타), and a query ending in a half typed consonant (진ㅌ) finds nothing new today. Needs a stored decomposed name (or an immutable helper with an index) and a SQL step gated by a script test, never a locale test, so the 0045 no locale in SQL rule holds (from spec 0051, feature 73).
+**Done when:** on `/ko`, a query of only initial consonants finds recipes and ingredients whose names start with or contain those consonants, a trailing loose consonant no longer blocks a match, and a before and after snapshot shows no change for any query without a loose jamo.
+- [ ] Design it (spec): `/architect korean initial consonant search`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

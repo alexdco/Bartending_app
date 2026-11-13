@@ -153,6 +153,7 @@ describe("toTranslationNotesByLocale (spec 0045 AC-11)", () => {
       ru: null,
       hi: null,
       ja: null,
+      ko: null,
     });
   });
 });

@@ -2,11 +2,13 @@ import type { Locale } from "@bartendingapp/shared";
 
 // The heading font per locale (spec 0047 AC-10). Fraunces has no Cyrillic, so
 // Russian headings use Lora; it has no Devanagari either, so Hindi headings
-// use Noto Serif Devanagari (spec 0048 AC-10), and Japanese headings use Noto
-// Serif JP (spec 0050 AC-11). A Record, so every new locale must pick one; a
-// new script adds its font here and in layout.tsx.
+// use Noto Serif Devanagari (spec 0048 AC-10). Japanese headings use Noto
+// Serif JP (spec 0050 AC-11) and Korean headings Noto Serif KR (spec 0051
+// AC-10). A Record, so every new locale must pick one; a new script adds its
+// font here and in layout.tsx.
 
-export type DisplayFont = "fraunces" | "lora" | "notoSerifDevanagari" | "notoSerifJp";
+export type DisplayFont =
+  "fraunces" | "lora" | "notoSerifDevanagari" | "notoSerifJp" | "notoSerifKr";
 
 export const DISPLAY_FONT_BY_LOCALE: Record<Locale, DisplayFont> = {
   en: "fraunces",
@@ -16,14 +18,16 @@ export const DISPLAY_FONT_BY_LOCALE: Record<Locale, DisplayFont> = {
   ru: "lora",
   hi: "notoSerifDevanagari",
   ja: "notoSerifJp",
+  ko: "notoSerifKr",
 };
 
 /**
  * The body font for a script Inter lacks, layered after Inter in
- * `--font-body` (spec 0048 AC-10, spec 0050 AC-11). "none" keeps Inter alone,
- * and the font is downloaded only on pages whose locale names it.
+ * `--font-body` (spec 0048 AC-10, spec 0050 AC-11, spec 0051 AC-10). "none"
+ * keeps Inter alone, and the font is downloaded only on pages whose locale
+ * names it.
  */
-export type BodyScriptFont = "none" | "notoSansDevanagari" | "notoSansJp";
+export type BodyScriptFont = "none" | "notoSansDevanagari" | "notoSansJp" | "notoSansKr";
 
 export const BODY_SCRIPT_FONT_BY_LOCALE: Record<Locale, BodyScriptFont> = {
   en: "none",
@@ -33,6 +37,7 @@ export const BODY_SCRIPT_FONT_BY_LOCALE: Record<Locale, BodyScriptFont> = {
   ru: "none",
   hi: "notoSansDevanagari",
   ja: "notoSansJp",
+  ko: "notoSansKr",
 };
 
 /**
@@ -50,6 +55,8 @@ export const SCRIPT_FONT_STYLESHEET_BY_LOCALE: Record<Locale, string | null> = {
   ru: null,
   hi: null,
   ja: "/fonts/ja/fonts.css",
+  // Spec 0051 AC-10.
+  ko: "/fonts/ko/fonts.css",
 };
 
 /** The display fonts the share image bundles; a locale without one maps away in SHARE_IMAGE_LOCALE. */

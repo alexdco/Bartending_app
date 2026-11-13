@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 import ru from "./locales/ru.json";
 import hi from "./locales/hi.json";
 import ja from "./locales/ja.json";
+import ko from "./locales/ko.json";
 
 // Spec 0047 AC-11: i18next resolves Russian counts to the right plural form.
 // Runs the real i18next with the same resource shape and options as initI18n
@@ -90,5 +91,30 @@ describe("Japanese plurals in i18next", () => {
       .replace("{{average}}", "4.5")
       .replace("{{count}}", String(count));
     expect(japanese.t("ratings.summary", { count, average: "4.5" })).toBe(expected);
+  });
+});
+
+// Spec 0051 AC-12: Korean has only the other form too, so counts 0, 1, 2, and
+// 5 all take _other.
+const korean = createInstance();
+await korean.init({
+  resources: {
+    ko: {
+      translation: ko,
+      probe: { form_one: "one", form_other: "other" },
+    },
+  },
+  lng: "ko",
+  fallbackLng: "en",
+  interpolation: { escapeValue: false },
+});
+
+describe("Korean plurals in i18next", () => {
+  it.each([0, 1, 2, 5])("count %i uses _other", (count) => {
+    expect(korean.t("form", { count, ns: "probe" })).toBe("other");
+    const expected = ko.ratings.summary_other
+      .replace("{{average}}", "4.5")
+      .replace("{{count}}", String(count));
+    expect(korean.t("ratings.summary", { count, average: "4.5" })).toBe(expected);
   });
 });

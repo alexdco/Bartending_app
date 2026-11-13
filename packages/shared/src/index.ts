@@ -31,6 +31,7 @@ export * from "./frenchTypography";
 export * from "./russianTypography";
 export * from "./hindiTypography";
 export * from "./japaneseTypography";
+export * from "./koreanTypography";
 export * from "./pluralForms";
 export * from "./units";
 export * from "./batch";

@@ -9,10 +9,11 @@ export const OG_CARD_SIZE = { width: 1200, height: 630 };
 
 /**
  * The locale whose tagline, font, and alt text a locale's share card uses
- * (spec 0048 AC-19). Itself, except Hindi and Japanese (spec 0050 AC-20),
- * whose cards stay English: the share image renderer can't be trusted to
- * shape Devanagari, and its bundled fonts have neither Devanagari nor
- * Japanese. Every target must have a ShareImageFont (display-font.test.ts).
+ * (spec 0048 AC-19). Itself, except Hindi, Japanese (spec 0050 AC-20), and
+ * Korean (spec 0051 AC-19), whose cards stay English: the share image
+ * renderer can't be trusted to shape Devanagari, and its bundled fonts have
+ * no Devanagari, Japanese, or Hangul. Every target must have a
+ * ShareImageFont (display-font.test.ts).
  */
 export const SHARE_IMAGE_LOCALE: Record<Locale, Locale> = {
   en: "en",
@@ -22,6 +23,7 @@ export const SHARE_IMAGE_LOCALE: Record<Locale, Locale> = {
   ru: "ru",
   hi: "en",
   ja: "en",
+  ko: "en",
 };
 
 // Next merges metadata shallowly per key, so a page that sets its own

@@ -84,6 +84,22 @@ describe("checkBuiltCss (the postbuild check)", () => {
     expect(checkBuiltCss([{ name: "c.css", css: selfHosted }]).ok).toBe(false);
   });
 
+  // Spec 0051 AC-10: the same check for the Noto KR fonts.
+  it("passes CSS holding a :root:lang(ko) block that names Noto Sans KR in a variable", () => {
+    const koBlock =
+      ':root:lang(ko){--font-body-script:"Noto Sans KR","Apple SD Gothic Neo";--font-display-loaded:"Noto Serif KR"}';
+    expect(checkBuiltCss([{ name: "a.css", css: koBlock }])).toEqual({ ok: true });
+  });
+
+  it("fails CSS holding a Noto KR @font-face rule, next/font's renaming included", () => {
+    const google = "@font-face { font-family: 'Noto Sans KR'; src: url(x.woff2) }";
+    const nextFont = "@font-face{font-family:__Noto_Serif_KR_9c2d;src:url(/_next/a.woff2)}";
+    const selfHosted = "@font-face{font-family:X;src:url(/fonts/ko/x/v1/a.woff2)}";
+    expect(checkBuiltCss([{ name: "a.css", css: google }]).ok).toBe(false);
+    expect(checkBuiltCss([{ name: "b.css", css: nextFont }]).ok).toBe(false);
+    expect(checkBuiltCss([{ name: "c.css", css: selfHosted }]).ok).toBe(false);
+  });
+
   it("names the offending files", () => {
     const result = checkBuiltCss([
       { name: "ok.css", css: langBlock },

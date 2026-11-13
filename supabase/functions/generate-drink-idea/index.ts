@@ -70,7 +70,7 @@ async function guestIpHash(headers: Headers, secret: string, userId: string): Pr
   return hashIpBucket(ipBucket(clientIp), secret);
 }
 
-const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja", "ko"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = "en";
 
@@ -82,6 +82,7 @@ const LOCALE_NAMES: Record<Locale, string> = {
   ru: "Russian",
   hi: "Hindi",
   ja: "Japanese",
+  ko: "Korean",
 };
 
 // Hand copy of LOCALE_AI_TERMS.fr in packages/shared/src/locale.ts (this Deno
@@ -211,11 +212,54 @@ function normalizeJapaneseTypography(text: string): string {
     );
 }
 
+// Hand copy of LOCALE_AI_TERMS.ko in packages/shared/src/locale.ts (spec 0051
+// AC-17); change both in the same commit.
+// Polite \uD574\uC694\uCCB4 Korean with no Hanja, lime \u00AB\uB77C\uC784\u00BB, lemon \u00AB\uB808\uBAAC\u00BB, Hangul cocktail names
+// with no middle dot, half width digits, Western punctuation, \u00AB\u201C \u201D\u00BB quotes.
+const KOREAN_INSTRUCTION =
+  "Write natural Korean in the \uD574\uC694\uCCB4 polite form, with no Hanja. " +
+  "Lime is \u00AB\uB77C\uC784\u00BB and lemon is \u00AB\uB808\uBAAC\u00BB. " +
+  "Write cocktail names in Hangul as Korean bars write them, with no middle dot. " +
+  "Use half width digits, Western punctuation with no space before it, and \u00AB\u201C \u201D\u00BB for quotes. ";
+
+// Hand copies of normalizeKoreanTypography and normalizeKoreanName in
+// packages/shared/src/koreanTypography.ts (spec 0051 AC-17, AC-22); change
+// both in the same commit. Self contained, since locale.test.ts extracts and
+// runs them.
+function normalizeKoreanTypography(text: string): string {
+  const hangul = "\\uAC00-\\uD7A3";
+  const hasHangul = new RegExp(`[${hangul}]`);
+  return text
+    .normalize("NFC")
+    .replace(/[\uFF01-\uFF5E]/g, (char) => String.fromCharCode(char.charCodeAt(0) - 0xfee0))
+    .replace(/\u3000/g, " ")
+    .replace(/\u3002/g, ".")
+    .replace(/\u3001/g, ",")
+    .replace(/[\u300C\u300E]/g, "\u201C")
+    .replace(/[\u300D\u300F]/g, "\u201D")
+    .replace(new RegExp(`(?<=[${hangul}])[ \\t]+(?=[.,?!])`, "g"), "")
+    .replace(/"([^"\n]+)"/g, (pair, inner) =>
+      hasHangul.test(inner) ? `\u201C${inner.trim()}\u201D` : pair,
+    );
+}
+
+function normalizeKoreanName(text: string): string {
+  const hasHangul = /[\uAC00-\uD7A3]/;
+  return normalizeKoreanTypography(text)
+    .replace(/[ \t]*[\u00B7\u30FB\uFF65\u2022\u2027\u2219][ \t]*/g, (dot, offset, whole) =>
+      hasHangul.test(whole.charAt(offset - 1)) || hasHangul.test(whole.charAt(offset + dot.length))
+        ? " "
+        : dot,
+    )
+    .trim();
+}
+
 const LOCALE_INSTRUCTIONS: Partial<Record<Locale, string>> = {
   fr: FRENCH_INSTRUCTION,
   ru: RUSSIAN_INSTRUCTION,
   hi: HINDI_INSTRUCTION,
   ja: JAPANESE_INSTRUCTION,
+  ko: KOREAN_INSTRUCTION,
 };
 
 const LOCALE_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
@@ -223,6 +267,12 @@ const LOCALE_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
   ru: normalizeRussianTypography,
   hi: normalizeHindiTypography,
   ja: normalizeJapaneseTypography,
+  ko: normalizeKoreanTypography,
+};
+
+/** Names also lose a middle dot next to Hangul (spec 0051 AC-17); else LOCALE_TYPOGRAPHY. */
+const LOCALE_NAME_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
+  ko: normalizeKoreanName,
 };
 
 /** The locale's typography on the text its reader sees; source_name stays as matched. */
@@ -231,11 +281,12 @@ function typesetIdea(idea: DrinkIdea, locale: Locale): DrinkIdea {
   if (typeset === undefined) {
     return idea;
   }
+  const typesetName = LOCALE_NAME_TYPOGRAPHY[locale] ?? typeset;
   return {
-    name: typeset(idea.name),
+    name: typesetName(idea.name),
     ingredients: idea.ingredients.map((ingredient) => ({
       ...ingredient,
-      name: typeset(ingredient.name),
+      name: typesetName(ingredient.name),
       amount: typeset(ingredient.amount),
     })),
     steps: idea.steps.map(typeset),

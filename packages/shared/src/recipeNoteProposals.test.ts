@@ -47,6 +47,11 @@ const notesByLocale: Record<
     bartender_tip: "たっぷりの氷で強くシェイクし、よく冷やして少し薄めます。",
     presentation_tip: "グラスの縁の半分だけに塩をつけると、ゲストが好みで選べます。",
   },
+  ko: {
+    drink_style_note: " 라임과 오렌지 리큐어로 균형을 맞춘 테킬라 사워예요. ",
+    bartender_tip: "얼음을 넉넉히 넣고 세게 흔들어 차갑고 살짝 희석되게 만들어요.",
+    presentation_tip: "잔 테두리의 절반에만 소금을 묻히면 손님이 한 모금씩 고를 수 있어요.",
+  },
 };
 
 // One block per CATALOG_TRANSLATION_LOCALES code, so the fixture stays valid at launch.

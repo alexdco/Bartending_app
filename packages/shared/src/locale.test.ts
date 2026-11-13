@@ -20,6 +20,7 @@ import {
 import { normalizeRussianTypography } from "./russianTypography";
 import { normalizeHindiTypography } from "./hindiTypography";
 import { normalizeJapaneseTypography } from "./japaneseTypography";
+import { normalizeKoreanName, normalizeKoreanTypography } from "./koreanTypography";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const migrationsDir = join(repoRoot, "supabase/migrations");
@@ -472,6 +473,77 @@ describe("generate-drink-idea's Japanese hand copies", () => {
       "",
     ];
     expect(samples.map(typeset)).toEqual(samples.map(normalizeJapaneseTypography));
+  });
+});
+
+// Spec 0051 AC-17, AC-22: the same hand copy check for Korean, over both the
+// typography pass and the name pass.
+describe("generate-drink-idea's Korean hand copies", () => {
+  const source = readFileSync(drinkIdeaFunction, "utf8");
+
+  /** The decoded text of the edge function's KOREAN_INSTRUCTION constant. */
+  const koreanInstruction = (): string => {
+    const body = /const KOREAN_INSTRUCTION =([\s\S]*?);\n/.exec(source)?.[1];
+    if (body === undefined) throw new Error("No KOREAN_INSTRUCTION in generate-drink-idea");
+    return [...body.matchAll(/"((?:[^"\\]|\\.)*)"/g)]
+      .map(([, literal]) => JSON.parse(`"${literal ?? ""}"`) as string)
+      .join("");
+  };
+
+  /** The edge function's two Korean functions, with their type annotations removed. */
+  const edgeFunctions = (): {
+    readonly typography: (text: string) => string;
+    readonly name: (text: string) => string;
+  } => {
+    const extract = (fnName: string): string => {
+      const fn = new RegExp(
+        `function ${fnName}\\(text: string\\): string \\{[\\s\\S]*?\\n\\}\\n`,
+      ).exec(source)?.[0];
+      if (fn === undefined) throw new Error(`No ${fnName} in generate-drink-idea`);
+      return fn.replace("(text: string): string", "(text)");
+    };
+    return new Function(
+      `${extract("normalizeKoreanTypography")}\n${extract("normalizeKoreanName")}\n` +
+        "return { typography: normalizeKoreanTypography, name: normalizeKoreanName };",
+    )() as { typography: (text: string) => string; name: (text: string) => string };
+  };
+
+  it.each(["해요체", "Hanja", "«라임»", "«레몬»", "middle dot", "«“ ”»"])(
+    "both copies pin %s",
+    (term) => {
+      expect(LOCALE_AI_TERMS.ko).toContain(term);
+      expect(koreanInstruction()).toContain(term);
+    },
+  );
+
+  it("stores both copies in Unicode NFC with no full width ASCII or ideographic space", () => {
+    for (const copy of [LOCALE_AI_TERMS.ko, koreanInstruction()]) {
+      expect(copy).toBe(copy.normalize("NFC"));
+      expect(copy).not.toMatch(/[\uFF01-\uFF5E\u3000\u3002\u3001\u300C\u300D\u300E\u300F]/);
+    }
+  });
+
+  const samples = [
+    "얼음을 넣어요 .",
+    "얼음을 넣어요。라임、레몬",
+    '"김렛"을 「진」 『토닉』 정말요 ? 건배 !',
+    "１５ml ＧＩＮ\u3000진",
+    "얼음·라임",
+    "진·토닉 진 · 토닉 진･토닉 진•토닉 진·Tonic B·52 A·B",
+    " 진・토닉 ",
+    "\u110C\u1175\u11AB",
+    "ㅋㅋ (라임): 30ml 1.5 B-52 https://example.com/a.b",
+    "Shake well. Strain.",
+    'Say "hi", then go! 2" 잔',
+    "",
+  ];
+
+  it("types Korean exactly like the shared normalizeKoreanTypography", () => {
+    expect(samples.map(edgeFunctions().typography)).toEqual(samples.map(normalizeKoreanTypography));
+  });
+
+  it("types Korean names exactly like the shared normalizeKoreanName", () => {
+    expect(samples.map(edgeFunctions().name)).toEqual(samples.map(normalizeKoreanName));
   });
 });
 

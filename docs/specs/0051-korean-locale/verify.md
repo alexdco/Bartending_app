@@ -1,0 +1,85 @@
+# Verify: Korean locale · spec 0051 · updated 2026-11-13
+_Steps derived from spec 0051 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
+
+## Step 1: thin thread (unlaunched)
+
+### Commands
+- [x] `pnpm test` → all pass (961 on 2026-11-12), including `koreanTypography.test.ts`, the Korean hand copies, the `ko` strings scans (web and mobile), plural forms, the Korean i18next plurals, `font-stylesheet`, and `display-font` → AC-6, AC-10, AC-12, AC-17, AC-22
+- [x] `pnpm typecheck` and `pnpm lint` → pass (2026-11-12; lint shows only the two existing mobile `import/no-named-as-default-member` warnings)
+- [x] `node apps/web/scripts/fetch-script-fonts.mjs` → writes `/fonts/ko/fonts.css` and 248 font files, `/fonts/ja/` reported current → AC-10 (2026-11-12)
+- [x] `pnpm --filter web run build` → prebuild fetch runs, `next build` passes, postbuild prints "Script font check passed" → AC-10 (2026-11-13: "Script font check passed (1 built CSS files)")
+- [x] Add a stray `Noto_Sans_KR({ variable: "--x" })` call to `apps/web/src/app/[locale]/layout.tsx` and build → postbuild fails with "Noto CJK @font-face rules in shared CSS" naming the CSS file; revert → AC-10 (2026-11-13: failed naming `.next\static\chunks\3einbe6wlpd1i.css`; layout restored byte for byte from a copy, and a clean build passes again)
+
+### Database (SQL editor)
+- [ ] Before applying `20261112120000_korean_locale.sql`, snapshot `search_recipes` on `/ja` and `/en` with three queries each → AC-5 (2026-11-13: not possible, the `ko` row was already live when the snapshot ran. An after snapshot was taken instead as the baseline for later steps: `search_recipes` (limit 50) and `search_ingredients` (limit 50, staples included) on `en` gin, lime, margarita and `ja` ジン, トニック, マルガリータ. Recipes: en 50 `1fe8ee21`, 50 `7fabd19f`, 3 `37effc3e`; ja 50 `8718098c`, 7 `cedc7e5f`, 3 `e775905d`. Ingredients: en 3 `ac441483`, 8 `c2aca380`, 0; ja 7 `00e6cbf5`, 1 `5930d855`, 0. Hashes are md5 prefixes of `id:name` joined with `|` in result order. Results read as expected, for example ジン・トニック for トニック and Margarita, House Margarita, Whitecap Margarita for margarita. Since no SQL function changed, the row insert can't change these results.)
+- [x] Apply it, then `select code, text_search_config from public.supported_locales where code = 'ko'` → one row, `simple` → AC-4, AC-6 (applied before 2026-11-13; one row, `simple`)
+- [x] `select to_tsvector('simple', '진 토닉')` → `'진':1 '토닉':2` → AC-3 (2026-11-13, through the `ko` row's config)
+- [ ] Rerun the `/ja` and `/en` snapshot → same rows and order → AC-5 (rerun after the step 2 backfill against the baseline above)
+- [x] The 0045 structure query with its pattern widened to `'(es|pt|fr|ru|hi|ja|ko|spanish|portuguese|french_unaccent|russian|hindi|simple)'` (quoted literals only) → no match in any function body → AC-4 (2026-11-13: no match)
+- [ ] Set a test user's `user_preferences.locale` to `'ko'` → accepted; detection ignores it and leaves it in place → AC-18
+
+### Edge function
+- [x] Deploy `generate-drink-idea`; a `locale: "ko"` request returns 해요체 Korean, no Hanja, no middle dot in the drink or ingredient names, and passes pantry verification → AC-17 (deployed as version 17 on 2026-11-13 with the Supabase CLI from disk, `verify_jwt` still true. Two live requests as the test account, 4 item pantry: both 200, so every `source_name` passed the pantry check. 라임 보드카 스매시 and 라임 보드카 스파클; 해요체 steps (담아요, 넣어요, 흔들어요); 라임, 심플 시럽, 셰이커, 얼음 as pinned; amounts `45ml` and `1.5온스`; no Hanja, no middle dot in names, no full width or Japanese punctuation, all NFC. For the AI second pass: run 1 strains a shaken drink into a cocktail glass over ice; run 2 is called 스파클 with nothing sparkling and stirs with 막대 (a stick) rather than 바 스푼, since the edge sentence pins no bar tools)
+
+### Catalog
+- [x] `translate-catalog --locale ko --limit 1` → one `ko` recipe row, NFC, no Hanja, no middle dot next to Hangul in any name field → AC-14, AC-22 (2026-11-13: Jamaica Kiss → 자메이카 키스, glass 허리케인 글라스, instructions in 해요체, three measures (자메이카산 1샷, 1샷, 조각), plus one ingredient (Coffee Liquer → 커피 리큐르) and one tag (Sweetened Iced Tea → 달콤한 아이스 티). Every row: no Hanja, no middle dot next to Hangul, no full width or Japanese punctuation, NFC. Write the SQL checks with code point escapes (`'[㐀-䶿一-鿿豈-﫿]'`): the same ranges written as literal characters flagged every Hangul row as Hanja through the MCP SQL tool. For the AI second pass: the instructions say 한 잔 for "a shot" (the measures say 샷), and 조각 alone for "cubes".)
+- [x] `/ko/recipes/<slug>-<uuid>` for that recipe uses the English name slug, returns 200 with no 308, and shows the Korean name → AC-9 (2026-11-13: `buildRecipeSlugPath` gives `jamaica-kiss-4235ac1d-3173-4159-a24a-40f824453d58`; on a local production build that URL returns 200 with no redirect, `<html lang="ko">`, and shows 자메이카 키스)
+- [x] Searching its Korean name on `/ko` with and without the spaces finds it → AC-3 (2026-11-13, `search_recipes(..., 'ko')`: 자메이카 키스, 자메이카키스, 키스, and Jamaica Kiss each return 자메이카 키스 only)
+
+### UI / manual
+- [ ] `/ko` HTML links `/fonts/ko/fonts.css`; `/en` and `/ja` HTML have no `/fonts/ko` reference, and their network panels show no Noto KR file → AC-10 (2026-11-13 on a local production build, HTML level: `/ko` links `/fonts/ko/fonts.css` and not the `/ja` one; `/en`, `/ja`, `/ru` have no `/fonts/ko` or Noto KR reference, and `/ja` still links `/fonts/ja/fonts.css`; `/fonts/ko/fonts.css` serves 248 faces with no Google URL. A browser network panel pass is still to do)
+- [ ] On `/ko`, the network panel shows Noto Sans KR and Noto Serif KR slices and no Google request; headings render in Noto Serif KR; the rendered fonts panel lists no system fallback on the recipe page, pantry, and account page → AC-10
+- [ ] On `/ko` at 360 px and 1280 px, no Korean word splits across lines; recipe cards, chips, buttons, and pantry rows show no horizontal overflow at 360 px; a long URL still wraps → AC-11
+- [ ] In every other locale, the switcher's 한국어 option (dev only while unlaunched) carries `lang="ko"` → AC-10
+- [x] `/ko/opengraph-image` is byte identical to `/en/opengraph-image` → AC-19 (2026-11-13: `/ko/opengraph-image/card` and `/en/opengraph-image/card` are byte identical, 40,965 bytes)
+- [x] `Accept-Language: ko-KR` lands on `/en`; no 한국어 in the menu; no `ko` in the sitemap or alternates; `/ko/` is `noindex` with a self canonical → AC-7 (2026-11-13 on a local production build: `Accept-Language: ko-KR` on `/` → 307 to `/en`; `/en`, `/ja`, `/ru` have no 한국어 and no `ko` hreflang; the sitemap has no `/ko/`; the `/ko` recipe page is `noindex` with a self canonical and no alternates)
+- [ ] Mobile dev build lists 한국어; production build does not → AC-7
+- [ ] English set iPhone and English set Android phone, app in `ko`: no clipped lines on the recipe screen, pantry, and account screen; rating counts 1 and 2 show the `_other` string; on iOS, instructions wrap between words. Android may break inside a word, which is accepted; note what you see → AC-11, AC-12, AC-21
+
+### Acceptance criteria coverage (step 1)
+- AC-3 (thin thread part), AC-4, AC-5, AC-6, AC-7, AC-9, AC-10, AC-11, AC-12, AC-14 (one recipe), AC-17, AC-18, AC-19, AC-21, AC-22 are covered above. AC-1, AC-2, AC-13 to AC-16, AC-20, AC-23, AC-24 belong to steps 2 to 6.
+
+## Recorded during the build
+
+- Face counts (build step 1, AC-10): on 2026-11-12, Google returned 124 `@font-face` rules for `Noto+Sans+KR:wght@100..900` and 124 for `Noto+Serif+KR:wght@600` (Noto Sans JP and Noto Serif JP: 124 each). Both are above the default `MIN_FACES_PER_FAMILY` of 100, so the `ko` entry in `script-fonts.config.mjs` sets no `minFacesPerFamily`. The first `fetch-script-fonts.mjs` run wrote `/fonts/ko/fonts.css` and 248 font files, and reported `/fonts/ja/` as current.
+
+## Korean AI review
+
+This replaces the native review (AC-20). Run it in a Claude Code session on Opus, a stronger model than the Haiku model that drafted the text. Read each item against the checklist below, then fix it or record it as accepted with a reason.
+
+### Checklist
+
+- [ ] **Register**: 해요체 throughout (저장했어요, 검색해 보세요). No 합니다체 (저장했습니다) and no 반말 (저장했어).
+- [ ] **Labels and buttons**: short nouns (저장, 검색, 로그인), not sentences.
+- [ ] **No Hanja**: no Chinese characters anywhere.
+- [ ] **Pinned terms used exactly**: lime 라임, lemon 레몬 (never mixed up), shaker 셰이커, jigger 지거, muddler 머들러, strainer 스트레이너, bar spoon 바 스푼, simple syrup 심플 시럽, bitters 비터스, ice 얼음, 록 글라스, 칵테일 글라스, 콜린스 글라스, 하이볼 글라스; units `ml`, `cl`, `L`, 온스.
+- [ ] **Drink names**: in Hangul as Korean bars and menus write them (마가리타, 모히토, 진토닉, 올드 패션드); the established name first, else the standard loanword spelling. No middle dot between words.
+- [ ] **Placeholders**: `{name}`, `{count}`, `{{count}}`, `{time}` intact, and the sentence still reads naturally with a value inserted. A particle after a placeholder is written `{name}이(가)` style, or the sentence is reworded to avoid it.
+- [ ] **Nothing left in English** except brand names (Cocktailist) and units.
+- [ ] **Legal text** (age gate, privacy) says exactly what the English says, no more and no less.
+- [ ] **Notes**: each note matches the recipe's facts (spirit, method, glass, garnish).
+- [ ] **Typography**: half width digits, Western punctuation (. , ? !) with no space before it, “ ” for quotes, no `。` `、` `「」`.
+
+### Inputs, in order
+
+- [ ] Before the backfill (build step 2): `LOCALE_AI_TERMS.ko` in `packages/shared/src/locale.ts` and the `KOREAN_INSTRUCTION` sentence in `supabase/functions/generate-drink-idea/index.ts`. Fixes land in both in one commit.
+- [ ] Build step 4: the full `apps/web/messages/ko.json` and `apps/mobile/src/i18n/locales/ko.json`.
+- [ ] The placeholder message list from spec 0047 AC-12 (`apps/web/src/i18n/placeholderMessages.ts`).
+- [ ] The unit, batch, and drink idea limit copy (`units.ts`, `batch.ts`, `drinkIdeaLimitMessage.ts`, and the batch strings in both `ko.json` files).
+- [ ] A 30 recipe sample of the catalog backfill (name, instructions, glass, measures, ingredient and tag names).
+- [ ] 10 live drink ideas from `generate-drink-idea` with `locale: "ko"`.
+- [ ] Every note in `recipe-notes-proposals.ko.json`, before `apply-recipe-notes --locale ko` runs.
+
+### How fixes land
+
+- UI strings: edit the `ko.json` files.
+- Terms: edit `LOCALE_AI_TERMS.ko` and the edge function sentence together, in one commit.
+- Notes: edit `recipe-notes-proposals.ko.json` before the apply.
+- Catalog rows: rerun `translate-catalog --locale ko` on the affected ids (with `--force` if hash gating would skip them). Never edit the database by hand.
+- Drink ideas: a finding (for example Hanja) is fixed in the edge function instruction and redeployed.
+
+### Sign off
+
+- Model:
+- Date:
+- Findings and outcome:

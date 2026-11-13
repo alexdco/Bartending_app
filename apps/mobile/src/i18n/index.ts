@@ -18,6 +18,7 @@ import fr from "./locales/fr.json";
 import ru from "./locales/ru.json";
 import hi from "./locales/hi.json";
 import ja from "./locales/ja.json";
+import ko from "./locales/ko.json";
 
 const STORAGE_KEY = "localePreference";
 
@@ -73,6 +74,8 @@ export async function initI18n(): Promise<void> {
         hi: { translation: hi },
         // Japanese has one plural form, so i18next only reads _other (spec 0050 AC-12).
         ja: { translation: ja },
+        // Korean has one plural form too, so i18next only reads _other (spec 0051 AC-12).
+        ko: { translation: ko },
       },
       lng: initialLocale,
       fallbackLng: DEFAULT_LOCALE,

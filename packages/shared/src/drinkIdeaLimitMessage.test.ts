@@ -124,6 +124,24 @@ describe("drinkIdeaLimitMessage", () => {
     },
   );
 
+  // covers: spec 0051 AC-13
+  it.each([
+    ["user_limit", true],
+    ["user_limit", false],
+    ["global_limit", true],
+    ["global_limit", false],
+  ] as const)(
+    "writes the Korean %s copy with the time before 이후에 (sign in helps: %s)",
+    (limitReason, signInHelps) => {
+      const message = drinkIdeaLimitMessage(
+        { limitReason, signInHelps, resetsAt: RESETS_AT },
+        { copyLocale: "ko", formatLocale: "ko", timeZone: "UTC" },
+      );
+      expect(message?.signInText).toBe(signInHelps ? "로그인" : undefined);
+      expect(join(message)).toMatch(/2026.* 이후에 다시 시도해 보세요\.$/u);
+    },
+  );
+
   it("shows the reset time in the given time zone", () => {
     const message = drinkIdeaLimitMessage(
       { limitReason: "user_limit", signInHelps: false, resetsAt: RESETS_AT },

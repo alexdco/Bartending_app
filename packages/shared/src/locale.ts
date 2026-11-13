@@ -6,9 +6,10 @@
 // Specs: docs/specs/0020-multi-language-support/index.md,
 // docs/specs/0045-language-agnostic-locales-portuguese/index.md,
 // docs/specs/0046-french-locale.md, docs/specs/0047-russian-locale.md,
-// docs/specs/0048-hindi-locale/index.md, docs/specs/0050-japanese-locale/index.md
+// docs/specs/0048-hindi-locale/index.md, docs/specs/0050-japanese-locale/index.md,
+// docs/specs/0051-korean-locale/index.md
 
-export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja"] as const;
+export const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja", "ko"] as const;
 
 export type Locale = (typeof SUPPORTED_LOCALES)[number];
 
@@ -57,6 +58,9 @@ export const LOCALE_TEXT_SEARCH_CONFIG: Record<Locale, string> = {
   // No Japanese stemmer; `simple` splits names at ・, and the locale agnostic
   // CJK contains tier in the search functions finds the rest (spec 0050 AC-3).
   ja: "simple",
+  // No Korean stemmer; `simple` splits names at the spaces between words, and
+  // the CJK contains tier covers Hangul too (spec 0051 AC-3).
+  ko: "simple",
 };
 
 /** BCP 47 codes for hreflang, the sitemap, and <html lang>. URLs keep the bare code. */
@@ -68,6 +72,7 @@ export const LOCALE_HREFLANG: Record<Locale, string> = {
   ru: "ru",
   hi: "hi",
   ja: "ja",
+  ko: "ko",
 };
 
 /** The language named in AI translation and recipe notes prompts. */
@@ -79,6 +84,7 @@ export const LOCALE_AI_LANGUAGE: Record<Locale, string> = {
   ru: "Russian",
   hi: "Hindi",
   ja: "Japanese",
+  ko: "Korean",
 };
 
 /**
@@ -145,6 +151,21 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "«コリンズグラス», and highball glass is «ハイボールグラス». Use half width digits, write " +
     "units as ml, cl, L, and «オンス», punctuate with «。» and «、», use «「」» for quotes, and " +
     "put no spaces between Japanese words.",
+  // Drafted for the AI second pass (spec 0051 AC-20), which checks it before
+  // the backfill. generate-drink-idea carries a hand copy of the register,
+  // citrus, name, and punctuation sentences: change both together.
+  ko:
+    " Write natural Korean in the 해요체 polite form, with short nouns for labels, and never " +
+    "use Hanja. Lime is «라임» and lemon is «레몬»; keep lemon and lime distinct. Write " +
+    "cocktail names in Hangul as Korean bars and menus write them (마가리타, 모히토, 진토닉, " +
+    "올드 패션드), using the established name where one exists and the standard loanword " +
+    "spelling otherwise, and never put a middle dot between words; use a space or nothing. " +
+    "Bar tools: shaker is «셰이커», jigger is «지거», muddler is «머들러», strainer is " +
+    "«스트레이너», and bar spoon is «바 스푼». Simple syrup is «심플 시럽», bitters is " +
+    "«비터스», and ice is «얼음». Write glass names in Hangul, for example old fashioned glass " +
+    "is «록 글라스», cocktail glass is «칵테일 글라스», collins glass is «콜린스 글라스», and " +
+    "highball glass is «하이볼 글라스». Use half width digits, write units as ml, cl, L, and " +
+    "«온스», use Western punctuation (. , ? !) with no space before it, and use «“ ”» for quotes.",
 };
 
 /** Each language's own name, shown in the switcher whatever the active language. */
@@ -156,6 +177,7 @@ export const LOCALE_NATIVE_NAME: Record<Locale, string> = {
   ru: "Русский",
   hi: "हिन्दी",
   ja: "日本語",
+  ko: "한국어",
 };
 
 export function isSupportedLocale(value: string | null | undefined): value is Locale {

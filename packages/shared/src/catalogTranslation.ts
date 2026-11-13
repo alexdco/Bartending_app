@@ -18,6 +18,7 @@ import { normalizeFrenchTypography } from "./frenchTypography";
 import { normalizeRussianTypography } from "./russianTypography";
 import { normalizeHindiTypography } from "./hindiTypography";
 import { normalizeJapaneseTypography } from "./japaneseTypography";
+import { normalizeKoreanName, normalizeKoreanTypography } from "./koreanTypography";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LOCALE_AI_LANGUAGE,
@@ -76,14 +77,25 @@ export interface NameInput {
  * The punctuation pass a locale's AI output gets before it is stored: French
  * typography for `fr` (spec 0046 AC-1), Russian for `ru` (spec 0047 AC-1),
  * Hindi for `hi` (spec 0048 AC-1), Japanese for `ja` (spec 0050 AC-1),
- * unchanged text for every other locale.
+ * Korean for `ko` (spec 0051 AC-1), unchanged text for every other locale.
  */
 export function localeTypography(locale: Locale): (text: string) => string {
   if (locale === "fr") return normalizeFrenchTypography;
   if (locale === "ru") return normalizeRussianTypography;
   if (locale === "hi") return normalizeHindiTypography;
   if (locale === "ja") return normalizeJapaneseTypography;
+  if (locale === "ko") return normalizeKoreanTypography;
   return (text) => text;
+}
+
+/**
+ * The pass a translated name (recipe, glass, ingredient, tag) gets: Korean
+ * names also lose any middle dot next to Hangul, so search can see past it
+ * (spec 0051 AC-3, AC-14). Every other locale gets its localeTypography.
+ */
+export function localeNameTypography(locale: Locale): (text: string) => string {
+  if (locale === "ko") return normalizeKoreanName;
+  return localeTypography(locale);
 }
 
 /**
@@ -324,15 +336,16 @@ async function translateRecipes(
     const byId = new Map(batch.map((r) => [r.id, r]));
     const measuresByRecipeId = new Map(result.map((r) => [r.id, r.ingredient_measures]));
     const typeset = localeTypography(locale);
+    const typesetName = localeNameTypography(locale);
 
     const recipeRows = result
       .filter((r) => byId.has(r.id))
       .map((r) => ({
         recipe_id: r.id,
         locale,
-        name: typeset(r.name),
+        name: typesetName(r.name),
         instructions: typeset(r.instructions),
-        glass: r.glass === null ? null : typeset(r.glass),
+        glass: r.glass === null ? null : typesetName(r.glass),
         source_name_hash: byId.get(r.id)!.hash,
       }));
 
@@ -433,13 +446,13 @@ async function translateIngredients(
     }
 
     const byId = new Map(batch.map((i) => [i.id, i]));
-    const typeset = localeTypography(locale);
+    const typesetName = localeNameTypography(locale);
     const rows = result
       .filter((r) => byId.has(r.id))
       .map((r) => ({
         ingredient_id: r.id,
         locale,
-        name: typeset(r.name),
+        name: typesetName(r.name),
         source_name_hash: byId.get(r.id)!.hash,
       }));
 
@@ -512,10 +525,10 @@ async function translateTags(
     }
 
     const byId = new Map(batch.map((t) => [t.id, t]));
-    const typeset = localeTypography(locale);
+    const typesetName = localeNameTypography(locale);
     const rows = result
       .filter((r) => byId.has(r.id))
-      .map((r) => ({ tag_id: r.id, locale, name: typeset(r.name) }));
+      .map((r) => ({ tag_id: r.id, locale, name: typesetName(r.name) }));
 
     const { error: upsertError } = await supabase
       .from("tag_translations")
