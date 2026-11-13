@@ -508,13 +508,23 @@ describe("generate-drink-idea's Korean hand copies", () => {
     )() as { typography: (text: string) => string; name: (text: string) => string };
   };
 
-  it.each(["해요체", "Hanja", "«라임»", "«레몬»", "middle dot", "«“ ”»"])(
-    "both copies pin %s",
-    (term) => {
-      expect(LOCALE_AI_TERMS.ko).toContain(term);
-      expect(koreanInstruction()).toContain(term);
-    },
-  );
+  it.each([
+    "해요체",
+    "Hanja",
+    "«라임»",
+    "«레몬»",
+    "keep lemon and lime distinct",
+    "middle dot",
+    "«셰이커»",
+    "«스트레이너»",
+    "«머들러»",
+    "«지거»",
+    "«바 스푼»",
+    "«“ ”»",
+  ])("both copies pin %s", (term) => {
+    expect(LOCALE_AI_TERMS.ko).toContain(term);
+    expect(koreanInstruction()).toContain(term);
+  });
 
   it("stores both copies in Unicode NFC with no full width ASCII or ideographic space", () => {
     for (const copy of [LOCALE_AI_TERMS.ko, koreanInstruction()]) {

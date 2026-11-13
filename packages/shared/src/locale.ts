@@ -151,9 +151,9 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "«コリンズグラス», and highball glass is «ハイボールグラス». Use half width digits, write " +
     "units as ml, cl, L, and «オンス», punctuate with «。» and «、», use «「」» for quotes, and " +
     "put no spaces between Japanese words.",
-  // Drafted for the AI second pass (spec 0051 AC-20), which checks it before
-  // the backfill. generate-drink-idea carries a hand copy of the register,
-  // citrus, name, and punctuation sentences: change both together.
+  // Checked by the AI terms pass (spec 0051 AC-20) on 2026-11-13, before the
+  // backfill. generate-drink-idea carries a hand copy of the register,
+  // citrus, name, tool, and punctuation sentences: change both together.
   ko:
     " Write natural Korean in the 해요체 polite form, with short nouns for labels, and never " +
     "use Hanja. Lime is «라임» and lemon is «레몬»; keep lemon and lime distinct. Write " +
@@ -162,7 +162,9 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "spelling otherwise, and never put a middle dot between words; use a space or nothing. " +
     "Bar tools: shaker is «셰이커», jigger is «지거», muddler is «머들러», strainer is " +
     "«스트레이너», and bar spoon is «바 스푼». Simple syrup is «심플 시럽», bitters is " +
-    "«비터스», and ice is «얼음». Write glass names in Hangul, for example old fashioned glass " +
+    "«비터스», and ice is «얼음». A shot is «샷», a dash is «대시», a teaspoon is «티스푼», and " +
+    "a tablespoon is «테이블스푼»; use the same word in the measures and the steps. " +
+    "Write glass names in Hangul, for example old fashioned glass " +
     "is «록 글라스», cocktail glass is «칵테일 글라스», collins glass is «콜린스 글라스», and " +
     "highball glass is «하이볼 글라스». Use half width digits, write units as ml, cl, L, and " +
     "«온스», use Western punctuation (. , ? !) with no space before it, and use «“ ”» for quotes.",

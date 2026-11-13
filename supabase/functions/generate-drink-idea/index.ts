@@ -215,11 +215,15 @@ function normalizeJapaneseTypography(text: string): string {
 // Hand copy of LOCALE_AI_TERMS.ko in packages/shared/src/locale.ts (spec 0051
 // AC-17); change both in the same commit.
 // Polite \uD574\uC694\uCCB4 Korean with no Hanja, lime \u00AB\uB77C\uC784\u00BB, lemon \u00AB\uB808\uBAAC\u00BB, Hangul cocktail names
-// with no middle dot, half width digits, Western punctuation, \u00AB\u201C \u201D\u00BB quotes.
+// with no middle dot, bar tools \u00AB\uC170\uC774\uCEE4\u00BB \u00AB\uC2A4\uD2B8\uB808\uC774\uB108\u00BB \u00AB\uBA38\uB4E4\uB7EC\u00BB \u00AB\uC9C0\uAC70\u00BB \u00AB\uBC14 \uC2A4\uD47C\u00BB, half width
+// digits, Western punctuation, \u00AB\u201C \u201D\u00BB quotes.
 const KOREAN_INSTRUCTION =
   "Write natural Korean in the \uD574\uC694\uCCB4 polite form, with no Hanja. " +
-  "Lime is \u00AB\uB77C\uC784\u00BB and lemon is \u00AB\uB808\uBAAC\u00BB. " +
+  "Lime is \u00AB\uB77C\uC784\u00BB and lemon is \u00AB\uB808\uBAAC\u00BB; keep lemon and lime distinct. " +
   "Write cocktail names in Hangul as Korean bars write them, with no middle dot. " +
+  // Phrased as wording for the steps, like the Hindi tool sentence, so no tool
+  // turns into an ingredient and fails the pantry check (0007 AC-8).
+  "When a step names a bar tool, write shaker \u00AB\uC170\uC774\uCEE4\u00BB, strainer \u00AB\uC2A4\uD2B8\uB808\uC774\uB108\u00BB, muddler \u00AB\uBA38\uB4E4\uB7EC\u00BB, jigger \u00AB\uC9C0\uAC70\u00BB, and bar spoon \u00AB\uBC14 \uC2A4\uD47C\u00BB, and write glass names in Hangul. " +
   "Use half width digits, Western punctuation with no space before it, and \u00AB\u201C \u201D\u00BB for quotes. ";
 
 // Hand copies of normalizeKoreanTypography and normalizeKoreanName in
