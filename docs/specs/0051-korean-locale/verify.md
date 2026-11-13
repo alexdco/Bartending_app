@@ -52,6 +52,14 @@ _Steps derived from spec 0051 acceptance criteria. `/check verify` runs these; `
 - [x] Live `ko` searches → AC-3 (2026-11-13, `search_recipes(..., 'ko')`: 진토닉 and 진 토닉 each find 진토닉 only; 토닉 finds 7, 보드카 토닉 and 진토닉 first; 올드패션드 and 패션드 find 올드 패션드 and 럼 올드 패션드; Margarita finds the same three recipes as `en`; ㅈ and 진ㅌ return 0 rows with no error. `search_ingredients`: 라 lists 라거, 라벤더, 라이 위스키 and so on, prefix matches first; 얼음 returns 0 rows with staples hidden and 1 with `include_staples`)
 - For the step 4 sample: 모스코우 뮬 (Moscow Mule; Korean menus usually write 모스코 뮬), and 브랜디 스니터 글라스 in Kentucky B And B (snifter is usually 스니프터).
 
+## Step 3: notes proposal and UI strings
+
+- [x] Korean typography in the notes run → `localeTypography("ko")` already returns `normalizeKoreanTypography` (wired in step 1) → AC-1
+- [x] `pnpm --filter @bartendingapp/shared propose-recipe-notes --locale ko` → 473 proposals in `scripts/tagging/recipe-notes-proposals.ko.json` (gitignored) → AC-15 (2026-11-13: 1,419 note lines, every source field has a Korean line, all end in -요, 0 합니다체, 0 Hanja, 0 Japanese or full width punctuation, 0 non NFC, 0 spaces before punctuation, 0 straight quotes, none over 240 characters)
+- [x] Fixed in the proposals file before the apply (2026-11-13, Claude Opus 5.5): three lemon and lime swaps (The Laverstoke's bartender tip said 레몬 for lime, Dry Martini's presentation tip said 라임 for lemon, Caipirinha's said 레몬 휠 for a lime wheel); Bible Belt's style note added a lime its source doesn't name; Oatmeal Cookie's presentation tip left "jar" in English (now 메이슨 자); one 코업 글라스 is now 쿠프 글라스. For step 4: 29 notes call a coupe 칵테일 글라스, which is not wrong but is less specific than 쿠프 글라스, and some phrasing is literal (타르트한 신맛 for "tart")
+- [ ] Admin recipe form on one recipe → a Korean notes section appears; saving it changes only that recipe's `ko` row → AC-16 (needs the test admin's session; the form builds its sections from `NON_DEFAULT_LOCALES`, which holds `ko`)
+- [x] Web `messages/ko.json` and mobile `locales/ko.json` drafted in full: 해요체, short noun labels, `other` only plurals → AC-1, AC-12 (commit fad5564, 2026-11-13: every English key present, placeholders and rich text tags match the English, 0 합니다체; the only strings left as in English are `home.siteName` (Cocktailist), `batch.percent` (`{value}%`), and `service.emailPlaceholder`; the `ko` strings scans pass)
+
 ## Recorded during the build
 
 - Face counts (build step 1, AC-10): on 2026-11-12, Google returned 124 `@font-face` rules for `Noto+Sans+KR:wght@100..900` and 124 for `Noto+Serif+KR:wght@600` (Noto Sans JP and Noto Serif JP: 124 each). Both are above the default `MIN_FACES_PER_FAMILY` of 100, so the `ko` entry in `script-fonts.config.mjs` sets no `minFacesPerFamily`. The first `fetch-script-fonts.mjs` run wrote `/fonts/ko/fonts.css` and 248 font files, and reported `/fonts/ja/` as current.
