@@ -82,6 +82,22 @@ export function parseLocaleFlag(): NonDefaultLocale | undefined {
   return value;
 }
 
+/** `--ids <uuid,uuid,...>`: one or more comma separated uuids, else the run stops. */
+export function parseIdsFlag(): string[] | undefined {
+  const value = flagValue("--ids");
+  if (value === undefined) return undefined;
+  const ids = value
+    .split(",")
+    .map((id) => id.trim())
+    .filter((id) => id !== "");
+  const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+  if (ids.length === 0 || !ids.every((id) => uuid.test(id))) {
+    console.error(`--ids must be comma separated uuids, got "${value}".`);
+    process.exit(1);
+  }
+  return ids;
+}
+
 /** `--limit <n>`: a positive integer, else the run stops. */
 export function parseLimitFlag(): number | undefined {
   const value = flagValue("--limit");

@@ -218,8 +218,9 @@ function normalizeJapaneseTypography(text: string): string {
 // with no middle dot, bar tools \u00AB\uC170\uC774\uCEE4\u00BB \u00AB\uC2A4\uD2B8\uB808\uC774\uB108\u00BB \u00AB\uBA38\uB4E4\uB7EC\u00BB \u00AB\uC9C0\uAC70\u00BB \u00AB\uBC14 \uC2A4\uD47C\u00BB, half width
 // digits, Western punctuation, \u00AB\u201C \u201D\u00BB quotes.
 const KOREAN_INSTRUCTION =
-  "Write natural Korean in the \uD574\uC694\uCCB4 polite form, with no Hanja. " +
+  "Write natural Korean in the \uD574\uC694\uCCB4 polite form, ending every sentence in -\uC694 (\uB123\uC5B4\uC694, \uBD80\uC5B4\uC694) and never in \uD569\uB2C8\uB2E4\uCCB4 (\uB123\uC2B5\uB2C8\uB2E4, \uBD93\uC2B5\uB2C8\uB2E4), with no Hanja. " +
   "Lime is \u00AB\uB77C\uC784\u00BB and lemon is \u00AB\uB808\uBAAC\u00BB; keep lemon and lime distinct. " +
+  "Lemon-lime soda is \u00AB\uB808\uBAAC \uB77C\uC784 \uC18C\uB2E4\u00BB, never \u00AB\uB808\uBAA8\uB124\uC774\uB4DC\u00BB. " +
   "Write cocktail names in Hangul as Korean bars write them, with no middle dot. " +
   // Phrased as wording for the steps, like the Hindi tool sentence, so no tool
   // turns into an ingredient and fails the pantry check (0007 AC-8).

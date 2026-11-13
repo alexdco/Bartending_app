@@ -260,8 +260,9 @@ async function translateRecipes(
   anthropic: Anthropic,
   locale: Locale,
   localeName: string,
-  { reprocessAll, limit }: RunOptions,
+  options: RunOptions,
 ) {
+  const { limit } = options;
   const { data: recipes, error } = await supabase
     .from("recipes")
     .select(
@@ -288,9 +289,8 @@ async function translateRecipes(
   );
 
   const inputs: (RecipeInput & { hash: string })[] = (recipes ?? [])
-    .filter(
-      (r) =>
-        reprocessAll ||
+    .filter((r) =>
+      selectsRow(r.id, options, () =>
         needsRecipeTranslation({
           hash: sourceNameHash(r.name, r.instructions, r.glass ?? ""),
           existingHash: existingHashByRecipeId.get(r.id),
@@ -299,6 +299,7 @@ async function translateRecipes(
             translated: ri.recipe_ingredient_translations.length > 0,
           })),
         }),
+      ),
     )
     .map((r) => {
       const hash = sourceNameHash(r.name, r.instructions, r.glass ?? "");
@@ -401,8 +402,9 @@ async function translateIngredients(
   anthropic: Anthropic,
   locale: Locale,
   localeName: string,
-  { reprocessAll, limit }: RunOptions,
+  options: RunOptions,
 ) {
+  const { limit } = options;
   const { data: ingredients, error } = await supabase.from("ingredients").select("id, name");
 
   if (error) {
@@ -424,7 +426,7 @@ async function translateIngredients(
 
   const inputs: (NameInput & { hash: string })[] = (ingredients ?? [])
     .map((i) => ({ id: i.id, name: i.name, hash: sourceNameHash(i.name) }))
-    .filter((i) => reprocessAll || existingHashByIngredientId.get(i.id) !== i.hash)
+    .filter((i) => selectsRow(i.id, options, () => existingHashByIngredientId.get(i.id) !== i.hash))
     .slice(0, limit);
 
   console.log(
@@ -483,8 +485,9 @@ async function translateTags(
   anthropic: Anthropic,
   locale: Locale,
   localeName: string,
-  { reprocessAll, limit }: RunOptions,
+  options: RunOptions,
 ) {
+  const { limit } = options;
   const { data: tags, error } = await supabase.from("tags").select("id, name");
 
   if (error) {
@@ -506,7 +509,7 @@ async function translateTags(
 
   const inputs: NameInput[] = (tags ?? [])
     .map((t) => ({ id: t.id, name: t.name }))
-    .filter((t) => reprocessAll || !alreadyTranslated.has(t.id))
+    .filter((t) => selectsRow(t.id, options, () => !alreadyTranslated.has(t.id)))
     .slice(0, limit);
 
   console.log(`[${locale}] Translating ${inputs.length} tags in batches of ${BATCH_SIZE}...`);
@@ -554,6 +557,17 @@ interface RunOptions {
   reprocessAll: boolean;
   /** Caps the rows translated per kind (recipes, ingredients, tags) after the hash filter. */
   limit: number | undefined;
+  ids: ReadonlySet<string> | undefined;
+}
+
+/** With ids, only the listed rows run, hash or not; otherwise the hash check decides. */
+export function selectsRow(
+  id: string,
+  { reprocessAll, ids }: Pick<RunOptions, "reprocessAll" | "ids">,
+  isStale: () => boolean,
+): boolean {
+  if (ids !== undefined) return ids.has(id);
+  return reprocessAll || isStale();
 }
 
 export interface TranslateCatalogOptions {
@@ -562,6 +576,12 @@ export interface TranslateCatalogOptions {
   locales?: readonly NonDefaultLocale[];
   /** Caps the rows translated per kind and locale, e.g. 1 for a thin test run. */
   limit?: number;
+  /**
+   * Retranslates only these recipe, ingredient, or tag ids, even when the hash
+   * says they are current: the remedy for rows that fail a locale's checks
+   * (spec 0051 AC-14).
+   */
+  ids?: readonly string[];
 }
 
 // Translates every recipe/ingredient/tag whose source_name_hash no longer
@@ -576,13 +596,19 @@ export async function translateCatalog(
     reprocessAll = false,
     locales = CATALOG_TRANSLATION_LOCALES,
     limit,
+    ids,
   }: TranslateCatalogOptions = {},
 ): Promise<void> {
+  const options: RunOptions = {
+    reprocessAll,
+    limit,
+    ids: ids === undefined ? undefined : new Set(ids),
+  };
   for (const locale of locales) {
     const localeName = LOCALE_AI_LANGUAGE[locale];
     console.log(`\n=== Translating catalog into ${localeName} (${locale}) ===`);
-    await translateIngredients(supabase, anthropic, locale, localeName, { reprocessAll, limit });
-    await translateTags(supabase, anthropic, locale, localeName, { reprocessAll, limit });
-    await translateRecipes(supabase, anthropic, locale, localeName, { reprocessAll, limit });
+    await translateIngredients(supabase, anthropic, locale, localeName, options);
+    await translateTags(supabase, anthropic, locale, localeName, options);
+    await translateRecipes(supabase, anthropic, locale, localeName, options);
   }
 }

@@ -14,7 +14,7 @@ _Steps derived from spec 0051 acceptance criteria. `/check verify` runs these; `
 - [ ] Before applying `20261112120000_korean_locale.sql`, snapshot `search_recipes` on `/ja` and `/en` with three queries each → AC-5 (2026-11-13: not possible, the `ko` row was already live when the snapshot ran. An after snapshot was taken instead as the baseline for later steps: `search_recipes` (limit 50) and `search_ingredients` (limit 50, staples included) on `en` gin, lime, margarita and `ja` ジン, トニック, マルガリータ. Recipes: en 50 `1fe8ee21`, 50 `7fabd19f`, 3 `37effc3e`; ja 50 `8718098c`, 7 `cedc7e5f`, 3 `e775905d`. Ingredients: en 3 `ac441483`, 8 `c2aca380`, 0; ja 7 `00e6cbf5`, 1 `5930d855`, 0. Hashes are md5 prefixes of `id:name` joined with `|` in result order. Results read as expected, for example ジン・トニック for トニック and Margarita, House Margarita, Whitecap Margarita for margarita. Since no SQL function changed, the row insert can't change these results.)
 - [x] Apply it, then `select code, text_search_config from public.supported_locales where code = 'ko'` → one row, `simple` → AC-4, AC-6 (applied before 2026-11-13; one row, `simple`)
 - [x] `select to_tsvector('simple', '진 토닉')` → `'진':1 '토닉':2` → AC-3 (2026-11-13, through the `ko` row's config)
-- [ ] Rerun the `/ja` and `/en` snapshot → same rows and order → AC-5 (rerun after the step 2 backfill against the baseline above)
+- [x] Rerun the `/ja` and `/en` snapshot → same rows and order → AC-5 (2026-11-13, after the step 2 backfill: all twelve counts and hashes match the baseline above)
 - [x] The 0045 structure query with its pattern widened to `'(es|pt|fr|ru|hi|ja|ko|spanish|portuguese|french_unaccent|russian|hindi|simple)'` (quoted literals only) → no match in any function body → AC-4 (2026-11-13: no match)
 - [ ] Set a test user's `user_preferences.locale` to `'ko'` → accepted; detection ignores it and leaves it in place → AC-18
 
@@ -38,6 +38,17 @@ _Steps derived from spec 0051 acceptance criteria. `/check verify` runs these; `
 
 ### Acceptance criteria coverage (step 1)
 - AC-3 (thin thread part), AC-4, AC-5, AC-6, AC-7, AC-9, AC-10, AC-11, AC-12, AC-14 (one recipe), AC-17, AC-18, AC-19, AC-21, AC-22 are covered above. AC-1, AC-2, AC-13 to AC-16, AC-20, AC-23, AC-24 belong to steps 2 to 6.
+
+## Step 2: terms pass, then catalog backfill
+
+- [x] `pnpm --filter @bartendingapp/shared translate-catalog --locale ko` → every live recipe, ingredient, and tag has a `ko` row → AC-2, AC-14 (2026-11-13: 475 recipe rows, 398 ingredients, 395 tags, 1,829 measure rows, the same as `ja`, with no id that has a `ja` row missing its `ko` row)
+- [ ] Run it again → translates nothing → AC-14
+- [x] Hanja, middle dot, punctuation, NFC, and `name_search` checks → AC-14, AC-22 (2026-11-13, with code point escapes, confirmed to match a known Han character and a known 진·토닉 first: 0 Hanja in any of the four tables, 0 middle dots next to Hangul in any name or glass, 0 Japanese or full width punctuation, 0 non NFC rows, 0 spaces before punctuation, 0 `name_search` mismatches. Five names keep their Latin form, which is right: AT&T, B-52, B-53, Damned if you do, H.D.)
+- [ ] Lime and lemon: every lime recipe's `ko` text has 라임 and every lemon recipe's has 레몬 → AC-14 (2026-11-13: 82 lime and 132 lemon recipes. Every lemon miss is lemonade (레모네이드), which is right. One real error: Lemon-Lime Soda (`bb600caf-7f4e-4472-9222-cc52c3845540`) came out as 레모네이드, which also explains the four lime misses. Fixed by pinning «레몬 라임 소다» in both copies of the terms and rerunning that ingredient and its five recipes)
+- [ ] Register (found by the AI pass, AC-1): 69 of 475 recipe instructions use 합니다체 (붓습니다, 레이어합니다), 48 throughout and 21 mixed with 해요체. Haiku drifted even though the terms say 해요체, so both copies now say "ending every sentence in -요 (넣어요, 부어요) and never in 합니다체 (넣습니다, 붓습니다)", and the 69 ids are rerun. Check after the rerun: `select count(*) from recipe_translations where locale = 'ko' and instructions ~ '(습니다|합니다|십시오)'` → 0
+- [x] `translate-catalog` gains `--ids <uuid,...>`: it retranslates only those recipe, ingredient, or tag ids, even when the hash says they are current, which is the AC-14 remedy (`selectsRow` in `catalogTranslation.ts`, with tests)
+- [x] Live `ko` searches → AC-3 (2026-11-13, `search_recipes(..., 'ko')`: 진토닉 and 진 토닉 each find 진토닉 only; 토닉 finds 7, 보드카 토닉 and 진토닉 first; 올드패션드 and 패션드 find 올드 패션드 and 럼 올드 패션드; Margarita finds the same three recipes as `en`; ㅈ and 진ㅌ return 0 rows with no error. `search_ingredients`: 라 lists 라거, 라벤더, 라이 위스키 and so on, prefix matches first; 얼음 returns 0 rows with staples hidden and 1 with `include_staples`)
+- For the step 4 sample: 모스코우 뮬 (Moscow Mule; Korean menus usually write 모스코 뮬), and 브랜디 스니터 글라스 in Kentucky B And B (snifter is usually 스니프터).
 
 ## Recorded during the build
 

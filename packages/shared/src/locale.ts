@@ -152,11 +152,15 @@ export const LOCALE_AI_TERMS: Record<Locale, string> = {
     "units as ml, cl, L, and «オンス», punctuate with «。» and «、», use «「」» for quotes, and " +
     "put no spaces between Japanese words.",
   // Checked by the AI terms pass (spec 0051 AC-20) on 2026-11-13, before the
-  // backfill. generate-drink-idea carries a hand copy of the register,
+  // backfill; the -요 ending and lemon-lime soda sentences were added after
+  // the backfill (69 of 475 recipes came back in 합니다체, and the soda as
+  // 레모네이드). generate-drink-idea carries a hand copy of the register,
   // citrus, name, tool, and punctuation sentences: change both together.
   ko:
-    " Write natural Korean in the 해요체 polite form, with short nouns for labels, and never " +
-    "use Hanja. Lime is «라임» and lemon is «레몬»; keep lemon and lime distinct. Write " +
+    " Write natural Korean in the 해요체 polite form, ending every sentence in -요 (넣어요, " +
+    "부어요) and never in 합니다체 (넣습니다, 붓습니다), with short nouns for labels, and never " +
+    "use Hanja. Lime is «라임» and lemon is «레몬»; keep lemon and lime distinct. " +
+    "Lemon-lime soda is «레몬 라임 소다», never «레모네이드». Write " +
     "cocktail names in Hangul as Korean bars and menus write them (마가리타, 모히토, 진토닉, " +
     "올드 패션드), using the established name where one exists and the standard loanword " +
     "spelling otherwise, and never put a middle dot between words; use a space or nothing. " +

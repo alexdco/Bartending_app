@@ -14,17 +14,21 @@
 //   pnpm translate-catalog --locale pt      (one supported non English locale;
 //                                            default: CATALOG_TRANSLATION_LOCALES)
 //   pnpm translate-catalog --limit 1        (cap rows per kind, for a thin test run)
+//   pnpm translate-catalog --locale ko --ids <uuid>,<uuid>
+//                                           (retranslate only these recipe, ingredient,
+//                                            or tag ids, even when current)
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database } from "../src/database.types";
 import { translateCatalog } from "../src/catalogTranslation";
-import { parseLimitFlag, parseLocaleFlag, requireEnv } from "./review-file";
+import { parseIdsFlag, parseLimitFlag, parseLocaleFlag, requireEnv } from "./review-file";
 
 async function main() {
   const reprocessAll = process.argv.includes("--all");
   const locale = parseLocaleFlag();
   const locales = locale === undefined ? undefined : [locale];
   const limit = parseLimitFlag();
+  const ids = parseIdsFlag();
 
   const env = requireEnv(["SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY", "ANTHROPIC_API_KEY"]);
   const supabase = createClient<Database>(env.SUPABASE_URL, env.SUPABASE_SERVICE_ROLE_KEY, {
@@ -32,7 +36,7 @@ async function main() {
   });
   const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
-  await translateCatalog(supabase, anthropic, { reprocessAll, locales, limit });
+  await translateCatalog(supabase, anthropic, { reprocessAll, locales, limit, ids });
 
   console.log("\nDone.");
 }

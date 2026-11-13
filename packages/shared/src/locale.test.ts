@@ -510,10 +510,12 @@ describe("generate-drink-idea's Korean hand copies", () => {
 
   it.each([
     "해요체",
+    "never in 합니다체 (넣습니다, 붓습니다)",
     "Hanja",
     "«라임»",
     "«레몬»",
     "keep lemon and lime distinct",
+    "Lemon-lime soda is «레몬 라임 소다», never «레모네이드»",
     "middle dot",
     "«셰이커»",
     "«스트레이너»",

@@ -4,6 +4,7 @@ import {
   localeTypography,
   nameTranslationPrompt,
   needsRecipeTranslation,
+  selectsRow,
   translatableMeasures,
 } from "./catalogTranslation";
 import { LOCALE_AI_TERMS, SUPPORTED_LOCALES } from "./locale";
@@ -57,6 +58,26 @@ describe("needsRecipeTranslation", () => {
     expect(needsRecipeTranslation({ hash: "h", existingHash: "h", ingredients: reimported })).toBe(
       true,
     );
+  });
+});
+
+// covers: spec 0051 AC-14. Failing rows are fixed by rerunning their ids,
+// which hash gating would otherwise skip.
+describe("selectsRow", () => {
+  const stale = () => true;
+  const current = () => false;
+
+  it("follows the hash check when no ids are given", () => {
+    expect(selectsRow("a", { reprocessAll: false, ids: undefined }, stale)).toBe(true);
+    expect(selectsRow("a", { reprocessAll: false, ids: undefined }, current)).toBe(false);
+    expect(selectsRow("a", { reprocessAll: true, ids: undefined }, current)).toBe(true);
+  });
+
+  it("with ids, runs a listed row even when current and skips every other row", () => {
+    const ids = new Set(["a"]);
+    expect(selectsRow("a", { reprocessAll: false, ids }, current)).toBe(true);
+    expect(selectsRow("b", { reprocessAll: false, ids }, stale)).toBe(false);
+    expect(selectsRow("b", { reprocessAll: true, ids }, stale)).toBe(false);
   });
 });
 
