@@ -126,6 +126,7 @@ function applyFix(drink: TransformedDrink, overrides: CatalogOverrides): Overrid
         measure: entry.measure,
         sortOrder: lastSortOrder + index + 1,
         amountValue: parsed?.value ?? null,
+        amountMaxValue: parsed?.maxValue ?? null,
         amountUnit: parsed?.unit ?? null,
       };
     });

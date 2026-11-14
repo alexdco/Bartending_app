@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+  formatAmountOrRangeInUnit,
+  validAmountMax,
   BAR_FORM_UNITS,
   COUNTED_UNITS,
   convertAmount,
@@ -99,16 +101,12 @@ describe("parseMeasure (spec 0035 AC-1)", () => {
   ];
 
   it.each(parses)("parses %s", (measure, value, unit) => {
-    expect(parseMeasure(measure)).toEqual({ value, unit });
+    expect(parseMeasure(measure)).toEqual({ value, maxValue: null, unit });
   });
 
+  // Ranges now parse (spec 0054 AC-2); two different units still do not.
   const unparsed = [
     "1 lime",
-    "2-3 oz",
-    "1-2 oz",
-    "1 to 2 oz",
-    "1 oz to 2 oz",
-    "1 oz - 2 oz",
     "1 oz or 2 shots",
     "1 oz / 30 ml",
     "Juice of 1/2",
@@ -142,7 +140,7 @@ describe("parseMeasure counted units (spec 0054 AC-1)", () => {
   ];
 
   it.each(parses)("parses %s", (measure, value, unit) => {
-    expect(parseMeasure(measure)).toEqual({ value, unit });
+    expect(parseMeasure(measure)).toEqual({ value, maxValue: null, unit });
   });
 
   const unparsed = ["0", "2.", "1 (optional)", "1 whole", "2 Wheels", "1 lime", "2 dashy"];
@@ -151,8 +149,57 @@ describe("parseMeasure counted units (spec 0054 AC-1)", () => {
     expect(parseMeasure(measure)).toBeNull();
   });
 
+  it("never sets maxValue on a single amount", () => {
+    expect(parseMeasure("2 dashes")?.maxValue).toBeNull();
+  });
+
   it("keeps the bar form units unchanged", () => {
     expect(BAR_FORM_UNITS).toEqual(["oz", "ml", "cl", "tsp", "tbsp", "cup"]);
+  });
+});
+
+describe("parseMeasure ranges (spec 0054 AC-2)", () => {
+  const ranges: readonly [string, number, number, string][] = [
+    ["2-3 oz", 2, 3, "oz"],
+    ["3/4-1 cup", 0.75, 1, "cup"],
+    ["1-2 shot", 1, 2, "shot"],
+    ["2-3 dashes", 2, 3, "dash"],
+    ["2 or 3", 2, 3, "each"],
+    ["1 oz to 2 oz", 1, 2, "oz"],
+    ["8-10 oz cold", 8, 10, "oz"],
+    ["1 1/2-2 oz", 1.5, 2, "oz"],
+    ["½-1 oz", 0.5, 1, "oz"],
+    ["1/2 - 3/4 cup", 0.5, 0.75, "cup"],
+    ["1 oz - 2 ounces", 1, 2, "oz"],
+    ["2 - 3 oz", 2, 3, "oz"],
+    ["2–3 oz", 2, 3, "oz"],
+    ["2 to 3 oz", 2, 3, "oz"],
+    ["2 or 3 oz", 2, 3, "oz"],
+    ["1 oz or 2 oz", 1, 2, "oz"],
+    ["2-3 parts", 2, 3, "part"],
+    ["2-3", 2, 3, "each"],
+    ["2 to 3", 2, 3, "each"],
+  ];
+
+  it.each(ranges)("parses %s", (measure, value, maxValue, unit) => {
+    expect(parseMeasure(measure)).toEqual({ value, maxValue, unit });
+  });
+
+  const unparsed = [
+    "3-2 oz",
+    "2-2 oz",
+    "1 oz or 2 shots",
+    "2-3 Wheels",
+    "3-4 crushed",
+    "4-5 whole green",
+    "1 oz - 2",
+    "2-ish oz",
+    "1 to taste",
+    "1 oz / 30 ml",
+  ];
+
+  it.each(unparsed)("leaves %s unparsed", (measure) => {
+    expect(parseMeasure(measure)).toBeNull();
   });
 });
 
@@ -248,5 +295,36 @@ describe("splitIngredientLines", () => {
       { measure: "½ oz", name: "Domaine de Canton Ginger Liqueur" },
       { measure: "½ oz", name: "Vanilla Vodka" },
     ]);
+  });
+});
+
+describe("formatAmountOrRangeInUnit (spec 0054 AC-6)", () => {
+  it("converts both ends of a volume range, joined by an en dash", () => {
+    expect(formatAmountOrRangeInUnit(2, 3, "cl", "ml")).toBe("20–30");
+  });
+
+  it("formats a single amount as before", () => {
+    expect(formatAmountOrRangeInUnit(2, null, "cl", "ml")).toBe("20");
+  });
+
+  it("returns null for a counted range, which shows its measure text", () => {
+    expect(formatAmountOrRangeInUnit(2, 3, "dash", "ml")).toBeNull();
+  });
+});
+
+describe("validAmountMax (spec 0054)", () => {
+  it("keeps a max above the value", () => {
+    expect(validAmountMax(2, 3)).toBe(3);
+  });
+
+  it.each([
+    [2, 2],
+    [2, 1],
+    [null, 3],
+    [2, null],
+    [2, undefined],
+    [2, Number.NaN],
+  ] as const)("drops %s to %s", (value, max) => {
+    expect(validAmountMax(value, max)).toBeNull();
   });
 });

@@ -47,6 +47,7 @@ async function main(): Promise<void> {
         measure: ingredient.measure,
         sortOrder: index + 1,
         amountValue: parsed?.value ?? null,
+        amountMaxValue: parsed?.maxValue ?? null,
         amountUnit: parsed?.unit ?? null,
       };
     }),

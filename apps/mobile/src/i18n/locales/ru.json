@@ -158,18 +158,18 @@
     }
   },
   "batch": {
-    "dash_one": "{{count}} дэш",
-    "dash_few": "{{count}} дэша",
-    "dash_many": "{{count}} дэшей",
-    "dash_other": "{{count}} дэша",
-    "splash_one": "{{count}} сплэш",
-    "splash_few": "{{count}} сплэша",
-    "splash_many": "{{count}} сплэшей",
-    "splash_other": "{{count}} сплэша",
-    "drop_one": "{{count}} капля",
-    "drop_few": "{{count}} капли",
-    "drop_many": "{{count}} капель",
-    "drop_other": "{{count}} капли",
+    "dash_one": "{{value}} дэш",
+    "dash_few": "{{value}} дэша",
+    "dash_many": "{{value}} дэшей",
+    "dash_other": "{{value}} дэша",
+    "splash_one": "{{value}} сплэш",
+    "splash_few": "{{value}} сплэша",
+    "splash_many": "{{value}} сплэшей",
+    "splash_other": "{{value}} сплэша",
+    "drop_one": "{{value}} капля",
+    "drop_few": "{{value}} капли",
+    "drop_many": "{{value}} капель",
+    "drop_other": "{{value}} капли",
     "approx": "(≈ {{amount}})"
   }
 }

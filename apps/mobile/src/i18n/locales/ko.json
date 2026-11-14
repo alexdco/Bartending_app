@@ -152,9 +152,9 @@
     }
   },
   "batch": {
-    "dash_other": "{{count}} 대시",
-    "splash_other": "{{count}} 스플래시",
-    "drop_other": "{{count}} 방울",
+    "dash_other": "{{value}} 대시",
+    "splash_other": "{{value}} 스플래시",
+    "drop_other": "{{value}} 방울",
     "approx": "(≈ {{amount}})"
   }
 }

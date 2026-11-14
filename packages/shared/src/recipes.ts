@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import { DEFAULT_LOCALE, SUPPORTED_LOCALES, type Locale } from "./locale";
-import { toRecognizedUnit, type RecognizedUnit } from "./units";
+import { toRecognizedUnit, validAmountMax, type RecognizedUnit } from "./units";
 import type { IngredientCategory } from "./batch";
 import { toAllergenList, type Allergen } from "./allergens";
 import { isDrinkStyle, type DrinkStyle } from "./drinkStyle";
@@ -103,6 +103,8 @@ export interface RecipeIngredientDetail {
   sortOrder: number;
   /** Null when `measure` could not be parsed into a number + recognized unit (AC-3). */
   amountValue: number | null;
+  /** The high end of a range ("2-3 oz"), always above amountValue; null for a single amount (spec 0054). */
+  amountMaxValue: number | null;
   amountUnit: RecognizedUnit | null;
   /** Null until the ingredient is Haiku classified (spec 0022, AC-4, AC-9). */
   category: IngredientCategory | null;
@@ -144,6 +146,7 @@ interface RecipeDetailIngredientRow {
   measure: string | null;
   sort_order: number;
   amount_value: number | null;
+  amount_max_value?: number | null;
   amount_unit: string | null;
   category: IngredientCategory | null;
   is_staple?: boolean;
@@ -174,6 +177,7 @@ export async function fetchRecipeDetail(
       measure: ri.measure,
       sortOrder: ri.sort_order,
       amountValue: ri.amount_value,
+      amountMaxValue: validAmountMax(ri.amount_value, ri.amount_max_value),
       amountUnit: toRecognizedUnit(ri.amount_unit),
       category: ri.category,
       isStaple: ri.is_staple ?? false,

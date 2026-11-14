@@ -18,6 +18,8 @@ export interface RecipeIngredientInput {
   measure: string | null;
   sortOrder: number;
   amountValue: number | null;
+  /** The high end of a range (spec 0054 AC-2); null for a single amount. */
+  amountMaxValue: number | null;
   amountUnit: RecognizedUnit | null;
 }
 
@@ -57,6 +59,7 @@ function extractIngredients(drink: TheCocktailDbDrink): RecipeIngredientInput[] 
       measure,
       sortOrder: position,
       amountValue: parsed?.value ?? null,
+      amountMaxValue: parsed?.maxValue ?? null,
       amountUnit: parsed?.unit ?? null,
     });
   }

@@ -8,7 +8,7 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import {
   CONVERTIBLE_UNITS,
-  formatAmountInUnit,
+  formatAmountOrRangeInUnit,
   hasVolumeIngredient,
   isSupportedLocale,
   unitLabel,
@@ -49,7 +49,12 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
     }
     // Falls back to the already coalesced (possibly translated) measure
     // text for any unparseable or part line, unaffected by the toggle.
-    const amount = formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit);
+    const amount = formatAmountOrRangeInUnit(
+      ingredient.amountValue,
+      ingredient.amountMaxValue,
+      ingredient.amountUnit,
+      unit,
+    );
     return amount === null ? ingredient.measure : `${amount} ${unitLabel(unit, locale)}`;
   }
 

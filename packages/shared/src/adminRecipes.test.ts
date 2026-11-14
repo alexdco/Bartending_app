@@ -20,10 +20,31 @@ describe("toAdminIngredientPayload (spec 0035 AC-8)", () => {
         { name: "Mint", measure: null },
       ]),
     ).toEqual([
-      { name: "Rum", measure: "1 1/2 oz", sortOrder: 0, amount_value: 1.5, amount_unit: "oz" },
+      {
+        name: "Rum",
+        measure: "1 1/2 oz",
+        sortOrder: 0,
+        amount_value: 1.5,
+        amount_max_value: null,
+        amount_unit: "oz",
+      },
       // Counted units parse since spec 0054 AC-1.
-      { name: "Bitters", measure: "2 dashes", sortOrder: 1, amount_value: 2, amount_unit: "dash" },
-      { name: "Mint", measure: null, sortOrder: 2, amount_value: null, amount_unit: null },
+      {
+        name: "Bitters",
+        measure: "2 dashes",
+        sortOrder: 1,
+        amount_value: 2,
+        amount_max_value: null,
+        amount_unit: "dash",
+      },
+      {
+        name: "Mint",
+        measure: null,
+        sortOrder: 2,
+        amount_value: null,
+        amount_max_value: null,
+        amount_unit: null,
+      },
     ]);
   });
 

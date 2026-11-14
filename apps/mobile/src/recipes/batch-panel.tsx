@@ -15,6 +15,8 @@ import {
   DILUTION_LEVELS,
   PART_SIZE_RANGE,
   batchUnitLabel,
+  batchCountPluralValue,
+  batchCountText,
   computeBatch,
   hasPartIngredient,
   hasScalableIngredient,
@@ -63,9 +65,15 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
 
   // A count reads with its plural word (i18next picks the suffix by count);
   // a plain count ("each") is the number alone. A dash or splash adds its
-  // "≈" volume once it reaches 1/4 oz (spec 0054 AC-4).
-  const countText = ({ value, unit: countUnit }: BatchCount) =>
-    countUnit === "each" ? String(value) : t(`batch.${countUnit}`, { count: value });
+  // "≈" volume once it reaches 1/4 oz (spec 0054 AC-4). A range shows both
+  // ends with the word once, chosen by the high end ("2–3 dashes", AC-5).
+  const countText = (count: BatchCount) =>
+    count.unit === "each"
+      ? batchCountText(count)
+      : t(`batch.${count.unit}`, {
+          count: batchCountPluralValue(count),
+          value: batchCountText(count),
+        });
 
   const lineAmount = (line: BatchLine) => {
     if (line.state === "unscaled") return line.measure;
@@ -137,6 +145,7 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
         name: i.name,
         measure: i.measure,
         amountValue: i.amountValue,
+        amountMaxValue: i.amountMaxValue,
         amountUnit: i.amountUnit,
         category: i.category,
       })),

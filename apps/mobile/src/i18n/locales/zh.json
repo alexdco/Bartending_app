@@ -152,9 +152,9 @@
     }
   },
   "batch": {
-    "dash_other": "{{count}} 抖",
-    "splash_other": "{{count}} 溅",
-    "drop_other": "{{count}} 滴",
+    "dash_other": "{{value}} 抖",
+    "splash_other": "{{value}} 溅",
+    "drop_other": "{{value}} 滴",
     "approx": "(≈ {{amount}})"
   }
 }

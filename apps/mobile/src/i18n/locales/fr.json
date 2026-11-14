@@ -154,12 +154,12 @@
     }
   },
   "batch": {
-    "dash_one": "{{count}} trait",
-    "dash_other": "{{count}} traits",
-    "splash_one": "{{count}} filet",
-    "splash_other": "{{count}} filets",
-    "drop_one": "{{count}} goutte",
-    "drop_other": "{{count}} gouttes",
+    "dash_one": "{{value}} trait",
+    "dash_other": "{{value}} traits",
+    "splash_one": "{{value}} filet",
+    "splash_other": "{{value}} filets",
+    "drop_one": "{{value}} goutte",
+    "drop_other": "{{value}} gouttes",
     "approx": "(≈ {{amount}})"
   }
 }

@@ -1,8 +1,9 @@
 // Reparse for spec 0035 (batch calculator correctness), AC-9, rerun for
-// spec 0054 (counted units), AC-3.
+// spec 0054 (counted units and ranges), AC-3.
 // Rereads the measure of every recipe_ingredients row, whatever its source
 // (catalog, custom, admin), runs the shared parser, and updates
-// amount_value/amount_unit only where the result differs. Running it again
+// amount_value, amount_max_value, and amount_unit only where the result
+// differs. Running it again
 // changes zero rows. Run it only after the migrations are applied and the
 // web and mobile clients that understand the new units are deployed (spec
 // 0035 Migration plan, phase 3).
@@ -17,7 +18,7 @@ import { planReparse, type MeasureCounts, type StoredMeasureRow } from "../src/r
 const PAGE_SIZE = 1000;
 
 function printCounts(label: string, counts: MeasureCounts): void {
-  console.log(`${label}: ${counts.parsedLines} parsed lines`);
+  console.log(`${label}: ${counts.parsedLines} parsed lines, ${counts.rangeLines} ranges`);
   for (const [unit, count] of Object.entries(counts.linesPerUnit).sort()) {
     console.log(`  ${unit}: ${count}`);
   }
@@ -43,7 +44,9 @@ async function main() {
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await supabase
       .from("recipe_ingredients")
-      .select("recipe_id, ingredient_id, measure, amount_value, amount_unit, ingredients(name)")
+      .select(
+        "recipe_id, ingredient_id, measure, amount_value, amount_max_value, amount_unit, ingredients(name)",
+      )
       .order("recipe_id")
       .order("ingredient_id")
       .range(from, from + PAGE_SIZE - 1);
@@ -78,7 +81,7 @@ async function main() {
     for (const update of plan.updates.slice(0, 50)) {
       const measure = measureOf(update.recipe_id, update.ingredient_id);
       console.log(
-        `  "${measure}" -> ${update.amount_value ?? "null"} ${update.amount_unit ?? "null"}`,
+        `  "${measure}" -> ${update.amount_value ?? "null"}${update.amount_max_value === null ? "" : `-${update.amount_max_value}`} ${update.amount_unit ?? "null"}`,
       );
     }
     if (plan.updates.length > 50) {
@@ -102,7 +105,11 @@ async function main() {
   for (const update of plan.updates) {
     const { error } = await supabase
       .from("recipe_ingredients")
-      .update({ amount_value: update.amount_value, amount_unit: update.amount_unit })
+      .update({
+        amount_value: update.amount_value,
+        amount_max_value: update.amount_max_value,
+        amount_unit: update.amount_unit,
+      })
       .eq("recipe_id", update.recipe_id)
       .eq("ingredient_id", update.ingredient_id);
 

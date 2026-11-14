@@ -12,10 +12,12 @@
 import { DEFAULT_LOCALE, type Locale } from "./locale";
 import {
   COUNTED_UNIT_ML,
+  isCountedUnit,
   isVolumeUnit,
   toMl,
   type CountedUnit,
   type RecognizedUnit,
+  validAmountMax,
 } from "./units";
 
 export const BATCH_UNITS = ["oz", "ml", "cl", "l"] as const;
@@ -56,6 +58,8 @@ export interface BatchIngredientInput {
   name: string;
   measure: string | null;
   amountValue: number | null;
+  /** The high end of a range (spec 0054 AC-5); trusted only when above amountValue, else a single amount. */
+  amountMaxValue: number | null;
   amountUnit: RecognizedUnit | null;
   /** Null when the ingredient has not yet been classified (spec 0022 AC-4, AC-9). */
   category: IngredientCategory | null;
@@ -163,9 +167,15 @@ function dilutionPercent(level: DilutionLevel, customPercent: number | null): nu
  */
 export type BatchLineState = "normal" | "counted" | "unscaled" | "uncategorized" | "excluded";
 
-/** A scaled count, already rounded for display (spec 0054 AC-4). */
+/**
+ * A scaled count, already rounded for display (spec 0054 AC-4). A range
+ * carries its rounded high end in maxValue; maxValue is null for a single
+ * count, and also when both ends round to the same count, so one value
+ * shows (AC-5). The plural word follows the high end (maxValue ?? value).
+ */
 export interface BatchCount {
   value: number;
+  maxValue: number | null;
   unit: CountedUnit;
 }
 
@@ -173,7 +183,7 @@ export interface BatchLine {
   ingredientId: string;
   name: string;
   state: BatchLineState;
-  /** The batch amount of a rendered volume or part line; null for count lines, unscaled, and excluded. */
+  /** The batch amount of a rendered volume or part line, a range string for a range; null for count lines, unscaled, and excluded. */
   displayAmount: string | null;
   /**
    * The scaled count of a rendered counted line (dash, splash, drop, each).
@@ -181,12 +191,14 @@ export interface BatchLine {
    * "each" count shows as the number alone.
    */
   count: BatchCount | null;
-  /** The "≈" volume of a dash or splash line, in the batch unit, once it reaches 1/4 oz; else null. */
+  /** The "≈" volume of a dash or splash line, in the batch unit, once its (high end) volume reaches 1/4 oz; else null. */
   approxAmount: string | null;
   /** The original measure text, shown verbatim for an "unscaled" line. */
   measure: string | null;
-  /** Unrounded ml, used only for total/dilution math; null for lines without volume, unscaled, or excluded. */
+  /** Unrounded ml (the low end of a range), used only for total/dilution math; null for lines without volume, unscaled, or excluded. */
   amountMl: number | null;
+  /** Unrounded ml at the high end of a range; null for a single amount and for lines without volume (spec 0054). */
+  amountMlMax: number | null;
 }
 
 export interface BatchOptions {
@@ -204,10 +216,11 @@ export interface BatchOptions {
 
 export interface BatchResult {
   lines: BatchLine[];
-  waterLine: { displayAmount: string; amountMl: number } | null;
-  /** A dilution level was chosen but no included line has volume to dilute (spec 0035 AC-5). */
+  /** amountMl is the low end; amountMlMax is set only when a range makes the two ends differ. */
+  waterLine: { displayAmount: string; amountMl: number; amountMlMax: number | null } | null;
+  /** A dilution level was chosen but no included line has volume to dilute (spec 0035 AC-5); with ranges, judged at the high end. */
   nothingToDiluteNote: boolean;
-  /** Null when nothing is in the batch at all, so a total never displays as 0 (spec 0035 AC-7). */
+  /** Null when nothing is in the batch at all, so a total never displays as 0 (spec 0035 AC-7); a range string when a range line is included. */
   totalDisplayAmount: string | null;
 }
 
@@ -252,6 +265,26 @@ export function formatBatchAmount(ml: number, unit: BatchUnit): string {
   return `${String(rounded)} ${unit}`;
 }
 
+/**
+ * Formats a batch range (spec 0054 AC-5): each end is rounded and floored on
+ * its own through formatBatchAmount; when the two strings match one value
+ * shows ("2 oz"), otherwise "<low>–<high> <unit>" with an en dash, no
+ * spaces, and the unit once ("20–30 oz", "< 0.1–2 oz").
+ */
+export function formatBatchRange(lowMl: number, highMl: number, unit: BatchUnit): string {
+  const low = formatBatchAmount(lowMl, unit);
+  const high = formatBatchAmount(highMl, unit);
+  if (low === high) {
+    return low;
+  }
+  return `${low.slice(0, -(unit.length + 1))}–${high}`;
+}
+
+/** formatBatchRange with a null high end meaning a single amount. */
+function formatBatchAmountOrRange(lowMl: number, highMl: number | null, unit: BatchUnit): string {
+  return highMl === null ? formatBatchAmount(lowMl, unit) : formatBatchRange(lowMl, highMl, unit);
+}
+
 // The volume hint threshold, 1/4 oz (one splash), compared with a tolerance
 // so exactly one splash qualifies (spec 0054 AC-4).
 const APPROX_HINT_MIN_ML = COUNTED_UNIT_ML.splash;
@@ -269,6 +302,32 @@ export function roundBatchCount(value: number, unit: CountedUnit): number {
 }
 
 /**
+ * Builds a display count, single or range (spec 0054 AC-5): each end is
+ * rounded on its own, and a range whose two ends round alike shows once.
+ */
+export function batchCount(
+  unroundedLow: number,
+  unroundedHigh: number | null,
+  unit: CountedUnit,
+): BatchCount {
+  const value = roundBatchCount(unroundedLow, unit);
+  const high = unroundedHigh === null ? null : roundBatchCount(unroundedHigh, unit);
+  return { value, maxValue: high === null || high === value ? null : high, unit };
+}
+
+/** A count's number text: "50", or a range "2–3" with an en dash and no spaces (spec 0054 AC-5). */
+export function batchCountText(count: BatchCount): string {
+  return count.maxValue === null
+    ? String(count.value)
+    : `${String(count.value)}–${String(count.maxValue)}`;
+}
+
+/** The count that picks a count's plural word: the high end of a range (spec 0054 AC-5). */
+export function batchCountPluralValue(count: BatchCount): number {
+  return count.maxValue ?? count.value;
+}
+
+/**
  * A plain count on a spirit, liqueur, or unclassified line means a share of
  * a layered shot glass ("1/3" Baileys), not a number of items, so it stays
  * unscaled (spec 0054 AC-4).
@@ -282,9 +341,13 @@ function isShooterShare(
   );
 }
 
-/** How a parsed line scales: an unrounded volume, a count, or both; null when it can't be scaled. */
+/**
+ * How a parsed line scales: an unrounded volume (low and, for a range, high
+ * end), a count, or both; null when it can't be scaled.
+ */
 interface Scaled {
   ml: number | null;
+  mlMax: number | null;
   count: BatchCount | null;
 }
 
@@ -297,24 +360,40 @@ function scaleLine(
   if (amountValue === null || amountUnit === null || isShooterShare(ingredient)) {
     return null;
   }
+  const amountMax = validAmountMax(amountValue, ingredient.amountMaxValue);
+
+  // Scales one end by the unit's rule (spec 0035 for volume and part, spec
+  // 0054 AC-4 for counted units); the same rule runs on both range ends.
+  let mlPerUnit: number | null;
   if (isVolumeUnit(amountUnit)) {
-    return { ml: toMl(amountValue * servings, amountUnit), count: null };
+    mlPerUnit = toMl(1, amountUnit);
+  } else if (amountUnit === "part") {
+    if (partSize === null) {
+      return null;
+    }
+    mlPerUnit = partSizeMl(partSize);
+  } else {
+    mlPerUnit =
+      amountUnit === "dash" || amountUnit === "splash" ? COUNTED_UNIT_ML[amountUnit] : null;
   }
-  if (amountUnit === "part") {
-    return partSize === null
-      ? null
-      : { ml: amountValue * partSizeMl(partSize) * servings, count: null };
-  }
-  const unroundedCount = amountValue * servings;
-  const count = { value: roundBatchCount(unroundedCount, amountUnit), unit: amountUnit };
-  return amountUnit === "dash" || amountUnit === "splash"
-    ? { ml: unroundedCount * COUNTED_UNIT_ML[amountUnit], count }
-    : { ml: null, count };
+
+  const low = amountValue * servings;
+  const high = amountMax === null ? null : amountMax * servings;
+  return {
+    ml: mlPerUnit === null ? null : low * mlPerUnit,
+    mlMax: mlPerUnit === null || high === null ? null : high * mlPerUnit,
+    count: isCountedUnit(amountUnit) ? batchCount(low, high, amountUnit) : null,
+  };
 }
 
-function approxAmountFor(ml: number | null, count: BatchCount | null, unit: BatchUnit) {
-  return count !== null && ml !== null && ml + APPROX_HINT_TOLERANCE_ML >= APPROX_HINT_MIN_ML
-    ? formatBatchAmount(ml, unit)
+function approxAmountFor(scaled: Scaled, unit: BatchUnit): string | null {
+  const { ml, mlMax, count } = scaled;
+  const highMl = mlMax ?? ml;
+  return count !== null &&
+    ml !== null &&
+    highMl !== null &&
+    highMl + APPROX_HINT_TOLERANCE_ML >= APPROX_HINT_MIN_ML
+    ? formatBatchAmountOrRange(ml, mlMax, unit)
     : null;
 }
 
@@ -325,7 +404,9 @@ function approxAmountFor(ml: number | null, count: BatchCount | null, unit: Batc
  * filtering, optionally adds a dilution water line based on every included
  * line with volume (spec 0035 AC-5), and totals everything, carrying every
  * intermediate value in unrounded milliliters and rounding once at final
- * display (key invariant).
+ * display (key invariant). A range line scales both ends, and the water
+ * line and total are summed once over the low ends and once over the high
+ * ends (spec 0054 AC-5); with no range line the result is a single value.
  */
 export function computeBatch(
   ingredients: readonly BatchIngredientInput[],
@@ -344,6 +425,7 @@ export function computeBatch(
       approxAmount: null,
       measure: null,
       amountMl: null,
+      amountMlMax: null,
     };
     const scaled = scaleLine(ingredient, servings, partSize);
 
@@ -358,30 +440,46 @@ export function computeBatch(
 
     const isUncategorized =
       ingredient.category === null && (scope === "alcohol_only" || scope === "except_citrus");
-    const { ml, count } = scaled;
+    const { ml, mlMax, count } = scaled;
 
     return {
       ...base,
       state: isUncategorized ? "uncategorized" : ml === null ? "counted" : "normal",
-      displayAmount: count === null && ml !== null ? formatBatchAmount(ml, unit) : null,
+      displayAmount:
+        count === null && ml !== null ? formatBatchAmountOrRange(ml, mlMax, unit) : null,
       count,
-      approxAmount: approxAmountFor(ml, count, unit),
+      approxAmount: approxAmountFor(scaled, unit),
       amountMl: ml,
+      amountMlMax: mlMax,
     };
   });
 
-  const includedMl = lines.reduce((sum, line) => sum + (line.amountMl ?? 0), 0);
-  const waterMl = (includedMl * dilutionPercent(dilutionLevel, customPercent)) / 100;
-  const nothingToDiluteNote = dilutionLevel !== "none" && includedMl === 0;
+  const hasRange = lines.some((line) => line.amountMlMax !== null);
+  const lowMl = lines.reduce((sum, line) => sum + (line.amountMl ?? 0), 0);
+  const highMl = lines.reduce((sum, line) => sum + (line.amountMlMax ?? line.amountMl ?? 0), 0);
+  const percent = dilutionPercent(dilutionLevel, customPercent);
+  const waterLowMl = (lowMl * percent) / 100;
+  const waterHighMl = (highMl * percent) / 100;
+  const rangeEnd = (high: number) => (hasRange ? high : null);
+
+  const nothingToDiluteNote = dilutionLevel !== "none" && highMl === 0;
   const waterLine =
-    waterMl > 0 ? { displayAmount: formatBatchAmount(waterMl, unit), amountMl: waterMl } : null;
-  const totalMl = includedMl + waterMl;
+    waterHighMl > 0
+      ? {
+          displayAmount: formatBatchAmountOrRange(waterLowMl, rangeEnd(waterHighMl), unit),
+          amountMl: waterLowMl,
+          amountMlMax: rangeEnd(waterHighMl),
+        }
+      : null;
+  const totalLowMl = lowMl + waterLowMl;
+  const totalHighMl = highMl + waterHighMl;
 
   return {
     lines,
     waterLine,
     nothingToDiluteNote,
-    totalDisplayAmount: totalMl > 0 ? formatBatchAmount(totalMl, unit) : null,
+    totalDisplayAmount:
+      totalHighMl > 0 ? formatBatchAmountOrRange(totalLowMl, rangeEnd(totalHighMl), unit) : null,
   };
 }
 

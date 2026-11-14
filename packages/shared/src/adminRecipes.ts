@@ -342,6 +342,8 @@ export type AdminIngredientPayload = {
   measure: string | null;
   sortOrder: number;
   amount_value: number | null;
+  /** The high end of a range (spec 0054 AC-3); null for a single amount. */
+  amount_max_value: number | null;
   amount_unit: RecognizedUnit | null;
 };
 
@@ -363,6 +365,7 @@ export function toAdminIngredientPayload(
       measure,
       sortOrder: index,
       amount_value: parsed?.value ?? null,
+      amount_max_value: parsed?.maxValue ?? null,
       amount_unit: parsed?.unit ?? null,
     };
   });

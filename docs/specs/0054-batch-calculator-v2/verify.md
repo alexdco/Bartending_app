@@ -46,6 +46,38 @@ _Steps derived from spec 0054 acceptance criteria. `/check verify` runs these; `
 - [ ] Volume hint threshold: exactly 1 splash × 1 → `1 splash (≈ 7.4 ml)` → AC-4
 - [ ] Shooter share check: change an `each` line's ingredient category from `spirit` to `other` → it scales as a count → AC-4
 
+## Milestone 2: ranges (AC-2, AC-3, AC-5, AC-6)
+
+### Before the live reparse
+
+- [ ] Apply `supabase/migrations/20261114130000_batch_ranges.sql` in the dashboard SQL editor → runs cleanly; `import_catalog`, `import_custom_recipes`, `admin_upsert_recipe`, and `fetch_recipe_detail` are replaced in place (same signatures, grants kept) → AC-3
+- [ ] Confirm the writers store the max: `select proname from pg_proc where proname in ('import_catalog','import_custom_recipes','admin_upsert_recipe') and prosrc like '%amount_max_value%';` → three rows → AC-3
+- [ ] Confirm the reader returns it: `select prosrc like '%''amount_max_value''%' from pg_proc where proname = 'fetch_recipe_detail';` → true → AC-3
+
+### Commands
+
+- [ ] `pnpm --filter @bartendingapp/shared reparse-measures --dry-run` → `After: ... 22 ranges` (2026-11-14: 1601 parsed lines, 259 rows to change), and range rows print as `"2-3 oz" -> 2-3 oz` → AC-3
+- [ ] Live reparse (after the web deploy), then once more → `Rows to change: 0`, so `2` equals `2.0` and null equals null on all three columns → AC-3
+- [ ] `pnpm vitest run packages/shared/src/units.test.ts packages/shared/src/batch.test.ts packages/shared/src/parts.test.ts packages/shared/src/reparseMeasures.test.ts` → all pass → AC-2, AC-5, AC-6
+
+### UI / manual (web and mobile)
+
+- [ ] A recipe with `2-3 oz` gin plus `1 oz` lime × 10, oz, 20% dilution → gin `20–30 oz`, water `6–8 oz`, total `36–48 oz` → AC-5
+- [ ] The same recipe with no range line (edit a copy, or another recipe) → single values, exactly as before → AC-5
+- [ ] A `2-3 dashes` line × 25 → `50–75 dashes (≈ 1–1.6 oz)`; in Russian the word follows 75 → AC-5, AC-13
+- [ ] A range whose ends round alike in l (small amounts × 1 in l) → one value → AC-5
+- [ ] Alcohol only on a recipe with a citrus range → the range line is hidden and the total drops it → AC-5
+- [ ] Toggle a `2-3 cl` recipe to ml → `20–30 ml`; to oz on a `2-3 oz` recipe → the `measure` text → AC-6
+- [ ] Quick Build on a range recipe → the range line shows its `measure` text in oz, ml, cl, and parts, and the other lines' parts ignore it → AC-6
+- [ ] Admin form: save a recipe with a `2-3 oz` line → `select amount_value, amount_max_value, amount_unit from recipe_ingredients where measure = '2-3 oz' limit 5;` shows `2, 3, oz` → AC-3
+
+## Acceptance-criteria coverage (milestone 2)
+
+- AC-2: parser range table and negatives in `units.test.ts`
+- AC-3: migration checks, reparse range count and rerun, admin save check (`amount_max_value` from every writer)
+- AC-5: `computeBatch ranges`, `formatBatchRange`, and `batch counts` tests, UI steps
+- AC-6: `formatAmountOrRangeInUnit` and `computeParts ranges` tests, toggle and Quick Build steps
+
 ## Acceptance-criteria coverage (milestone 1)
 
 - AC-1: parser unit tests, value sourcing parse step

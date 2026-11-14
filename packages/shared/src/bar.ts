@@ -1,6 +1,12 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
-import { toBarFormUnit, toRecognizedUnit, type BarFormUnit, type RecognizedUnit } from "./units";
+import {
+  toBarFormUnit,
+  toRecognizedUnit,
+  validAmountMax,
+  type BarFormUnit,
+  type RecognizedUnit,
+} from "./units";
 
 export interface Bar {
   id: string;
@@ -571,6 +577,8 @@ export interface QuickBuildIngredient {
   name: string;
   measure: string | null;
   amountValue: number | null;
+  /** The high end of a range; null for a single amount and for house recipes (spec 0054 AC-6). */
+  amountMaxValue: number | null;
   amountUnit: RecognizedUnit | null;
   /** Always on hand (Ice, Water); false for house recipes, whose detail RPC doesn't carry it (spec 0036). */
   isStaple: boolean;
@@ -604,6 +612,7 @@ interface RawQuickBuildRecipeIngredientRow {
   name: string;
   measure: string | null;
   amount_value: number | null;
+  amount_max_value?: number | null;
   amount_unit: string | null;
   is_staple?: boolean;
 }
@@ -629,6 +638,7 @@ export async function fetchQuickBuildRecipeDetail(
     name: ingredient.name,
     measure: ingredient.measure,
     amountValue: ingredient.amount_value,
+    amountMaxValue: validAmountMax(ingredient.amount_value, ingredient.amount_max_value),
     amountUnit: toRecognizedUnit(ingredient.amount_unit),
     isStaple: ingredient.is_staple ?? false,
   }));
@@ -667,6 +677,7 @@ export async function fetchQuickBuildBarRecipeDetail(
     name: ingredient.name,
     measure: ingredient.measure,
     amountValue: ingredient.amount_value,
+    amountMaxValue: null,
     amountUnit: toBarFormUnit(ingredient.amount_unit),
     isStaple: false,
   }));

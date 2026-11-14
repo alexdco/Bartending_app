@@ -61,7 +61,10 @@ export const CONVERTIBLE_UNITS = ["oz", "ml", "cl"] as const;
 export type ConvertibleUnit = (typeof CONVERTIBLE_UNITS)[number];
 
 export interface ParsedMeasure {
+  /** The amount, or the low end of a range. */
   value: number;
+  /** The high end of a range, always above value; null for a single amount (spec 0054 AC-2). */
+  maxValue: number | null;
   unit: RecognizedUnit;
 }
 
@@ -82,6 +85,23 @@ export function isCountedUnit(unit: RecognizedUnit): unit is CountedUnit {
 export function toRecognizedUnit(raw: unknown): RecognizedUnit | null {
   return typeof raw === "string" && (RECOGNIZED_UNITS as readonly string[]).includes(raw)
     ? (raw as RecognizedUnit)
+    : null;
+}
+
+/**
+ * The high end of a stored range, trusted only when it is a finite number
+ * above the low end (spec 0054: clients narrow stored values). Anything else
+ * reads as a single amount.
+ */
+export function validAmountMax(
+  amountValue: number | null,
+  amountMaxValue: number | null | undefined,
+): number | null {
+  return amountValue !== null &&
+    typeof amountMaxValue === "number" &&
+    Number.isFinite(amountMaxValue) &&
+    amountMaxValue > amountValue
+    ? amountMaxValue
     : null;
 }
 
@@ -253,24 +273,48 @@ function parseLeadingNumber(text: string): { value: number; rest: string } | nul
   return { value, rest: trimmed.slice(match[0].length).trim() };
 }
 
-// After the unit, a second number introduced by "-", "to", "or", or "/"
-// means the measure names the unit twice ("1 oz to 2 oz", "1 oz or 2
-// shots"): a range or an alternative, never a single amount (AC-11).
+// After the unit, a second number introduced by "-", "–", "to", "or", or "/"
+// means the measure names a second amount. Only a matching unit after it
+// makes a range (spec 0054 AC-2); otherwise the line stays unparsed.
 const SECOND_AMOUNT_AFTER_UNIT = new RegExp(
-  `^(-|to\\b|or\\b|\\/)\\s*(\\d|${GLYPH_ALTERNATION})`,
+  `^(-|–|to\\b|or\\b|\\/)\\s*(\\d|${GLYPH_ALTERNATION})`,
   "i",
 );
 
+// The dash or word joining the two ends of a range: "-", "–" (en dash), "to", "or".
+const RANGE_SEPARATOR = /^(?:-|–|to\b|or\b)\s*/i;
+
+/** Reads a range separator plus the high number ("- 3 oz" gives 3 and "oz"); null without one. */
+function readRangeHigh(text: string): { value: number; rest: string } | null {
+  const separator = RANGE_SEPARATOR.exec(text);
+  return separator ? parseLeadingNumber(text.slice(separator[0].length)) : null;
+}
+
+function single(value: number, unit: RecognizedUnit): ParsedMeasure | null {
+  return unit === "each" && value <= 0 ? null : { value, maxValue: null, unit };
+}
+
+function range(low: number, high: number, unit: RecognizedUnit): ParsedMeasure | null {
+  return high > low && (unit !== "each" || low > 0) ? { value: low, maxValue: high, unit } : null;
+}
+
 /**
  * Parses a leading number followed by a unit token out of raw measure text
- * (spec 0021 AC-3, spec 0035 AC-1, spec 0054 AC-1). The unit is the first
- * word after the number (or the two words "fl oz"), matched as a whole
+ * (spec 0021 AC-3, spec 0035 AC-1, spec 0054 AC-1 and AC-2). The unit is the
+ * first word after the number (or the two words "fl oz"), matched as a whole
  * token, case insensitive, with one optional trailing dot; any further words
  * are ignored. A number with nothing after it is a plain count, unit "each"
- * ("1" Lime), when it is above 0. Returns null for anything else: no number,
- * a range ("1 to 2 oz", "1-2 oz", "1 oz - 2 oz"), a number followed by any
- * other character or word ("2.", "1 (optional)", "1 lime", "2 Wheels"), or a
- * non volume word ("sprig", "wedge", "to taste").
+ * ("1" Lime), when it is above 0.
+ *
+ * A range reads into value (low) and maxValue (high): "2-3 oz", "2 - 3 oz",
+ * "2–3 oz", "2 to 3 oz", "2 or 3 oz", "1 oz - 2 ounces" (the same unit both
+ * times), and the unitless "2-3", "2 to 3", "2 or 3" as "each". It parses
+ * only when the high end is above the low end.
+ *
+ * Returns null for anything else: no number, a number followed by any other
+ * character or word ("2.", "1 (optional)", "1 lime", "2 Wheels"), a range out
+ * of order or in two units ("3-2 oz", "1 oz or 2 shots"), or a non volume
+ * word ("sprig", "wedge", "to taste").
  */
 export function parseMeasure(measure: string | null | undefined): ParsedMeasure | null {
   if (!measure) {
@@ -283,21 +327,39 @@ export function parseMeasure(measure: string | null | undefined): ParsedMeasure 
   }
 
   if (leading.rest.length === 0) {
-    return leading.value > 0 ? { value: leading.value, unit: "each" } : null;
+    return single(leading.value, "each");
   }
 
-  // A range never parses: "1 to 2 oz", "1-2 oz" leave a second number
-  // (or a dash straight into one) in `rest` before the unit word.
-  if (/^-/.test(leading.rest) || /^(to|-)\s*\d/i.test(leading.rest)) {
+  // "A-B unit", "A to B unit", "A or B unit", or the unitless "A-B".
+  const high = readRangeHigh(leading.rest);
+  if (high) {
+    if (high.rest.length === 0) {
+      return range(leading.value, high.value, "each");
+    }
+    const read = readUnit(high.rest);
+    return read && !SECOND_AMOUNT_AFTER_UNIT.test(read.after)
+      ? range(leading.value, high.value, read.unit)
+      : null;
+  }
+  if (/^[-–]/.test(leading.rest)) {
     return null;
   }
 
   const read = readUnit(leading.rest);
-  if (!read || SECOND_AMOUNT_AFTER_UNIT.test(read.after)) {
+  if (!read) {
     return null;
   }
 
-  return { value: leading.value, unit: read.unit };
+  // "A unit - B unit", "A unit to B unit", "A unit or B unit", one unit both times.
+  const highAfterUnit = readRangeHigh(read.after);
+  if (highAfterUnit) {
+    const second = readUnit(highAfterUnit.rest);
+    return second && second.unit === read.unit && !SECOND_AMOUNT_AFTER_UNIT.test(second.after)
+      ? range(leading.value, highAfterUnit.value, read.unit)
+      : null;
+  }
+
+  return SECOND_AMOUNT_AFTER_UNIT.test(read.after) ? null : single(leading.value, read.unit);
 }
 
 // Counted or non volume words that still belong to the measure when a line
@@ -509,6 +571,26 @@ export function formatAmountInUnit(
     return null;
   }
   return formatConvertedAmount(convertAmount(amountValue, amountUnit, targetUnit), targetUnit);
+}
+
+/**
+ * formatAmountInUnit for a line that may be a range (spec 0054 AC-6): both
+ * ends convert through the same single serving formatting, joined by "–"
+ * ("20–30" ml). A single amount formats as before. Null when the line can't
+ * convert (unparsed, part, or a counted unit), so it shows its measure text.
+ */
+export function formatAmountOrRangeInUnit(
+  amountValue: number | null,
+  amountMaxValue: number | null,
+  amountUnit: RecognizedUnit | null,
+  targetUnit: ConvertibleUnit,
+): string | null {
+  const low = formatAmountInUnit(amountValue, amountUnit, targetUnit);
+  if (low === null || amountMaxValue === null) {
+    return low;
+  }
+  const high = formatAmountInUnit(amountMaxValue, amountUnit, targetUnit);
+  return high === null || high === low ? low : `${low}–${high}`;
 }
 
 /** Per locale unit word labels (not machine translated), mirroring locale.ts's Record<Locale, ...> lookup idiom. */

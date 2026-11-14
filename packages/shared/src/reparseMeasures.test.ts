@@ -5,8 +5,16 @@ function row(
   measure: string | null,
   amount_value: number | null,
   amount_unit: string | null,
+  amount_max_value: number | null = null,
 ): StoredMeasureRow {
-  return { recipe_id: "r", ingredient_id: measure ?? "none", measure, amount_value, amount_unit };
+  return {
+    recipe_id: "r",
+    ingredient_id: measure ?? "none",
+    measure,
+    amount_value,
+    amount_max_value,
+    amount_unit,
+  };
 }
 
 describe("planReparse (spec 0035 AC-9)", () => {
@@ -19,7 +27,13 @@ describe("planReparse (spec 0035 AC-9)", () => {
     ]);
 
     expect(plan.updates).toEqual([
-      { recipe_id: "r", ingredient_id: "1 shot", amount_value: 1, amount_unit: "shot" },
+      {
+        recipe_id: "r",
+        ingredient_id: "1 shot",
+        amount_value: 1,
+        amount_max_value: null,
+        amount_unit: "shot",
+      },
     ]);
   });
 
@@ -52,8 +66,8 @@ describe("planReparse (spec 0035 AC-9)", () => {
   it("reports counts before and after, per unit", () => {
     const plan = planReparse([row("3 parts", null, null), row("1 oz", 1, "oz")]);
 
-    expect(plan.before).toEqual({ parsedLines: 1, linesPerUnit: { oz: 1 } });
-    expect(plan.after).toEqual({ parsedLines: 2, linesPerUnit: { part: 1, oz: 1 } });
+    expect(plan.before).toEqual({ parsedLines: 1, rangeLines: 0, linesPerUnit: { oz: 1 } });
+    expect(plan.after).toEqual({ parsedLines: 2, rangeLines: 0, linesPerUnit: { part: 1, oz: 1 } });
   });
 
   it("changes nothing on a second run", () => {
@@ -64,5 +78,38 @@ describe("planReparse (spec 0035 AC-9)", () => {
     }));
 
     expect(planReparse(applied).updates).toEqual([]);
+  });
+});
+
+describe("planReparse ranges (spec 0054 AC-3)", () => {
+  it("writes amount_max_value and counts ranges", () => {
+    const plan = planReparse([row("2-3 oz", null, null)]);
+
+    expect(plan.updates).toEqual([
+      {
+        recipe_id: "r",
+        ingredient_id: "2-3 oz",
+        amount_value: 2,
+        amount_max_value: 3,
+        amount_unit: "oz",
+      },
+    ]);
+    expect(plan.after.rangeLines).toBe(1);
+  });
+
+  it("changes nothing on a rerun, comparing all three columns by value", () => {
+    expect(planReparse([row("2-3 oz", 2.0, "oz", 3.0)]).updates).toEqual([]);
+  });
+
+  it("clears a stale max when the measure is a single amount", () => {
+    expect(planReparse([row("2 oz", 2, "oz", 3)]).updates).toEqual([
+      {
+        recipe_id: "r",
+        ingredient_id: "2 oz",
+        amount_value: 2,
+        amount_max_value: null,
+        amount_unit: "oz",
+      },
+    ]);
   });
 });

@@ -29,6 +29,7 @@ function makeDrink(
       measure: "1 oz",
       sortOrder: index + 1,
       amountValue: 1,
+      amountMaxValue: null,
       amountUnit: "oz",
     })),
     tags: [],
@@ -89,6 +90,7 @@ describe("applyOverrides", () => {
       measure: "1 oz",
       sortOrder: 3,
       amountValue: 1,
+      amountMaxValue: null,
       amountUnit: "oz",
     });
     expect(americano?.recipe.instructions).toBe(

@@ -146,8 +146,12 @@ export default function QuickBuildModeScreen() {
         : (line?.measure ?? ingredient.measure ?? "");
     }
 
-    // Unparsed and part lines show their measure text (spec 0035 AC-10).
-    const amount = formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit);
+    // Unparsed, part, counted, and range lines show their measure text
+    // (spec 0035 AC-10, spec 0054 AC-6).
+    const amount =
+      ingredient.amountMaxValue === null
+        ? formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit)
+        : null;
     return amount !== null ? `${amount} ${unit}` : (ingredient.measure ?? "");
   });
 

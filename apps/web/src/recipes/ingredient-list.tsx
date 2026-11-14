@@ -6,7 +6,7 @@ import { Chip } from "@/components/chip";
 import { Text } from "@/components/text";
 import {
   CONVERTIBLE_UNITS,
-  formatAmountInUnit,
+  formatAmountOrRangeInUnit,
   hasVolumeIngredient,
   unitLabel,
   type ConvertibleUnit,
@@ -36,7 +36,12 @@ function displayAmount(
     return ingredient.measure;
   }
   // Null for an unparsed or part line, which then shows its measure text (spec 0035 AC-4).
-  const amount = formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit);
+  const amount = formatAmountOrRangeInUnit(
+    ingredient.amountValue,
+    ingredient.amountMaxValue,
+    ingredient.amountUnit,
+    unit,
+  );
   return amount === null ? null : `${amount} ${unitLabel(unit, locale)}`;
 }
 

@@ -10,4 +10,7 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "favorites.toggleLabel": ["name"],
   // A batch amount in parentheses, label free in every locale (spec 0054 AC-13).
   "batch.approx": ["amount"],
+  "batch.dash": ["value"],
+  "batch.drop": ["value"],
+  "batch.splash": ["value"],
 };

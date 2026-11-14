@@ -154,12 +154,12 @@
     }
   },
   "batch": {
-    "dash_one": "{{count}} golpe",
-    "dash_other": "{{count}} golpes",
-    "splash_one": "{{count}} chorrito",
-    "splash_other": "{{count}} chorritos",
-    "drop_one": "{{count}} gota",
-    "drop_other": "{{count}} gotas",
+    "dash_one": "{{value}} golpe",
+    "dash_other": "{{value}} golpes",
+    "splash_one": "{{value}} chorrito",
+    "splash_other": "{{value}} chorritos",
+    "drop_one": "{{value}} gota",
+    "drop_other": "{{value}} gotas",
     "approx": "(≈ {{amount}})"
   }
 }

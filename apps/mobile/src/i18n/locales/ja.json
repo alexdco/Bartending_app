@@ -152,9 +152,9 @@
     }
   },
   "batch": {
-    "dash_other": "{{count}} ダッシュ",
-    "splash_other": "{{count}} スプラッシュ",
-    "drop_other": "{{count}} 滴",
+    "dash_other": "{{value}} ダッシュ",
+    "splash_other": "{{value}} スプラッシュ",
+    "drop_other": "{{value}} 滴",
     "approx": "(≈ {{amount}})"
   }
 }

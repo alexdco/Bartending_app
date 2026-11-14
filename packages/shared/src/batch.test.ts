@@ -1,9 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  batchCount,
+  batchCountPluralValue,
+  batchCountText,
   batchUnitLabel,
   computeBatch,
   convertPartSize,
   formatBatchAmount,
+  formatBatchRange,
   hasPartIngredient,
   hasScalableIngredient,
   hasVolumeIngredient,
@@ -78,6 +82,7 @@ function ingredient(overrides: Partial<BatchIngredientInput> = {}): BatchIngredi
     name: "Rum",
     measure: "1 oz",
     amountValue: 1,
+    amountMaxValue: null,
     amountUnit: "oz",
     category: "spirit",
     ...overrides,
@@ -189,7 +194,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
     });
     const line = result.lines[1];
     expect(line.state).toBe("normal");
-    expect(line.count).toEqual({ value: 50, unit: "dash" });
+    expect(line.count).toEqual({ value: 50, maxValue: null, unit: "dash" });
     expect(line.displayAmount).toBeNull();
     expect(line.approxAmount).toBe("1 oz");
     expect(line.amountMl).toBeCloseTo(30.80575, 6);
@@ -203,7 +208,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       unit: "oz",
       dilutionLevel: "none",
     });
-    expect(result.lines[0].count).toEqual({ value: 2, unit: "dash" });
+    expect(result.lines[0].count).toEqual({ value: 2, maxValue: null, unit: "dash" });
     expect(result.lines[0].approxAmount).toBeNull();
   });
 
@@ -222,7 +227,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       unit: "ml",
       dilutionLevel: "none",
     });
-    expect(result.lines[0].count).toEqual({ value: 2, unit: "dash" });
+    expect(result.lines[0].count).toEqual({ value: 2, maxValue: null, unit: "dash" });
     expect(result.lines[0].amountMl).toBeCloseTo(1.5 * 0.616115, 9);
   });
 
@@ -243,7 +248,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
     );
     expect(result.lines[1]).toMatchObject({
       state: "counted",
-      count: { value: 30, unit: "drop" },
+      count: { value: 30, maxValue: null, unit: "drop" },
       approxAmount: null,
       amountMl: null,
     });
@@ -278,7 +283,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
     );
     expect(result.lines[0]).toMatchObject({
       state: "counted",
-      count: { value: 12.5, unit: "each" },
+      count: { value: 12.5, maxValue: null, unit: "each" },
     });
     expect(result.lines[1]).toMatchObject({ state: "unscaled", measure: "1/3", count: null });
     expect(result.lines[2]).toMatchObject({ state: "unscaled", measure: "1" });
@@ -320,7 +325,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
     );
     expect(result.lines[1]).toMatchObject({
       state: "uncategorized",
-      count: { value: 4, unit: "drop" },
+      count: { value: 4, maxValue: null, unit: "drop" },
       amountMl: null,
     });
   });
@@ -677,5 +682,182 @@ describe("formatBatchAmount (spec 0035 AC-6, AC-7)", () => {
 
     expect(result.lines.map((l) => l.displayAmount)).toEqual(["0.001 l", "1 l"]);
     expect(result.totalDisplayAmount).toBe("1.001 l");
+  });
+});
+
+describe("formatBatchRange (spec 0054 AC-5)", () => {
+  const ML_PER_OZ = 29.5735;
+
+  it("joins two different ends with an en dash and the unit once", () => {
+    expect(formatBatchRange(20 * ML_PER_OZ, 30 * ML_PER_OZ, "oz")).toBe("20–30 oz");
+  });
+
+  it("shows one value when both ends round alike", () => {
+    expect(formatBatchRange(1, 1.2, "l")).toBe("0.001 l");
+  });
+
+  it("keeps a floored low end's < sign", () => {
+    expect(formatBatchRange(0.5, 2 * ML_PER_OZ, "oz")).toBe("< 0.1–2 oz");
+  });
+});
+
+describe("batch counts (spec 0054 AC-5)", () => {
+  it("rounds each end on its own and shows one value when they match", () => {
+    expect(batchCount(0.5, 1, "dash")).toEqual({ value: 1, maxValue: null, unit: "dash" });
+    expect(batchCount(50, 75, "dash")).toEqual({ value: 50, maxValue: 75, unit: "dash" });
+  });
+
+  it("writes a range as low–high and picks the plural by the high end", () => {
+    const count = batchCount(1, 2, "dash");
+    expect(batchCountText(count)).toBe("1–2");
+    expect(batchCountPluralValue(count)).toBe(2);
+    expect(batchCountText(batchCount(25, null, "each"))).toBe("25");
+  });
+});
+
+describe("computeBatch ranges (spec 0054 AC-5)", () => {
+  const gin = ingredient({
+    ingredientId: "gin",
+    measure: "2-3 oz",
+    amountValue: 2,
+    amountMaxValue: 3,
+    amountUnit: "oz",
+  });
+  const lime = ingredient({
+    ingredientId: "lime",
+    measure: "1 oz",
+    amountValue: 1,
+    amountUnit: "oz",
+    category: "citrus",
+  });
+
+  it("batches a range line, its water, and its total at both ends", () => {
+    const result = computeBatch([gin, lime], {
+      servings: 10,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "20",
+    });
+
+    expect(result.lines[0].displayAmount).toBe("20–30 oz");
+    expect(result.lines[1].displayAmount).toBe("10 oz");
+    expect(result.waterLine?.displayAmount).toBe("6–8 oz");
+    expect(result.totalDisplayAmount).toBe("36–48 oz");
+  });
+
+  it("looks exactly as before with no range line", () => {
+    const result = computeBatch([lime], {
+      servings: 10,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "20",
+    });
+
+    expect(result.waterLine).toEqual({
+      displayAmount: "2 oz",
+      amountMl: expect.closeTo(2 * 29.5735, 6),
+      amountMlMax: null,
+    });
+    expect(result.totalDisplayAmount).toBe("12 oz");
+  });
+
+  it("scales a dash range as a count range with a ≈ range", () => {
+    const result = computeBatch(
+      [
+        gin,
+        ingredient({
+          ingredientId: "bitters",
+          amountValue: 2,
+          amountMaxValue: 3,
+          amountUnit: "dash",
+          category: "other",
+        }),
+      ],
+      { servings: 25, scope: "everything", unit: "oz", dilutionLevel: "none" },
+    );
+
+    expect(result.lines[1].count).toEqual({ value: 50, maxValue: 75, unit: "dash" });
+    expect(result.lines[1].approxAmount).toBe("1–1.6 oz");
+  });
+
+  it("floors both ends of a 1/2-1 dash range to one dash", () => {
+    const result = computeBatch(
+      [
+        gin,
+        ingredient({
+          ingredientId: "bitters",
+          amountValue: 0.5,
+          amountMaxValue: 1,
+          amountUnit: "dash",
+          category: "other",
+        }),
+      ],
+      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none" },
+    );
+
+    expect(result.lines[1].count).toEqual({ value: 1, maxValue: null, unit: "dash" });
+    expect(result.lines[1].approxAmount).toBeNull();
+  });
+
+  it("scales a part range at the part size, and leaves it unscaled without one", () => {
+    const parts = ingredient({
+      ingredientId: "gin",
+      measure: "2-3 parts",
+      amountValue: 2,
+      amountMaxValue: 3,
+      amountUnit: "part",
+    });
+    const options = {
+      servings: 10,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "none",
+    } as const;
+
+    expect(
+      computeBatch([parts], { ...options, partSize: { value: 1, unit: "oz" } }).lines[0]
+        .displayAmount,
+    ).toBe("20–30 oz");
+    expect(computeBatch([parts], options).lines[0]).toMatchObject({
+      state: "unscaled",
+      measure: "2-3 parts",
+    });
+  });
+
+  it("excludes a citrus range under Alcohol only", () => {
+    const citrusRange = ingredient({
+      ingredientId: "lime",
+      amountValue: 1,
+      amountMaxValue: 2,
+      amountUnit: "oz",
+      category: "citrus",
+    });
+    const result = computeBatch([gin, citrusRange], {
+      servings: 1,
+      scope: "alcohol_only",
+      unit: "oz",
+      dilutionLevel: "none",
+    });
+
+    expect(result.lines[1].state).toBe("excluded");
+    expect(result.totalDisplayAmount).toBe("2–3 oz");
+  });
+
+  it("treats a stored max at or below the value as a single amount", () => {
+    const result = computeBatch(
+      [ingredient({ amountValue: 2, amountMaxValue: 2, amountUnit: "oz" })],
+      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none" },
+    );
+
+    expect(result.lines[0].displayAmount).toBe("2 oz");
+    expect(result.lines[0].amountMlMax).toBeNull();
+  });
+
+  it("counts a range line toward the toggle, the part input, and the batch control", () => {
+    expect(hasVolumeIngredient([gin])).toBe(true);
+    expect(hasScalableIngredient([gin])).toBe(true);
+    expect(
+      hasPartIngredient([ingredient({ amountValue: 2, amountMaxValue: 3, amountUnit: "part" })]),
+    ).toBe(true);
   });
 });

@@ -18,6 +18,8 @@ export interface PartsIngredientInput {
   name: string;
   measure: string | null;
   amountValue: number | null;
+  /** The high end of a range; a range line is never in the ratio (spec 0054 AC-6). */
+  amountMaxValue: number | null;
   amountUnit: RecognizedUnit | null;
 }
 
@@ -60,6 +62,20 @@ function normalLine(ingredient: PartsIngredientInput, parts: number): PartsLine 
 }
 
 /**
+ * A single parsed amount that is not a counted unit: the only lines a parts
+ * ratio can use. Counted lines and ranges show their measure text (spec 0054
+ * AC-6).
+ */
+function isRatioCandidate(ingredient: PartsIngredientInput): boolean {
+  return (
+    ingredient.amountValue !== null &&
+    ingredient.amountMaxValue === null &&
+    ingredient.amountUnit !== null &&
+    !isCountedUnit(ingredient.amountUnit)
+  );
+}
+
+/**
  * Computes each ingredient's parts value.
  *
  * When every parsed line is a `part` line, each shows its stored part count
@@ -68,28 +84,26 @@ function normalLine(ingredient: PartsIngredientInput, parts: number): PartsLine 
  * and each volume line's ratio is relative to the smallest volume amount
  * (spec 0023 AC-2), rounded to the nearest quarter and clamped to a minimum
  * of 0.25 so it never shows as 0 (AC-8). An ingredient with no parseable
- * amount, or a counted one ("2 dashes", "1" Lime), is always an "unscaled"
+ * amount, a counted one ("2 dashes", "1" Lime), or a range ("2-3 oz") is always an "unscaled"
  * line showing its measure, and is left out of the ratio (spec 0054 AC-6).
  */
 export function computeParts(ingredients: readonly PartsIngredientInput[]): PartsLine[] {
-  const parsed = ingredients.filter(
-    (ingredient) =>
-      ingredient.amountValue !== null &&
-      ingredient.amountUnit !== null &&
-      !isCountedUnit(ingredient.amountUnit),
-  );
+  const parsed = ingredients.filter(isRatioCandidate);
   const allParts =
     parsed.length > 0 && parsed.every((ingredient) => ingredient.amountUnit === "part");
 
   if (allParts) {
     return ingredients.map((ingredient) =>
-      ingredient.amountValue !== null && ingredient.amountUnit === "part"
+      isRatioCandidate(ingredient) &&
+      ingredient.amountValue !== null &&
+      ingredient.amountUnit === "part"
         ? normalLine(ingredient, roundToHundredth(ingredient.amountValue))
         : unscaledLine(ingredient),
     );
   }
 
   const volumeMl = (ingredient: PartsIngredientInput): number | null =>
+    isRatioCandidate(ingredient) &&
     ingredient.amountValue !== null &&
     ingredient.amountUnit !== null &&
     isVolumeUnit(ingredient.amountUnit)
