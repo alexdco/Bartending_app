@@ -78,9 +78,11 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
           return (
             // `wrap-break-word` keeps each flex child at least one word wide, so a
             // Korean name never splits mid word at 360 px (spec 0051, AC-11).
+            // Chinese wraps the buttons under the name when both do not fit,
+            // with the labels kept whole by globals.css (spec 0052, AC-11).
             <li
               key={ingredient.ingredientId}
-              className="flex items-center justify-between gap-two wrap-break-word"
+              className="flex items-center justify-between gap-two wrap-break-word [:root:lang(zh-Hans)_&]:flex-wrap"
             >
               <Text variant="body">
                 {amount ? `${amount} ` : ""}
@@ -88,7 +90,7 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
               </Text>
               {/* A staple (Ice, Water) is always on hand: no pantry or shopping list actions (spec 0036, AC-10). */}
               {!ingredient.isStaple && (
-                <div className="flex items-center gap-two">
+                <div className="flex items-center gap-two [:root:lang(zh-Hans)_&]:ml-auto">
                   <Button
                     variant={inPantry ? "secondary" : "primary"}
                     disabled={inPantry}

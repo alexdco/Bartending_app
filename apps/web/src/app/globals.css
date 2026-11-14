@@ -200,6 +200,14 @@
   line-break: strict;
 }
 
+/* Spec 0052 AC-11: Chinese can break between any two characters, so a
+   shrinking flex child (the ingredient row buttons, every chip) collapses to
+   one character per line at 360 px. A button label is a short word: keep it
+   whole. The ingredient row wraps its buttons under the name instead. */
+:root:lang(zh-Hans) button {
+  word-break: keep-all;
+}
+
 /* Age gate (spec 0037). The inline head script sets html[data-age] before
    paint; these rules are unlayered so they win over Tailwind utilities. The
    page stays visible under the scrim, never display: none or visibility:
