@@ -10,7 +10,7 @@
 // docs/specs/0054-batch-calculator-v2/index.md
 
 import { DEFAULT_LOCALE, type Locale } from "./locale";
-import { formatNumber } from "./numberFormat";
+import { formatNumber, parseDecimalInput } from "./numberFormat";
 import type { RecipeMethod } from "./recipes";
 import {
   COUNTED_UNIT_ML,
@@ -79,28 +79,30 @@ export function validateServings(raw: string): number | null {
   return value;
 }
 
-/** A custom dilution percent validated against spec 0035 AC-5 (0 to 50, whole or decimal). */
+/**
+ * A custom dilution percent validated against spec 0035 AC-5 (0 to 50, whole
+ * or decimal); `,` or `.` reads as the decimal point (spec 0055 AC-6).
+ */
 export function validateCustomDilutionPercent(raw: string): number | null {
-  const trimmed = raw.trim();
-  if (!/^\d+(\.\d+)?$/.test(trimmed)) {
-    return null;
-  }
-  const value = Number(trimmed);
-  if (value < MIN_CUSTOM_DILUTION_PERCENT || value > MAX_CUSTOM_DILUTION_PERCENT) {
+  const value = parseDecimalInput(raw);
+  if (
+    value === null ||
+    value < MIN_CUSTOM_DILUTION_PERCENT ||
+    value > MAX_CUSTOM_DILUTION_PERCENT
+  ) {
     return null;
   }
   return value;
 }
 
-/** A part size validated against spec 0035 AC-3 (0.25 to 4 oz, or 5 to 120 ml, whole or decimal). */
+/**
+ * A part size validated against spec 0035 AC-3 (0.25 to 4 oz, or 5 to 120 ml,
+ * whole or decimal); `,` or `.` reads as the decimal point (spec 0055 AC-6).
+ */
 export function validatePartSize(raw: string, unit: PartSizeUnit): number | null {
-  const trimmed = raw.trim();
-  if (!/^\d+(\.\d+)?$/.test(trimmed)) {
-    return null;
-  }
-  const value = Number(trimmed);
+  const value = parseDecimalInput(raw);
   const { min, max } = PART_SIZE_RANGE[unit];
-  if (value < min || value > max) {
+  if (value === null || value < min || value > max) {
     return null;
   }
   return value;
@@ -128,14 +130,21 @@ export function convertPartSize(value: number, from: PartSizeUnit, to: PartSizeU
 /**
  * The part size input text after its unit family switches (spec 0035 AC-3):
  * a valid value is converted, an invalid one resets to the new family's
- * default.
+ * default, written with the locale's decimal separator ("0,75" in fr; spec
+ * 0055 AC-7). Values stay at or below 120, so grouping never appears.
  */
-export function partSizeInputForUnit(input: string, from: PartSizeUnit, to: PartSizeUnit): string {
+export function partSizeInputForUnit(
+  input: string,
+  from: PartSizeUnit,
+  to: PartSizeUnit,
+  locale: Locale,
+): string {
   if (from === to) {
     return input;
   }
   const current = validatePartSize(input, from);
-  return String(current === null ? DEFAULT_PART_SIZE[to] : convertPartSize(current, from, to));
+  const value = current === null ? DEFAULT_PART_SIZE[to] : convertPartSize(current, from, to);
+  return formatNumber(value, locale, 2);
 }
 
 /** The part size input's unit family follows the batch unit: oz stays oz, ml/cl/l use ml (spec 0035 AC-3). */

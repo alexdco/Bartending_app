@@ -586,6 +586,7 @@
     "garnishPlaceholder": "レモンピール",
     "ingredients": "材料",
     "amount": "分量",
+    "amountError": "0より大きい数値を入力してください。",
     "saving": "保存中...",
     "saveHouseRecipe": "ハウスレシピを保存",
     "saveHouseRecipeFailed": "レシピを保存できませんでした。同じ名前のハウスレシピがすでにあるか、あなたがこのバーのオーナーではない可能性があります。",

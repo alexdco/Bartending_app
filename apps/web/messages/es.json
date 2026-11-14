@@ -586,6 +586,7 @@
     "garnishPlaceholder": "Twist de limón",
     "ingredients": "Ingredientes",
     "amount": "Cantidad",
+    "amountError": "Ingresa un número mayor que 0.",
     "saving": "Guardando...",
     "saveHouseRecipe": "Guardar receta de la casa",
     "saveHouseRecipeFailed": "No pudimos guardar esa receta. Puede que ya exista una receta de la casa con este nombre, o que no seas el dueño de este bar.",

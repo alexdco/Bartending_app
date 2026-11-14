@@ -586,6 +586,7 @@
     "garnishPlaceholder": "Zeste de citron jaune",
     "ingredients": "Ingrédients",
     "amount": "Quantité",
+    "amountError": "Saisissez un nombre supérieur à 0.",
     "saving": "Enregistrement...",
     "saveHouseRecipe": "Enregistrer la recette maison",
     "saveHouseRecipeFailed": "Impossible d’enregistrer cette recette. Une recette maison porte peut-être déjà ce nom, ou vous n’êtes peut-être pas le propriétaire de ce bar.",

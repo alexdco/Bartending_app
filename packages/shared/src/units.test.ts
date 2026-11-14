@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   formatAmountOrRangeInUnit,
   validAmountMax,
+  validateBarAmount,
   BAR_FORM_UNITS,
   COUNTED_UNITS,
   convertAmount,
@@ -335,5 +336,22 @@ describe("validAmountMax (spec 0054)", () => {
     [2, Number.NaN],
   ] as const)("drops %s to %s", (value, max) => {
     expect(validAmountMax(value, max)).toBeNull();
+  });
+});
+
+describe("validateBarAmount (spec 0055 AC-6, AC-8)", () => {
+  it("reads a comma or a dot as the decimal point", () => {
+    expect(validateBarAmount("0,5")).toEqual({ ok: true, value: 0.5 });
+    expect(validateBarAmount("1.5")).toEqual({ ok: true, value: 1.5 });
+    expect(validateBarAmount("750")).toEqual({ ok: true, value: 750 });
+  });
+
+  it("treats an empty amount as no amount", () => {
+    expect(validateBarAmount("")).toEqual({ ok: true, value: null });
+    expect(validateBarAmount("  ")).toEqual({ ok: true, value: null });
+  });
+
+  it.each(["0", "0,0", "-1", "1,5,0", "abc", "१,५", "1,"])("rejects %j", (raw) => {
+    expect(validateBarAmount(raw)).toEqual({ ok: false });
   });
 });

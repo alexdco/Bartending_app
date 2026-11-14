@@ -18,6 +18,7 @@ import {
   batchCountPluralValue,
   batchCountText,
   computeBatch,
+  formatNumber,
   dilutionHintMethod,
   initialDilutionState,
   pickDilution,
@@ -127,12 +128,12 @@ export function BatchPanel({ recipeId, method, ingredients, unit, onUnitChange }
   // derived from a changing prop.
   const partSizeUnit = partSizeUnitFor(unit);
   const [partSize, setPartSize] = useState<{ input: string; unit: PartSizeUnit }>(() => ({
-    input: String(DEFAULT_PART_SIZE[partSizeUnit]),
+    input: formatNumber(DEFAULT_PART_SIZE[partSizeUnit], locale, 2),
     unit: partSizeUnit,
   }));
   if (partSize.unit !== partSizeUnit) {
     setPartSize({
-      input: partSizeInputForUnit(partSize.input, partSize.unit, partSizeUnit),
+      input: partSizeInputForUnit(partSize.input, partSize.unit, partSizeUnit, locale),
       unit: partSizeUnit,
     });
   }
@@ -141,22 +142,26 @@ export function BatchPanel({ recipeId, method, ingredients, unit, onUnitChange }
 
   const servings = servingsInput === "" ? null : validateServings(servingsInput);
   const servingsError =
-    servingsInput !== "" && servings === null
-      ? "Enter a whole number of servings from 1 to 500."
-      : undefined;
+    servingsInput !== "" && servings === null ? t("batch.servingsError") : undefined;
 
   const customDilutionPercent =
     customDilutionInput === "" ? null : validateCustomDilutionPercent(customDilutionInput);
   const customDilutionError =
     dilutionLevel === "custom" && customDilutionInput !== "" && customDilutionPercent === null
-      ? "Enter a percent from 0 to 50."
+      ? t("batch.customDilutionError")
       : undefined;
 
   const partSizeValue = hasParts ? validatePartSize(partSize.input, partSize.unit) : null;
   const partSizeRange = PART_SIZE_RANGE[partSize.unit];
+  // Limits go in as formatted strings: i18next does not localize a plain
+  // number argument (spec 0055 AC-12).
   const partSizeError =
     hasParts && partSizeValue === null
-      ? `Enter a part size from ${partSizeRange.min} to ${partSizeRange.max} ${partSize.unit}.`
+      ? t("batch.partSizeError", {
+          min: formatNumber(partSizeRange.min, locale, 2),
+          max: formatNumber(partSizeRange.max, locale, 2),
+          unit: partSize.unit,
+        })
       : undefined;
 
   const canCompute =

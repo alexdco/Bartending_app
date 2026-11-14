@@ -640,12 +640,12 @@ describe("parts (spec 0035 AC-3, AC-4)", () => {
   });
 
   it("carries the part size input across a family switch, resetting an invalid value", () => {
-    expect(partSizeInputForUnit("1", "oz", "ml")).toBe("30");
-    expect(partSizeInputForUnit("30", "ml", "oz")).toBe("1");
-    expect(partSizeInputForUnit("abc", "oz", "ml")).toBe("30");
-    expect(partSizeInputForUnit("9", "oz", "ml")).toBe("30");
-    expect(partSizeInputForUnit("", "ml", "oz")).toBe("1");
-    expect(partSizeInputForUnit("2.5", "oz", "oz")).toBe("2.5");
+    expect(partSizeInputForUnit("1", "oz", "ml", "en")).toBe("30");
+    expect(partSizeInputForUnit("30", "ml", "oz", "en")).toBe("1");
+    expect(partSizeInputForUnit("abc", "oz", "ml", "en")).toBe("30");
+    expect(partSizeInputForUnit("9", "oz", "ml", "en")).toBe("30");
+    expect(partSizeInputForUnit("", "ml", "oz", "en")).toBe("1");
+    expect(partSizeInputForUnit("2.5", "oz", "oz", "en")).toBe("2.5");
   });
 
   it("picks the part size family from the batch unit", () => {
@@ -955,5 +955,28 @@ describe("locale aware batch numbers (spec 0055 AC-2, AC-9)", () => {
     expect(result.lines[0].displayAmount).toBe("44.4 ml");
     expect(result.waterLine?.displayAmount).toBe("8.9 ml");
     expect(result.totalDisplayAmount).toBe("53.2 ml");
+  });
+});
+
+describe("locale aware part size and dilution inputs (spec 0055 AC-6, AC-7)", () => {
+  it("reads a comma or a dot as the decimal point", () => {
+    expect(validatePartSize("0,75", "oz")).toBe(0.75);
+    expect(validatePartSize("0.75", "oz")).toBe(0.75);
+    expect(validateCustomDilutionPercent("18,5")).toBe(18.5);
+  });
+
+  it("rejects two separators, a sign, and non Latin digits", () => {
+    expect(validatePartSize("1,5,0", "oz")).toBeNull();
+    expect(validatePartSize("1.5.0", "oz")).toBeNull();
+    expect(validatePartSize("१,५", "oz")).toBeNull();
+    expect(validateCustomDilutionPercent("-1,5")).toBeNull();
+  });
+
+  it("writes the converted part size with the locale's separator and reads it back", () => {
+    expect(partSizeInputForUnit("30", "ml", "oz", "fr")).toBe("1");
+    expect(partSizeInputForUnit("22", "ml", "oz", "fr")).toBe("0,75");
+    expect(partSizeInputForUnit("22", "ml", "oz", "en")).toBe("0.75");
+    // Fed back, "0,75" converts instead of resetting to the 30 ml default.
+    expect(partSizeInputForUnit("0,75", "oz", "ml", "fr")).toBe("22");
   });
 });

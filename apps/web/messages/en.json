@@ -586,6 +586,7 @@
     "garnishPlaceholder": "Lemon twist",
     "ingredients": "Ingredients",
     "amount": "Amount",
+    "amountError": "Enter a number greater than 0.",
     "saving": "Saving...",
     "saveHouseRecipe": "Save house recipe",
     "saveHouseRecipeFailed": "Couldn't save that recipe. A house recipe with this name may already exist, or you may not be this bar's owner.",

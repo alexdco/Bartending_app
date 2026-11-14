@@ -5,7 +5,7 @@
 // Spec: docs/specs/0021-recipe-ingredient-unit-conversion/index.md
 
 import { DEFAULT_LOCALE, type Locale } from "./locale";
-import { formatNumber } from "./numberFormat";
+import { formatNumber, parseDecimalInput } from "./numberFormat";
 
 /**
  * Units with a fixed volume, convertible to ml (spec 0035 AC-2). Enforced,
@@ -111,6 +111,23 @@ export function toBarFormUnit(raw: unknown): BarFormUnit | null {
   return typeof raw === "string" && (BAR_FORM_UNITS as readonly string[]).includes(raw)
     ? (raw as BarFormUnit)
     : null;
+}
+
+/** A bar recipe form amount: empty saves as no amount; anything else must parse. */
+export type BarAmountInput = { ok: true; value: number | null } | { ok: false };
+
+/**
+ * Reads a bar recipe form amount (spec 0055 AC-6, AC-8): empty or blank is
+ * no amount, as before; otherwise `,` or `.` reads as the decimal point and
+ * the value must be greater than 0 (no upper limit). An invalid amount is an
+ * explicit failure, so the form blocks saving instead of storing NaN.
+ */
+export function validateBarAmount(raw: string): BarAmountInput {
+  if (raw.trim() === "") {
+    return { ok: true, value: null };
+  }
+  const value = parseDecimalInput(raw);
+  return value === null || value <= 0 ? { ok: false } : { ok: true, value };
 }
 
 // Whole token spellings (lowercase, one trailing dot already removed). A

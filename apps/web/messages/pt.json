@@ -586,6 +586,7 @@
     "garnishPlaceholder": "Twist de limão-siciliano",
     "ingredients": "Ingredientes",
     "amount": "Quantidade",
+    "amountError": "Digite um número maior que 0.",
     "saving": "Salvando...",
     "saveHouseRecipe": "Salvar receita da casa",
     "saveHouseRecipeFailed": "Não foi possível salvar essa receita. Pode já existir uma receita da casa com esse nome, ou você pode não ser o dono deste bar.",

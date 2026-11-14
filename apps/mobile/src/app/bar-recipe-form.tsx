@@ -1,6 +1,7 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
-import { BAR_FORM_UNITS, type BarFormUnit } from "@bartendingapp/shared";
+import { BAR_FORM_UNITS, validateBarAmount, type BarFormUnit } from "@bartendingapp/shared";
 
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -87,13 +88,19 @@ export default function BarRecipeFormScreen() {
   const [garnish, setGarnish] = useState("");
   const [ingredients, setIngredients] = useState<DraftIngredient[]>([]);
   const bartenderModeAllowed = useBartenderModeGuard();
+  const { t } = useTranslation();
 
   if (!bartenderModeAllowed) {
     return null;
   }
 
+  // `1,5` and `1.5` both read as 1.5; an invalid amount blocks saving and
+  // shows under its field, never saving NaN (spec 0055 AC-6, AC-8).
+  const amounts = ingredients.map((ingredient) => validateBarAmount(ingredient.amountValue));
+  const amountsValid = amounts.every((amount) => amount.ok);
+
   const isOwner = barId !== undefined;
-  const canSave = isOwner && name.trim() !== "" && ingredients.length > 0;
+  const canSave = isOwner && name.trim() !== "" && ingredients.length > 0 && amountsValid;
 
   const updateIngredient = (index: number, patch: Partial<DraftIngredient>) => {
     setIngredients((current) =>
@@ -106,7 +113,7 @@ export default function BarRecipeFormScreen() {
   };
 
   const handleSave = () => {
-    if (!barId) {
+    if (!barId || !amountsValid) {
       return;
     }
 
@@ -118,12 +125,16 @@ export default function BarRecipeFormScreen() {
       glass: glass.trim() || null,
       ice: ice.trim() || null,
       garnish: garnish.trim() || null,
-      ingredients: ingredients.map((ingredient, index) => ({
-        ingredientId: ingredient.ingredientId,
-        amountValue: ingredient.amountValue.trim() === "" ? null : Number(ingredient.amountValue),
-        amountUnit: ingredient.amountValue.trim() === "" ? null : ingredient.amountUnit,
-        sortOrder: index,
-      })),
+      ingredients: ingredients.map((ingredient, index) => {
+        const amount = amounts[index];
+        const value = amount.ok ? amount.value : null;
+        return {
+          ingredientId: ingredient.ingredientId,
+          amountValue: value,
+          amountUnit: value === null ? null : ingredient.amountUnit,
+          sortOrder: index,
+        };
+      }),
     });
   };
 
@@ -176,6 +187,7 @@ export default function BarRecipeFormScreen() {
                 <Input
                   label="Amount"
                   keyboardType="decimal-pad"
+                  error={amounts[index].ok ? undefined : t("service.amountError")}
                   value={ingredient.amountValue}
                   onChangeText={(value) => updateIngredient(index, { amountValue: value })}
                   style={styles.amountInput}

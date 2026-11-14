@@ -586,6 +586,7 @@
     "garnishPlaceholder": "柠檬皮卷",
     "ingredients": "原料",
     "amount": "用量",
+    "amountError": "请输入大于 0 的数字。",
     "saving": "正在保存…",
     "saveHouseRecipe": "保存店内配方",
     "saveHouseRecipeFailed": "无法保存配方。店内可能已有同名配方，或者你不是酒吧所有者。",

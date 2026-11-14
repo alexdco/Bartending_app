@@ -586,6 +586,7 @@
     "garnishPlaceholder": "레몬 트위스트",
     "ingredients": "재료",
     "amount": "양",
+    "amountError": "0보다 큰 숫자를 입력해 주세요.",
     "saving": "저장하는 중...",
     "saveHouseRecipe": "하우스 레시피 저장",
     "saveHouseRecipeFailed": "레시피를 저장하지 못했어요. 같은 이름의 하우스 레시피가 이미 있거나, 이 바의 소유자가 아닐 수 있어요.",

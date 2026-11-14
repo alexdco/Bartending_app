@@ -103,7 +103,8 @@
     "loadFailed": "Não conseguimos carregar o Serviço. Verifique sua conexão e tente de novo.",
     "loadingBar": "Carregando dados do bar",
     "loadBarFailed": "Não conseguimos carregar este bar",
-    "checkConnection": "Verifique sua conexão e tente de novo."
+    "checkConnection": "Verifique sua conexão e tente de novo.",
+    "amountError": "Digite um número maior que 0."
   },
   "ratings": {
     "none": "Ainda não há avaliações. Seja o primeiro a avaliar.",
@@ -164,7 +165,10 @@
     "methodHintStir": "Padrão para um drinque mexido",
     "methodHintShake": "Padrão para um drinque agitado",
     "methodHintBuild": "Padrão para um drinque montado: o gelo no copo dilui a bebida enquanto ela descansa.",
-    "methodHintBlend": "Padrão para um drinque batido no liquidificador: o gelo do liquidificador já dilui a bebida."
+    "methodHintBlend": "Padrão para um drinque batido no liquidificador: o gelo do liquidificador já dilui a bebida.",
+    "servingsError": "Digite um número inteiro de porções de 1 a 500.",
+    "customDilutionError": "Digite uma porcentagem de 0 a 50.",
+    "partSizeError": "Digite um tamanho de parte de {{min}} a {{max}} {{unit}}."
   },
   "methods": {
     "shake": "Agitar",

@@ -103,7 +103,8 @@
     "loadFailed": "서비스를 불러오지 못했어요. 인터넷 연결을 확인하고 다시 시도해 주세요.",
     "loadingBar": "바 정보 불러오는 중",
     "loadBarFailed": "이 바를 불러오지 못했어요",
-    "checkConnection": "인터넷 연결을 확인하고 다시 시도해 주세요."
+    "checkConnection": "인터넷 연결을 확인하고 다시 시도해 주세요.",
+    "amountError": "0보다 큰 숫자를 입력해 주세요."
   },
   "ratings": {
     "none": "아직 평가가 없어요. 첫 번째로 평가해 보세요.",
@@ -159,7 +160,10 @@
     "methodHintStir": "스터 음료의 기본값",
     "methodHintShake": "셰이크 음료의 기본값",
     "methodHintBuild": "빌드 음료의 기본값: 잔 속 얼음이 시간이 지나며 희석해요.",
-    "methodHintBlend": "블렌드 음료의 기본값: 블렌더 얼음이 이미 희석해요."
+    "methodHintBlend": "블렌드 음료의 기본값: 블렌더 얼음이 이미 희석해요.",
+    "servingsError": "1부터 500 사이의 정수로 인분을 입력해 주세요.",
+    "customDilutionError": "0부터 50 사이의 비율을 입력해 주세요.",
+    "partSizeError": "{{min}}부터 {{max}} {{unit}} 사이의 파트 용량을 입력해 주세요."
   },
   "methods": {
     "shake": "셰이크",

@@ -13,4 +13,7 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "batch.dash": ["value"],
   "batch.drop": ["value"],
   "batch.splash": ["value"],
+  // Copied from web's reviewed batch.partSizeError; ru keeps the unit as a
+  // label in parentheses, and min and max arrive preformatted (spec 0055 AC-12).
+  "batch.partSizeError": ["max", "min", "unit"],
 };

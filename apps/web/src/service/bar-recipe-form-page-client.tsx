@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useTranslations } from "next-intl";
-import { BAR_FORM_UNITS, type BarFormUnit } from "@bartendingapp/shared";
+import { BAR_FORM_UNITS, validateBarAmount, type BarFormUnit } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Card } from "@/components/card";
@@ -81,8 +81,13 @@ export function BarRecipeFormPageClient() {
   const [garnish, setGarnish] = useState("");
   const [ingredients, setIngredients] = useState<DraftIngredient[]>([]);
 
+  // `1,5` and `1.5` both read as 1.5; an invalid amount blocks saving and
+  // shows under its field, never saving NaN (spec 0055 AC-6, AC-8).
+  const amounts = ingredients.map((ingredient) => validateBarAmount(ingredient.amountValue));
+  const amountsValid = amounts.every((amount) => amount.ok);
+
   const isOwner = barId !== undefined;
-  const canSave = isOwner && name.trim() !== "" && ingredients.length > 0;
+  const canSave = isOwner && name.trim() !== "" && ingredients.length > 0 && amountsValid;
 
   const updateIngredient = (index: number, patch: Partial<DraftIngredient>) => {
     setIngredients((current) =>
@@ -95,7 +100,7 @@ export function BarRecipeFormPageClient() {
   };
 
   const handleSave = () => {
-    if (!barId) {
+    if (!barId || !amountsValid) {
       return;
     }
 
@@ -107,12 +112,16 @@ export function BarRecipeFormPageClient() {
       glass: glass.trim() || null,
       ice: ice.trim() || null,
       garnish: garnish.trim() || null,
-      ingredients: ingredients.map((ingredient, index) => ({
-        ingredientId: ingredient.ingredientId,
-        amountValue: ingredient.amountValue.trim() === "" ? null : Number(ingredient.amountValue),
-        amountUnit: ingredient.amountValue.trim() === "" ? null : ingredient.amountUnit,
-        sortOrder: index,
-      })),
+      ingredients: ingredients.map((ingredient, index) => {
+        const amount = amounts[index];
+        const value = amount.ok ? amount.value : null;
+        return {
+          ingredientId: ingredient.ingredientId,
+          amountValue: value,
+          amountUnit: value === null ? null : ingredient.amountUnit,
+          sortOrder: index,
+        };
+      }),
     });
   };
 
@@ -171,6 +180,7 @@ export function BarRecipeFormPageClient() {
               <Input
                 label={t("amount")}
                 inputMode="decimal"
+                error={amounts[index].ok ? undefined : t("amountError")}
                 value={ingredient.amountValue}
                 onChange={(e) => updateIngredient(index, { amountValue: e.target.value })}
                 className="max-w-32"

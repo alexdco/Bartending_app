@@ -103,7 +103,8 @@
     "loadFailed": "No pudimos cargar Servicio. Revisa tu conexión e inténtalo de nuevo.",
     "loadingBar": "Cargando datos del bar",
     "loadBarFailed": "No pudimos cargar este bar",
-    "checkConnection": "Revisa tu conexión e inténtalo de nuevo."
+    "checkConnection": "Revisa tu conexión e inténtalo de nuevo.",
+    "amountError": "Ingresa un número mayor que 0."
   },
   "ratings": {
     "none": "Todavía no hay calificaciones. Sé el primero en calificarla.",
@@ -164,7 +165,10 @@
     "methodHintStir": "Predeterminado para un cóctel removido",
     "methodHintShake": "Predeterminado para un cóctel agitado",
     "methodHintBuild": "Predeterminado para un cóctel montado: el hielo del vaso lo diluye mientras reposa.",
-    "methodHintBlend": "Predeterminado para un cóctel licuado: el hielo de la licuadora ya lo diluye."
+    "methodHintBlend": "Predeterminado para un cóctel licuado: el hielo de la licuadora ya lo diluye.",
+    "servingsError": "Ingresa un número entero de porciones entre 1 y 500.",
+    "customDilutionError": "Ingresa un porcentaje entre 0 y 50.",
+    "partSizeError": "Ingresa un tamaño de parte entre {{min}} y {{max}} {{unit}}."
   },
   "methods": {
     "shake": "Agitar",

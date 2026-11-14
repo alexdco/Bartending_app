@@ -103,7 +103,8 @@
     "loadFailed": "Nous n’avons pas pu charger Service. Vérifiez votre connexion et réessayez.",
     "loadingBar": "Chargement des données du bar",
     "loadBarFailed": "Impossible de charger ce bar",
-    "checkConnection": "Vérifiez votre connexion et réessayez."
+    "checkConnection": "Vérifiez votre connexion et réessayez.",
+    "amountError": "Saisissez un nombre supérieur à 0."
   },
   "ratings": {
     "none": "Pas encore de note. Soyez le premier à la noter.",
@@ -164,7 +165,10 @@
     "methodHintStir": "Par défaut pour un cocktail remué",
     "methodHintShake": "Par défaut pour un cocktail shaké",
     "methodHintBuild": "Par défaut pour un cocktail monté au verre : la glace du verre le dilue au fil du temps.",
-    "methodHintBlend": "Par défaut pour un cocktail mixé : la glace du blender le dilue déjà."
+    "methodHintBlend": "Par défaut pour un cocktail mixé : la glace du blender le dilue déjà.",
+    "servingsError": "Saisissez un nombre entier de portions entre 1 et 500.",
+    "customDilutionError": "Saisissez un pourcentage entre 0 et 50.",
+    "partSizeError": "Saisissez une taille de part entre {{min}} et {{max}} {{unit}}."
   },
   "methods": {
     "shake": "Shaker",

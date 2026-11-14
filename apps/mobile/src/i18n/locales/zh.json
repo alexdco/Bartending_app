@@ -103,7 +103,8 @@
     "loadFailed": "无法加载出品页面。请检查网络后重试。",
     "loadingBar": "正在加载酒吧数据",
     "loadBarFailed": "无法加载这家酒吧",
-    "checkConnection": "请检查网络后重试。"
+    "checkConnection": "请检查网络后重试。",
+    "amountError": "请输入大于 0 的数字。"
   },
   "ratings": {
     "none": "暂无评分，来写下第一条吧。",
@@ -159,7 +160,10 @@
     "methodHintStir": "调和类饮品的默认值",
     "methodHintShake": "摇和类饮品的默认值",
     "methodHintBuild": "直调类饮品的默认值：杯中的冰会随时间稀释酒液。",
-    "methodHintBlend": "搅打类饮品的默认值：搅拌机里的冰已经起到稀释作用。"
+    "methodHintBlend": "搅打类饮品的默认值：搅拌机里的冰已经起到稀释作用。",
+    "servingsError": "请输入 1 到 500 之间的整数份数。",
+    "customDilutionError": "请输入 0 到 50 之间的百分比。",
+    "partSizeError": "请输入 {{min}} 到 {{max}} {{unit}} 之间的每份容量。"
   },
   "methods": {
     "shake": "摇和",

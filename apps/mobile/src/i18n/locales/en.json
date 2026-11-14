@@ -103,7 +103,8 @@
     "loadFailed": "We couldn't load Service. Check your connection and try again.",
     "loadingBar": "Loading bar data",
     "loadBarFailed": "Couldn't load this bar",
-    "checkConnection": "Check your connection and try again."
+    "checkConnection": "Check your connection and try again.",
+    "amountError": "Enter a number greater than 0."
   },
   "ratings": {
     "none": "No ratings yet. Be the first to rate it.",
@@ -164,7 +165,10 @@
     "methodHintStir": "Default for a stirred drink",
     "methodHintShake": "Default for a shaken drink",
     "methodHintBuild": "Default for a built drink: the ice in the glass dilutes it as it sits.",
-    "methodHintBlend": "Default for a blended drink: the ice in the blender already dilutes it."
+    "methodHintBlend": "Default for a blended drink: the ice in the blender already dilutes it.",
+    "servingsError": "Enter a whole number of servings from 1 to 500.",
+    "customDilutionError": "Enter a percent from 0 to 50.",
+    "partSizeError": "Enter a part size from {{min}} to {{max}} {{unit}}."
   },
   "methods": {
     "shake": "Shake",

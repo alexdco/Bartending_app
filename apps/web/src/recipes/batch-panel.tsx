@@ -16,6 +16,7 @@ import {
   batchCountText,
   batchUnitLabel,
   computeBatch,
+  formatNumber,
   dilutionHintMethod,
   initialDilutionState,
   pickDilution,
@@ -129,12 +130,12 @@ export function BatchPanel({ recipeId, method, ingredients, unit, onUnitChange }
   // derived from a changing prop.
   const partSizeUnit = partSizeUnitFor(unit);
   const [partSize, setPartSize] = useState<{ input: string; unit: PartSizeUnit }>(() => ({
-    input: String(DEFAULT_PART_SIZE[partSizeUnit]),
+    input: formatNumber(DEFAULT_PART_SIZE[partSizeUnit], locale, 2),
     unit: partSizeUnit,
   }));
   if (partSize.unit !== partSizeUnit) {
     setPartSize({
-      input: partSizeInputForUnit(partSize.input, partSize.unit, partSizeUnit),
+      input: partSizeInputForUnit(partSize.input, partSize.unit, partSizeUnit, locale),
       unit: partSizeUnit,
     });
   }
@@ -152,9 +153,16 @@ export function BatchPanel({ recipeId, method, ingredients, unit, onUnitChange }
       : undefined;
 
   const partSizeValue = hasParts ? validatePartSize(partSize.input, partSize.unit) : null;
+  // Limits go in as formatted strings: next-intl does not localize a plain
+  // number argument (spec 0055 AC-12).
+  const partSizeRange = PART_SIZE_RANGE[partSize.unit];
   const partSizeError =
     hasParts && partSizeValue === null
-      ? t("partSizeError", { ...PART_SIZE_RANGE[partSize.unit], unit: partSize.unit })
+      ? t("partSizeError", {
+          min: formatNumber(partSizeRange.min, locale, 2),
+          max: formatNumber(partSizeRange.max, locale, 2),
+          unit: partSize.unit,
+        })
       : undefined;
 
   const canCompute =
