@@ -1,7 +1,9 @@
+import { cache } from "react";
 import type { Metadata } from "next";
 import { buildOpenGraph } from "@/lib/open-graph";
 import { notFound } from "next/navigation";
 import ReactMarkdown from "react-markdown";
+import { setRequestLocale } from "next-intl/server";
 import {
   buildLearnArticleSlugPath,
   extractIdFromRecipeSlug,
@@ -11,18 +13,29 @@ import {
   localizedPath,
 } from "@bartendingapp/shared";
 import { permanentRedirect } from "@/i18n/navigation";
-import { getLocale } from "next-intl/server";
 import type { Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
 
+// Spec 0053: built on first visit, then served from cache and rebuilt at most
+// every 60 seconds. Must stay a literal (Next reads it statically). Nothing on
+// this page may read cookies or headers, or the route turns dynamic again.
+export const revalidate = 60;
+
+// No article is prebuilt at deploy; each is built on its first visit (spec 0053).
+export function generateStaticParams(): { category: string; slug: string }[] {
+  return [];
+}
+
 interface LearnArticleParams {
+  locale: string;
   category: string;
   slug: string;
 }
 
-async function resolveArticle(categoryParam: string, slugParam: string) {
+// One read per render, shared by generateMetadata and the page body (spec 0053 AC-6).
+const resolveArticle = cache(async (categoryParam: string, slugParam: string) => {
   if (!isLearnCategory(categoryParam)) {
     return null;
   }
@@ -33,14 +46,15 @@ async function resolveArticle(categoryParam: string, slugParam: string) {
   }
 
   return fetchArticleDetail(supabasePublic, id, categoryParam);
-}
+});
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<LearnArticleParams>;
 }): Promise<Metadata> {
-  const { category, slug } = await params;
+  const { locale: localeParam, category, slug } = await params;
+  const locale = localeParam as Locale;
   const article = await resolveArticle(category, slug);
 
   if (!article) {
@@ -48,7 +62,6 @@ export async function generateMetadata({
   }
 
   const articlePath = `/learn/${category}/${buildLearnArticleSlugPath(article.id, article.title)}`;
-  const locale = (await getLocale()) as Locale;
   const canonicalPath = localizedPath(locale, articlePath);
 
   // Spec 0033 AC-6: the article's own summary, never the site description.
@@ -73,7 +86,9 @@ export default async function LearnArticlePage({
 }: {
   params: Promise<LearnArticleParams>;
 }) {
-  const { category, slug } = await params;
+  const { locale: localeParam, category, slug } = await params;
+  const locale = localeParam as Locale;
+  setRequestLocale(locale);
 
   if (!isLearnCategory(category)) {
     notFound();
@@ -87,7 +102,6 @@ export default async function LearnArticlePage({
 
   const canonicalSlugPath = buildLearnArticleSlugPath(article.id, article.title);
   if (slug !== canonicalSlugPath) {
-    const locale = (await getLocale()) as Locale;
     permanentRedirect({ href: `/learn/${category}/${canonicalSlugPath}`, locale });
   }
 

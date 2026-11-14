@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { getTranslations } from "next-intl/server";
+import { getTranslations, setRequestLocale } from "next-intl/server";
 import { Link } from "@/i18n/navigation";
 import { notFound } from "next/navigation";
 import {
@@ -8,14 +8,29 @@ import {
   fetchArticlesByCategory,
   fetchQuizBySource,
   isLearnCategory,
+  LEARN_CATEGORIES,
 } from "@bartendingapp/shared";
+import type { Locale } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { EmptyState } from "@/components/empty-state";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
 
+// Spec 0053: prebuilt at deploy for every locale × category, then rebuilt at
+// most every 60 seconds. Must stay a literal (Next reads it statically). Nothing
+// on this page may read cookies or headers, or the route turns dynamic again.
+// A Supabase error throws, so a build fails rather than shipping an empty list,
+// and a failed background rebuild keeps the last good page (AC-9).
+export const revalidate = 60;
+
+// Next combines these with the parent [locale] params from the layout.
+export function generateStaticParams(): { category: string }[] {
+  return LEARN_CATEGORIES.map((category) => ({ category }));
+}
+
 interface LearnCategoryParams {
+  locale: string;
   category: string;
 }
 
@@ -24,14 +39,14 @@ export async function generateMetadata({
 }: {
   params: Promise<LearnCategoryParams>;
 }): Promise<Metadata> {
-  const { category } = await params;
+  const { locale, category } = await params;
 
   if (!isLearnCategory(category)) {
     return {};
   }
 
   // Spec 0033 AC-8: hand written per category, never a template.
-  const t = await getTranslations("learn");
+  const t = await getTranslations({ locale: locale as Locale, namespace: "learn" });
   return {
     title: t(`categoryTitles.${category}`),
     description: t(`categoryDescriptions.${category}`),
@@ -43,7 +58,8 @@ export default async function LearnCategoryPage({
 }: {
   params: Promise<LearnCategoryParams>;
 }) {
-  const { category } = await params;
+  const { locale, category } = await params;
+  setRequestLocale(locale as Locale);
 
   if (!isLearnCategory(category)) {
     notFound();

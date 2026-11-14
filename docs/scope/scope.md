@@ -66,7 +66,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 53 | Google and Apple sign in | Slice 30 | in-progress |
 | 54 | Brazilian Portuguese and language agnostic locales | Slice 31 | in-progress |
 | 55 | Staples in AI drink ideas | Hardening | in-progress |
-| 56 | Learn route caching | Hardening | planned |
+| 56 | Learn route caching | Hardening | in-progress |
 | 57 | Batch calculator v2 | Hardening | planned |
 | 58 | Locale aware number formatting | Hardening | planned |
 | 59 | Catalog freshness rules | Hardening | planned |
@@ -839,10 +839,17 @@ The drink ideas prompt does not know Ice and Water are always on hand, so it can
 **Done when:** the AI drink ideas prompt treats Ice and Water as always available, and a pantry without them still gets ideas that use them.
 - [x] Build it: `/develop staples in AI drink ideas` · code in `supabase/functions/generate-drink-idea/`
 
-### 56. Learn route caching · needs a decision
+### 56. Learn route caching · in-progress
 Spec 0025 promised `revalidate = 60` on the Learn routes, but the code has none. Pick timed revalidation or dynamic render and make the code match (from spec 0033, feature 28).
 **Done when:** every Learn route has one deliberate caching mode, it is written down in a spec, and an edited article shows up within the promised window.
-- [ ] Design it (spec): `/architect learn route caching`
+- [x] Design it (spec): `/architect learn route caching`
+- [ ] Build it: `/develop learn route caching`
+  - [x] Article route end to end: locale from params (no `getLocale()`), `setRequestLocale`, `cache()`'d `resolveArticle`, `revalidate = 60`, empty `generateStaticParams`, satisfies AC-1, AC-3, AC-6, AC-7
+  - [ ] Category and landing routes prebuilt per locale with `revalidate = 60`, plus the spec 0025 pointer, satisfies AC-1, AC-2, AC-7, AC-9, AC-10
+  - [ ] Deployed gate on a Vercel preview: redirect and 404 checks, measured edit and unpublish delay, satisfies AC-4, AC-5, AC-8
+- [ ] Verify it: `/check verify learn route caching`
+- [ ] Test it: `/test learn route caching`
+Spec [0053](../specs/0053-learn-route-caching.md) · code in `apps/web/src/app/[locale]/learn`
 
 ### 57. Batch calculator v2 · needs a decision
 Three batch gaps from spec 0035: counted lines scale silently (`2 dashes` × 25 shows `50 dashes`), range measures like `2-3 oz` do not batch, and every method gets the same default dilution (feature 42).
@@ -1049,6 +1056,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Set a password for provider only accounts**: a backup sign in method (feature 53) · needs a decision · from spec 0044
 - **Google One Tap on web**: GSI script, nonce, cookie consent review (features 13, 53) · needs a decision · from spec 0044
 - **Canadian French**: a separate `fr-CA` locale beside `fr`, with region aware detection and fallback, like European Portuguese (feature 69) · needs a decision · from spec 0046
+- **Caching for other public pages**: quizzes, recipes, popular, and home also render per request because no page calls `setRequestLocale`; decide whether to cache them, possibly as a cross cutting standard or a Cache Components switch (feature 56) · needs a decision · from spec 0053
 
 ## Legend
 
