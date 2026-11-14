@@ -256,7 +256,11 @@
     "uncategorized": "（未分類）",
     "water": "水",
     "nothingToDiluteNote": "このバッチには加水するものがありません。",
-    "total": "合計"
+    "total": "合計",
+    "countDash": "{count, plural, other {{value} ダッシュ}}",
+    "countSplash": "{count, plural, other {{value} スプラッシュ}}",
+    "countDrop": "{count, plural, other {{value} 滴}}",
+    "approx": "(≈ {amount})"
   },
   "pantry": {
     "title": "あなたのパントリー",

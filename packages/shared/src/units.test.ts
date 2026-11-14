@@ -1,7 +1,12 @@
 import { describe, expect, it } from "vitest";
 import {
+  BAR_FORM_UNITS,
+  COUNTED_UNITS,
   convertAmount,
+  formatAmountInUnit,
   formatOunces,
+  isCountedUnit,
+  isVolumeUnit,
   parseMeasure,
   splitIngredientLine,
   splitIngredientLines,
@@ -106,8 +111,6 @@ describe("parseMeasure (spec 0035 AC-1)", () => {
     "1 oz - 2 oz",
     "1 oz or 2 shots",
     "1 oz / 30 ml",
-    "2 dashes",
-    "1",
     "Juice of 1/2",
     "top up with",
     "",
@@ -116,6 +119,59 @@ describe("parseMeasure (spec 0035 AC-1)", () => {
 
   it.each(unparsed)("leaves %s unparsed (AC-11)", (measure) => {
     expect(parseMeasure(measure)).toBeNull();
+  });
+});
+
+describe("parseMeasure counted units (spec 0054 AC-1)", () => {
+  const parses: readonly [string, number, string][] = [
+    ["1 dash", 1, "dash"],
+    ["2 Dashes", 2, "dash"],
+    ["2 dashes", 2, "dash"],
+    ["1 dash.", 1, "dash"],
+    ["1/2 dash", 0.5, "dash"],
+    ["1 splash", 1, "splash"],
+    ["2 Splashes", 2, "splash"],
+    ["3 Drops", 3, "drop"],
+    ["1 drop", 1, "drop"],
+    ["2 dashes Angostura", 2, "dash"],
+    ["1", 1, "each"],
+    ["1/2", 0.5, "each"],
+    ["6", 6, "each"],
+    ["1 ½", 1.5, "each"],
+    ["  2  ", 2, "each"],
+  ];
+
+  it.each(parses)("parses %s", (measure, value, unit) => {
+    expect(parseMeasure(measure)).toEqual({ value, unit });
+  });
+
+  const unparsed = ["0", "2.", "1 (optional)", "1 whole", "2 Wheels", "1 lime", "2 dashy"];
+
+  it.each(unparsed)("leaves %s unparsed", (measure) => {
+    expect(parseMeasure(measure)).toBeNull();
+  });
+
+  it("keeps the bar form units unchanged", () => {
+    expect(BAR_FORM_UNITS).toEqual(["oz", "ml", "cl", "tsp", "tbsp", "cup"]);
+  });
+});
+
+describe("isVolumeUnit and isCountedUnit (spec 0054)", () => {
+  it("treats counted units and part as non volume", () => {
+    expect(COUNTED_UNITS.some((unit) => isVolumeUnit(unit))).toBe(false);
+    expect(isVolumeUnit("part")).toBe(false);
+    expect(isVolumeUnit("oz")).toBe(true);
+    expect(COUNTED_UNITS.every((unit) => isCountedUnit(unit))).toBe(true);
+    expect(isCountedUnit("oz")).toBe(false);
+  });
+
+  it("keeps counted lines out of the toggle", () => {
+    expect(formatAmountInUnit(2, "dash", "ml")).toBeNull();
+    expect(formatAmountInUnit(1, "each", "oz")).toBeNull();
+  });
+
+  it("recognizes the counted units when read back from the database", () => {
+    expect(COUNTED_UNITS.map((unit) => toRecognizedUnit(unit))).toEqual([...COUNTED_UNITS]);
   });
 });
 

@@ -256,7 +256,11 @@
     "uncategorized": "(분류 없음)",
     "water": "물",
     "nothingToDiluteNote": "이 배치에는 희석할 재료가 없어요.",
-    "total": "합계"
+    "total": "합계",
+    "countDash": "{count, plural, other {{value} 대시}}",
+    "countSplash": "{count, plural, other {{value} 스플래시}}",
+    "countDrop": "{count, plural, other {{value} 방울}}",
+    "approx": "(≈ {amount})"
   },
   "pantry": {
     "title": "내 재료",

@@ -27,9 +27,30 @@ export const VOLUME_UNITS = [
 ] as const;
 export type VolumeUnit = (typeof VOLUME_UNITS)[number];
 
-/** All units the parser recognizes: every volume unit plus "part", a ratio with no fixed volume (spec 0035 AC-3). */
-export const RECOGNIZED_UNITS = [...VOLUME_UNITS, "part"] as const;
+/**
+ * Units that count rather than measure (spec 0054 AC-1): dash, splash, drop,
+ * and "each", a bare number with no unit word ("1" Lime). Dash and splash
+ * also carry a conventional volume (COUNTED_UNIT_ML); drop and each do not.
+ */
+export const COUNTED_UNITS = ["dash", "splash", "drop", "each"] as const;
+export type CountedUnit = (typeof COUNTED_UNITS)[number];
+
+/**
+ * All units the parser recognizes: every volume unit, "part" (a ratio with
+ * no fixed volume, spec 0035 AC-3), and the counted units (spec 0054).
+ */
+export const RECOGNIZED_UNITS = [...VOLUME_UNITS, "part", ...COUNTED_UNITS] as const;
 export type RecognizedUnit = (typeof RECOGNIZED_UNITS)[number];
+
+/**
+ * The conventional volume of one dash (1/8 tsp) and one splash (1/4 oz), in
+ * ml (spec 0054 AC-4). Lives only in code, never in data, and never in toMl,
+ * so a counted unit can't pass for a volume unit in the toggle.
+ */
+export const COUNTED_UNIT_ML: Readonly<Record<"dash" | "splash", number>> = {
+  dash: 0.616115,
+  splash: 7.393375,
+};
 
 /** The original six units the bar recipe form picker offers; bar_recipe_ingredients keeps its own narrower check constraint (spec 0035). */
 export const BAR_FORM_UNITS = ["oz", "ml", "cl", "tsp", "tbsp", "cup"] as const;
@@ -44,8 +65,13 @@ export interface ParsedMeasure {
   unit: RecognizedUnit;
 }
 
+/** A membership check (spec 0054), so a unit added later never reaches toMl by default. */
 export function isVolumeUnit(unit: RecognizedUnit): unit is VolumeUnit {
-  return unit !== "part";
+  return (VOLUME_UNITS as readonly string[]).includes(unit);
+}
+
+export function isCountedUnit(unit: RecognizedUnit): unit is CountedUnit {
+  return (COUNTED_UNITS as readonly string[]).includes(unit);
 }
 
 /**
@@ -117,6 +143,12 @@ const UNIT_SPELLINGS: ReadonlyMap<string, RecognizedUnit> = new Map(
     gal: "gal",
     gallon: "gal",
     gallons: "gal",
+    dash: "dash",
+    dashes: "dash",
+    splash: "splash",
+    splashes: "splash",
+    drop: "drop",
+    drops: "drop",
   } satisfies Record<string, RecognizedUnit>),
 );
 
@@ -231,12 +263,14 @@ const SECOND_AMOUNT_AFTER_UNIT = new RegExp(
 
 /**
  * Parses a leading number followed by a unit token out of raw measure text
- * (spec 0021 AC-3, spec 0035 AC-1). The unit is the first word after the
- * number (or the two words "fl oz"), matched as a whole token, case
- * insensitive, with one optional trailing dot; any further words are
- * ignored. Returns null for anything else: no number, a range ("1 to 2 oz",
- * "1-2 oz", "1 oz - 2 oz"), a bare number with no unit word, or a counted or
- * non volume word ("Dashes", "sprig", "wedge", "lime", "to taste").
+ * (spec 0021 AC-3, spec 0035 AC-1, spec 0054 AC-1). The unit is the first
+ * word after the number (or the two words "fl oz"), matched as a whole
+ * token, case insensitive, with one optional trailing dot; any further words
+ * are ignored. A number with nothing after it is a plain count, unit "each"
+ * ("1" Lime), when it is above 0. Returns null for anything else: no number,
+ * a range ("1 to 2 oz", "1-2 oz", "1 oz - 2 oz"), a number followed by any
+ * other character or word ("2.", "1 (optional)", "1 lime", "2 Wheels"), or a
+ * non volume word ("sprig", "wedge", "to taste").
  */
 export function parseMeasure(measure: string | null | undefined): ParsedMeasure | null {
   if (!measure) {
@@ -244,8 +278,12 @@ export function parseMeasure(measure: string | null | undefined): ParsedMeasure 
   }
 
   const leading = parseLeadingNumber(measure);
-  if (!leading || leading.rest.length === 0) {
+  if (!leading) {
     return null;
+  }
+
+  if (leading.rest.length === 0) {
+    return leading.value > 0 ? { value: leading.value, unit: "each" } : null;
   }
 
   // A range never parses: "1 to 2 oz", "1-2 oz" leave a second number

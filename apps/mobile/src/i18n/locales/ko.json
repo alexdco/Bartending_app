@@ -150,5 +150,11 @@
       "sesame": "참깨",
       "mustard": "겨자"
     }
+  },
+  "batch": {
+    "dash_other": "{{count}} 대시",
+    "splash_other": "{{count}} 스플래시",
+    "drop_other": "{{count}} 방울",
+    "approx": "(≈ {{amount}})"
   }
 }

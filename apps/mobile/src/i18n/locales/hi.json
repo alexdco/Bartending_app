@@ -152,5 +152,14 @@
       "sesame": "तिल",
       "mustard": "सरसों"
     }
+  },
+  "batch": {
+    "dash_one": "{{count}} डैश",
+    "dash_other": "{{count}} डैश",
+    "splash_one": "{{count}} छींटा",
+    "splash_other": "{{count}} छींटे",
+    "drop_one": "{{count}} बूंद",
+    "drop_other": "{{count}} बूंदें",
+    "approx": "(≈ {{amount}})"
   }
 }

@@ -256,7 +256,11 @@
     "uncategorized": "(sans catégorie)",
     "water": "Eau",
     "nothingToDiluteNote": "Rien à diluer dans cette préparation.",
-    "total": "Total"
+    "total": "Total",
+    "countDash": "{count, plural, one {{value} trait} other {{value} traits}}",
+    "countSplash": "{count, plural, one {{value} filet} other {{value} filets}}",
+    "countDrop": "{count, plural, one {{value} goutte} other {{value} gouttes}}",
+    "approx": "(≈ {amount})"
   },
   "pantry": {
     "title": "Votre garde-manger",

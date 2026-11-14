@@ -1,14 +1,22 @@
-// Batch cocktail conversion (spec 0022, amended by spec 0035): scales a
-// recipe's parsed ingredient amounts into a large batch quantity, with
-// optional scope filtering (alcohol only / except citrus / custom
-// selection), a part size for recipes written in parts, and dilution water.
+// Batch cocktail conversion (spec 0022, amended by specs 0035 and 0054):
+// scales a recipe's parsed ingredient amounts into a large batch quantity,
+// with optional scope filtering (alcohol only / except citrus / custom
+// selection), a part size for recipes written in parts, counted lines
+// (dashes, splashes, drops, plain counts), and dilution water.
 // Pure and side effect free per AGENTS.md: runs entirely client side from
 // the already loaded recipe detail data.
 // Specs: docs/specs/0022-batch-cocktail-conversion/index.md,
-// docs/specs/0035-batch-calculator-correctness/index.md
+// docs/specs/0035-batch-calculator-correctness/index.md,
+// docs/specs/0054-batch-calculator-v2/index.md
 
 import { DEFAULT_LOCALE, type Locale } from "./locale";
-import { isVolumeUnit, toMl, type RecognizedUnit } from "./units";
+import {
+  COUNTED_UNIT_ML,
+  isVolumeUnit,
+  toMl,
+  type CountedUnit,
+  type RecognizedUnit,
+} from "./units";
 
 export const BATCH_UNITS = ["oz", "ml", "cl", "l"] as const;
 export type BatchUnit = (typeof BATCH_UNITS)[number];
@@ -148,17 +156,36 @@ function dilutionPercent(level: DilutionLevel, customPercent: number | null): nu
   }
 }
 
-export type BatchLineState = "normal" | "unscaled" | "uncategorized" | "excluded";
+/**
+ * Line states (spec 0054 line state matrix). "counted" is a drop or a plain
+ * count ("each") on a non alcohol line: rendered and scaled as a count, with
+ * no volume. Dash and splash lines are "normal": a count plus a volume.
+ */
+export type BatchLineState = "normal" | "counted" | "unscaled" | "uncategorized" | "excluded";
+
+/** A scaled count, already rounded for display (spec 0054 AC-4). */
+export interface BatchCount {
+  value: number;
+  unit: CountedUnit;
+}
 
 export interface BatchLine {
   ingredientId: string;
   name: string;
   state: BatchLineState;
-  /** Present for every rendered line except "unscaled" and "excluded". */
+  /** The batch amount of a rendered volume or part line; null for count lines, unscaled, and excluded. */
   displayAmount: string | null;
+  /**
+   * The scaled count of a rendered counted line (dash, splash, drop, each).
+   * The panel renders it with its plural word from the message catalog; an
+   * "each" count shows as the number alone.
+   */
+  count: BatchCount | null;
+  /** The "≈" volume of a dash or splash line, in the batch unit, once it reaches 1/4 oz; else null. */
+  approxAmount: string | null;
   /** The original measure text, shown verbatim for an "unscaled" line. */
   measure: string | null;
-  /** Unrounded ml, used only for total/dilution math; null for unscaled/excluded lines. */
+  /** Unrounded ml, used only for total/dilution math; null for lines without volume, unscaled, or excluded. */
   amountMl: number | null;
 }
 
@@ -225,24 +252,78 @@ export function formatBatchAmount(ml: number, unit: BatchUnit): string {
   return `${String(rounded)} ${unit}`;
 }
 
-/** The unrounded ml a parsed line contributes to the batch, or null when it can't be scaled. */
-function scaledMl(
-  amountValue: number,
-  amountUnit: RecognizedUnit,
+// The volume hint threshold, 1/4 oz (one splash), compared with a tolerance
+// so exactly one splash qualifies (spec 0054 AC-4).
+const APPROX_HINT_MIN_ML = COUNTED_UNIT_ML.splash;
+const APPROX_HINT_TOLERANCE_ML = 1e-9;
+
+/**
+ * Rounds a scaled count for display only (spec 0054 AC-4): dash, splash, and
+ * drop to the nearest whole number, never below 1; "each" to the nearest
+ * half (ties up), never below 0.5. Volumes always use the unrounded count.
+ */
+export function roundBatchCount(value: number, unit: CountedUnit): number {
+  return unit === "each"
+    ? Math.max(0.5, Math.round(value * 2) / 2)
+    : Math.max(1, Math.round(value));
+}
+
+/**
+ * A plain count on a spirit, liqueur, or unclassified line means a share of
+ * a layered shot glass ("1/3" Baileys), not a number of items, so it stays
+ * unscaled (spec 0054 AC-4).
+ */
+function isShooterShare(
+  ingredient: Pick<BatchIngredientInput, "amountUnit" | "category">,
+): boolean {
+  return (
+    ingredient.amountUnit === "each" &&
+    (ingredient.category === null || ALCOHOL_CATEGORIES.has(ingredient.category))
+  );
+}
+
+/** How a parsed line scales: an unrounded volume, a count, or both; null when it can't be scaled. */
+interface Scaled {
+  ml: number | null;
+  count: BatchCount | null;
+}
+
+function scaleLine(
+  ingredient: BatchIngredientInput,
   servings: number,
   partSize: PartSize | null,
-): number | null {
-  if (isVolumeUnit(amountUnit)) {
-    return toMl(amountValue * servings, amountUnit);
+): Scaled | null {
+  const { amountValue, amountUnit } = ingredient;
+  if (amountValue === null || amountUnit === null || isShooterShare(ingredient)) {
+    return null;
   }
-  return partSize === null ? null : amountValue * partSizeMl(partSize) * servings;
+  if (isVolumeUnit(amountUnit)) {
+    return { ml: toMl(amountValue * servings, amountUnit), count: null };
+  }
+  if (amountUnit === "part") {
+    return partSize === null
+      ? null
+      : { ml: amountValue * partSizeMl(partSize) * servings, count: null };
+  }
+  const unroundedCount = amountValue * servings;
+  const count = { value: roundBatchCount(unroundedCount, amountUnit), unit: amountUnit };
+  return amountUnit === "dash" || amountUnit === "splash"
+    ? { ml: unroundedCount * COUNTED_UNIT_ML[amountUnit], count }
+    : { ml: null, count };
+}
+
+function approxAmountFor(ml: number | null, count: BatchCount | null, unit: BatchUnit) {
+  return count !== null && ml !== null && ml + APPROX_HINT_TOLERANCE_ML >= APPROX_HINT_MIN_ML
+    ? formatBatchAmount(ml, unit)
+    : null;
 }
 
 /**
  * Computes a full batch: scales every eligible ingredient (volume lines by
- * servings, part lines by part size and servings), applies scope/selection
+ * servings, part lines by part size and servings, counted lines as a count
+ * plus, for dashes and splashes, a volume), applies scope/selection
  * filtering, optionally adds a dilution water line based on every included
- * scaled line (spec 0035 AC-5), and totals everything, carrying every
+ * line with volume (spec 0035 AC-5), and totals everything, carrying every
  * intermediate value in unrounded milliliters and rounding once at final
  * display (key invariant).
  */
@@ -255,43 +336,36 @@ export function computeBatch(
   const partSize = options.partSize ?? null;
 
   const lines: BatchLine[] = ingredients.map((ingredient) => {
-    const ml =
-      ingredient.amountValue === null || ingredient.amountUnit === null
-        ? null
-        : scaledMl(ingredient.amountValue, ingredient.amountUnit, servings, partSize);
+    const base = {
+      ingredientId: ingredient.ingredientId,
+      name: ingredient.name,
+      displayAmount: null,
+      count: null,
+      approxAmount: null,
+      measure: null,
+      amountMl: null,
+    };
+    const scaled = scaleLine(ingredient, servings, partSize);
 
-    if (ml === null) {
+    if (scaled === null) {
       // Always rendered, never scaled, never counted, no checkbox (spec 0035 AC-11).
-      return {
-        ingredientId: ingredient.ingredientId,
-        name: ingredient.name,
-        state: "unscaled",
-        displayAmount: null,
-        measure: ingredient.measure,
-        amountMl: null,
-      };
+      return { ...base, state: "unscaled", measure: ingredient.measure };
     }
 
     if (!isIncludedByScope(ingredient, scope, customSelectedIds)) {
-      return {
-        ingredientId: ingredient.ingredientId,
-        name: ingredient.name,
-        state: "excluded",
-        displayAmount: null,
-        measure: null,
-        amountMl: null,
-      };
+      return { ...base, state: "excluded" };
     }
 
     const isUncategorized =
       ingredient.category === null && (scope === "alcohol_only" || scope === "except_citrus");
+    const { ml, count } = scaled;
 
     return {
-      ingredientId: ingredient.ingredientId,
-      name: ingredient.name,
-      state: isUncategorized ? "uncategorized" : "normal",
-      displayAmount: formatBatchAmount(ml, unit),
-      measure: null,
+      ...base,
+      state: isUncategorized ? "uncategorized" : ml === null ? "counted" : "normal",
+      displayAmount: count === null && ml !== null ? formatBatchAmount(ml, unit) : null,
+      count,
+      approxAmount: approxAmountFor(ml, count, unit),
       amountMl: ml,
     };
   });
@@ -311,11 +385,31 @@ export function computeBatch(
   };
 }
 
-/** Whether the batch control renders (spec 0035 AC-4): at least one line with a parsed amount, volume or part. */
-export function hasConvertibleIngredient(
-  ingredients: readonly Pick<BatchIngredientInput, "amountValue" | "amountUnit">[],
+/**
+ * Whether a line can take part in a batch at all, so it gets a Custom
+ * selection checkbox: a parsed amount that is not a shooter share (spec 0054
+ * AC-4). Unscaled lines get no checkbox (spec 0035 AC-11).
+ */
+export function isBatchableIngredient(
+  ingredient: Pick<BatchIngredientInput, "amountValue" | "amountUnit" | "category">,
 ): boolean {
-  return ingredients.some((i) => i.amountValue !== null && i.amountUnit !== null);
+  return (
+    ingredient.amountValue !== null && ingredient.amountUnit !== null && !isShooterShare(ingredient)
+  );
+}
+
+/**
+ * Whether the batch control renders (spec 0054 AC-7): at least one line adds
+ * volume at 1 serving under the Everything scope, a volume, part, dash, or
+ * splash line. Drops and plain counts alone (or a layered shooter of spirit
+ * and liqueur shares) show no batch control.
+ */
+export function hasScalableIngredient(
+  ingredients: readonly Pick<BatchIngredientInput, "amountValue" | "amountUnit" | "category">[],
+): boolean {
+  return ingredients.some(
+    (i) => isBatchableIngredient(i) && i.amountUnit !== "drop" && i.amountUnit !== "each",
+  );
 }
 
 /** Whether the single serving oz/ml/cl toggle renders (spec 0035 AC-4): at least one line with a volume unit. */

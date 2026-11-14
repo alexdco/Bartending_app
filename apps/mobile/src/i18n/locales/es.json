@@ -152,5 +152,14 @@
       "sesame": "Sésamo",
       "mustard": "Mostaza"
     }
+  },
+  "batch": {
+    "dash_one": "{{count}} golpe",
+    "dash_other": "{{count}} golpes",
+    "splash_one": "{{count}} chorrito",
+    "splash_other": "{{count}} chorritos",
+    "drop_one": "{{count}} gota",
+    "drop_other": "{{count}} gotas",
+    "approx": "(≈ {{amount}})"
   }
 }

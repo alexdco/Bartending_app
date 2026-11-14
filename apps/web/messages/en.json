@@ -256,7 +256,11 @@
     "uncategorized": "(uncategorized)",
     "water": "Water",
     "nothingToDiluteNote": "Nothing to dilute in this batch.",
-    "total": "Total"
+    "total": "Total",
+    "countDash": "{count, plural, one {{value} dash} other {{value} dashes}}",
+    "countSplash": "{count, plural, one {{value} splash} other {{value} splashes}}",
+    "countDrop": "{count, plural, one {{value} drop} other {{value} drops}}",
+    "approx": "(≈ {amount})"
   },
   "pantry": {
     "title": "Your pantry",

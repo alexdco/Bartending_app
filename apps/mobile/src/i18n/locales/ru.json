@@ -156,5 +156,20 @@
       "sesame": "Кунжут",
       "mustard": "Горчица"
     }
+  },
+  "batch": {
+    "dash_one": "{{count}} дэш",
+    "dash_few": "{{count}} дэша",
+    "dash_many": "{{count}} дэшей",
+    "dash_other": "{{count}} дэша",
+    "splash_one": "{{count}} сплэш",
+    "splash_few": "{{count}} сплэша",
+    "splash_many": "{{count}} сплэшей",
+    "splash_other": "{{count}} сплэша",
+    "drop_one": "{{count}} капля",
+    "drop_few": "{{count}} капли",
+    "drop_many": "{{count}} капель",
+    "drop_other": "{{count}} капли",
+    "approx": "(≈ {{amount}})"
   }
 }

@@ -152,5 +152,14 @@
       "sesame": "Gergelim",
       "mustard": "Mostarda"
     }
+  },
+  "batch": {
+    "dash_one": "{{count}} dash",
+    "dash_other": "{{count}} dashes",
+    "splash_one": "{{count}} chorinho",
+    "splash_other": "{{count}} chorinhos",
+    "drop_one": "{{count}} gota",
+    "drop_other": "{{count}} gotas",
+    "approx": "(≈ {{amount}})"
   }
 }

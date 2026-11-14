@@ -150,5 +150,11 @@
       "sesame": "ごま",
       "mustard": "からし"
     }
+  },
+  "batch": {
+    "dash_other": "{{count}} ダッシュ",
+    "splash_other": "{{count}} スプラッシュ",
+    "drop_other": "{{count}} 滴",
+    "approx": "(≈ {{amount}})"
   }
 }

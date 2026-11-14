@@ -8,4 +8,6 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "ratings.summary": ["average"],
   "ratings.starsLabel": ["average"],
   "favorites.toggleLabel": ["name"],
+  // A batch amount in parentheses, label free in every locale (spec 0054 AC-13).
+  "batch.approx": ["amount"],
 };

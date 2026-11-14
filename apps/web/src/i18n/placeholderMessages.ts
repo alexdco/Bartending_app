@@ -15,6 +15,12 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "batch.percent": ["value"],
   "batch.partSize": ["unit"],
   "batch.partSizeError": ["max", "min", "unit"],
+  // The count as preformatted text before its plural word, and a batch
+  // amount in parentheses (spec 0054 AC-13).
+  "batch.countDash": ["value"],
+  "batch.countSplash": ["value"],
+  "batch.countDrop": ["value"],
+  "batch.approx": ["amount"],
   "drinkIdeas.quotaExceededUntil": ["time"],
   "favorites.toggleLabel": ["name"],
   "learn.takeTheQuiz": ["title"],

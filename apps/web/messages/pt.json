@@ -256,7 +256,11 @@
     "uncategorized": "(sem categoria)",
     "water": "Água",
     "nothingToDiluteNote": "Não há nada para diluir neste lote.",
-    "total": "Total"
+    "total": "Total",
+    "countDash": "{count, plural, one {{value} dash} other {{value} dashes}}",
+    "countSplash": "{count, plural, one {{value} chorinho} other {{value} chorinhos}}",
+    "countDrop": "{count, plural, one {{value} gota} other {{value} gotas}}",
+    "approx": "(≈ {amount})"
   },
   "pantry": {
     "title": "Sua despensa",

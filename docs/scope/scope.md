@@ -67,7 +67,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 54 | Brazilian Portuguese and language agnostic locales | Slice 31 | in-progress |
 | 55 | Staples in AI drink ideas | Hardening | in-progress |
 | 56 | Learn route caching | Hardening | in-progress |
-| 57 | Batch calculator v2 | Hardening | planned |
+| 57 | Batch calculator v2 | Hardening | in-progress |
 | 58 | Locale aware number formatting | Hardening | planned |
 | 59 | Catalog freshness rules | Hardening | planned |
 | 60 | Store listing copy and app icon | Hardening | planned |
@@ -851,10 +851,19 @@ Spec 0025 promised `revalidate = 60` on the Learn routes, but the code has none.
 - [ ] Test it: `/test learn route caching`
 Spec [0053](../specs/0053-learn-route-caching.md) · code in `apps/web/src/app/[locale]/learn`
 
-### 57. Batch calculator v2 · needs a decision
+### 57. Batch calculator v2 · in-progress
 Three batch gaps from spec 0035: counted lines scale silently (`2 dashes` × 25 shows `50 dashes`), range measures like `2-3 oz` do not batch, and every method gets the same default dilution (feature 42).
 **Done when:** counted lines scale in a way a bartender can use, range measures batch using `amount_max_value`, and stirred, shaken, and built drinks each get their own default dilution.
-- [ ] Design it (spec): `/architect batch calculator v2`
+- [x] Design it (spec): `/architect batch calculator v2`
+- [ ] Build it: `/develop batch calculator v2`
+  - [x] Counted lines end to end: unit constraint and max check migration, `dash`/`splash`/`drop`/`each` parsing, count plus volume batching, the shooter share rule, batch visibility, web and mobile panels, reparse, satisfies AC-1, AC-3, AC-4, AC-7
+  - [ ] Ranges: parser range forms, `amount_max_value` on every write path and in `fetch_recipe_detail`, two ended batch math and `formatBatchRange`, toggle and Quick Build, satisfies AC-2, AC-3, AC-5, AC-6
+  - [ ] Method data: `recipes.method` check and `method_source`, enum classifier that skips admin picks, the admin picker with `p_set_method`, satisfies AC-8, AC-11
+  - [ ] Method dilution defaults and hint, Quick Build method label, copy in all nine locales, satisfies AC-10, AC-12, AC-13
+  - [ ] Live rollout: migrations, deploy, reparse (review the `each` dry run list first), classifier run and rerun, satisfies AC-3, AC-9
+- [ ] Verify it: `/check verify batch calculator v2`
+- [ ] Test it: `/test batch calculator v2`
+Spec [0054](../specs/0054-batch-calculator-v2/index.md) · code in `packages/shared`, `packages/import-job`, `supabase/migrations`, `apps/web`, `apps/mobile`
 
 ### 58. Locale aware number formatting · needs a decision
 `es`, `pt`, and `fr` use a decimal comma (French also uses a space as the thousands separator), but measures format the same in every locale (from specs 0045 and 0046, features 54 and 69).
@@ -1056,6 +1065,8 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Set a password for provider only accounts**: a backup sign in method (feature 53) · needs a decision · from spec 0044
 - **Google One Tap on web**: GSI script, nonce, cookie consent review (features 13, 53) · needs a decision · from spec 0044
 - **Canadian French**: a separate `fr-CA` locale beside `fr`, with region aware detection and fallback, like European Portuguese (feature 69) · needs a decision · from spec 0046
+- **Scale whole items as prep counts**: `1 wedge`, `2 slices`, `1 twist`, `1 sprig` × servings, as counts only (feature 57) · from spec 0054
+- **Translate straining**: a checked list plus labels in nine locales, like method (feature 57) · needs a decision · from spec 0054
 - **Caching for other public pages**: quizzes, recipes, popular, and home also render per request because no page calls `setRequestLocale`; decide whether to cache them, possibly as a cross cutting standard or a Cache Components switch (feature 56) · needs a decision · from spec 0053
 
 ## Legend

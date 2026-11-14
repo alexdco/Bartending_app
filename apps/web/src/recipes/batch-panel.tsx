@@ -14,13 +14,16 @@ import {
   PART_SIZE_RANGE,
   batchUnitLabel,
   computeBatch,
-  hasConvertibleIngredient,
   hasPartIngredient,
+  hasScalableIngredient,
+  isBatchableIngredient,
   partSizeInputForUnit,
   partSizeUnitFor,
   validateCustomDilutionPercent,
   validatePartSize,
   validateServings,
+  type BatchCount,
+  type BatchLine,
   type BatchScope,
   type BatchUnit,
   type DilutionLevel,
@@ -43,9 +46,32 @@ const SCOPE_KEYS = {
   custom: "scopeCustom",
 } as const satisfies Record<BatchScope, string>;
 
+const COUNT_KEYS = {
+  dash: "countDash",
+  splash: "countSplash",
+  drop: "countDrop",
+} as const satisfies Record<Exclude<BatchCount["unit"], "each">, string>;
+
 export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps) {
   const t = useTranslations("batch");
   const locale = useLocale() as Locale;
+
+  // A count reads with its plural word; a plain count ("each") is the number
+  // alone. A dash or splash adds its "≈" volume once it reaches 1/4 oz
+  // (spec 0054 AC-4).
+  const countText = ({ value, unit: countUnit }: BatchCount) =>
+    countUnit === "each"
+      ? String(value)
+      : t(COUNT_KEYS[countUnit], { count: value, value: String(value) });
+
+  const lineAmount = (line: BatchLine) => {
+    if (line.state === "unscaled") return line.measure;
+    if (line.count === null) return line.displayAmount;
+    const count = countText(line.count);
+    return line.approxAmount === null
+      ? count
+      : `${count} ${t("approx", { amount: line.approxAmount })}`;
+  };
 
   const dilutionLabel = (level: DilutionLevel) => {
     if (level === "none") return t("dilutionNone");
@@ -138,7 +164,7 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
     locale,
   ]);
 
-  if (!hasConvertibleIngredient(ingredients)) {
+  if (!hasScalableIngredient(ingredients)) {
     return null;
   }
 
@@ -195,18 +221,16 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
         <div className="flex flex-col gap-one">
           <Text variant="label">{t("include")}</Text>
           <ul className="flex flex-col gap-one">
-            {ingredients
-              .filter((i) => i.amountValue !== null && i.amountUnit !== null)
-              .map((ingredient) => (
-                <li key={ingredient.ingredientId}>
-                  <Chip
-                    selected={customSelectedIds.has(ingredient.ingredientId)}
-                    onSelectedChange={() => toggleCustomIngredient(ingredient.ingredientId)}
-                  >
-                    {ingredient.name}
-                  </Chip>
-                </li>
-              ))}
+            {ingredients.filter(isBatchableIngredient).map((ingredient) => (
+              <li key={ingredient.ingredientId}>
+                <Chip
+                  selected={customSelectedIds.has(ingredient.ingredientId)}
+                  onSelectedChange={() => toggleCustomIngredient(ingredient.ingredientId)}
+                >
+                  {ingredient.name}
+                </Chip>
+              </li>
+            ))}
           </ul>
         </div>
       )}
@@ -272,7 +296,7 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
                 <li key={line.ingredientId} className="flex items-center justify-between gap-two">
                   <Text variant="body">{line.name}</Text>
                   <Text variant="body">
-                    {line.state === "unscaled" ? line.measure : line.displayAmount}
+                    {lineAmount(line)}
                     {line.state === "unscaled" && (
                       <Text variant="bodySmall" as="span" muted className="ml-one">
                         {t("notScaled")}

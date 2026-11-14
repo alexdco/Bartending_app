@@ -152,5 +152,14 @@
       "sesame": "Sésame",
       "mustard": "Moutarde"
     }
+  },
+  "batch": {
+    "dash_one": "{{count}} trait",
+    "dash_other": "{{count}} traits",
+    "splash_one": "{{count}} filet",
+    "splash_other": "{{count}} filets",
+    "drop_one": "{{count}} goutte",
+    "drop_other": "{{count}} gouttes",
+    "approx": "(≈ {{amount}})"
   }
 }

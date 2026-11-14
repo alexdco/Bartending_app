@@ -150,5 +150,11 @@
       "sesame": "芝麻",
       "mustard": "芥末"
     }
+  },
+  "batch": {
+    "dash_other": "{{count}} 抖",
+    "splash_other": "{{count}} 溅",
+    "drop_other": "{{count}} 滴",
+    "approx": "(≈ {{amount}})"
   }
 }

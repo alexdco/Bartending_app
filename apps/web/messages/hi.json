@@ -256,7 +256,11 @@
     "uncategorized": "(बिना श्रेणी)",
     "water": "पानी",
     "nothingToDiluteNote": "इस बैच में पानी मिलाने को कुछ नहीं है।",
-    "total": "कुल"
+    "total": "कुल",
+    "countDash": "{count, plural, one {{value} डैश} other {{value} डैश}}",
+    "countSplash": "{count, plural, one {{value} छींटा} other {{value} छींटे}}",
+    "countDrop": "{count, plural, one {{value} बूंद} other {{value} बूंदें}}",
+    "approx": "(≈ {amount})"
   },
   "pantry": {
     "title": "आपकी पैंट्री",

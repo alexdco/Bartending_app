@@ -14,12 +14,30 @@ describe("planReparse (spec 0035 AC-9)", () => {
     const plan = planReparse([
       row("1 shot", null, null),
       row("1 1/2 oz", 1.5, "oz"),
-      row("2 dashes", null, null),
+      row("2 dashes", 2, "dash"),
+      row("2 Wheels", null, null),
     ]);
 
     expect(plan.updates).toEqual([
       { recipe_id: "r", ingredient_id: "1 shot", amount_value: 1, amount_unit: "shot" },
     ]);
+  });
+
+  it("writes counted units and lists every new each row (spec 0054 AC-3)", () => {
+    const plan = planReparse([
+      row("2 dashes", null, null),
+      row("3 drops", null, null),
+      row("1", null, null),
+      row("1/2", 0.5, "each"),
+    ]);
+
+    expect(plan.updates.map((u) => [u.ingredient_id, u.amount_value, u.amount_unit])).toEqual([
+      ["2 dashes", 2, "dash"],
+      ["3 drops", 3, "drop"],
+      ["1", 1, "each"],
+    ]);
+    expect(plan.eachUpdates.map((u) => u.ingredient_id)).toEqual(["1"]);
+    expect(plan.after.linesPerUnit).toEqual({ dash: 1, drop: 1, each: 2 });
   });
 
   it("nulls both columns for a null or empty measure", () => {

@@ -30,6 +30,12 @@ export interface MeasureCounts {
 
 export interface ReparsePlan {
   updates: MeasureUpdate[];
+  /**
+   * The updates that turn a row into a plain count ("each"), listed in full
+   * by the dry run so split errors ("2" + "–3 Dashes Worcestershire Sauce")
+   * can be fixed before the live run (spec 0054 AC-3).
+   */
+  eachUpdates: MeasureUpdate[];
   before: MeasureCounts;
   after: MeasureCounts;
 }
@@ -74,5 +80,10 @@ export function planReparse(rows: readonly StoredMeasureRow[]): ReparsePlan {
       rows[index].amount_unit !== next.amount_unit,
   );
 
-  return { updates, before: countMeasures(rows), after: countMeasures(reparsed) };
+  return {
+    updates,
+    eachUpdates: updates.filter((update) => update.amount_unit === "each"),
+    before: countMeasures(rows),
+    after: countMeasures(reparsed),
+  };
 }

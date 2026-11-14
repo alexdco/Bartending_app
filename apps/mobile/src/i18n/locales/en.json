@@ -152,5 +152,14 @@
       "sesame": "Sesame",
       "mustard": "Mustard"
     }
+  },
+  "batch": {
+    "dash_one": "{{count}} dash",
+    "dash_other": "{{count}} dashes",
+    "splash_one": "{{count}} splash",
+    "splash_other": "{{count}} splashes",
+    "drop_one": "{{count}} drop",
+    "drop_other": "{{count}} drops",
+    "approx": "(≈ {{amount}})"
   }
 }

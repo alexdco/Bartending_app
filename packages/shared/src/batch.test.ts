@@ -4,11 +4,13 @@ import {
   computeBatch,
   convertPartSize,
   formatBatchAmount,
-  hasConvertibleIngredient,
   hasPartIngredient,
+  hasScalableIngredient,
   hasVolumeIngredient,
+  isBatchableIngredient,
   partSizeInputForUnit,
   partSizeUnitFor,
+  roundBatchCount,
   validatePartSize,
   validateCustomDilutionPercent,
   validateServings,
@@ -112,15 +114,224 @@ describe("validateCustomDilutionPercent", () => {
   });
 });
 
-describe("hasConvertibleIngredient", () => {
-  it("is true when at least one ingredient has a parsed amount", () => {
-    expect(hasConvertibleIngredient([ingredient()])).toBe(true);
+describe("hasScalableIngredient (spec 0054 AC-7)", () => {
+  it("is true when at least one ingredient has a parsed volume amount", () => {
+    expect(hasScalableIngredient([ingredient()])).toBe(true);
   });
 
   it("is false when every ingredient is unparseable", () => {
-    expect(hasConvertibleIngredient([ingredient({ amountValue: null, amountUnit: null })])).toBe(
+    expect(hasScalableIngredient([ingredient({ amountValue: null, amountUnit: null })])).toBe(
       false,
     );
+  });
+
+  it("is true for a dash or splash line alone, since it adds volume", () => {
+    expect(hasScalableIngredient([ingredient({ amountValue: 2, amountUnit: "dash" })])).toBe(true);
+    expect(hasScalableIngredient([ingredient({ amountValue: 1, amountUnit: "splash" })])).toBe(
+      true,
+    );
+  });
+
+  it("is false for a recipe of only drops and plain counts", () => {
+    expect(
+      hasScalableIngredient([
+        ingredient({ ingredientId: "bitters", amountValue: 3, amountUnit: "drop" }),
+        ingredient({
+          ingredientId: "lime",
+          amountValue: 1,
+          amountUnit: "each",
+          category: "citrus",
+        }),
+      ]),
+    ).toBe(false);
+  });
+
+  it("is false for a layered shooter made only of liqueur shares", () => {
+    const b52 = ["kahlua", "baileys", "grand-marnier"].map((id) =>
+      ingredient({ ingredientId: id, amountValue: 1 / 3, amountUnit: "each", category: "liqueur" }),
+    );
+    expect(hasScalableIngredient(b52)).toBe(false);
+  });
+});
+
+describe("roundBatchCount (spec 0054 AC-4)", () => {
+  it("rounds dash, splash, and drop to whole numbers, never below 1", () => {
+    expect(roundBatchCount(1.5, "dash")).toBe(2);
+    expect(roundBatchCount(0.25, "drop")).toBe(1);
+    expect(roundBatchCount(50.4, "splash")).toBe(50);
+  });
+
+  it("rounds each to the nearest half with ties up, never below 0.5", () => {
+    expect(roundBatchCount(12.5, "each")).toBe(12.5);
+    expect(roundBatchCount(8.25, "each")).toBe(8.5);
+    expect(roundBatchCount(8.2, "each")).toBe(8);
+    expect(roundBatchCount(0.1, "each")).toBe(0.5);
+  });
+});
+
+describe("computeBatch counted lines (spec 0054 AC-4)", () => {
+  const gin = ingredient({ ingredientId: "gin", amountValue: 2, amountUnit: "oz" });
+  const bitters = ingredient({
+    ingredientId: "bitters",
+    name: "Angostura bitters",
+    measure: "2 dashes",
+    amountValue: 2,
+    amountUnit: "dash",
+    category: "other",
+  });
+
+  it("scales 2 dashes × 25 to 50 dashes with a ≈ 1 oz hint, counted in the total", () => {
+    const result = computeBatch([gin, bitters], {
+      servings: 25,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "none",
+    });
+    const line = result.lines[1];
+    expect(line.state).toBe("normal");
+    expect(line.count).toEqual({ value: 50, unit: "dash" });
+    expect(line.displayAmount).toBeNull();
+    expect(line.approxAmount).toBe("1 oz");
+    expect(line.amountMl).toBeCloseTo(30.80575, 6);
+    expect(result.totalDisplayAmount).toBe(formatBatchAmount(50 * 29.5735 + 30.80575, "oz"));
+  });
+
+  it("shows 2 dashes × 1 with no ≈ hint", () => {
+    const result = computeBatch([bitters], {
+      servings: 1,
+      scope: "everything",
+      unit: "oz",
+      dilutionLevel: "none",
+    });
+    expect(result.lines[0].count).toEqual({ value: 2, unit: "dash" });
+    expect(result.lines[0].approxAmount).toBeNull();
+  });
+
+  it("shows the hint for exactly one splash", () => {
+    const result = computeBatch(
+      [ingredient({ amountValue: 1, amountUnit: "splash", category: "other" })],
+      { servings: 1, scope: "everything", unit: "ml", dilutionLevel: "none" },
+    );
+    expect(result.lines[0].approxAmount).toBe("7.4 ml");
+  });
+
+  it("rounds 1/2 dash × 3 to 2 dashes while the volume uses 1.5 dashes", () => {
+    const result = computeBatch([ingredient({ amountValue: 0.5, amountUnit: "dash" })], {
+      servings: 3,
+      scope: "everything",
+      unit: "ml",
+      dilutionLevel: "none",
+    });
+    expect(result.lines[0].count).toEqual({ value: 2, unit: "dash" });
+    expect(result.lines[0].amountMl).toBeCloseTo(1.5 * 0.616115, 9);
+  });
+
+  it("dilutes dash volume like any volume line", () => {
+    const result = computeBatch([bitters], {
+      servings: 25,
+      scope: "everything",
+      unit: "ml",
+      dilutionLevel: "20",
+    });
+    expect(result.waterLine?.amountMl).toBeCloseTo(30.80575 * 0.2, 6);
+  });
+
+  it("scales 3 drops × 10 to 30 drops, outside the total and dilution base", () => {
+    const result = computeBatch(
+      [gin, ingredient({ ingredientId: "saline", amountValue: 3, amountUnit: "drop" })],
+      { servings: 10, scope: "everything", unit: "oz", dilutionLevel: "20" },
+    );
+    expect(result.lines[1]).toMatchObject({
+      state: "counted",
+      count: { value: 30, unit: "drop" },
+      approxAmount: null,
+      amountMl: null,
+    });
+    expect(result.waterLine?.amountMl).toBeCloseTo(20 * 29.5735 * 0.2, 6);
+  });
+
+  it("scales 1/2 Lime × 25 to 12.5 and leaves a 1/3 Baileys share unscaled", () => {
+    const result = computeBatch(
+      [
+        ingredient({
+          ingredientId: "lime",
+          amountValue: 0.5,
+          amountUnit: "each",
+          category: "citrus",
+        }),
+        ingredient({
+          ingredientId: "baileys",
+          measure: "1/3",
+          amountValue: 1 / 3,
+          amountUnit: "each",
+          category: "liqueur",
+        }),
+        ingredient({
+          ingredientId: "mystery",
+          measure: "1",
+          amountValue: 1,
+          amountUnit: "each",
+          category: null,
+        }),
+      ],
+      { servings: 25, scope: "everything", unit: "oz", dilutionLevel: "none" },
+    );
+    expect(result.lines[0]).toMatchObject({
+      state: "counted",
+      count: { value: 12.5, unit: "each" },
+    });
+    expect(result.lines[1]).toMatchObject({ state: "unscaled", measure: "1/3", count: null });
+    expect(result.lines[2]).toMatchObject({ state: "unscaled", measure: "1" });
+    expect(result.totalDisplayAmount).toBeNull();
+  });
+
+  it("follows the scope presets and Custom selection like volume lines", () => {
+    const lime = ingredient({
+      ingredientId: "lime",
+      amountValue: 1,
+      amountUnit: "each",
+      category: "citrus",
+    });
+    const exceptCitrus = computeBatch([gin, bitters, lime], {
+      servings: 2,
+      scope: "except_citrus",
+      unit: "oz",
+      dilutionLevel: "none",
+    });
+    expect(exceptCitrus.lines.map((l) => l.state)).toEqual(["normal", "normal", "excluded"]);
+
+    const custom = computeBatch([gin, bitters, lime], {
+      servings: 2,
+      scope: "custom",
+      unit: "oz",
+      dilutionLevel: "none",
+      customSelectedIds: new Set(["gin", "lime"]),
+    });
+    expect(custom.lines.map((l) => l.state)).toEqual(["normal", "excluded", "counted"]);
+  });
+
+  it("flags an unclassified drop under Alcohol only, still as a count", () => {
+    const result = computeBatch(
+      [
+        gin,
+        ingredient({ ingredientId: "drop", amountValue: 2, amountUnit: "drop", category: null }),
+      ],
+      { servings: 2, scope: "alcohol_only", unit: "oz", dilutionLevel: "none" },
+    );
+    expect(result.lines[1]).toMatchObject({
+      state: "uncategorized",
+      count: { value: 4, unit: "drop" },
+      amountMl: null,
+    });
+  });
+
+  it("gives a shooter share no Custom checkbox", () => {
+    expect(isBatchableIngredient(bitters)).toBe(true);
+    expect(
+      isBatchableIngredient(
+        ingredient({ amountValue: 0.5, amountUnit: "each", category: "spirit" }),
+      ),
+    ).toBe(false);
   });
 });
 
@@ -424,7 +635,7 @@ describe("parts (spec 0035 AC-3, AC-4)", () => {
   });
 
   it("shows the batch control for a parts only recipe but no toggle", () => {
-    expect(hasConvertibleIngredient(afterglow)).toBe(true);
+    expect(hasScalableIngredient(afterglow)).toBe(true);
     expect(hasVolumeIngredient(afterglow)).toBe(false);
     expect(hasPartIngredient(afterglow)).toBe(true);
     expect(hasVolumeIngredient([...afterglow, ingredient()])).toBe(true);

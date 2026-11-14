@@ -1,4 +1,5 @@
-// One time reparse for spec 0035 (batch calculator correctness), AC-9.
+// Reparse for spec 0035 (batch calculator correctness), AC-9, rerun for
+// spec 0054 (counted units), AC-3.
 // Rereads the measure of every recipe_ingredients row, whatever its source
 // (catalog, custom, admin), runs the shared parser, and updates
 // amount_value/amount_unit only where the result differs. Running it again
@@ -38,10 +39,11 @@ async function main() {
   });
 
   const rows: StoredMeasureRow[] = [];
+  const ingredientNames = new Map<string, string>();
   for (let from = 0; ; from += PAGE_SIZE) {
     const { data, error } = await supabase
       .from("recipe_ingredients")
-      .select("recipe_id, ingredient_id, measure, amount_value, amount_unit")
+      .select("recipe_id, ingredient_id, measure, amount_value, amount_unit, ingredients(name)")
       .order("recipe_id")
       .order("ingredient_id")
       .range(from, from + PAGE_SIZE - 1);
@@ -51,11 +53,19 @@ async function main() {
       process.exit(1);
     }
 
-    rows.push(...data);
+    for (const { ingredients, ...row } of data) {
+      rows.push(row);
+      if (ingredients) {
+        ingredientNames.set(row.ingredient_id, ingredients.name);
+      }
+    }
     if (data.length < PAGE_SIZE) {
       break;
     }
   }
+
+  const measureOf = (recipeId: string, ingredientId: string) =>
+    rows.find((r) => r.recipe_id === recipeId && r.ingredient_id === ingredientId)?.measure;
 
   const plan = planReparse(rows);
 
@@ -66,15 +76,22 @@ async function main() {
 
   if (dryRun) {
     for (const update of plan.updates.slice(0, 50)) {
-      const measure = rows.find(
-        (r) => r.recipe_id === update.recipe_id && r.ingredient_id === update.ingredient_id,
-      )?.measure;
+      const measure = measureOf(update.recipe_id, update.ingredient_id);
       console.log(
         `  "${measure}" -> ${update.amount_value ?? "null"} ${update.amount_unit ?? "null"}`,
       );
     }
     if (plan.updates.length > 50) {
       console.log(`  ...and ${plan.updates.length - 50} more`);
+    }
+
+    // Every row that would become a plain count, in full, so split errors
+    // can be fixed in the catalog before the live run (spec 0054 AC-3).
+    console.log(`\nRows that would become "each": ${plan.eachUpdates.length}`);
+    for (const update of plan.eachUpdates) {
+      const measure = measureOf(update.recipe_id, update.ingredient_id);
+      const name = ingredientNames.get(update.ingredient_id) ?? update.ingredient_id;
+      console.log(`  "${measure}" ${name} (recipe ${update.recipe_id})`);
     }
     console.log("\nDry run: nothing written.");
     return;

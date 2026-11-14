@@ -256,7 +256,11 @@
     "uncategorized": "（未分类）",
     "water": "水",
     "nothingToDiluteNote": "这批原料无需稀释。",
-    "total": "总量"
+    "total": "总量",
+    "countDash": "{count, plural, other {{value} 抖}}",
+    "countSplash": "{count, plural, other {{value} 溅}}",
+    "countDrop": "{count, plural, other {{value} 滴}}",
+    "approx": "(≈ {amount})"
   },
   "pantry": {
     "title": "你的原料柜",

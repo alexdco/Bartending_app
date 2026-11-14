@@ -16,14 +16,17 @@ import {
   PART_SIZE_RANGE,
   batchUnitLabel,
   computeBatch,
-  hasConvertibleIngredient,
   hasPartIngredient,
+  hasScalableIngredient,
+  isBatchableIngredient,
   isSupportedLocale,
   partSizeInputForUnit,
   partSizeUnitFor,
   validateCustomDilutionPercent,
   validatePartSize,
   validateServings,
+  type BatchCount,
+  type BatchLine,
   type BatchScope,
   type BatchUnit,
   type DilutionLevel,
@@ -55,8 +58,23 @@ const DILUTION_LABELS: Record<DilutionLevel, string> = {
 
 export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps) {
   const theme = useTheme();
-  const { i18n } = useTranslation();
+  const { t, i18n } = useTranslation();
   const locale = isSupportedLocale(i18n.language) ? i18n.language : "en";
+
+  // A count reads with its plural word (i18next picks the suffix by count);
+  // a plain count ("each") is the number alone. A dash or splash adds its
+  // "≈" volume once it reaches 1/4 oz (spec 0054 AC-4).
+  const countText = ({ value, unit: countUnit }: BatchCount) =>
+    countUnit === "each" ? String(value) : t(`batch.${countUnit}`, { count: value });
+
+  const lineAmount = (line: BatchLine) => {
+    if (line.state === "unscaled") return line.measure;
+    if (line.count === null) return line.displayAmount;
+    const count = countText(line.count);
+    return line.approxAmount === null
+      ? count
+      : `${count} ${t("batch.approx", { amount: line.approxAmount })}`;
+  };
 
   const [servingsInput, setServingsInput] = useState("");
   const [scope, setScope] = useState<BatchScope>("everything");
@@ -147,7 +165,7 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
     locale,
   ]);
 
-  if (!hasConvertibleIngredient(ingredients)) {
+  if (!hasScalableIngredient(ingredients)) {
     return null;
   }
 
@@ -201,17 +219,15 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
       {scope === "custom" && (
         <View style={styles.group}>
           <Text variant="label">Include</Text>
-          {ingredients
-            .filter((i) => i.amountValue !== null && i.amountUnit !== null)
-            .map((ingredient) => (
-              <Chip
-                key={ingredient.ingredientId}
-                selected={customSelectedIds.has(ingredient.ingredientId)}
-                onSelectedChange={() => toggleCustomIngredient(ingredient.ingredientId)}
-              >
-                {ingredient.name}
-              </Chip>
-            ))}
+          {ingredients.filter(isBatchableIngredient).map((ingredient) => (
+            <Chip
+              key={ingredient.ingredientId}
+              selected={customSelectedIds.has(ingredient.ingredientId)}
+              onSelectedChange={() => toggleCustomIngredient(ingredient.ingredientId)}
+            >
+              {ingredient.name}
+            </Chip>
+          ))}
         </View>
       )}
 
@@ -275,9 +291,7 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
               <View key={line.ingredientId} style={styles.row}>
                 <Text variant="body">{line.name}</Text>
                 <View style={styles.amountColumn}>
-                  <Text variant="body">
-                    {line.state === "unscaled" ? line.measure : line.displayAmount}
-                  </Text>
+                  <Text variant="body">{lineAmount(line)}</Text>
                   {line.state === "unscaled" && (
                     <Text variant="bodySmall" muted>
                       not scaled, adjust manually
