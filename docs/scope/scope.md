@@ -871,7 +871,7 @@ Spec [0054](../specs/0054-batch-calculator-v2/index.md) · code in `packages/sha
 - [x] Design it (spec): `/architect locale aware number formatting`
 - [ ] Build it: `/develop locale aware number formatting`
   - [x] Thin thread: `numberFormat.ts` (`formatNumber`, `localizeDecimalText`, `parseDecimalInput`), required locale on the conversion formatters, both ingredient lists including verbatim measure text, satisfies AC-1, AC-4, AC-9, AC-10, AC-11
-  - [ ] Batch and Quick Build: required locale on batch formatters, counts, `formatParts`, and `computeBatch`; unscaled lines and Quick Build fallbacks normalized, satisfies AC-2, AC-3, AC-4, AC-9, AC-11
+  - [x] Batch and Quick Build: required locale on batch formatters, counts, `formatParts`, and `computeBatch`; unscaled lines and Quick Build fallbacks normalized, satisfies AC-2, AC-3, AC-4, AC-9, AC-11
   - [ ] Inputs: comma or dot in part size, dilution, and bar amount; locale prefill; bar form inline error in nine locales; formatted numbers in `partSizeError`, satisfies AC-6, AC-7, AC-8, AC-12
   - [ ] Drink idea amounts, the `String(`/`toFixed(` sweep, and an iOS comma region keypad check, satisfies AC-5, AC-6, AC-11
 - [ ] Verify it: `/check verify locale aware number formatting`

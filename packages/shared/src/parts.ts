@@ -6,6 +6,8 @@
 // and side effect free per AGENTS.md, mirroring batch.ts's unscaled-line
 // handling for ingredients with no parseable amount.
 
+import type { Locale } from "./locale";
+import { formatNumber } from "./numberFormat";
 import { isCountedUnit, isVolumeUnit, toMl, type RecognizedUnit } from "./units";
 
 const PARTS_ROUNDING_STEP = 0.25;
@@ -122,7 +124,11 @@ export function computeParts(ingredients: readonly PartsIngredientInput[]): Part
   });
 }
 
-/** Formats a parts value for display, trimming trailing zeros ("1" not "1.0", "0.33" stays "0.33"). */
-export function formatParts(value: number): string {
-  return String(value);
+/**
+ * Formats a parts value for display, trimming trailing zeros ("1" not "1.0",
+ * "0.33" stays "0.33"), with the locale's decimal separator ("1,5" in pt;
+ * spec 0055 AC-3).
+ */
+export function formatParts(value: number, locale: Locale): string {
+  return formatNumber(value, locale, 2);
 }

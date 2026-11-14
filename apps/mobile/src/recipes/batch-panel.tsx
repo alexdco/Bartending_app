@@ -25,6 +25,7 @@ import {
   hasPartIngredient,
   hasScalableIngredient,
   isBatchableIngredient,
+  localizeDecimalText,
   isSupportedLocale,
   partSizeInputForUnit,
   partSizeUnitFor,
@@ -85,14 +86,17 @@ export function BatchPanel({ recipeId, method, ingredients, unit, onUnitChange }
   // ends with the word once, chosen by the high end ("2–3 dashes", AC-5).
   const countText = (count: BatchCount) =>
     count.unit === "each"
-      ? batchCountText(count)
+      ? batchCountText(count, locale)
       : t(`batch.${count.unit}`, {
           count: batchCountPluralValue(count),
-          value: batchCountText(count),
+          value: batchCountText(count, locale),
         });
 
   const lineAmount = (line: BatchLine) => {
-    if (line.state === "unscaled") return line.measure;
+    // Stored measure text, with only its decimal separator localized (spec 0055 AC-4).
+    if (line.state === "unscaled") {
+      return line.measure === null ? null : localizeDecimalText(line.measure, locale);
+    }
     if (line.count === null) return line.displayAmount;
     const count = countText(line.count);
     return line.approxAmount === null

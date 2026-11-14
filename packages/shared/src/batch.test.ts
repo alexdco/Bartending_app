@@ -191,6 +191,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
     });
     const line = result.lines[1];
     expect(line.state).toBe("normal");
@@ -198,7 +199,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
     expect(line.displayAmount).toBeNull();
     expect(line.approxAmount).toBe("1 oz");
     expect(line.amountMl).toBeCloseTo(30.80575, 6);
-    expect(result.totalDisplayAmount).toBe(formatBatchAmount(50 * 29.5735 + 30.80575, "oz"));
+    expect(result.totalDisplayAmount).toBe(formatBatchAmount(50 * 29.5735 + 30.80575, "oz", "en"));
   });
 
   it("shows 2 dashes × 1 with no ≈ hint", () => {
@@ -207,6 +208,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
     });
     expect(result.lines[0].count).toEqual({ value: 2, maxValue: null, unit: "dash" });
     expect(result.lines[0].approxAmount).toBeNull();
@@ -215,7 +217,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
   it("shows the hint for exactly one splash", () => {
     const result = computeBatch(
       [ingredient({ amountValue: 1, amountUnit: "splash", category: "other" })],
-      { servings: 1, scope: "everything", unit: "ml", dilutionLevel: "none" },
+      { servings: 1, scope: "everything", unit: "ml", dilutionLevel: "none", locale: "en" },
     );
     expect(result.lines[0].approxAmount).toBe("7.4 ml");
   });
@@ -226,6 +228,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       scope: "everything",
       unit: "ml",
       dilutionLevel: "none",
+      locale: "en",
     });
     expect(result.lines[0].count).toEqual({ value: 2, maxValue: null, unit: "dash" });
     expect(result.lines[0].amountMl).toBeCloseTo(1.5 * 0.616115, 9);
@@ -237,6 +240,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       scope: "everything",
       unit: "ml",
       dilutionLevel: "20",
+      locale: "en",
     });
     expect(result.waterLine?.amountMl).toBeCloseTo(30.80575 * 0.2, 6);
   });
@@ -244,7 +248,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
   it("scales 3 drops × 10 to 30 drops, outside the total and dilution base", () => {
     const result = computeBatch(
       [gin, ingredient({ ingredientId: "saline", amountValue: 3, amountUnit: "drop" })],
-      { servings: 10, scope: "everything", unit: "oz", dilutionLevel: "20" },
+      { servings: 10, scope: "everything", unit: "oz", dilutionLevel: "20", locale: "en" },
     );
     expect(result.lines[1]).toMatchObject({
       state: "counted",
@@ -279,7 +283,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
           category: null,
         }),
       ],
-      { servings: 25, scope: "everything", unit: "oz", dilutionLevel: "none" },
+      { servings: 25, scope: "everything", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
     expect(result.lines[0]).toMatchObject({
       state: "counted",
@@ -302,6 +306,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       scope: "except_citrus",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
     });
     expect(exceptCitrus.lines.map((l) => l.state)).toEqual(["normal", "normal", "excluded"]);
 
@@ -310,6 +315,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
       scope: "custom",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
       customSelectedIds: new Set(["gin", "lime"]),
     });
     expect(custom.lines.map((l) => l.state)).toEqual(["normal", "excluded", "counted"]);
@@ -321,7 +327,7 @@ describe("computeBatch counted lines (spec 0054 AC-4)", () => {
         gin,
         ingredient({ ingredientId: "drop", amountValue: 2, amountUnit: "drop", category: null }),
       ],
-      { servings: 2, scope: "alcohol_only", unit: "oz", dilutionLevel: "none" },
+      { servings: 2, scope: "alcohol_only", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
     expect(result.lines[1]).toMatchObject({
       state: "uncategorized",
@@ -344,7 +350,7 @@ describe("computeBatch", () => {
   it("scales every ingredient by servings and totals in the selected unit (AC-2, AC-7)", () => {
     const result = computeBatch(
       [ingredient({ ingredientId: "rum", amountValue: 2, amountUnit: "oz" })],
-      { servings: 50, scope: "everything", unit: "oz", dilutionLevel: "none" },
+      { servings: 50, scope: "everything", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     // 2 oz * 50 servings = 100 oz, unrounded ml pipeline round trips back to 100.0 oz.
@@ -358,6 +364,7 @@ describe("computeBatch", () => {
       scope: "everything",
       unit: "ml",
       dilutionLevel: "none",
+      locale: "en",
     });
 
     // 1.5 oz -> ml
@@ -377,7 +384,7 @@ describe("computeBatch", () => {
           category: null,
         }),
       ],
-      { servings: 10, scope: "everything", unit: "oz", dilutionLevel: "none" },
+      { servings: 10, scope: "everything", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     const bittersLine = result.lines.find((l) => l.ingredientId === "bitters")!;
@@ -395,7 +402,7 @@ describe("computeBatch", () => {
         ingredient({ ingredientId: "lime", name: "Lime", category: "citrus" }),
         ingredient({ ingredientId: "mystery", name: "Mystery", category: null }),
       ],
-      { servings: 1, scope: "alcohol_only", unit: "oz", dilutionLevel: "none" },
+      { servings: 1, scope: "alcohol_only", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     const byId = Object.fromEntries(result.lines.map((l) => [l.ingredientId, l]));
@@ -411,7 +418,7 @@ describe("computeBatch", () => {
         ingredient({ ingredientId: "lime", name: "Lime", category: "citrus" }),
         ingredient({ ingredientId: "mystery", name: "Mystery", category: null }),
       ],
-      { servings: 1, scope: "except_citrus", unit: "oz", dilutionLevel: "none" },
+      { servings: 1, scope: "except_citrus", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     const byId = Object.fromEntries(result.lines.map((l) => [l.ingredientId, l]));
@@ -431,6 +438,7 @@ describe("computeBatch", () => {
         scope: "custom",
         unit: "oz",
         dilutionLevel: "none",
+        locale: "en",
         customSelectedIds: new Set(["rum"]),
       },
     );
@@ -457,6 +465,7 @@ describe("computeBatch", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "20",
+      locale: "en",
     });
     expect(everything.waterLine?.displayAmount).toBe("18 oz");
     expect(everything.totalDisplayAmount).toBe("108 oz");
@@ -467,6 +476,7 @@ describe("computeBatch", () => {
       scope: "alcohol_only",
       unit: "oz",
       dilutionLevel: "20",
+      locale: "en",
     });
     expect(alcoholOnly.waterLine?.displayAmount).toBe("12 oz");
   });
@@ -477,6 +487,7 @@ describe("computeBatch", () => {
       scope: "custom",
       unit: "oz",
       dilutionLevel: "20",
+      locale: "en",
       customSelectedIds: new Set(),
     });
 
@@ -488,7 +499,7 @@ describe("computeBatch", () => {
   it("dilutes a batch with no alcohol at all (spec 0035 AC-5)", () => {
     const result = computeBatch(
       [ingredient({ ingredientId: "juice", amountValue: 10, amountUnit: "oz", category: "other" })],
-      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "15" },
+      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "15", locale: "en" },
     );
 
     expect(result.waterLine?.displayAmount).toBe("1.5 oz");
@@ -501,6 +512,7 @@ describe("computeBatch", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "custom",
+      locale: "en",
       customDilutionPercent: 0,
     });
 
@@ -516,7 +528,7 @@ describe("computeBatch", () => {
         ingredient({ ingredientId: "a", amountValue: 0.351, amountUnit: "oz", category: "other" }),
         ingredient({ ingredientId: "b", amountValue: 0.351, amountUnit: "oz", category: "other" }),
       ],
-      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none" },
+      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     // Each line rounds to "0.4 oz" individually; the true unrounded total is
@@ -545,6 +557,7 @@ describe("parts (spec 0035 AC-3, AC-4)", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
       partSize: { value: 1, unit: "oz" },
     });
 
@@ -558,6 +571,7 @@ describe("parts (spec 0035 AC-3, AC-4)", () => {
       scope: "everything",
       unit: "ml",
       dilutionLevel: "20",
+      locale: "en",
       partSize: { value: 30, unit: "ml" },
     });
 
@@ -571,6 +585,7 @@ describe("parts (spec 0035 AC-3, AC-4)", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
     });
 
     expect(result.lines.every((l) => l.state === "unscaled")).toBe(true);
@@ -592,6 +607,7 @@ describe("parts (spec 0035 AC-3, AC-4)", () => {
         scope: "except_citrus",
         unit: "oz",
         dilutionLevel: "none",
+        locale: "en",
         partSize: { value: 1, unit: "oz" },
       },
     );
@@ -650,20 +666,20 @@ describe("parts (spec 0035 AC-3, AC-4)", () => {
 
 describe("formatBatchAmount (spec 0035 AC-6, AC-7)", () => {
   it("rounds oz, ml, and cl to the tenth and l to the thousandth, trimming zeros", () => {
-    expect(formatBatchAmount(29.5735 * 2.5, "oz")).toBe("2.5 oz");
-    expect(formatBatchAmount(44.36025, "ml")).toBe("44.4 ml");
-    expect(formatBatchAmount(44.36025, "cl")).toBe("4.4 cl");
-    expect(formatBatchAmount(2500, "l")).toBe("2.5 l");
-    expect(formatBatchAmount(1000, "l")).toBe("1 l");
-    expect(formatBatchAmount(1234.56, "l")).toBe("1.235 l");
+    expect(formatBatchAmount(29.5735 * 2.5, "oz", "en")).toBe("2.5 oz");
+    expect(formatBatchAmount(44.36025, "ml", "en")).toBe("44.4 ml");
+    expect(formatBatchAmount(44.36025, "cl", "en")).toBe("4.4 cl");
+    expect(formatBatchAmount(2500, "l", "en")).toBe("2.5 l");
+    expect(formatBatchAmount(1000, "l", "en")).toBe("1 l");
+    expect(formatBatchAmount(1234.56, "l", "en")).toBe("1.235 l");
   });
 
   it("never shows a nonzero amount as 0", () => {
-    expect(formatBatchAmount(0.616115, "l")).toBe("0.001 l");
-    expect(formatBatchAmount(0.2, "l")).toBe("< 0.001 l");
-    expect(formatBatchAmount(0.04, "ml")).toBe("< 0.1 ml");
-    expect(formatBatchAmount(0.4, "cl")).toBe("< 0.1 cl");
-    expect(formatBatchAmount(1, "oz")).toBe("< 0.1 oz");
+    expect(formatBatchAmount(0.616115, "l", "en")).toBe("0.001 l");
+    expect(formatBatchAmount(0.2, "l", "en")).toBe("< 0.001 l");
+    expect(formatBatchAmount(0.04, "ml", "en")).toBe("< 0.1 ml");
+    expect(formatBatchAmount(0.4, "cl", "en")).toBe("< 0.1 cl");
+    expect(formatBatchAmount(1, "oz", "en")).toBe("< 0.1 oz");
   });
 
   it("batches a 1/8 tsp line and a 1 L line in liters", () => {
@@ -677,7 +693,7 @@ describe("formatBatchAmount (spec 0035 AC-6, AC-7)", () => {
         }),
         ingredient({ ingredientId: "soda", amountValue: 1, amountUnit: "l", category: "other" }),
       ],
-      { servings: 1, scope: "everything", unit: "l", dilutionLevel: "none" },
+      { servings: 1, scope: "everything", unit: "l", dilutionLevel: "none", locale: "en" },
     );
 
     expect(result.lines.map((l) => l.displayAmount)).toEqual(["0.001 l", "1 l"]);
@@ -689,15 +705,15 @@ describe("formatBatchRange (spec 0054 AC-5)", () => {
   const ML_PER_OZ = 29.5735;
 
   it("joins two different ends with an en dash and the unit once", () => {
-    expect(formatBatchRange(20 * ML_PER_OZ, 30 * ML_PER_OZ, "oz")).toBe("20–30 oz");
+    expect(formatBatchRange(20 * ML_PER_OZ, 30 * ML_PER_OZ, "oz", "en")).toBe("20–30 oz");
   });
 
   it("shows one value when both ends round alike", () => {
-    expect(formatBatchRange(1, 1.2, "l")).toBe("0.001 l");
+    expect(formatBatchRange(1, 1.2, "l", "en")).toBe("0.001 l");
   });
 
   it("keeps a floored low end's < sign", () => {
-    expect(formatBatchRange(0.5, 2 * ML_PER_OZ, "oz")).toBe("< 0.1–2 oz");
+    expect(formatBatchRange(0.5, 2 * ML_PER_OZ, "oz", "en")).toBe("< 0.1–2 oz");
   });
 });
 
@@ -709,9 +725,9 @@ describe("batch counts (spec 0054 AC-5)", () => {
 
   it("writes a range as low–high and picks the plural by the high end", () => {
     const count = batchCount(1, 2, "dash");
-    expect(batchCountText(count)).toBe("1–2");
+    expect(batchCountText(count, "en")).toBe("1–2");
     expect(batchCountPluralValue(count)).toBe(2);
-    expect(batchCountText(batchCount(25, null, "each"))).toBe("25");
+    expect(batchCountText(batchCount(25, null, "each"), "en")).toBe("25");
   });
 });
 
@@ -737,6 +753,7 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "20",
+      locale: "en",
     });
 
     expect(result.lines[0].displayAmount).toBe("20–30 oz");
@@ -751,6 +768,7 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "20",
+      locale: "en",
     });
 
     expect(result.waterLine).toEqual({
@@ -773,7 +791,7 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
           category: "other",
         }),
       ],
-      { servings: 25, scope: "everything", unit: "oz", dilutionLevel: "none" },
+      { servings: 25, scope: "everything", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     expect(result.lines[1].count).toEqual({ value: 50, maxValue: 75, unit: "dash" });
@@ -792,7 +810,7 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
           category: "other",
         }),
       ],
-      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none" },
+      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     expect(result.lines[1].count).toEqual({ value: 1, maxValue: null, unit: "dash" });
@@ -812,6 +830,7 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
       scope: "everything",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
     } as const;
 
     expect(
@@ -837,6 +856,7 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
       scope: "alcohol_only",
       unit: "oz",
       dilutionLevel: "none",
+      locale: "en",
     });
 
     expect(result.lines[1].state).toBe("excluded");
@@ -846,7 +866,7 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
   it("treats a stored max at or below the value as a single amount", () => {
     const result = computeBatch(
       [ingredient({ amountValue: 2, amountMaxValue: 2, amountUnit: "oz" })],
-      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none" },
+      { servings: 1, scope: "everything", unit: "oz", dilutionLevel: "none", locale: "en" },
     );
 
     expect(result.lines[0].displayAmount).toBe("2 oz");
@@ -859,5 +879,81 @@ describe("computeBatch ranges (spec 0054 AC-5)", () => {
     expect(
       hasPartIngredient([ingredient({ amountValue: 2, amountMaxValue: 3, amountUnit: "part" })]),
     ).toBe(true);
+  });
+});
+
+describe("locale aware batch numbers (spec 0055 AC-2, AC-9)", () => {
+  const ML_PER_OZ = 29.5735;
+  const GROUP_SPACE = "[\s\u202f\u00a0]";
+
+  it("writes amounts and the floor text with the locale's decimal separator", () => {
+    expect(formatBatchAmount(44.36025, "ml", "fr")).toBe("44,4 ml");
+    expect(formatBatchAmount(1234.56, "l", "pt")).toBe("1,235 l");
+    expect(formatBatchAmount(1, "oz", "fr")).toBe("< 0,1 oz");
+    expect(formatBatchAmount(0.2, "l", "es")).toBe("< 0,001 l");
+    expect(formatBatchAmount(44.36025, "ml", "ja")).toBe("44.4 ml");
+  });
+
+  it("groups thousands by the locale's rule, the only change in en", () => {
+    expect(formatBatchAmount(30000, "ml", "en")).toBe("30,000 ml");
+    expect(formatBatchAmount(30000, "ml", "fr")).toMatch(new RegExp(`^30${GROUP_SPACE}000 ml$`));
+    expect(formatBatchAmount(30000, "ml", "ru")).toMatch(new RegExp(`^30${GROUP_SPACE}000 ml$`));
+    expect(formatBatchAmount(15000, "ml", "es")).toBe("15.000 ml");
+    expect(formatBatchAmount(999, "ml", "en")).toBe("999 ml");
+  });
+
+  it("keeps a floored low end's < sign in a comma locale range", () => {
+    expect(formatBatchRange(0.5, 2 * ML_PER_OZ, "oz", "fr")).toBe("< 0,1–2 oz");
+    expect(formatBatchRange(1.5 * ML_PER_OZ, 2.5 * ML_PER_OZ, "oz", "es")).toBe("1,5–2,5 oz");
+  });
+
+  it("writes a half each count as 0,5", () => {
+    expect(batchCountText(batchCount(0.25, null, "each"), "fr")).toBe("0,5");
+    expect(batchCountText(batchCount(1.5, 2.5, "each"), "pt")).toBe("1,5–2,5");
+    expect(batchCountText(batchCount(1.5, 2.5, "each"), "en")).toBe("1.5–2.5");
+  });
+
+  it("formats every computeBatch amount, range, water line, and total in fr", () => {
+    const result = computeBatch(
+      [
+        ingredient({ ingredientId: "gin", amountValue: 1.5 }),
+        ingredient({
+          ingredientId: "lime",
+          amountValue: 0.5,
+          amountMaxValue: 0.75,
+          category: "citrus",
+        }),
+        ingredient({
+          ingredientId: "cherry",
+          amountValue: 0.25,
+          amountUnit: "each",
+          category: "citrus",
+        }),
+      ],
+      { servings: 1, scope: "everything", unit: "ml", dilutionLevel: "20", locale: "fr" },
+    );
+
+    expect(result.lines.map((line) => line.displayAmount)).toEqual([
+      "44,4 ml",
+      "14,8–22,2 ml",
+      null,
+    ]);
+    expect(batchCountText(result.lines[2].count!, "fr")).toBe("0,5");
+    expect(result.waterLine?.displayAmount).toBe("11,8–13,3 ml");
+    expect(result.totalDisplayAmount).toBe("71–79,8 ml");
+  });
+
+  it("gives the same numbers in en apart from the separator", () => {
+    const result = computeBatch([ingredient({ amountValue: 1.5 })], {
+      servings: 1,
+      scope: "everything",
+      unit: "ml",
+      dilutionLevel: "20",
+      locale: "en",
+    });
+
+    expect(result.lines[0].displayAmount).toBe("44.4 ml");
+    expect(result.waterLine?.displayAmount).toBe("8.9 ml");
+    expect(result.totalDisplayAmount).toBe("53.2 ml");
   });
 });

@@ -10,6 +10,7 @@
 // docs/specs/0054-batch-calculator-v2/index.md
 
 import { DEFAULT_LOCALE, type Locale } from "./locale";
+import { formatNumber } from "./numberFormat";
 import type { RecipeMethod } from "./recipes";
 import {
   COUNTED_UNIT_ML,
@@ -212,7 +213,8 @@ export interface BatchOptions {
   customSelectedIds?: ReadonlySet<string>;
   /** The "1 part = ..." size; null when the recipe has no part line (spec 0035 AC-3). */
   partSize?: PartSize | null;
-  locale?: Locale;
+  /** Picks the decimal and thousands separators of every formatted amount (spec 0055 AC-2). */
+  locale: Locale;
 }
 
 export interface BatchResult {
@@ -254,16 +256,17 @@ const BATCH_UNIT_DECIMALS: Readonly<Record<BatchUnit, number>> = { oz: 1, ml: 1,
  * Rounds an unrounded ml quantity to its display form exactly once (spec 0035
  * AC-6, AC-7): oz, ml, and cl to the nearest tenth, l to the nearest
  * thousandth, trailing zeros trimmed. A nonzero amount that rounds to zero
- * shows as "< 0.1 oz" (or "< 0.001 l"), never as 0.
+ * shows as "< 0.1 oz" (or "< 0.001 l"), never as 0. Separators follow the
+ * locale ("< 0,1 oz", "30 000 ml" in fr; spec 0055 AC-2).
  */
-export function formatBatchAmount(ml: number, unit: BatchUnit): string {
+export function formatBatchAmount(ml: number, unit: BatchUnit, locale: Locale): string {
   const decimals = BATCH_UNIT_DECIMALS[unit];
   const factor = 10 ** decimals;
   const rounded = Math.round((ml / BATCH_UNIT_ML[unit]) * factor) / factor;
   if (rounded === 0 && ml > 0) {
-    return `< ${(1 / factor).toFixed(decimals)} ${unit}`;
+    return `< ${formatNumber(1 / factor, locale, decimals)} ${unit}`;
   }
-  return `${String(rounded)} ${unit}`;
+  return `${formatNumber(rounded, locale, decimals)} ${unit}`;
 }
 
 /**
@@ -272,9 +275,14 @@ export function formatBatchAmount(ml: number, unit: BatchUnit): string {
  * shows ("2 oz"), otherwise "<low>–<high> <unit>" with an en dash, no
  * spaces, and the unit once ("20–30 oz", "< 0.1–2 oz").
  */
-export function formatBatchRange(lowMl: number, highMl: number, unit: BatchUnit): string {
-  const low = formatBatchAmount(lowMl, unit);
-  const high = formatBatchAmount(highMl, unit);
+export function formatBatchRange(
+  lowMl: number,
+  highMl: number,
+  unit: BatchUnit,
+  locale: Locale,
+): string {
+  const low = formatBatchAmount(lowMl, unit, locale);
+  const high = formatBatchAmount(highMl, unit, locale);
   if (low === high) {
     return low;
   }
@@ -282,8 +290,15 @@ export function formatBatchRange(lowMl: number, highMl: number, unit: BatchUnit)
 }
 
 /** formatBatchRange with a null high end meaning a single amount. */
-function formatBatchAmountOrRange(lowMl: number, highMl: number | null, unit: BatchUnit): string {
-  return highMl === null ? formatBatchAmount(lowMl, unit) : formatBatchRange(lowMl, highMl, unit);
+function formatBatchAmountOrRange(
+  lowMl: number,
+  highMl: number | null,
+  unit: BatchUnit,
+  locale: Locale,
+): string {
+  return highMl === null
+    ? formatBatchAmount(lowMl, unit, locale)
+    : formatBatchRange(lowMl, highMl, unit, locale);
 }
 
 // The volume hint threshold, 1/4 oz (one splash), compared with a tolerance
@@ -316,11 +331,13 @@ export function batchCount(
   return { value, maxValue: high === null || high === value ? null : high, unit };
 }
 
-/** A count's number text: "50", or a range "2–3" with an en dash and no spaces (spec 0054 AC-5). */
-export function batchCountText(count: BatchCount): string {
-  return count.maxValue === null
-    ? String(count.value)
-    : `${String(count.value)}–${String(count.maxValue)}`;
+/**
+ * A count's number text: "50", or a range "2–3" with an en dash and no spaces
+ * (spec 0054 AC-5); a half "each" reads "0,5" in a comma locale (spec 0055 AC-2).
+ */
+export function batchCountText(count: BatchCount, locale: Locale): string {
+  const low = formatNumber(count.value, locale, 1);
+  return count.maxValue === null ? low : `${low}–${formatNumber(count.maxValue, locale, 1)}`;
 }
 
 /** The count that picks a count's plural word: the high end of a range (spec 0054 AC-5). */
@@ -387,14 +404,14 @@ function scaleLine(
   };
 }
 
-function approxAmountFor(scaled: Scaled, unit: BatchUnit): string | null {
+function approxAmountFor(scaled: Scaled, unit: BatchUnit, locale: Locale): string | null {
   const { ml, mlMax, count } = scaled;
   const highMl = mlMax ?? ml;
   return count !== null &&
     ml !== null &&
     highMl !== null &&
     highMl + APPROX_HINT_TOLERANCE_ML >= APPROX_HINT_MIN_ML
-    ? formatBatchAmountOrRange(ml, mlMax, unit)
+    ? formatBatchAmountOrRange(ml, mlMax, unit, locale)
     : null;
 }
 
@@ -413,7 +430,7 @@ export function computeBatch(
   ingredients: readonly BatchIngredientInput[],
   options: BatchOptions,
 ): BatchResult {
-  const { servings, scope, unit, dilutionLevel, customSelectedIds } = options;
+  const { servings, scope, unit, dilutionLevel, customSelectedIds, locale } = options;
   const customPercent = options.customDilutionPercent ?? null;
   const partSize = options.partSize ?? null;
 
@@ -447,9 +464,9 @@ export function computeBatch(
       ...base,
       state: isUncategorized ? "uncategorized" : ml === null ? "counted" : "normal",
       displayAmount:
-        count === null && ml !== null ? formatBatchAmountOrRange(ml, mlMax, unit) : null,
+        count === null && ml !== null ? formatBatchAmountOrRange(ml, mlMax, unit, locale) : null,
       count,
-      approxAmount: approxAmountFor(scaled, unit),
+      approxAmount: approxAmountFor(scaled, unit, locale),
       amountMl: ml,
       amountMlMax: mlMax,
     };
@@ -467,7 +484,7 @@ export function computeBatch(
   const waterLine =
     waterHighMl > 0
       ? {
-          displayAmount: formatBatchAmountOrRange(waterLowMl, rangeEnd(waterHighMl), unit),
+          displayAmount: formatBatchAmountOrRange(waterLowMl, rangeEnd(waterHighMl), unit, locale),
           amountMl: waterLowMl,
           amountMlMax: rangeEnd(waterHighMl),
         }
@@ -480,7 +497,9 @@ export function computeBatch(
     waterLine,
     nothingToDiluteNote,
     totalDisplayAmount:
-      totalHighMl > 0 ? formatBatchAmountOrRange(totalLowMl, rangeEnd(totalHighMl), unit) : null,
+      totalHighMl > 0
+        ? formatBatchAmountOrRange(totalLowMl, rangeEnd(totalHighMl), unit, locale)
+        : null,
   };
 }
 

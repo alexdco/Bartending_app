@@ -8,6 +8,7 @@ import {
   formatAmountInUnit,
   formatParts,
   formatQuickBuildInstructions,
+  localizeDecimalText,
   isSupportedLocale,
   quickBuildMethodText,
 } from "@bartendingapp/shared";
@@ -151,8 +152,8 @@ export default function QuickBuildModeScreen() {
     if (unit === "parts") {
       const line = partsLines?.[index];
       return line?.state === "normal" && line.parts !== null
-        ? `${formatParts(line.parts)} pt`
-        : (line?.measure ?? ingredient.measure ?? "");
+        ? `${formatParts(line.parts, locale)} pt`
+        : localizeDecimalText(line?.measure ?? ingredient.measure ?? "", locale);
     }
 
     // Unparsed, part, counted, and range lines show their measure text
@@ -161,7 +162,10 @@ export default function QuickBuildModeScreen() {
       ingredient.amountMaxValue === null
         ? formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit, locale)
         : null;
-    return amount !== null ? `${amount} ${unit}` : (ingredient.measure ?? "");
+    // Stored measure text gets only its decimal separator localized (spec 0055 AC-4).
+    return amount !== null
+      ? `${amount} ${unit}`
+      : localizeDecimalText(ingredient.measure ?? "", locale);
   });
 
   const instructions = formatQuickBuildInstructions({

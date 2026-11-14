@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { computeParts, type PartsIngredientInput } from "./parts";
+import { computeParts, formatParts, type PartsIngredientInput } from "./parts";
 
 function line(
   ingredientId: string,
@@ -80,5 +80,14 @@ describe("computeParts (spec 0035 AC-10)", () => {
     expect(result.map((l) => l.state)).toEqual(["normal", "normal", "unscaled"]);
     expect(result.map((l) => l.parts)).toEqual([2, 1, null]);
     expect(result[2].measure).toBe("1 part");
+  });
+});
+
+describe("formatParts (spec 0055 AC-3, AC-9)", () => {
+  it("uses the locale's decimal separator and keeps two decimals", () => {
+    expect(formatParts(1.5, "pt")).toBe("1,5");
+    expect(formatParts(0.33, "fr")).toBe("0,33");
+    expect(formatParts(1.5, "en")).toBe("1.5");
+    expect(formatParts(2, "es")).toBe("2");
   });
 });

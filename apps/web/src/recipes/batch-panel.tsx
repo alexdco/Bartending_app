@@ -23,6 +23,7 @@ import {
   hasPartIngredient,
   hasScalableIngredient,
   isBatchableIngredient,
+  localizeDecimalText,
   partSizeInputForUnit,
   partSizeUnitFor,
   validateCustomDilutionPercent,
@@ -81,14 +82,17 @@ export function BatchPanel({ recipeId, method, ingredients, unit, onUnitChange }
   // ("2–3 dashes", spec 0054 AC-5).
   const countText = (count: BatchCount) =>
     count.unit === "each"
-      ? batchCountText(count)
+      ? batchCountText(count, locale)
       : t(COUNT_KEYS[count.unit], {
           count: batchCountPluralValue(count),
-          value: batchCountText(count),
+          value: batchCountText(count, locale),
         });
 
   const lineAmount = (line: BatchLine) => {
-    if (line.state === "unscaled") return line.measure;
+    // Stored measure text, with only its decimal separator localized (spec 0055 AC-4).
+    if (line.state === "unscaled") {
+      return line.measure === null ? null : localizeDecimalText(line.measure, locale);
+    }
     if (line.count === null) return line.displayAmount;
     const count = countText(line.count);
     return line.approxAmount === null
