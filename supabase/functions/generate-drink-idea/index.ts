@@ -4,6 +4,8 @@
 //
 // - Never accepts a pantry ingredient list from the caller; always resolves the
 //   caller's own pantry server side via auth.uid() (0007 AC-8).
+// - Staples (Ice, Water; `ingredients.is_staple`, spec 0036) are offered as
+//   always on hand on top of the pantry, but never count toward its size.
 // - The per user (tiered), per IP (guests only), and global daily limits are
 //   checked and claimed in one database transaction before the Claude call, so
 //   concurrent requests cannot push any counter past its limit (0034 AC-1 to AC-4).
@@ -422,9 +424,42 @@ function normalizeIngredientName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, " ");
 }
 
+/**
+ * Staples (Ice, Water) are always on hand, so the pantry never holds them
+ * (spec 0036 AC-10). Drop any the pantry somehow lists, so no name is offered twice.
+ */
+function stapleNamesOutsidePantry(
+  stapleNames: readonly string[],
+  pantryNames: readonly string[],
+): readonly string[] {
+  const pantrySet = new Set(pantryNames.map(normalizeIngredientName));
+  return stapleNames.filter((name) => !pantrySet.has(normalizeIngredientName(name)));
+}
+
+/**
+ * Every ingredient must come from the pantry or the staples, and at least one
+ * from the pantry: an idea of only Ice and Water is no idea (spec 0036 AC-11).
+ */
+function usesOnlyAvailableIngredients(
+  idea: DrinkIdea,
+  pantryNames: readonly string[],
+  stapleNames: readonly string[],
+): boolean {
+  const pantrySet = new Set(pantryNames.map(normalizeIngredientName));
+  const stapleSet = new Set(stapleNames.map(normalizeIngredientName));
+  const sourceNames = idea.ingredients.map((ingredient) =>
+    normalizeIngredientName(ingredient.source_name),
+  );
+  return (
+    sourceNames.every((name) => pantrySet.has(name) || stapleSet.has(name)) &&
+    sourceNames.some((name) => pantrySet.has(name))
+  );
+}
+
 async function generateWithClaude(
   anthropic: Anthropic,
-  pantryNames: string[],
+  pantryNames: readonly string[],
+  stapleNames: readonly string[],
   locale: Locale,
 ): Promise<DrinkIdea | null> {
   const languageInstruction =
@@ -433,6 +468,13 @@ async function generateWithClaude(
       : `Write the name, ingredient names, and steps natively in ${LOCALE_NAMES[locale]}, ` +
         `as a native speaker would phrase them, not a literal translation. ` +
         (LOCALE_INSTRUCTIONS[locale] ?? "");
+
+  // Staples are named as their own list so the model knows it may use them
+  // even though the pantry never holds them (feature 55).
+  const stapleInstruction =
+    stapleNames.length === 0
+      ? ""
+      : `These are always on hand too, so you may also use them: ${stapleNames.join(", ")}.\n`;
 
   const message = await anthropic.messages.parse(
     {
@@ -444,11 +486,12 @@ async function generateWithClaude(
           content:
             `Invent one original cocktail or mocktail recipe using only these ingredients ` +
             `(you do not have to use all of them): ${pantryNames.join(", ")}.\n` +
+            `${stapleInstruction}` +
             `${languageInstruction}` +
             `Give it a short, appealing name, a rough amount for each ingredient used, ` +
-            `and numbered preparation steps. Do not use any ingredient not in this list. ` +
+            `and numbered preparation steps. Do not use any ingredient not in these lists. ` +
             `For each ingredient, also return "source_name": the exact English ingredient ` +
-            `name from the list above (unchanged, for matching), alongside "name": the ` +
+            `name from the lists above (unchanged, for matching), alongside "name": the ` +
             `ingredient name written in the language requested above (or the same as ` +
             `source_name if no other language was requested).`,
         },
@@ -465,12 +508,9 @@ async function generateWithClaude(
     return null;
   }
 
-  const pantrySet = new Set(pantryNames.map(normalizeIngredientName));
-  const usesOnlyPantry = idea.ingredients.every((ingredient) =>
-    pantrySet.has(normalizeIngredientName(ingredient.source_name)),
-  );
-
-  return usesOnlyPantry ? typesetIdea(idea, locale) : null;
+  return usesOnlyAvailableIngredients(idea, pantryNames, stapleNames)
+    ? typesetIdea(idea, locale)
+    : null;
 }
 
 function isRetryableError(error: unknown): boolean {
@@ -525,6 +565,26 @@ Deno.serve(async (req) => {
   if (pantryNames.length < MIN_PANTRY_INGREDIENTS) {
     return jsonResponse({ error: "pantry too small to generate from" }, 422);
   }
+
+  // Staples are a bonus, not a requirement: if they can't be read, the idea
+  // is still made from the pantry alone, as before feature 55.
+  const { data: stapleRows, error: stapleError } = await supabase
+    .from("ingredients")
+    .select("name")
+    .eq("is_staple", true);
+
+  if (stapleError) {
+    reportWarning("AI idea: staples could not be read, generating from the pantry only", {
+      userId: user.id,
+      stage: "staples_read",
+      error: stapleError.message,
+    });
+  }
+
+  const stapleNames = stapleNamesOutsidePantry(
+    (stapleRows ?? []).map((row) => row.name as string).filter(Boolean),
+    pantryNames,
+  );
 
   const serviceRoleClient = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -613,7 +673,7 @@ Deno.serve(async (req) => {
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      idea = await generateWithClaude(anthropic, pantryNames, locale);
+      idea = await generateWithClaude(anthropic, pantryNames, stapleNames, locale);
       if (idea) break;
       lastError = new Error("generation did not match the expected shape");
     } catch (error) {

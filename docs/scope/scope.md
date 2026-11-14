@@ -834,7 +834,7 @@ Spec [0041](../specs/0041-self-hosted-recipe-images/index.md) · code in `supaba
 
 Small correctness and launch items promoted from the Deferred list on 2026-11-09.
 
-### 55. Staples in AI drink ideas
+### 55. Staples in AI drink ideas · done
 The drink ideas prompt does not know Ice and Water are always on hand, so it can skip ideas the pantry can really make (from spec 0036, feature 44).
 **Done when:** the AI drink ideas prompt treats Ice and Water as always available, and a pantry without them still gets ideas that use them.
 - [x] Build it: `/develop staples in AI drink ideas` · code in `supabase/functions/generate-drink-idea/`
