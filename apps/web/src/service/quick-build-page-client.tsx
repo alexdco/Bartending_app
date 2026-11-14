@@ -7,6 +7,7 @@ import {
   formatAmountInUnit,
   formatParts,
   formatQuickBuildInstructions,
+  quickBuildMethodText,
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -135,6 +136,7 @@ export interface QuickBuildPageClientProps {
 export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
   const t = useTranslations("service");
   const tCommon = useTranslations("common");
+  const tMethods = useTranslations("methods");
   const [unit, setUnit] = useState<QuickBuildUnit | null>(null);
   const wakeLock = useWakeLock();
   const pin = usePinForRecipe(kind, id);
@@ -195,6 +197,8 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
   }
 
   const data = recipe.data;
+  // A catalog method shows translated; a bar recipe's free text shows as is (spec 0054 AC-12).
+  const methodText = quickBuildMethodText(data.kind, data.method, (method) => tMethods(method));
   const partsLines = unit === "parts" ? computeParts(data.ingredients) : null;
 
   const ingredientDisplays = data.ingredients.map((ingredient, index) => {
@@ -219,7 +223,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
       displayAmount: ingredientDisplays[index],
       name: ingredient.name,
     })),
-    method: data.method,
+    method: methodText,
     straining: data.straining,
     glass: data.glass,
     garnish: data.kind === "bar_recipe" ? data.garnish : null,
@@ -259,7 +263,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
         ))}
       </div>
 
-      <MethodLine method={data.method} straining={data.straining} />
+      <MethodLine method={methodText} straining={data.straining} />
 
       {instructions && (
         <div className="flex flex-col gap-one">

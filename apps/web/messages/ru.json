@@ -267,7 +267,11 @@
     "countDash": "{count, plural, one {{value} дэш} few {{value} дэша} many {{value} дэшей} other {{value} дэша}}",
     "countSplash": "{count, plural, one {{value} сплэш} few {{value} сплэша} many {{value} сплэшей} other {{value} сплэша}}",
     "countDrop": "{count, plural, one {{value} капля} few {{value} капли} many {{value} капель} other {{value} капли}}",
-    "approx": "(≈ {amount})"
+    "approx": "(≈ {amount})",
+    "methodHintStir": "По умолчанию для перемешанного коктейля",
+    "methodHintShake": "По умолчанию для встряхнутого коктейля",
+    "methodHintBuild": "По умолчанию для коктейля, собранного в бокале: лёд в бокале разбавит его сам.",
+    "methodHintBlend": "По умолчанию для коктейля из блендера: лёд в блендере уже разбавляет его."
   },
   "pantry": {
     "title": "Мой бар",

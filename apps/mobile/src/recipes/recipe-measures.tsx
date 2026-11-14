@@ -5,9 +5,16 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { BatchPanel } from "@/recipes/batch-panel";
 import { IngredientList } from "@/recipes/ingredient-list";
-import type { BatchUnit, ConvertibleUnit, RecipeIngredientDetail } from "@bartendingapp/shared";
+import type {
+  BatchUnit,
+  ConvertibleUnit,
+  RecipeIngredientDetail,
+  RecipeMethod,
+} from "@bartendingapp/shared";
 
 export interface RecipeMeasuresProps {
+  recipeId: string;
+  method: RecipeMethod | null;
   ingredients: RecipeIngredientDetail[];
 }
 
@@ -18,7 +25,7 @@ export interface RecipeMeasuresProps {
  * keyed by recipe id, so opening a different recipe resets both, and the
  * batch panel's part size with them.
  */
-export function RecipeMeasures({ ingredients }: RecipeMeasuresProps) {
+export function RecipeMeasures({ recipeId, method, ingredients }: RecipeMeasuresProps) {
   const [toggleUnit, setToggleUnit] = useState<ConvertibleUnit>("oz");
   const [pickedBatchUnit, setPickedBatchUnit] = useState<BatchUnit | null>(null);
 
@@ -30,6 +37,8 @@ export function RecipeMeasures({ ingredients }: RecipeMeasuresProps) {
       </View>
 
       <BatchPanel
+        recipeId={recipeId}
+        method={method}
         ingredients={ingredients}
         unit={pickedBatchUnit ?? toggleUnit}
         onUnitChange={setPickedBatchUnit}

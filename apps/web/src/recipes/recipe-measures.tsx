@@ -2,11 +2,18 @@
 
 import { useState, type ReactNode } from "react";
 import { Text } from "@/components/text";
-import type { BatchUnit, ConvertibleUnit, RecipeIngredientDetail } from "@bartendingapp/shared";
+import type {
+  BatchUnit,
+  ConvertibleUnit,
+  RecipeIngredientDetail,
+  RecipeMethod,
+} from "@bartendingapp/shared";
 import { BatchPanel } from "@/recipes/batch-panel";
 import { IngredientList } from "@/recipes/ingredient-list";
 
 export interface RecipeMeasuresProps {
+  recipeId: string;
+  method: RecipeMethod | null;
   ingredients: RecipeIngredientDetail[];
   ingredientsHeading: string;
   /** Rendered between the ingredient list and the batch panel, as the page lays them out. */
@@ -21,6 +28,8 @@ export interface RecipeMeasuresProps {
  * batch panel's part size with them.
  */
 export function RecipeMeasures({
+  recipeId,
+  method,
   ingredients,
   ingredientsHeading,
   instructions,
@@ -40,6 +49,8 @@ export function RecipeMeasures({
       {instructions}
 
       <BatchPanel
+        recipeId={recipeId}
+        method={method}
         ingredients={ingredients}
         unit={pickedBatchUnit ?? toggleUnit}
         onUnitChange={setPickedBatchUnit}

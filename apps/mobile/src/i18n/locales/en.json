@@ -160,6 +160,17 @@
     "splash_other": "{{value}} splashes",
     "drop_one": "{{value}} drop",
     "drop_other": "{{value}} drops",
-    "approx": "(≈ {{amount}})"
+    "approx": "(≈ {{amount}})",
+    "methodHintStir": "Default for a stirred drink",
+    "methodHintShake": "Default for a shaken drink",
+    "methodHintBuild": "Default for a built drink: the ice in the glass dilutes it as it sits.",
+    "methodHintBlend": "Default for a blended drink: the ice in the blender already dilutes it."
+  },
+  "methods": {
+    "shake": "Shake",
+    "stir": "Stir",
+    "build": "Build",
+    "blend": "Blend",
+    "layer": "Layer"
   }
 }

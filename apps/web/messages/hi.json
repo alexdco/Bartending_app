@@ -267,7 +267,11 @@
     "countDash": "{count, plural, one {{value} डैश} other {{value} डैश}}",
     "countSplash": "{count, plural, one {{value} छींटा} other {{value} छींटे}}",
     "countDrop": "{count, plural, one {{value} बूंद} other {{value} बूंदें}}",
-    "approx": "(≈ {amount})"
+    "approx": "(≈ {amount})",
+    "methodHintStir": "स्टर की गई ड्रिंक के लिए डिफ़ॉल्ट",
+    "methodHintShake": "शेक की गई ड्रिंक के लिए डिफ़ॉल्ट",
+    "methodHintBuild": "बिल्ड की गई ड्रिंक के लिए डिफ़ॉल्ट: गिलास की बर्फ़ रखे-रखे इसमें पानी मिला देती है।",
+    "methodHintBlend": "ब्लेंड की गई ड्रिंक के लिए डिफ़ॉल्ट: ब्लेंडर की बर्फ़ पहले ही इसमें पानी मिला देती है।"
   },
   "pantry": {
     "title": "आपकी पैंट्री",

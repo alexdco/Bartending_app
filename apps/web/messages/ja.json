@@ -267,7 +267,11 @@
     "countDash": "{count, plural, other {{value} ダッシュ}}",
     "countSplash": "{count, plural, other {{value} スプラッシュ}}",
     "countDrop": "{count, plural, other {{value} 滴}}",
-    "approx": "(≈ {amount})"
+    "approx": "(≈ {amount})",
+    "methodHintStir": "ステアのドリンクの標準値",
+    "methodHintShake": "シェイクのドリンクの標準値",
+    "methodHintBuild": "ビルドのドリンクの標準値：グラスの氷が時間とともに加水します。",
+    "methodHintBlend": "ブレンドのドリンクの標準値：ブレンダーの氷ですでに加水されます。"
   },
   "pantry": {
     "title": "あなたのパントリー",

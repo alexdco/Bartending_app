@@ -155,6 +155,17 @@
     "dash_other": "{{value}} 대시",
     "splash_other": "{{value}} 스플래시",
     "drop_other": "{{value}} 방울",
-    "approx": "(≈ {{amount}})"
+    "approx": "(≈ {{amount}})",
+    "methodHintStir": "스터 음료의 기본값",
+    "methodHintShake": "셰이크 음료의 기본값",
+    "methodHintBuild": "빌드 음료의 기본값: 잔 속 얼음이 시간이 지나며 희석해요.",
+    "methodHintBlend": "블렌드 음료의 기본값: 블렌더 얼음이 이미 희석해요."
+  },
+  "methods": {
+    "shake": "셰이크",
+    "stir": "스터",
+    "build": "빌드",
+    "blend": "블렌드",
+    "layer": "레이어"
   }
 }

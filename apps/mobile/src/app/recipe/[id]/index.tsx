@@ -82,7 +82,12 @@ export default function RecipeDetailScreen() {
 
         <FlavorProfileSection flavors={recipe.flavorProfile} />
 
-        <RecipeMeasures key={recipe.id} ingredients={recipe.ingredients} />
+        <RecipeMeasures
+          key={recipe.id}
+          recipeId={recipe.id}
+          method={recipe.method}
+          ingredients={recipe.ingredients}
+        />
 
         <View style={styles.section}>
           <Text variant="heading" accessibilityRole="header">

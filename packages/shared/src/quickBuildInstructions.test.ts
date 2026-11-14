@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildQuickBuildInstructionSteps,
   formatQuickBuildInstructions,
+  quickBuildMethodText,
 } from "./quickBuildInstructions";
 
 describe("formatQuickBuildInstructions", () => {
@@ -59,5 +60,32 @@ describe("formatQuickBuildInstructions", () => {
     });
 
     expect(result).toBeNull();
+  });
+});
+
+describe("quickBuildMethodText (spec 0054 AC-12)", () => {
+  const spanish = {
+    shake: "Agitar",
+    stir: "Remover",
+    build: "Montar",
+    blend: "Licuar",
+    layer: "Superponer",
+  } as const;
+  const labelFor = (method: keyof typeof spanish) => spanish[method];
+
+  it("shows a catalog recipe's method as its translated label", () => {
+    expect(quickBuildMethodText("recipe", "shake", labelFor)).toBe("Agitar");
+  });
+
+  it("shows a bar recipe's free text method unchanged", () => {
+    expect(quickBuildMethodText("bar_recipe", "Shake hard, then dry shake", labelFor)).toBe(
+      "Shake hard, then dry shake",
+    );
+  });
+
+  it("drops an unknown catalog value instead of showing a raw key", () => {
+    expect(quickBuildMethodText("recipe", "swizzle", labelFor)).toBeNull();
+    expect(quickBuildMethodText("recipe", null, labelFor)).toBeNull();
+    expect(quickBuildMethodText("bar_recipe", null, labelFor)).toBeNull();
   });
 });

@@ -267,7 +267,11 @@
     "countDash": "{count, plural, one {{value} golpe} other {{value} golpes}}",
     "countSplash": "{count, plural, one {{value} chorrito} other {{value} chorritos}}",
     "countDrop": "{count, plural, one {{value} gota} other {{value} gotas}}",
-    "approx": "(≈ {amount})"
+    "approx": "(≈ {amount})",
+    "methodHintStir": "Predeterminado para un cóctel removido",
+    "methodHintShake": "Predeterminado para un cóctel agitado",
+    "methodHintBuild": "Predeterminado para un cóctel montado: el hielo del vaso lo diluye mientras reposa.",
+    "methodHintBlend": "Predeterminado para un cóctel licuado: el hielo de la licuadora ya lo diluye."
   },
   "pantry": {
     "title": "Tu despensa",

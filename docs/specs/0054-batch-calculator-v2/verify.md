@@ -104,6 +104,37 @@ _Steps derived from spec 0054 acceptance criteria. `/check verify` runs these; `
 - [ ] Method written by admin: only when `p_set_method` is true (old caller step above) → AC-11
 - [ ] `method_source`: null exactly when `method` is null across the table: `select count(*) from recipes where (method is null) <> (method_source is null);` → 0 → AC-8
 
+## Milestone 4: method defaults, Quick Build label, copy (AC-10, AC-12, AC-13)
+
+### Commands
+
+- [ ] `pnpm vitest run packages/shared/src/batchDilutionDefaults.test.ts packages/shared/src/quickBuildInstructions.test.ts` → all pass (defaults per method, pick hides the hint, reset only on a new recipe id, catalog label vs bar free text) → AC-10, AC-12
+- [ ] `pnpm vitest run apps/web/src/i18n/messages.test.ts apps/mobile/src/i18n/locales.test.ts` → all pass (every new key in all nine web and mobile files) → AC-13
+
+### UI / manual (web and mobile, after the classifier has filled methods)
+
+- [ ] Open a stirred recipe's batch panel → dilution starts at 20%, hint reads "Default for a stirred drink" → AC-10
+- [ ] Pick 15% → hint hides; pick 20% again → hint stays hidden → AC-10
+- [ ] Open a shaken recipe → 25% with "Default for a shaken drink" → AC-10
+- [ ] Open a built recipe → None with the hint explaining the glass ice dilutes it; a blended recipe → None with the blender hint → AC-10
+- [ ] Open a layered recipe and a recipe with no method → None, no hint → AC-10
+- [ ] On a stirred recipe pick 15%, then switch the locale → still 15%, still no hint (same recipe id, no reset) → AC-10
+- [ ] A built recipe whose only volume lines are excluded by Custom selection, at a picked 20% → "Nothing to dilute" note still shows → AC-10
+- [ ] Quick Build for a catalog recipe with method `shake`, in Spanish → method line reads `AGITAR` (and the instructions line ends with `Agitar`); a bar recipe with free text method → the text shows unchanged → AC-12
+- [ ] Switch web and mobile to Japanese and Russian → the method hint and the Quick Build method label are translated → AC-13
+
+### Value sourcing checks
+
+- [ ] Starting dilution level: change a recipe's method in the admin form (Stir → Shake), reopen the recipe → starts at 25% → AC-10
+- [ ] Method hint shown: a hint shows only for stir, shake, build, blend while untouched (steps above) → AC-10
+- [ ] Quick Build method text: `select method from recipes where id = '<id>';` matches the label shown; a bar recipe's `bar_recipes.method` shows verbatim → AC-12
+
+## Acceptance-criteria coverage (milestone 4)
+
+- AC-10: `batchDilutionDefaults.test.ts`, panel steps, locale switch step, value sourcing steps
+- AC-12: `quickBuildMethodText` tests, Quick Build step
+- AC-13: web and mobile key parity tests, Japanese and Russian step
+
 ## Acceptance-criteria coverage (milestone 3)
 
 - AC-8: migration checks, `recipeMethod.test.ts` (`toRecipeMethod`, `methodColumnsUpdate`), classifier steps, value sourcing steps

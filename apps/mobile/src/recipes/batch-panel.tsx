@@ -18,6 +18,10 @@ import {
   batchCountPluralValue,
   batchCountText,
   computeBatch,
+  dilutionHintMethod,
+  initialDilutionState,
+  pickDilution,
+  syncDilutionState,
   hasPartIngredient,
   hasScalableIngredient,
   isBatchableIngredient,
@@ -31,12 +35,17 @@ import {
   type BatchLine,
   type BatchScope,
   type BatchUnit,
+  type DilutionHintMethod,
   type DilutionLevel,
   type PartSizeUnit,
   type RecipeIngredientDetail,
+  type RecipeMethod,
 } from "@bartendingapp/shared";
 
 export interface BatchPanelProps {
+  recipeId: string;
+  /** Picks the starting dilution and its hint (spec 0054 AC-10). */
+  method: RecipeMethod | null;
   ingredients: RecipeIngredientDetail[];
   /** Follows the single serving toggle until the bartender picks one (spec 0035 AC-6). */
   unit: BatchUnit;
@@ -58,7 +67,14 @@ const DILUTION_LABELS: Record<DilutionLevel, string> = {
   custom: "Custom",
 };
 
-export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps) {
+const METHOD_HINT_KEYS = {
+  stir: "batch.methodHintStir",
+  shake: "batch.methodHintShake",
+  build: "batch.methodHintBuild",
+  blend: "batch.methodHintBlend",
+} as const satisfies Record<DilutionHintMethod, string>;
+
+export function BatchPanel({ recipeId, method, ingredients, unit, onUnitChange }: BatchPanelProps) {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
   const locale = isSupportedLocale(i18n.language) ? i18n.language : "en";
@@ -86,7 +102,16 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
 
   const [servingsInput, setServingsInput] = useState("");
   const [scope, setScope] = useState<BatchScope>("everything");
-  const [dilutionLevel, setDilutionLevel] = useState<DilutionLevel>("none");
+  // The level starts at the method's default and resets only when a
+  // different recipe opens; a refetch of the same recipe keeps the pick
+  // (spec 0054 AC-10). Adjusted during render, like the part size below.
+  const [dilution, setDilution] = useState(() => initialDilutionState(recipeId, method));
+  const syncedDilution = syncDilutionState(dilution, recipeId, method);
+  if (syncedDilution !== dilution) {
+    setDilution(syncedDilution);
+  }
+  const dilutionLevel = syncedDilution.level;
+  const hintMethod = dilutionHintMethod(syncedDilution);
   const [customDilutionInput, setCustomDilutionInput] = useState("");
   const [customSelectedIds, setCustomSelectedIds] = useState<Set<string>>(
     () => new Set(ingredients.map((i) => i.ingredientId)),
@@ -272,12 +297,17 @@ export function BatchPanel({ ingredients, unit, onUnitChange }: BatchPanelProps)
             <Chip
               key={candidate}
               selected={dilutionLevel === candidate}
-              onSelectedChange={() => setDilutionLevel(candidate)}
+              onSelectedChange={() => setDilution(pickDilution(syncedDilution, candidate))}
             >
               {DILUTION_LABELS[candidate]}
             </Chip>
           ))}
         </View>
+        {hintMethod !== null && (
+          <Text variant="bodySmall" muted>
+            {t(METHOD_HINT_KEYS[hintMethod])}
+          </Text>
+        )}
         {dilutionLevel === "custom" && (
           <Input
             label="Custom dilution percent"

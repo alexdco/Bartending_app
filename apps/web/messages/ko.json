@@ -267,7 +267,11 @@
     "countDash": "{count, plural, other {{value} 대시}}",
     "countSplash": "{count, plural, other {{value} 스플래시}}",
     "countDrop": "{count, plural, other {{value} 방울}}",
-    "approx": "(≈ {amount})"
+    "approx": "(≈ {amount})",
+    "methodHintStir": "스터 음료의 기본값",
+    "methodHintShake": "셰이크 음료의 기본값",
+    "methodHintBuild": "빌드 음료의 기본값: 잔 속 얼음이 시간이 지나며 희석해요.",
+    "methodHintBlend": "블렌드 음료의 기본값: 블렌더 얼음이 이미 희석해요."
   },
   "pantry": {
     "title": "내 재료",

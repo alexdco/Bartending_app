@@ -13,6 +13,8 @@
 // matching the existing Glass/Ice/Garnish detail lines which stay as their
 // own labeled section alongside this line.
 
+import { toRecipeMethod, type RecipeMethod } from "./recipes";
+
 export interface QuickBuildInstructionIngredient {
   /** The ingredient's already unit-converted display amount, e.g. "1.5 oz" or "2 dashes". */
   displayAmount: string;
@@ -44,4 +46,22 @@ export function buildQuickBuildInstructionSteps(input: QuickBuildInstructionsInp
 export function formatQuickBuildInstructions(input: QuickBuildInstructionsInput): string | null {
   const steps = buildQuickBuildInstructionSteps(input);
   return steps.length > 0 ? steps.join(" → ") : null;
+}
+
+/**
+ * Quick Build's method text (spec 0054 AC-12): a catalog recipe's method is
+ * one of the checked values and shows as its translated label; a bar
+ * recipe's method is the house's free text and shows unchanged. An unknown
+ * catalog value narrows to null, so the line never shows a raw key.
+ */
+export function quickBuildMethodText(
+  kind: "recipe" | "bar_recipe",
+  method: string | null,
+  labelFor: (method: RecipeMethod) => string,
+): string | null {
+  if (kind === "bar_recipe") {
+    return method;
+  }
+  const known = toRecipeMethod(method);
+  return known === null ? null : labelFor(known);
 }

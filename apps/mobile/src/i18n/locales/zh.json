@@ -155,6 +155,17 @@
     "dash_other": "{{value}} 抖",
     "splash_other": "{{value}} 溅",
     "drop_other": "{{value}} 滴",
-    "approx": "(≈ {{amount}})"
+    "approx": "(≈ {{amount}})",
+    "methodHintStir": "调和类饮品的默认值",
+    "methodHintShake": "摇和类饮品的默认值",
+    "methodHintBuild": "直调类饮品的默认值：杯中的冰会随时间稀释酒液。",
+    "methodHintBlend": "搅打类饮品的默认值：搅拌机里的冰已经起到稀释作用。"
+  },
+  "methods": {
+    "shake": "摇和",
+    "stir": "调和",
+    "build": "直调",
+    "blend": "搅打",
+    "layer": "分层"
   }
 }

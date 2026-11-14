@@ -267,7 +267,11 @@
     "countDash": "{count, plural, one {{value} dash} other {{value} dashes}}",
     "countSplash": "{count, plural, one {{value} chorinho} other {{value} chorinhos}}",
     "countDrop": "{count, plural, one {{value} gota} other {{value} gotas}}",
-    "approx": "(≈ {amount})"
+    "approx": "(≈ {amount})",
+    "methodHintStir": "Padrão para um drinque mexido",
+    "methodHintShake": "Padrão para um drinque agitado",
+    "methodHintBuild": "Padrão para um drinque montado: o gelo no copo dilui a bebida enquanto ela descansa.",
+    "methodHintBlend": "Padrão para um drinque batido no liquidificador: o gelo do liquidificador já dilui a bebida."
   },
   "pantry": {
     "title": "Sua despensa",

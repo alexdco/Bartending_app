@@ -10,6 +10,7 @@
 // docs/specs/0054-batch-calculator-v2/index.md
 
 import { DEFAULT_LOCALE, type Locale } from "./locale";
+import type { RecipeMethod } from "./recipes";
 import {
   COUNTED_UNIT_ML,
   isCountedUnit,
@@ -574,4 +575,78 @@ export const BATCH_UNIT_LABELS: Record<BatchUnit, Record<Locale, string>> = {
 
 export function batchUnitLabel(unit: BatchUnit, locale: Locale = DEFAULT_LOCALE): string {
   return BATCH_UNIT_LABELS[unit][locale] ?? BATCH_UNIT_LABELS[unit][DEFAULT_LOCALE];
+}
+
+// ---------------------------------------------------------------------------
+// Method dilution defaults (spec 0054 AC-10)
+// ---------------------------------------------------------------------------
+
+/** The dilution a batch starts at for each method: stirred 20%, shaken 25%, everything else none. */
+export function defaultDilutionFor(method: RecipeMethod | null): DilutionLevel {
+  switch (method) {
+    case "stir":
+      return "20";
+    case "shake":
+      return "25";
+    case "build":
+    case "blend":
+    case "layer":
+    case null:
+      return "none";
+  }
+}
+
+/** The methods whose default gets a hint below the dilution control. */
+export type DilutionHintMethod = Extract<RecipeMethod, "stir" | "shake" | "build" | "blend">;
+
+/**
+ * The batch panel's dilution state: the level, whether the bartender has
+ * picked one, and the recipe (by id) whose default it started from.
+ */
+export interface DilutionState {
+  readonly recipeId: string;
+  readonly method: RecipeMethod | null;
+  readonly level: DilutionLevel;
+  readonly picked: boolean;
+}
+
+/** A recipe's panel opens at its method's default, not yet picked. */
+export function initialDilutionState(recipeId: string, method: RecipeMethod | null): DilutionState {
+  return { recipeId, method, level: defaultDilutionFor(method), picked: false };
+}
+
+/** Any pick, even the default level itself, marks the level picked and hides the hint. */
+export function pickDilution(state: DilutionState, level: DilutionLevel): DilutionState {
+  return { ...state, level, picked: true };
+}
+
+/**
+ * Resets to the new recipe's default only when the recipe id changes. A
+ * refetch of the same recipe (a locale switch, a background refresh, even
+ * a changed method) keeps the level and the picked flag. Returns the same
+ * object when nothing changes, so a caller can compare by reference.
+ */
+export function syncDilutionState(
+  state: DilutionState,
+  recipeId: string,
+  method: RecipeMethod | null,
+): DilutionState {
+  return state.recipeId === recipeId ? state : initialDilutionState(recipeId, method);
+}
+
+/** The method whose hint shows, or null: only while the level is still the untouched default. */
+export function dilutionHintMethod(state: DilutionState): DilutionHintMethod | null {
+  if (state.picked) {
+    return null;
+  }
+  switch (state.method) {
+    case "stir":
+    case "shake":
+    case "build":
+    case "blend":
+      return state.method;
+    case "layer":
+    case null:
+      return null;
+  }
 }

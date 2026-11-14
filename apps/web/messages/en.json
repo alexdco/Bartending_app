@@ -267,7 +267,11 @@
     "countDash": "{count, plural, one {{value} dash} other {{value} dashes}}",
     "countSplash": "{count, plural, one {{value} splash} other {{value} splashes}}",
     "countDrop": "{count, plural, one {{value} drop} other {{value} drops}}",
-    "approx": "(≈ {amount})"
+    "approx": "(≈ {amount})",
+    "methodHintStir": "Default for a stirred drink",
+    "methodHintShake": "Default for a shaken drink",
+    "methodHintBuild": "Default for a built drink: the ice in the glass dilutes it as it sits.",
+    "methodHintBlend": "Default for a blended drink: the ice in the blender already dilutes it."
   },
   "pantry": {
     "title": "Your pantry",

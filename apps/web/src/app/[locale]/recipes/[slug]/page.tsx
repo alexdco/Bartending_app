@@ -163,6 +163,8 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
 
       <RecipeMeasures
         key={recipe.id}
+        recipeId={recipe.id}
+        method={recipe.method}
         ingredients={recipe.ingredients}
         ingredientsHeading={t("ingredients")}
         instructions={

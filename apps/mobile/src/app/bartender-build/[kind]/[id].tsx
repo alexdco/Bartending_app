@@ -1,12 +1,14 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import {
   computeParts,
   formatAmountInUnit,
   formatParts,
   formatQuickBuildInstructions,
+  quickBuildMethodText,
 } from "@bartendingapp/shared";
 
 import { BackButton, goBackOrHome } from "@/components/back-button";
@@ -45,6 +47,7 @@ function MethodLine({ method, straining }: { method: string | null; straining: s
 
 export default function QuickBuildModeScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
   const router = useRouter();
   const params = useLocalSearchParams<{ kind: QuickBuildKind; id: string }>();
   const { kind, id } = params;
@@ -136,6 +139,10 @@ export default function QuickBuildModeScreen() {
   }
 
   const data = recipe.data;
+  // A catalog method shows translated; a bar recipe's free text shows as is (spec 0054 AC-12).
+  const methodText = quickBuildMethodText(data.kind, data.method, (method) =>
+    t(`methods.${method}`),
+  );
   const partsLines = unit === "parts" ? computeParts(data.ingredients) : null;
 
   const ingredientDisplays = data.ingredients.map((ingredient, index) => {
@@ -160,7 +167,7 @@ export default function QuickBuildModeScreen() {
       displayAmount: ingredientDisplays[index],
       name: ingredient.name,
     })),
-    method: data.method,
+    method: methodText,
     straining: data.straining,
     glass: data.glass,
     garnish: data.kind === "bar_recipe" ? data.garnish : null,
@@ -201,7 +208,7 @@ export default function QuickBuildModeScreen() {
           ))}
         </View>
 
-        <MethodLine method={data.method} straining={data.straining} />
+        <MethodLine method={methodText} straining={data.straining} />
 
         {instructions && (
           <View style={styles.instructions}>

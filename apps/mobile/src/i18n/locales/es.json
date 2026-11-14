@@ -160,6 +160,17 @@
     "splash_other": "{{value}} chorritos",
     "drop_one": "{{value}} gota",
     "drop_other": "{{value}} gotas",
-    "approx": "(≈ {{amount}})"
+    "approx": "(≈ {{amount}})",
+    "methodHintStir": "Predeterminado para un cóctel removido",
+    "methodHintShake": "Predeterminado para un cóctel agitado",
+    "methodHintBuild": "Predeterminado para un cóctel montado: el hielo del vaso lo diluye mientras reposa.",
+    "methodHintBlend": "Predeterminado para un cóctel licuado: el hielo de la licuadora ya lo diluye."
+  },
+  "methods": {
+    "shake": "Agitar",
+    "stir": "Remover",
+    "build": "Montar",
+    "blend": "Licuar",
+    "layer": "Superponer"
   }
 }
