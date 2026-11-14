@@ -857,7 +857,7 @@ Three batch gaps from spec 0035: counted lines scale silently (`2 dashes` × 25 
 - [x] Design it (spec): `/architect batch calculator v2`
 - [ ] Build it: `/develop batch calculator v2`
   - [x] Counted lines end to end: unit constraint and max check migration, `dash`/`splash`/`drop`/`each` parsing, count plus volume batching, the shooter share rule, batch visibility, web and mobile panels, reparse, satisfies AC-1, AC-3, AC-4, AC-7
-  - [ ] Ranges: parser range forms, `amount_max_value` on every write path and in `fetch_recipe_detail`, two ended batch math and `formatBatchRange`, toggle and Quick Build, satisfies AC-2, AC-3, AC-5, AC-6
+  - [x] Ranges: parser range forms, `amount_max_value` on every write path and in `fetch_recipe_detail`, two ended batch math and `formatBatchRange`, toggle and Quick Build, satisfies AC-2, AC-3, AC-5, AC-6
   - [ ] Method data: `recipes.method` check and `method_source`, enum classifier that skips admin picks, the admin picker with `p_set_method`, satisfies AC-8, AC-11
   - [ ] Method dilution defaults and hint, Quick Build method label, copy in all nine locales, satisfies AC-10, AC-12, AC-13
   - [ ] Live rollout: migrations, deploy, reparse (review the `each` dry run list first), classifier run and rerun, satisfies AC-3, AC-9
