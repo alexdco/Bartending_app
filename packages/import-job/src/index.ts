@@ -1,4 +1,4 @@
-import { readFileSync } from "node:fs";
+import { readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
@@ -26,8 +26,16 @@ import {
   validateOverrides,
 } from "./overrides";
 import { formatFreshnessReport, parseImportReport } from "./freshnessReport";
+import {
+  BACKFILL_GUARD_MESSAGE,
+  backfillGuardBlocks,
+  checkImportFlags,
+  parseImportFlags,
+} from "./importGuard";
+import { findLockCandidates, type LockCandidate, type StoredLockRow } from "./lockDiff";
 
 const OVERRIDES_PATH = fileURLToPath(new URL("./catalogOverrides.json", import.meta.url));
+const LOCK_CANDIDATES_PATH = fileURLToPath(new URL("../lock-candidates.json", import.meta.url));
 const COPY_CONCURRENCY = 6;
 const PAGE_SIZE = 1000;
 
@@ -61,6 +69,109 @@ async function fetchStoredImageStates(
       return states;
     }
   }
+}
+
+/**
+ * Spec 0056 AC-15: whether any import has written a source_hash yet. Before
+ * the hash migration ships the column doesn't exist, which also means no
+ * hashed run has happened.
+ */
+async function hasHashedRun(supabase: SupabaseClient<Database>): Promise<boolean> {
+  const { data, error } = await supabase
+    .from("recipes")
+    .select("id")
+    .not("source_hash", "is", null)
+    .limit(1);
+
+  if (error?.code === "42703") {
+    return false;
+  }
+  if (error) {
+    throw new Error(`Could not check for a hashed import run: ${error.message}`);
+  }
+  return (data ?? []).length > 0;
+}
+
+/** Every unlocked live TheCocktailDB recipe's import owned content (spec 0056 AC-8), paged. */
+async function fetchStoredLockRows(
+  supabase: SupabaseClient<Database>,
+): Promise<readonly StoredLockRow[]> {
+  const pages: StoredLockRow[][] = [];
+
+  for (let from = 0; ; from += PAGE_SIZE) {
+    const { data, error } = await supabase
+      .from("recipes")
+      .select(
+        "source_id, name, glass, alcoholic_status, recipe_ingredients(measure, sort_order, ingredients(normalized_name)), recipe_tags(tags(normalized_name, kind))",
+      )
+      .eq("source", "catalog")
+      .is("deleted_at", null)
+      .is("admin_locked_at", null)
+      .not("source_id", "like", "custom:%")
+      .order("source_id")
+      .range(from, from + PAGE_SIZE - 1);
+
+    if (error) {
+      throw new Error(`Could not read stored recipes to diff: ${error.message}`);
+    }
+
+    pages.push(
+      (data ?? []).map((row) => ({
+        sourceId: row.source_id,
+        name: row.name,
+        glass: row.glass,
+        alcoholicStatus: row.alcoholic_status,
+        ingredients: row.recipe_ingredients.flatMap((line) =>
+          line.ingredients?.normalized_name
+            ? [
+                {
+                  normalizedName: line.ingredients.normalized_name,
+                  measure: line.measure,
+                  sortOrder: line.sort_order,
+                },
+              ]
+            : [],
+        ),
+        catalogTags: row.recipe_tags.flatMap((link) =>
+          link.tags?.kind === "catalog" && link.tags.normalized_name
+            ? [link.tags.normalized_name]
+            : [],
+        ),
+      })),
+    );
+
+    if (!data || data.length < PAGE_SIZE) {
+      return pages.flat();
+    }
+  }
+}
+
+/** normalized_name of every tag that isn't a catalog tag (taste tags, spec 0043). */
+async function fetchNonCatalogTagNames(
+  supabase: SupabaseClient<Database>,
+): Promise<ReadonlySet<string>> {
+  const { data, error } = await supabase
+    .from("tags")
+    .select("normalized_name")
+    .neq("kind", "catalog");
+  if (error) {
+    throw new Error(`Could not read tags to diff: ${error.message}`);
+  }
+  return new Set((data ?? []).flatMap((row) => (row.normalized_name ? [row.normalized_name] : [])));
+}
+
+function printLockCandidates(candidates: readonly LockCandidate[]): void {
+  const fieldCounts = candidates
+    .flatMap((candidate) => candidate.fields)
+    .reduce<Readonly<Record<string, number>>>(
+      (counts, field) => ({ ...counts, [field]: (counts[field] ?? 0) + 1 }),
+      {},
+    );
+  console.log(`Lock candidates: ${candidates.length}, written to ${LOCK_CANDIDATES_PATH}`);
+  Object.entries(fieldCounts).forEach(([field, count]) => console.log(`  ${field}: ${count}`));
+  console.log(
+    "Review the file, delete entries you don't want locked, then run import:apply-locks.",
+  );
 }
 
 function copyDeps(supabase: SupabaseClient<Database>): CopyDeps {
@@ -100,12 +211,23 @@ function failValidation(errors: readonly string[]): never {
 async function main(): Promise<void> {
   const supabaseUrl = requireEnv("SUPABASE_URL");
   const serviceRoleKey = requireEnv("SUPABASE_SERVICE_ROLE_KEY");
-  const dryRun = process.argv.includes("--dry-run");
+  const flags = parseImportFlags(process.argv);
+  const { dryRun } = flags;
   const copyImages = process.argv.includes("--copy-images");
+
+  const flagsError = checkImportFlags(flags);
+  if (flagsError) {
+    throw new Error(flagsError);
+  }
 
   const supabase = createClient<Database>(supabaseUrl, serviceRoleKey, {
     auth: { persistSession: false },
   });
+
+  // Spec 0056 AC-15: checked before any write, image copies included.
+  if (!dryRun && backfillGuardBlocks(flags, await hasHashedRun(supabase))) {
+    throw new Error(BACKFILL_GUARD_MESSAGE);
+  }
 
   const overrides = parseCatalogOverrides(JSON.parse(readFileSync(OVERRIDES_PATH, "utf-8")));
 
@@ -166,6 +288,16 @@ async function main(): Promise<void> {
     console.log(`  recipe fixes:       ${summary.fixes}`);
     console.log(`  unknown glasses:    ${summary.unknownGlasses.join(", ") || "none"}`);
     console.log(`  staples:            ${applied.stapleNames.join(", ")}`);
+
+    if (flags.diffLocks) {
+      const [storedRows, nonCatalogTagNames] = await Promise.all([
+        fetchStoredLockRows(supabase),
+        fetchNonCatalogTagNames(supabase),
+      ]);
+      const candidates = findLockCandidates(storedRows, applied.drinks, nonCatalogTagNames);
+      writeFileSync(LOCK_CANDIDATES_PATH, `${JSON.stringify(candidates, null, 2)}\n`);
+      printLockCandidates(candidates);
+    }
     return;
   }
 

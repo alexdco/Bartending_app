@@ -17,3 +17,6 @@ quiz-source-plan*.json
 
 # Propose and apply review files (specs 0010, 0043): reviewed locally, never committed
 packages/shared/scripts/tagging/
+
+# Catalog lock backfill candidates (spec 0056): reviewed locally, never committed
+packages/import-job/lock-candidates.json

@@ -884,7 +884,7 @@ Keep the catalog right as it changes: decide whether the import job or an admin 
 - [x] Design it (spec): `/architect catalog freshness rules`
 - [ ] Build it: `/develop catalog freshness rules`
   - [x] The lock end to end: `admin_locked_at`, lock on a real admin change or delete, both imports skip locked content and keep deletes, merge targets can't be deleted, Locked badge, satisfies AC-1, AC-2, AC-3, AC-7, AC-13, AC-14
-  - [ ] Backfill and guard: `--dry-run --diff-locks`, `import:apply-locks`, and the real import refusing to run until `--backfill-done`, satisfies AC-8, AC-15
+  - [x] Backfill and guard: `--dry-run --diff-locks`, `import:apply-locks`, and the real import refusing to run until `--backfill-done`, satisfies AC-8, AC-15
   - [ ] Upstream changes and Reset: source hashes, changed upstream and kept missing reports, acknowledge on save, Deleted filter, Reset to TheCocktailDB version, satisfies AC-4, AC-5, AC-6, AC-7, AC-13
   - [ ] Merge aliases and fame on arrival: `merge` aliases in `search_recipes`, import tail fame scoring through `apply_fame_on_arrival`, the admin fame field, shared rank recompute, satisfies AC-9, AC-10, AC-11, AC-12
   - [ ] Live rollout: migrations, reviewed backfill, first hashed import, satisfies AC-2, AC-5, AC-8, AC-9, AC-11, AC-15
