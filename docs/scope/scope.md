@@ -69,7 +69,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 56 | Learn route caching | Hardening | in-progress |
 | 57 | Batch calculator v2 | Hardening | in-progress |
 | 58 | Locale aware number formatting | Hardening | in-progress |
-| 59 | Catalog freshness rules | Hardening | planned |
+| 59 | Catalog freshness rules | Hardening | in-progress |
 | 60 | Store listing copy and app icon | Hardening | planned |
 | 61 | Automated accessibility checks | Hardening | planned |
 | 62 | Search sort control | Slice 32 | planned |
@@ -878,10 +878,19 @@ Spec [0054](../specs/0054-batch-calculator-v2/index.md) · code in `packages/sha
 - [ ] Test it: `/test locale aware number formatting`
 Spec [0055](../specs/0055-locale-aware-number-formatting.md) · code in `packages/shared`, `apps/web`, `apps/mobile`
 
-### 59. Catalog freshness rules · needs a decision
+### 59. Catalog freshness rules · in-progress
 Keep the catalog right as it changes: decide whether the import job or an admin edit wins on a catalog recipe (spec 0035), give new imports and admin adds a fame score so they do not sort last (spec 0038), and add a hidden duplicate's name as a `recipe_aliases` entry on the kept recipe (spec 0036).
 **Done when:** an import never silently undoes an admin edit, new recipes get a fame score (or a clear flag) on arrival, and searching a merged duplicate's old name finds the kept recipe.
-- [ ] Design it (spec): `/architect catalog freshness rules`
+- [x] Design it (spec): `/architect catalog freshness rules`
+- [ ] Build it: `/develop catalog freshness rules`
+  - [x] The lock end to end: `admin_locked_at`, lock on a real admin change or delete, both imports skip locked content and keep deletes, merge targets can't be deleted, Locked badge, satisfies AC-1, AC-2, AC-3, AC-7, AC-13, AC-14
+  - [ ] Backfill and guard: `--dry-run --diff-locks`, `import:apply-locks`, and the real import refusing to run until `--backfill-done`, satisfies AC-8, AC-15
+  - [ ] Upstream changes and Reset: source hashes, changed upstream and kept missing reports, acknowledge on save, Deleted filter, Reset to TheCocktailDB version, satisfies AC-4, AC-5, AC-6, AC-7, AC-13
+  - [ ] Merge aliases and fame on arrival: `merge` aliases in `search_recipes`, import tail fame scoring through `apply_fame_on_arrival`, the admin fame field, shared rank recompute, satisfies AC-9, AC-10, AC-11, AC-12
+  - [ ] Live rollout: migrations, reviewed backfill, first hashed import, satisfies AC-2, AC-5, AC-8, AC-9, AC-11, AC-15
+- [ ] Verify it: `/check verify catalog freshness rules`
+- [ ] Test it: `/test catalog freshness rules`
+Spec [0056](../specs/0056-catalog-freshness-rules/index.md) · code in `packages/import-job`, `packages/shared`, `supabase/migrations`, `apps/web`
 
 ### 60. Store listing copy and app icon
 Store title, subtitle, keywords, and description in English, Spanish, Brazilian Portuguese, French, Japanese, and Simplified Chinese, plus a designed app icon and an iOS Icon Composer `.icon` dropped in as `assets/brand/mark.svg` (from specs 0037, 0045, 0046, and 0050, features 45, 54, 69, and 72).
@@ -1078,6 +1087,7 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Caching for other public pages**: quizzes, recipes, popular, and home also render per request because no page calls `setRequestLocale`; decide whether to cache them, possibly as a cross cutting standard or a Cache Components switch (feature 56) · needs a decision · from spec 0053
 - **Decimal separator rule in drink idea steps**: a per locale separator line in the idea prompt, if steps show mixed separators in review (feature 58) · from spec 0055
 - **No break space between number and unit**: French typography, so `4,5` and `cl` never wrap apart (feature 58) · needs a decision · from spec 0055
+- **Translated merge aliases**: find a merged duplicate's old name in non English search too (feature 59) · needs a decision · from spec 0056
 
 ## Legend
 

@@ -32,6 +32,8 @@ export interface AdminRecipeSummary {
   alcoholicStatus: string;
   source: string;
   createdAt: string;
+  /** When an admin took this catalog recipe over; null while the import owns it (spec 0056). */
+  adminLockedAt: string | null;
 }
 
 export interface FetchAdminRecipesParams {
@@ -64,7 +66,7 @@ export async function fetchAdminRecipes(
 ): Promise<FetchAdminRecipesResult> {
   let dbQuery = client
     .from("recipes")
-    .select("id, name, glass, alcoholic_status, source, created_at")
+    .select("id, name, glass, alcoholic_status, source, created_at, admin_locked_at")
     .is("deleted_at", null)
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
@@ -100,6 +102,7 @@ export async function fetchAdminRecipes(
       alcoholicStatus: row.alcoholic_status,
       source: row.source,
       createdAt: row.created_at,
+      adminLockedAt: row.admin_locked_at,
     })),
     hasMore,
   };
@@ -123,6 +126,8 @@ export interface AdminRecipeDetail {
   alcoholicStatus: string;
   region: string | null;
   source: string;
+  /** When an admin took this catalog recipe over; null while the import owns it (spec 0056). */
+  adminLockedAt: string | null;
   /** Build method, whoever set it (classifier or admin); null when none (spec 0054 AC-11). */
   method: RecipeMethod | null;
   ingredients: AdminRecipeIngredient[];
@@ -183,7 +188,7 @@ export async function fetchAdminRecipeDetail(
   const { data, error } = await client
     .from("recipes")
     .select(
-      `id, name, instructions, image_url, glass, alcoholic_status, region, source, method,
+      `id, name, instructions, image_url, glass, alcoholic_status, region, source, method, admin_locked_at,
        drink_style, drink_style_note, bartender_tip, presentation_tip,
        recipe_ingredients ( measure, sort_order, ingredients ( name, allergens ) ),
        recipe_tags ( tags ( name, kind ) ),
@@ -223,6 +228,7 @@ export async function fetchAdminRecipeDetail(
     alcoholicStatus: data.alcoholic_status,
     region: data.region,
     source: data.source,
+    adminLockedAt: data.admin_locked_at,
     method: toRecipeMethod(data.method),
     ingredients,
     tags,
@@ -515,9 +521,16 @@ export type DeleteAdminRecipeResult =
   | { data: true; error: null }
   | {
       data: null;
-      error: { reason: "request_failed"; message: string };
+      error: { reason: "merge_target" } | { reason: "request_failed"; message: string };
     };
 
+/** admin_delete_recipe's refusal for a recipe a merged duplicate points to (spec 0056 AC-3). */
+const MERGE_TARGET_MESSAGE = "this recipe is a merge target in catalogOverrides.json";
+
+/**
+ * Soft deletes a recipe; a catalog recipe is also locked so no import brings
+ * it back (spec 0056 AC-3). A merge target is refused as `merge_target`.
+ */
 export async function deleteAdminRecipe(
   client: SupabaseClient<Database>,
   recipeId: string,
@@ -525,7 +538,9 @@ export async function deleteAdminRecipe(
   const { error } = await client.rpc("admin_delete_recipe", { p_recipe_id: recipeId });
 
   if (error) {
-    return { data: null, error: { reason: "request_failed", message: error.message } };
+    return error.message.includes(MERGE_TARGET_MESSAGE)
+      ? { data: null, error: { reason: "merge_target" } }
+      : { data: null, error: { reason: "request_failed", message: error.message } };
   }
 
   return { data: true, error: null };

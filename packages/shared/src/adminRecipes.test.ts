@@ -52,6 +52,35 @@ describe("toAdminIngredientPayload (spec 0035 AC-8)", () => {
     const form = [{ name: "Gin", measure: "3 parts" }];
     expect(toAdminIngredientPayload(form)).toEqual(toAdminIngredientPayload(form));
   });
+
+  // Spec 0056 AC-1: admin_upsert_recipe compares nullif(btrim(measure), '')
+  // with the stored row, so an untrimmed imported measure saved unchanged
+  // must arrive trimmed, and a blank one as null, or the save would lock it.
+  it("sends a trimmed measure and null for a blank one, so an unchanged save never locks", () => {
+    expect(
+      toAdminIngredientPayload([
+        { name: "Lime juice", measure: " 3/4 oz \n" },
+        { name: "Soda water", measure: "   " },
+      ]),
+    ).toEqual([
+      {
+        name: "Lime Juice",
+        measure: "3/4 oz",
+        sortOrder: 0,
+        amount_value: 0.75,
+        amount_max_value: null,
+        amount_unit: "oz",
+      },
+      {
+        name: "Soda Water",
+        measure: null,
+        sortOrder: 1,
+        amount_value: null,
+        amount_max_value: null,
+        amount_unit: null,
+      },
+    ]);
+  });
 });
 
 describe("splitNameList", () => {

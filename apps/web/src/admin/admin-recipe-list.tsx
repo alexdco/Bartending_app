@@ -80,6 +80,9 @@ function AdminRecipeRow({ recipe }: { recipe: AdminRecipeSummary }) {
   const tStatus = useTranslations("alcoholicStatus");
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const deleteRecipe = useDeleteAdminRecipe();
+  const deleteError = deleteRecipe.isError
+    ? "request_failed"
+    : (deleteRecipe.data?.error?.reason ?? null);
 
   return (
     <div className="flex items-center justify-between gap-three rounded-medium border border-border p-three">
@@ -89,11 +92,24 @@ function AdminRecipeRow({ recipe }: { recipe: AdminRecipeSummary }) {
           <span className="rounded-small bg-surface-selected px-two py-0.5 text-body-small text-text-muted">
             {t("source", { source: recipe.source })}
           </span>
+          {recipe.adminLockedAt !== null && (
+            <span
+              className="rounded-small border border-border px-two py-0.5 text-body-small text-text-muted"
+              title={t("lockedHint")}
+            >
+              {t("locked")}
+            </span>
+          )}
         </div>
         <Text variant="bodySmall" muted>
           {recipe.glass ?? t("noGlass")} &middot;{" "}
           {tStatus(alcoholicStatusKey(recipe.alcoholicStatus))}
         </Text>
+        {deleteError && (
+          <span role="alert" className="text-body-small text-danger">
+            {deleteError === "merge_target" ? t("deleteMergeTarget") : t("deleteFailed")}
+          </span>
+        )}
       </div>
       <div className="flex gap-two">
         <Link

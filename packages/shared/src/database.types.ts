@@ -1065,6 +1065,7 @@ export type Database = {
       };
       recipes: {
         Row: {
+          admin_locked_at: string | null;
           alcoholic_status: string;
           bartender_tip: string | null;
           created_at: string;
@@ -1097,6 +1098,7 @@ export type Database = {
           updated_at: string;
         };
         Insert: {
+          admin_locked_at?: string | null;
           alcoholic_status?: string;
           bartender_tip?: string | null;
           created_at?: string;
@@ -1129,6 +1131,7 @@ export type Database = {
           updated_at?: string;
         };
         Update: {
+          admin_locked_at?: string | null;
           alcoholic_status?: string;
           bartender_tip?: string | null;
           created_at?: string;
@@ -1602,9 +1605,9 @@ export type Database = {
       has_cjk: { Args: { t: string }; Returns: boolean };
       import_catalog: {
         Args: { drinks: Json; merges?: Json; staple_names?: string[] };
-        Returns: undefined;
+        Returns: Json;
       };
-      import_custom_recipes: { Args: { recipes: Json }; Returns: undefined };
+      import_custom_recipes: { Args: { recipes: Json }; Returns: Json };
       insert_new_comment_photo: {
         Args: {
           p_comment_id: string;

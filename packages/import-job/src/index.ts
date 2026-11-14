@@ -25,6 +25,7 @@ import {
   summarizeOverrides,
   validateOverrides,
 } from "./overrides";
+import { formatFreshnessReport, parseImportReport } from "./freshnessReport";
 
 const OVERRIDES_PATH = fileURLToPath(new URL("./catalogOverrides.json", import.meta.url));
 const COPY_CONCURRENCY = 6;
@@ -193,7 +194,7 @@ async function main(): Promise<void> {
     tags: drink.tags,
   }));
 
-  const { error } = await supabase.rpc("import_catalog", {
+  const { data: rawReport, error } = await supabase.rpc("import_catalog", {
     drinks: payload as unknown as Json,
     merges: applied.merges as unknown as Json,
     staple_names: applied.stapleNames,
@@ -206,6 +207,14 @@ async function main(): Promise<void> {
   console.log(
     `Imported ${payload.length} recipes (${transformed.length - payload.length} hidden, ${applied.merges.length} merged).`,
   );
+
+  // The import has committed by now; an unreadable report is a warning, not a failure.
+  const report = parseImportReport(rawReport);
+  if (report.error === null) {
+    formatFreshnessReport(report.data).forEach((line) => console.log(line));
+  } else {
+    console.warn(`Could not read the freshness report: ${report.error}`);
+  }
 
   if (copyImages) {
     console.log(

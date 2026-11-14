@@ -9,8 +9,10 @@ export function useDeleteAdminRecipe() {
 
   return useMutation({
     mutationFn: (recipeId: string) => deleteAdminRecipe(supabase, recipeId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["recipes"] });
+    onSuccess: (result) => {
+      if (result.error === null) {
+        queryClient.invalidateQueries({ queryKey: ["recipes"] });
+      }
     },
   });
 }

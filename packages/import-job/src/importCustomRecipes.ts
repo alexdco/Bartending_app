@@ -8,6 +8,7 @@ import { parseMeasure } from "@bartendingapp/shared/units";
 import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
 import { parseCustomRecipes } from "./customRecipesSchema";
+import { formatFreshnessReport, parseImportReport } from "./freshnessReport";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -54,7 +55,7 @@ async function main(): Promise<void> {
     tags: recipe.tags.map((tagName) => ({ tagName })),
   }));
 
-  const { error } = await supabase.rpc("import_custom_recipes", {
+  const { data: rawReport, error } = await supabase.rpc("import_custom_recipes", {
     recipes: payload as unknown as Json,
   });
 
@@ -63,6 +64,14 @@ async function main(): Promise<void> {
   }
 
   console.log(`Imported ${payload.length} custom recipe(s).`);
+
+  // The import has committed by now; an unreadable report is a warning, not a failure.
+  const report = parseImportReport(rawReport);
+  if (report.error === null) {
+    formatFreshnessReport(report.data).forEach((line) => console.log(line));
+  } else {
+    console.warn(`Could not read the freshness report: ${report.error}`);
+  }
 
   const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicApiKey) {
