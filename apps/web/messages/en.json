@@ -165,6 +165,13 @@
     "optional": "Optional alcohol",
     "unknown": "Unknown"
   },
+  "methods": {
+    "shake": "Shake",
+    "stir": "Stir",
+    "build": "Build",
+    "blend": "Blend",
+    "layer": "Layer"
+  },
   "recipe": {
     "metaDescription": "{name}: made with {ingredients}.",
     "ingredients": "Ingredients",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "The recipe saved, but the image didn't: {message} Save again to retry.",
     "glass": "Glass",
     "alcoholicStatus": "Alcoholic status",
+    "method": "Method",
+    "methodNone": "Not set",
+    "methodHint": "Your pick is kept when the method classifier runs again. Leave it blank to let the classifier fill it.",
     "region": "Region",
     "ingredients": "Ingredients",
     "ingredientName": "Ingredient name",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "Keep this to 240 characters or fewer.",
     "errorNoteNeedsStyle": "Choose a drink style before adding a style sentence.",
     "errorInvalidDrinkStyle": "Choose a drink style from the list.",
+    "errorInvalidMethod": "Choose a method from the list.",
     "notesSaveFailed": "The recipe saved, but its style and tips did not: {message}. Saving again updates the same recipe.",
     "unreviewedAllergens": "{count, plural, one {# ingredient has} other {# ingredients have}} no allergen review yet.",
     "reviewAllergensLink": "Review ingredient allergens",

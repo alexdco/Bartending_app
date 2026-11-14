@@ -82,6 +82,7 @@ const formValues: AdminRecipeFormValues = {
   ingredients: [{ name: "Tequila", measure: "2 oz" }],
   tags: [],
   flavorProfile: null,
+  method: null,
   drinkStyle: "sour",
   drinkStyleNote: "A tequila sour.",
   bartenderTip: "  Shake hard.  ",
@@ -161,6 +162,42 @@ describe("saveAdminRecipe notes (spec 0043 AC-10)", () => {
 
     const result = await saveAdminRecipe(client, { ...formValues, bartenderTip: "a".repeat(241) });
     expect(result.error?.reason).toBe("validation");
+    expect(rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("saveAdminRecipe method (spec 0054 AC-11)", () => {
+  function upsertArgs(rpc: ReturnType<typeof vi.fn>) {
+    const call = rpc.mock.calls.find(([name]) => name === "admin_upsert_recipe");
+    return call?.[1] as Record<string, unknown>;
+  }
+
+  function client() {
+    const rpc = vi.fn((name: string) =>
+      Promise.resolve(
+        name === "admin_upsert_recipe" ? { data: "id", error: null } : { data: null, error: null },
+      ),
+    );
+    return { rpc, client: { rpc } as unknown as SupabaseClient<Database> };
+  }
+
+  it("always sends p_set_method with the picked method", async () => {
+    const { rpc, client: c } = client();
+    await saveAdminRecipe(c, { ...formValues, method: "stir" });
+    expect(upsertArgs(rpc)).toMatchObject({ p_set_method: true, p_method: "stir" });
+  });
+
+  it("sends a blank pick as null, which clears the method", async () => {
+    const { rpc, client: c } = client();
+    await saveAdminRecipe(c, formValues);
+    expect(upsertArgs(rpc)).toMatchObject({ p_set_method: true, p_method: null });
+  });
+
+  it("rejects an unknown method before the round trip", async () => {
+    const { rpc, client: c } = client();
+    const values = { ...formValues, method: "throw" as AdminRecipeFormValues["method"] };
+    expect(validateAdminRecipeForm(values)).toEqual([{ field: "method", reason: "invalid" }]);
+    expect((await saveAdminRecipe(c, values)).error?.reason).toBe("validation");
     expect(rpc).not.toHaveBeenCalled();
   });
 });

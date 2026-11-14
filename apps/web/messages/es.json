@@ -165,6 +165,13 @@
     "optional": "Alcohol opcional",
     "unknown": "Desconocido"
   },
+  "methods": {
+    "shake": "Agitar",
+    "stir": "Remover",
+    "build": "Montar",
+    "blend": "Licuar",
+    "layer": "Superponer"
+  },
   "recipe": {
     "metaDescription": "{name}: preparado con {ingredients}.",
     "ingredients": "Ingredientes",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "La receta se guardó, pero la imagen no: {message} Guarda de nuevo para reintentar.",
     "glass": "Vaso",
     "alcoholicStatus": "Contenido de alcohol",
+    "method": "Método",
+    "methodNone": "Sin definir",
+    "methodHint": "Tu elección se conserva cuando el clasificador de métodos vuelve a ejecutarse. Déjalo en blanco para que el clasificador lo complete.",
     "region": "Región",
     "ingredients": "Ingredientes",
     "ingredientName": "Nombre del ingrediente",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "Usa 240 caracteres o menos.",
     "errorNoteNeedsStyle": "Elige un estilo de bebida antes de agregar una frase de estilo.",
     "errorInvalidDrinkStyle": "Elige un estilo de bebida de la lista.",
+    "errorInvalidMethod": "Elige un método de la lista.",
     "notesSaveFailed": "La receta se guardó, pero su estilo y consejos no: {message}. Guardar de nuevo actualiza la misma receta.",
     "unreviewedAllergens": "{count, plural, one {# ingrediente aún no tiene} other {# ingredientes aún no tienen}} revisión de alérgenos.",
     "reviewAllergensLink": "Revisar alérgenos de ingredientes",

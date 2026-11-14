@@ -165,6 +165,13 @@
     "optional": "अल्कोहल वैकल्पिक",
     "unknown": "पता नहीं"
   },
+  "methods": {
+    "shake": "शेक करें",
+    "stir": "स्टर करें",
+    "build": "बिल्ड करें",
+    "blend": "ब्लेंड करें",
+    "layer": "परतों में डालें"
+  },
   "recipe": {
     "metaDescription": "{name}। सामग्री: {ingredients}।",
     "ingredients": "सामग्री",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "रेसिपी सेव हो गई, लेकिन तस्वीर नहीं हुई। कारण: {message} फिर से कोशिश करने के लिए दोबारा सेव करें।",
     "glass": "गिलास",
     "alcoholicStatus": "अल्कोहल की स्थिति",
+    "method": "विधि",
+    "methodNone": "तय नहीं",
+    "methodHint": "विधि क्लासिफ़ायर दोबारा चलने पर भी आपकी पसंद बनी रहती है। क्लासिफ़ायर से भरवाने के लिए इसे खाली छोड़ें।",
     "region": "क्षेत्र",
     "ingredients": "सामग्री",
     "ingredientName": "सामग्री का नाम",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "इसे 240 अक्षरों या उससे कम रखें।",
     "errorNoteNeedsStyle": "स्टाइल वाला वाक्य जोड़ने से पहले ड्रिंक की स्टाइल चुनें।",
     "errorInvalidDrinkStyle": "लिस्ट से कोई ड्रिंक स्टाइल चुनें।",
+    "errorInvalidMethod": "सूची से एक विधि चुनें।",
     "notesSaveFailed": "रेसिपी सेव हो गई, लेकिन उसकी स्टाइल और सलाह नहीं हुईं। कारण: {message}। दोबारा सेव करने पर वही रेसिपी अपडेट होगी।",
     "unreviewedAllergens": "{count, plural, one {# सामग्री की} other {# सामग्रियों की}} एलर्जी जाँच अभी नहीं हुई है।",
     "reviewAllergensLink": "सामग्री की एलर्जी जाँचें",

@@ -165,6 +165,13 @@
     "optional": "알코올 선택",
     "unknown": "알 수 없음"
   },
+  "methods": {
+    "shake": "셰이크",
+    "stir": "스터",
+    "build": "빌드",
+    "blend": "블렌드",
+    "layer": "레이어"
+  },
   "recipe": {
     "metaDescription": "{name}: 재료는 {ingredients}.",
     "ingredients": "재료",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "레시피는 저장됐지만 이미지는 저장되지 않았어요: {message} 다시 저장해 시도해 주세요.",
     "glass": "글라스",
     "alcoholicStatus": "알코올 여부",
+    "method": "기법",
+    "methodNone": "설정 안 함",
+    "methodHint": "선택한 기법은 기법 분류기를 다시 실행해도 유지됩니다. 비워 두면 분류기가 채웁니다.",
     "region": "지역",
     "ingredients": "재료",
     "ingredientName": "재료 이름",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "240자 이하로 입력해 주세요.",
     "errorNoteNeedsStyle": "스타일 설명을 추가하기 전에 드링크 스타일을 선택해 주세요.",
     "errorInvalidDrinkStyle": "목록에서 드링크 스타일을 선택해 주세요.",
+    "errorInvalidMethod": "목록에서 기법을 선택하세요.",
     "notesSaveFailed": "레시피는 저장됐지만 스타일과 팁은 저장되지 않았어요: {message}. 다시 저장하면 같은 레시피가 업데이트돼요.",
     "unreviewedAllergens": "{count, plural, other {재료 #개}}의 알레르기 정보를 아직 확인하지 않았어요.",
     "reviewAllergensLink": "재료 알레르기 정보 확인",

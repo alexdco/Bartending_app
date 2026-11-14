@@ -165,6 +165,13 @@
     "optional": "アルコールは任意",
     "unknown": "不明"
   },
+  "methods": {
+    "shake": "シェイク",
+    "stir": "ステア",
+    "build": "ビルド",
+    "blend": "ブレンド",
+    "layer": "レイヤー"
+  },
   "recipe": {
     "metaDescription": "{name}：{ingredients}で作ります。",
     "ingredients": "材料",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "レシピは保存されましたが、画像は保存されませんでした：{message} もう一度保存して再試行してください。",
     "glass": "グラス",
     "alcoholicStatus": "アルコールの区分",
+    "method": "技法",
+    "methodNone": "未設定",
+    "methodHint": "選んだ技法は、技法の分類を再実行しても保持されます。空欄にすると分類によって自動で入力されます。",
     "region": "地域",
     "ingredients": "材料",
     "ingredientName": "材料名",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "240文字以内で入力してください。",
     "errorNoteNeedsStyle": "スタイルの説明文を追加する前に、ドリンクのスタイルを選択してください。",
     "errorInvalidDrinkStyle": "一覧からドリンクのスタイルを選択してください。",
+    "errorInvalidMethod": "一覧から技法を選択してください。",
     "notesSaveFailed": "レシピは保存されましたが、スタイルとコツは保存されませんでした：{message}。もう一度保存すると、同じレシピが更新されます。",
     "unreviewedAllergens": "{count, plural, other {#件の材料}}のアレルゲンがまだ確認されていません。",
     "reviewAllergensLink": "材料のアレルゲンを確認",

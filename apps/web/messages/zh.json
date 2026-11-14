@@ -165,6 +165,13 @@
     "optional": "酒精可选",
     "unknown": "未知"
   },
+  "methods": {
+    "shake": "摇和",
+    "stir": "调和",
+    "build": "直调",
+    "blend": "搅打",
+    "layer": "分层"
+  },
   "recipe": {
     "metaDescription": "{name}：使用{ingredients}调制。",
     "ingredients": "原料",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "配方已保存，但图片保存失败：{message}。请再次保存以重试。",
     "glass": "杯型",
     "alcoholicStatus": "酒精类型",
+    "method": "调制方法",
+    "methodNone": "未设置",
+    "methodHint": "方法分类器再次运行时会保留你的选择。留空则由分类器填写。",
     "region": "地区",
     "ingredients": "原料",
     "ingredientName": "原料名称",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "请控制在 240 个字符以内。",
     "errorNoteNeedsStyle": "请先选择酒款风格，再添加风格描述。",
     "errorInvalidDrinkStyle": "请从列表中选择酒款风格。",
+    "errorInvalidMethod": "请从列表中选择调制方法。",
     "notesSaveFailed": "配方已保存，但风格与技巧保存失败：{message}。再次保存会更新同一个配方。",
     "unreviewedAllergens": "{count, plural, other {# 种原料尚未审核过敏原。}}",
     "reviewAllergensLink": "审核原料过敏原",

@@ -13,12 +13,22 @@
 // by method_source_name_hash. Aliases are inserted into recipe_aliases
 // (source = 'generated'); existing generated aliases for a reclassified
 // recipe are replaced, manual aliases are never touched.
+//
+// Spec 0054 AC-8: method is one of RECIPE_METHODS or null (an enum in the
+// structured output). The classifier writes method_source = 'classifier'
+// with a non null method, and never changes method or method_source on a
+// recipe an admin set (method_source = 'admin'), even with --all; straining
+// and aliases are still written there. A null result clears a classifier
+// method and still stamps the hash, so an unclear recipe stays null until
+// its instructions change or --all runs. A failed batch writes nothing, so
+// its hashes stay old and the next run retries it.
 import type { SupabaseClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
 import { z } from "zod/v4";
 import { createHash } from "node:crypto";
 import type { Database } from "./database.types";
+import { RECIPE_METHODS, toRecipeMethod, type RecipeMethod } from "./recipes";
 
 const BATCH_SIZE = 10;
 const MAX_RETRIES = 3;
@@ -32,7 +42,7 @@ const ClassificationBatchSchema = z.object({
   items: z.array(
     z.object({
       id: z.string(),
-      method: z.string().max(40).nullable(),
+      method: z.enum(RECIPE_METHODS).nullable(),
       straining: z.string().max(40).nullable(),
       aliases: z.array(z.string().max(40)).max(MAX_ALIASES_PER_RECIPE),
     }),
@@ -43,6 +53,28 @@ interface RecipeInput {
   id: string;
   name: string;
   instructions: string;
+}
+
+export type MethodColumnsUpdate =
+  | { method: RecipeMethod; method_source: "classifier" }
+  | { method: null; method_source: null }
+  | Record<string, never>;
+
+/**
+ * The method columns a classifier result writes (spec 0054 AC-8): nothing on
+ * an admin pick, the method with source 'classifier' when one came back, and
+ * both null otherwise.
+ */
+export function methodColumnsUpdate(
+  currentSource: string | null,
+  classified: RecipeMethod | null,
+): MethodColumnsUpdate {
+  if (currentSource === "admin") {
+    return {};
+  }
+  return classified === null
+    ? { method: null, method_source: null }
+    : { method: classified, method_source: "classifier" };
 }
 
 function chunk<T>(items: T[], size: number): T[][] {
@@ -83,8 +115,12 @@ async function classifyBatch(anthropic: Anthropic, batch: RecipeInput[]) {
         content:
           "For each cocktail below, identify its build method, straining technique, and " +
           "common bartender shorthand names.\n\n" +
-          'Method is a short verb phrase describing how it\'s built (e.g. "Shake", "Stir", ' +
-          '"Build", "Blend"), or null if the instructions don\'t clearly indicate one.\n\n' +
+          "Method is exactly one of shake, stir, build, blend, or layer, describing how the " +
+          "drink is mixed: shake for shaken drinks (a dry shake or whip shake is still " +
+          "shake), stir for stirred drinks (a throw or a roll is stir), build for drinks " +
+          "made in the serving glass (a swizzle is build), blend for blender drinks, and " +
+          "layer for drinks floated in layers. Use null when the instructions don't clearly " +
+          "indicate one, or when you are unsure.\n\n" +
           'Straining is a short phrase (e.g. "Double strain", "Fine strain", "No strain") ' +
           "when the method involves straining, or null if not applicable.\n\n" +
           "Aliases are up to 5 short, common bartender abbreviations or nicknames a working " +
@@ -121,28 +157,37 @@ export async function classifyMethodAndAliases(
 ): Promise<void> {
   const { data: recipes, error } = await supabase
     .from("recipes")
-    .select("id, name, instructions, method_source_name_hash")
+    .select("id, name, instructions, method_source, method_source_name_hash")
     .is("deleted_at", null);
 
   if (error) {
     throw new Error(`Failed to read recipes: ${error.message}`);
   }
 
-  const inputs: (RecipeInput & { hash: string })[] = (recipes ?? [])
+  const inputs: (RecipeInput & { hash: string; methodSource: string | null })[] = (recipes ?? [])
     .map((r) => ({
       id: r.id,
       name: r.name,
       instructions: r.instructions,
       hash: sourceNameHash(r.instructions),
       currentHash: r.method_source_name_hash,
+      methodSource: r.method_source,
     }))
     .filter((r) => reprocessAll || r.currentHash !== r.hash)
-    .map(({ id, name, instructions, hash }) => ({ id, name, instructions, hash }));
+    .map(({ id, name, instructions, hash, methodSource }) => ({
+      id,
+      name,
+      instructions,
+      hash,
+      methodSource,
+    }));
 
   console.log(`Classifying ${inputs.length} recipes in batches of ${BATCH_SIZE}...`);
 
   let classified = 0;
   let skipped = 0;
+  let adminKept = 0;
+  const methodCounts = new Map<RecipeMethod | "null", number>();
 
   for (const batch of chunk(inputs, BATCH_SIZE)) {
     const result = await withRetry(
@@ -166,7 +211,7 @@ export async function classifyMethodAndAliases(
       const { error: updateError } = await supabase
         .from("recipes")
         .update({
-          method: item.method,
+          ...methodColumnsUpdate(input.methodSource, toRecipeMethod(item.method)),
           straining: item.straining,
           method_source_name_hash: input.hash,
         })
@@ -207,13 +252,24 @@ export async function classifyMethodAndAliases(
       }
 
       classified += 1;
+      if (input.methodSource === "admin") {
+        adminKept += 1;
+      } else {
+        const key = toRecipeMethod(item.method) ?? "null";
+        methodCounts.set(key, (methodCounts.get(key) ?? 0) + 1);
+      }
     }
 
     console.log(`Classified batch of ${result.length} recipes (${classified} so far).`);
   }
 
+  const perMethod = [...RECIPE_METHODS, "null" as const]
+    .map((key) => `${key}: ${methodCounts.get(key) ?? 0}`)
+    .join(", ");
+
   console.log(
-    `Method/alias classification done. ${classified} classified, ${skipped} skipped after retries.` +
-      (skipped > 0 ? " Rerun to retry skipped recipes." : ""),
+    `Method/alias classification done. ${classified} classified, ${skipped} failed after ` +
+      `retries, ${adminKept} admin methods kept.\nMethods written: ${perMethod}.` +
+      (skipped > 0 ? " Rerun to retry failed recipes." : ""),
   );
 }

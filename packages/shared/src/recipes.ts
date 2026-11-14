@@ -8,6 +8,20 @@ import { isDrinkStyle, type DrinkStyle } from "./drinkStyle";
 
 export type AlcoholicStatusFilter = "alcoholic" | "non_alcoholic" | "optional";
 
+/** The values recipes.method may hold (spec 0054 AC-8, enforced by recipes_method_check). */
+export const RECIPE_METHODS = ["shake", "stir", "build", "blend", "layer"] as const;
+
+export type RecipeMethod = (typeof RECIPE_METHODS)[number];
+
+export function isRecipeMethod(value: unknown): value is RecipeMethod {
+  return typeof value === "string" && (RECIPE_METHODS as readonly string[]).includes(value);
+}
+
+/** Narrows a stored method: anything outside the five values reads as null. */
+export function toRecipeMethod(raw: unknown): RecipeMethod | null {
+  return isRecipeMethod(raw) ? raw : null;
+}
+
 export interface RecipeSearchResult {
   id: string;
   name: string;
@@ -123,6 +137,8 @@ export interface RecipeDetail {
   imageUrl: string | null;
   alcoholicStatus: string;
   glass: string | null;
+  /** Build method; null when unknown. Picks the batch's starting dilution (spec 0054 AC-10). */
+  method: RecipeMethod | null;
   ingredients: RecipeIngredientDetail[];
   /**
    * Flavor profile: the recipe's taste tags (tags.kind = 'taste'), already
@@ -193,6 +209,7 @@ export async function fetchRecipeDetail(
     imageUrl: data.image_url,
     alcoholicStatus: data.alcoholic_status,
     glass: data.glass,
+    method: toRecipeMethod(data.method),
     ingredients,
     flavorProfile: data.taste_tags ?? [],
     isFavorited: data.is_favorited,

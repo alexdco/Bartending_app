@@ -1084,6 +1084,7 @@ export type Database = {
           instructions: string;
           merged_into_recipe_id: string | null;
           method: string | null;
+          method_source: string | null;
           method_source_name_hash: string | null;
           name: string;
           name_search: unknown;
@@ -1115,6 +1116,7 @@ export type Database = {
           instructions: string;
           merged_into_recipe_id?: string | null;
           method?: string | null;
+          method_source?: string | null;
           method_source_name_hash?: string | null;
           name: string;
           name_search?: unknown;
@@ -1146,6 +1148,7 @@ export type Database = {
           instructions?: string;
           merged_into_recipe_id?: string | null;
           method?: string | null;
+          method_source?: string | null;
           method_source_name_hash?: string | null;
           name?: string;
           name_search?: unknown;
@@ -1459,9 +1462,11 @@ export type Database = {
           p_glass: string;
           p_ingredients: Json;
           p_instructions: string;
+          p_method?: string;
           p_name: string;
           p_recipe_id: string;
           p_region: string;
+          p_set_method?: boolean;
           p_tags: Json;
         };
         Returns: string;
@@ -1558,8 +1563,8 @@ export type Database = {
         Args: { p_id: string; p_locale?: string };
         Returns: {
           alcoholic_status: string;
-          base_name: string;
           bartender_tip: string;
+          base_name: string;
           difficulty: string;
           drink_style: string;
           drink_style_note: string;
@@ -1594,6 +1599,7 @@ export type Database = {
           name: string;
         }[];
       };
+      has_cjk: { Args: { t: string }; Returns: boolean };
       import_catalog: {
         Args: { drinks: Json; merges?: Json; staple_names?: string[] };
         Returns: undefined;
@@ -1746,6 +1752,7 @@ export type Database = {
           tier: number;
         }[];
       };
+      search_fold: { Args: { t: string }; Returns: string };
       search_ingredients: {
         Args: {
           include_staples?: boolean;

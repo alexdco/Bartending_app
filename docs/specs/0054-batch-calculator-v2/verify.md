@@ -71,6 +71,44 @@ _Steps derived from spec 0054 acceptance criteria. `/check verify` runs these; `
 - [ ] Quick Build on a range recipe → the range line shows its `measure` text in oz, ml, cl, and parts, and the other lines' parts ignore it → AC-6
 - [ ] Admin form: save a recipe with a `2-3 oz` line → `select amount_value, amount_max_value, amount_unit from recipe_ingredients where measure = '2-3 oz' limit 5;` shows `2, 3, oz` → AC-3
 
+## Milestone 3: method data (AC-8, AC-11)
+
+### Before the web deploy (rollout order matters)
+
+- [ ] Apply `supabase/migrations/20261114140000_recipe_method_source.sql` in the dashboard SQL editor → runs cleanly. Apply it before deploying web: the new admin form sends `p_set_method`, which the old function signature does not accept → AC-8, AC-11
+- [ ] Confirm the checks: `select conname, pg_get_constraintdef(oid) from pg_constraint where conname in ('recipes_method_check', 'recipes_method_source_check', 'recipes_method_source_pair_check');` → three rows → AC-8
+- [ ] Confirm the function: `select pg_get_function_identity_arguments(oid) from pg_proc where proname = 'admin_upsert_recipe';` → one row ending in `p_set_method boolean, p_method text` → AC-11
+- [ ] Try bad values in a rolled back transaction: `begin; update recipes set method = 'swizzle', method_source = 'admin' where id = (select id from recipes limit 1); rollback;` → rejected by `recipes_method_check`; `method = 'stir'` with `method_source` left null → rejected by `recipes_method_source_pair_check` → AC-8
+- [ ] Regenerate `packages/shared/src/database.types.ts` → only the `method_source` columns and the two new RPC args differ from the hand edit → AC-11
+
+### Commands
+
+- [ ] `pnpm vitest run packages/shared/src/recipeMethod.test.ts packages/shared/src/adminRecipes.test.ts` → all pass (method narrowing, the classifier's admin skip rule, the admin save always sends `p_set_method`) → AC-8, AC-11
+
+### UI / manual (web admin)
+
+- [ ] Open a recipe in the admin form → Method picker shows Not set plus Shake, Stir, Build, Blend, Layer, preselected with the stored method → AC-11
+- [ ] Pick Stir and save → `select method, method_source from recipes where id = '<id>';` → `stir`, `admin` → AC-11
+- [ ] Clear the picker and save → both null → AC-11
+- [ ] Old caller: call `admin_upsert_recipe` without `p_set_method` (as the test admin, from a rolled back SQL session or an older client) on a recipe holding `stir`/`classifier` → the method is unchanged → AC-11
+- [ ] Switch the admin page to Spanish and Japanese → picker labels read `Agitar`, `シェイク`, and so on → AC-11, AC-13
+
+### Classifier (runs in the live rollout milestone; costs Haiku calls)
+
+- [ ] Set Build on one recipe in the admin form, then `pnpm --filter @bartendingapp/shared classify-method-and-aliases --all` → that recipe is still `build`/`admin`, its straining and aliases may change; the summary prints counts per method, nulls, failures, and `1 admin methods kept` → AC-8
+- [ ] Every non admin row afterwards: `select count(*) from recipes where method is not null and method_source is distinct from 'classifier' and method_source is distinct from 'admin';` → 0 → AC-8
+
+### Value sourcing checks
+
+- [ ] Method written by classifier: a recipe with "Swizzle" in its instructions → `build`; "throw" → `stir`; "dry shake" → `shake`; vague instructions → null with the hash still stamped (`method_source_name_hash` set) → AC-8
+- [ ] Method written by admin: only when `p_set_method` is true (old caller step above) → AC-11
+- [ ] `method_source`: null exactly when `method` is null across the table: `select count(*) from recipes where (method is null) <> (method_source is null);` → 0 → AC-8
+
+## Acceptance-criteria coverage (milestone 3)
+
+- AC-8: migration checks, `recipeMethod.test.ts` (`toRecipeMethod`, `methodColumnsUpdate`), classifier steps, value sourcing steps
+- AC-11: function signature check, `adminRecipes.test.ts` method tests, admin picker steps, old caller step
+
 ## Acceptance-criteria coverage (milestone 2)
 
 - AC-2: parser range table and negatives in `units.test.ts`

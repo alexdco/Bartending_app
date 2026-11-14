@@ -14,6 +14,7 @@ const recipe: RecipeDetail = {
   imageUrl: recipeImage,
   alcoholicStatus: "alcoholic",
   glass: "Coupe",
+  method: null,
   ingredients: [],
   flavorProfile: [],
   isFavorited: false,

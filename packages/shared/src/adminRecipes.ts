@@ -10,6 +10,7 @@ import {
   type DrinkStyle,
 } from "./drinkStyle";
 import { NON_DEFAULT_LOCALES, type NonDefaultLocale } from "./locale";
+import { isRecipeMethod, toRecipeMethod, type RecipeMethod } from "./recipes";
 
 export const ADMIN_RECIPE_NAME_MAX_LENGTH = 200;
 export const ADMIN_RECIPE_INSTRUCTIONS_MAX_LENGTH = 10000;
@@ -122,6 +123,8 @@ export interface AdminRecipeDetail {
   alcoholicStatus: string;
   region: string | null;
   source: string;
+  /** Build method, whoever set it (classifier or admin); null when none (spec 0054 AC-11). */
+  method: RecipeMethod | null;
   ingredients: AdminRecipeIngredient[];
   /** Catalog tags only; taste tags are in flavorProfile. */
   tags: AdminRecipeTag[];
@@ -180,7 +183,7 @@ export async function fetchAdminRecipeDetail(
   const { data, error } = await client
     .from("recipes")
     .select(
-      `id, name, instructions, image_url, glass, alcoholic_status, region, source,
+      `id, name, instructions, image_url, glass, alcoholic_status, region, source, method,
        drink_style, drink_style_note, bartender_tip, presentation_tip,
        recipe_ingredients ( measure, sort_order, ingredients ( name, allergens ) ),
        recipe_tags ( tags ( name, kind ) ),
@@ -220,6 +223,7 @@ export async function fetchAdminRecipeDetail(
     alcoholicStatus: data.alcoholic_status,
     region: data.region,
     source: data.source,
+    method: toRecipeMethod(data.method),
     ingredients,
     tags,
     flavorProfile,
@@ -252,6 +256,12 @@ export interface AdminRecipeFormValues {
    * reclassification, so send one only when the admin touched the picker.
    */
   flavorProfile: AdminRecipeFormTag[] | null;
+  /**
+   * Always sent with p_set_method = true (spec 0054 AC-11): a method stores it
+   * as an admin pick the classifier never overwrites; null clears it, leaving
+   * the recipe free for the classifier's next run.
+   */
+  method: RecipeMethod | null;
   /** Spec 0043: null means none. */
   drinkStyle: DrinkStyle | null;
   /** Empty means none. */
@@ -264,6 +274,7 @@ export type AdminRecipeValidationError =
   | { field: "name"; reason: "required" | "too_long" }
   | { field: "instructions"; reason: "required" | "too_long" }
   | { field: "alcoholicStatus"; reason: "invalid" }
+  | { field: "method"; reason: "invalid" }
   | { field: "ingredients"; reason: "required" }
   | { field: "drinkStyle"; reason: "invalid" }
   | { field: "drinkStyleNote"; reason: "too_long" | "needs_style" }
@@ -298,6 +309,10 @@ export function validateAdminRecipeForm(
 
   if (!ADMIN_ALCOHOLIC_STATUSES.includes(values.alcoholicStatus)) {
     errors.push({ field: "alcoholicStatus", reason: "invalid" });
+  }
+
+  if (values.method !== null && !isRecipeMethod(values.method)) {
+    errors.push({ field: "method", reason: "invalid" });
   }
 
   const nonEmptyIngredients = values.ingredients.filter((i) => i.name.trim().length > 0);
@@ -425,6 +440,8 @@ export async function saveAdminRecipe(
     p_ingredients: toAdminIngredientPayload(nonEmptyIngredients),
     p_tags: nonEmptyTags.map((tag) => ({ name: tag.name.trim() })),
     p_flavor_profile: flavorNames,
+    p_set_method: true,
+    p_method: values.method,
   } as Database["public"]["Functions"]["admin_upsert_recipe"]["Args"]);
 
   if (error) {

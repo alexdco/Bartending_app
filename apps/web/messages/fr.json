@@ -165,6 +165,13 @@
     "optional": "Alcool facultatif",
     "unknown": "Inconnu"
   },
+  "methods": {
+    "shake": "Shaker",
+    "stir": "Remuer",
+    "build": "Monter",
+    "blend": "Mixer",
+    "layer": "Superposer"
+  },
   "recipe": {
     "metaDescription": "{name} : avec {ingredients}.",
     "ingredients": "Ingrédients",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "La recette a été enregistrée, mais pas l’image : {message} Enregistrez de nouveau pour réessayer.",
     "glass": "Verre",
     "alcoholicStatus": "Teneur en alcool",
+    "method": "Méthode",
+    "methodNone": "Non définie",
+    "methodHint": "Votre choix est conservé quand le classificateur de méthodes repasse. Laissez vide pour que le classificateur le remplisse.",
     "region": "Région",
     "ingredients": "Ingrédients",
     "ingredientName": "Nom de l’ingrédient",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "Limitez ce texte à 240 caractères.",
     "errorNoteNeedsStyle": "Choisissez un style de cocktail avant d’ajouter une phrase de style.",
     "errorInvalidDrinkStyle": "Choisissez un style de cocktail dans la liste.",
+    "errorInvalidMethod": "Choisissez une méthode dans la liste.",
     "notesSaveFailed": "La recette a été enregistrée, mais pas son style ni ses conseils : {message}. Enregistrer de nouveau met à jour la même recette.",
     "unreviewedAllergens": "{count, plural, one {# ingrédient n’a} other {# ingrédients n’ont}} pas encore de vérification des allergènes.",
     "reviewAllergensLink": "Vérifier les allergènes des ingrédients",

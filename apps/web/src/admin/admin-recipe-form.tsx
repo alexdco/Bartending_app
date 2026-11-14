@@ -6,6 +6,7 @@ import {
   ADMIN_ALCOHOLIC_STATUSES,
   DRINK_STYLES,
   NON_DEFAULT_LOCALES,
+  RECIPE_METHODS,
   saveAdminRecipe,
   setRecipeImage,
   splitIngredientLines,
@@ -17,6 +18,7 @@ import {
   type AdminRecipeFormTag,
   type AdminRecipeValidationError,
   type DrinkStyle,
+  type RecipeMethod,
   type SetRecipeImageError,
   type UploadRecipeImageError,
 } from "@bartendingapp/shared";
@@ -57,7 +59,11 @@ function errorFor(
           ? t("errorInstructionsTooLong")
           : t("errorNoteTooLong");
     case "invalid":
-      return field === "drinkStyle" ? t("errorInvalidDrinkStyle") : t("errorInvalidStatus");
+      return field === "drinkStyle"
+        ? t("errorInvalidDrinkStyle")
+        : field === "method"
+          ? t("errorInvalidMethod")
+          : t("errorInvalidStatus");
     case "needs_style":
       return t("errorNoteNeedsStyle");
     default:
@@ -116,6 +122,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   const tCommon = useTranslations("common");
   const tStatus = useTranslations("alcoholicStatus");
   const tRecipe = useTranslations("recipe");
+  const tMethods = useTranslations("methods");
   const router = useRouter();
   const [name, setName] = useState(existingRecipe?.name ?? "");
   const [instructions, setInstructions] = useState(existingRecipe?.instructions ?? "");
@@ -128,6 +135,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
     (existingRecipe?.alcoholicStatus as AdminAlcoholicStatus) ?? "unknown",
   );
   const [region, setRegion] = useState(existingRecipe?.region ?? "");
+  const [method, setMethod] = useState<RecipeMethod | null>(existingRecipe?.method ?? null);
   const [ingredients, setIngredients] = useState<AdminRecipeFormIngredient[]>(
     existingRecipe?.ingredients.length ? existingRecipe.ingredients : [{ name: "", measure: "" }],
   );
@@ -223,6 +231,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
       flavorProfile: sameFlavorNames(flavorProfile, existingRecipe?.flavorProfile ?? [])
         ? null
         : flavorProfile,
+      method,
       drinkStyle,
       drinkStyleNote,
       bartenderTip,
@@ -373,6 +382,38 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
         value={region}
         onChange={(event) => setRegion(event.target.value)}
       />
+
+      <div className="flex flex-col gap-one">
+        <label htmlFor="method" className="text-label font-medium text-text">
+          {t("method")}
+        </label>
+        <select
+          id="method"
+          value={method ?? ""}
+          onChange={(event) =>
+            setMethod(event.target.value === "" ? null : (event.target.value as RecipeMethod))
+          }
+          aria-describedby="method-hint"
+          className={`rounded-small border bg-surface px-three py-two text-body text-text ${
+            errorFor(t, errors, "method") ? "border-danger" : "border-border"
+          }`}
+        >
+          <option value="">{t("methodNone")}</option>
+          {RECIPE_METHODS.map((value) => (
+            <option key={value} value={value}>
+              {tMethods(value)}
+            </option>
+          ))}
+        </select>
+        <Text id="method-hint" variant="bodySmall" muted>
+          {t("methodHint")}
+        </Text>
+        {errorFor(t, errors, "method") && (
+          <span role="alert" className="text-body-small text-danger">
+            {errorFor(t, errors, "method")}
+          </span>
+        )}
+      </div>
 
       <div className="flex flex-col gap-two">
         <Text variant="label">{t("ingredients")}</Text>

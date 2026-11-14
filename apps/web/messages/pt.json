@@ -165,6 +165,13 @@
     "optional": "Álcool opcional",
     "unknown": "Desconhecido"
   },
+  "methods": {
+    "shake": "Agitar",
+    "stir": "Mexer",
+    "build": "Montar",
+    "blend": "Bater",
+    "layer": "Em camadas"
+  },
   "recipe": {
     "metaDescription": "{name}: feito com {ingredients}.",
     "ingredients": "Ingredientes",
@@ -640,6 +647,9 @@
     "imageSaveFailed": "A receita foi salva, mas a imagem não: {message} Salve de novo para tentar outra vez.",
     "glass": "Copo",
     "alcoholicStatus": "Teor alcoólico",
+    "method": "Método",
+    "methodNone": "Não definido",
+    "methodHint": "Sua escolha é mantida quando o classificador de métodos roda de novo. Deixe em branco para o classificador preencher.",
     "region": "Região",
     "ingredients": "Ingredientes",
     "ingredientName": "Nome do ingrediente",
@@ -677,6 +687,7 @@
     "errorNoteTooLong": "Use no máximo 240 caracteres.",
     "errorNoteNeedsStyle": "Escolha um estilo de drink antes de adicionar uma frase de estilo.",
     "errorInvalidDrinkStyle": "Escolha um estilo de drink da lista.",
+    "errorInvalidMethod": "Escolha um método da lista.",
     "notesSaveFailed": "A receita foi salva, mas o estilo e as dicas não: {message}. Salvar de novo atualiza a mesma receita.",
     "unreviewedAllergens": "{count, plural, one {# ingrediente ainda não tem} other {# ingredientes ainda não têm}} revisão de alérgenos.",
     "reviewAllergensLink": "Revisar alérgenos dos ingredientes",
