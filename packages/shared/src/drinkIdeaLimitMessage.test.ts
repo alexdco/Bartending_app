@@ -142,6 +142,25 @@ describe("drinkIdeaLimitMessage", () => {
     },
   );
 
+  // covers: spec 0052 AC-13
+  it.each([
+    ["user_limit", true],
+    ["user_limit", false],
+    ["global_limit", true],
+    ["global_limit", false],
+  ] as const)(
+    "writes the Chinese %s copy with the time before 之后再试 (sign in helps: %s)",
+    (limitReason, signInHelps) => {
+      const message = drinkIdeaLimitMessage(
+        { limitReason, signInHelps, resetsAt: RESETS_AT },
+        { copyLocale: "zh", formatLocale: "zh", timeZone: "UTC" },
+      );
+      expect(message?.signInText).toBe(signInHelps ? "登录" : undefined);
+      expect(join(message)).toMatch(/在 .*2026.* 之后再试。$/u);
+      expect(join(message)).not.toContain("您");
+    },
+  );
+
   it("shows the reset time in the given time zone", () => {
     const message = drinkIdeaLimitMessage(
       { limitReason: "user_limit", signInHelps: false, resetsAt: RESETS_AT },

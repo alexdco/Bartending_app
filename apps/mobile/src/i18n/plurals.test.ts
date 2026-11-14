@@ -5,6 +5,7 @@ import ru from "./locales/ru.json";
 import hi from "./locales/hi.json";
 import ja from "./locales/ja.json";
 import ko from "./locales/ko.json";
+import zh from "./locales/zh.json";
 
 // Spec 0047 AC-11: i18next resolves Russian counts to the right plural form.
 // Runs the real i18next with the same resource shape and options as initI18n
@@ -116,5 +117,29 @@ describe("Korean plurals in i18next", () => {
       .replace("{{average}}", "4.5")
       .replace("{{count}}", String(count));
     expect(korean.t("ratings.summary", { count, average: "4.5" })).toBe(expected);
+  });
+});
+
+// Spec 0052 AC-12: all Chinese counts use _other.
+const chinese = createInstance();
+await chinese.init({
+  resources: {
+    zh: {
+      translation: zh,
+      probe: { form_one: "one", form_other: "other" },
+    },
+  },
+  lng: "zh",
+  fallbackLng: "en",
+  interpolation: { escapeValue: false },
+});
+
+describe("Simplified Chinese plurals in i18next", () => {
+  it.each([0, 1, 2, 5])("count %i uses _other", (count) => {
+    expect(chinese.t("form", { count, ns: "probe" })).toBe("other");
+    const expected = zh.ratings.summary_other
+      .replace("{{average}}", "4.5")
+      .replace("{{count}}", String(count));
+    expect(chinese.t("ratings.summary", { count, average: "4.5" })).toBe(expected);
   });
 });

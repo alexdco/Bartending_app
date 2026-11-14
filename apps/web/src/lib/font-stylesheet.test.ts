@@ -113,3 +113,21 @@ describe("checkBuiltCss (the postbuild check)", () => {
     expect(checkBuiltCss([]).ok).toBe(false);
   });
 });
+
+// Spec 0052 AC-10: SC faces stay out of shared CSS; locale variables may name them.
+describe("Simplified Chinese font isolation", () => {
+  it.each([
+    "@font-face{font-family:'Noto Sans SC';src:url(x.woff2)}",
+    "@font-face{font-family:__Noto_Serif_SC_abc;src:url(x.woff2)}",
+    "@font-face{font-family:X;src:url(/fonts/zh/x.woff2)}",
+  ])("rejects %s", (css) => {
+    expect(checkBuiltCss([{ name: "shared.css", css }]).ok).toBe(false);
+  });
+  it("allows Chinese font variables", () => {
+    expect(
+      checkBuiltCss([
+        { name: "shared.css", css: ':root:lang(zh-Hans){--font-body-script:"Noto Sans SC"}' },
+      ]),
+    ).toEqual({ ok: true });
+  });
+});

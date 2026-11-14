@@ -43,6 +43,14 @@ describe("unitLabel (spec 0047 AC-13)", () => {
     ]);
   });
 
+  it("writes oz as 盎司 and keeps ml and cl for zh (spec 0052 AC-13)", () => {
+    expect([unitLabel("oz", "zh"), unitLabel("ml", "zh"), unitLabel("cl", "zh")]).toEqual([
+      "盎司",
+      "ml",
+      "cl",
+    ]);
+  });
+
   it("keeps the Latin labels in every other locale", () => {
     for (const locale of ["en", "es", "pt", "fr"] as const) {
       expect([unitLabel("oz", locale), unitLabel("ml", locale), unitLabel("cl", locale)]).toEqual([

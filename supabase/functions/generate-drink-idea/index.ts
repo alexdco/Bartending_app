@@ -70,7 +70,7 @@ async function guestIpHash(headers: Headers, secret: string, userId: string): Pr
   return hashIpBucket(ipBucket(clientIp), secret);
 }
 
-const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja", "ko"] as const;
+const SUPPORTED_LOCALES = ["en", "es", "pt", "fr", "ru", "hi", "ja", "ko", "zh"] as const;
 type Locale = (typeof SUPPORTED_LOCALES)[number];
 const DEFAULT_LOCALE: Locale = "en";
 
@@ -83,6 +83,7 @@ const LOCALE_NAMES: Record<Locale, string> = {
   hi: "Hindi",
   ja: "Japanese",
   ko: "Korean",
+  zh: "Simplified Chinese",
 };
 
 // Hand copy of LOCALE_AI_TERMS.fr in packages/shared/src/locale.ts (this Deno
@@ -262,12 +263,93 @@ function normalizeKoreanName(text: string): string {
     .trim();
 }
 
+// Hand copy of LOCALE_AI_TERMS.zh in packages/shared/src/locale.ts (spec 0052
+// AC-17); change both in the same commit.
+// Mainland Simplified Chinese with \u00AB\u4F60\u00BB, never \u00AB\u60A8\u00BB, lime \u00AB\u9752\u67E0\u00BB, lemon \u00AB\u67E0\u6AAC\u00BB, established
+// cocktail names or the English name, no middle dot, half width digits, full
+// width punctuation \u00AB\uFF0C\u00BB \u00AB\u3002\u00BB \u00AB\uFF1F\u00BB \u00AB\uFF01\u00BB, \u00AB\u201C \u201D\u00BB quotes, and a space between Chinese and Latin.
+const CHINESE_INSTRUCTION =
+  "Write natural Simplified Chinese as used in mainland China, with no Traditional characters, addressing the reader as \u00AB\u4F60\u00BB, never \u00AB\u60A8\u00BB. " +
+  "Lime is \u00AB\u9752\u67E0\u00BB and lemon is \u00AB\u67E0\u6AAC\u00BB. " +
+  "Use the established mainland Chinese cocktail name where one exists, otherwise keep the name in English, with no middle dot; keep brand names in English. " +
+  // Added after the AC-20 review of ten live ideas (2026-11-13). The tool and
+  // syrup words are step wording, as in the Hindi and Korean sentences, so no
+  // tool turns into an ingredient and fails the pantry check (0007 AC-8).
+  "The name may mention only ingredients the recipe uses: never write \u00AB\u82CF\u6253\u00BB or another mixer the recipe does not use, and never borrow an established cocktail name such as \u00AB\u83AB\u5409\u6258\u00BB or \u00AB\u9A6C\u5929\u5C3C\u00BB unless the recipe is that cocktail. Write generic ingredient names in Chinese (Lime Vodka is \u00AB\u9752\u67E0\u4F0F\u7279\u52A0\u00BB); only brand names stay in English. " +
+  "When a step names these, write simple syrup \u00AB\u7CD6\u6D46\u00BB, lime juice \u00AB\u9752\u67E0\u6C41\u00BB, shaker \u00AB\u6447\u9152\u58F6\u00BB, strainer \u00AB\u6EE4\u51B0\u5668\u00BB, and bar spoon \u00AB\u5427\u52FA\u00BB; strain is \u00AB\u6EE4\u5165\u00BB, never \u00AB\u5012\u5165\u00BB, chilled is \u00AB\u51B0\u9547\u00BB, and serve is \u00AB\u4EAB\u7528\u00BB or \u00AB\u5949\u4E0A\u00BB. Write steps as short commands with no pronoun (\u52A0\u5165\u51B0\u5757\uFF0C\u6447\u5300); never \u00AB\u4EAB\u7528\u4F60\u7684\u2026\u00BB. " +
+  "Write amounts with ml, cl, L, or \u00AB\u76CE\u53F8\u00BB, never oz or \u00AB\u6BEB\u5347\u00BB, with a space between the number and the unit (30 ml). " +
+  "Use half width digits, full width punctuation (\u00AB\uFF0C\u00BB \u00AB\u3002\u00BB \u00AB\uFF1F\u00BB \u00AB\uFF01\u00BB), \u00AB\u201C \u201D\u00BB for quotes, and one space between Chinese and Latin letters or digits. End every step with \u00AB\u3002\u00BB. ";
+
+// Hand copies of normalizeChineseTypography and normalizeChineseName in
+// packages/shared/src/chineseTypography.ts (spec 0052 AC-17, AC-22); change
+// both in the same commit. Self contained, since locale.test.ts extracts and
+// runs them. They never convert a Traditional character; this function
+// carries no copy of the Traditional list.
+function normalizeChineseTypography(text: string): string {
+  const han = "\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF";
+  const hasHan = new RegExp(`[${han}]`);
+  const hanOrClosingQuote = new RegExp(`[${han}\\u201D]`);
+  return text
+    .normalize("NFC")
+    .replace(/[\uFF10-\uFF19\uFF21-\uFF3A\uFF41-\uFF5A]/g, (char) =>
+      String.fromCharCode(char.charCodeAt(0) - 0xfee0),
+    )
+    .replace(/\u3000/g, " ")
+    .replace(/[\u300C\u300E]/g, "\u201C")
+    .replace(/[\u300D\u300F]/g, "\u201D")
+    .replace(/"([^"\n]+)"/g, (pair, inner) =>
+      hasHan.test(inner) ? `\u201C${inner.trim()}\u201D` : pair,
+    )
+    .replace(
+      new RegExp(`(?<=[${han}\\u201DA-Za-z0-9%)])\\.(?=$|\\r?\\n|[ \\t]*[${han}])`, "g"),
+      (dot, offset, whole) => {
+        const start = whole.lastIndexOf("\n", offset - 1) + 1;
+        const end = whole.indexOf("\n", offset);
+        return hanOrClosingQuote.test(whole.charAt(offset - 1)) ||
+          hasHan.test(whole.slice(start, end === -1 ? undefined : end))
+          ? "\u3002"
+          : dot;
+      },
+    )
+    .replace(new RegExp(`(?<=[${han}\\u201D])[,?!:;]`, "g"), (mark) =>
+      "\uFF0C\uFF1F\uFF01\uFF1A\uFF1B".charAt(",?!:;".indexOf(mark)),
+    )
+    .replace(
+      new RegExp(`(?<=[A-Za-z0-9%)\\uFF09][ \\t]*)[,?!:;](?=[ \\t]*(?:[${han}]|$|\\r?\\n))`, "g"),
+      (mark, offset, whole) => {
+        const start = whole.lastIndexOf("\n", offset - 1) + 1;
+        const end = whole.indexOf("\n", offset);
+        return hasHan.test(whole.slice(start, end === -1 ? undefined : end))
+          ? "\uFF0C\uFF1F\uFF01\uFF1A\uFF1B".charAt(",?!:;".indexOf(mark))
+          : mark;
+      },
+    )
+    .replace(/[ \t]+(?=[\uFF0C\u3002\uFF1F\uFF01\uFF1A\uFF1B\u3001])/g, "")
+    .replace(/(?<=[\uFF0C\u3002\uFF1F\uFF01\uFF1A\uFF1B\u3001])[ \t]+/g, "")
+    .replace(new RegExp(`(?<=[${han}]) +(?=[${han}])`, "g"), "")
+    .replace(new RegExp(`(?<=[${han}])(?=[A-Za-z0-9])|(?<=[A-Za-z0-9])(?=[${han}])`, "g"), " ");
+}
+
+function normalizeChineseName(text: string): string {
+  const han = "\\u3400-\\u4DBF\\u4E00-\\u9FFF\\uF900-\\uFAFF";
+  const hasHan = new RegExp(`[${han}]`);
+  return normalizeChineseTypography(text)
+    .replace(/[ \t]*[\u00B7\u30FB\uFF65\u2022\u2027\u2219][ \t]*/g, (dot, offset, whole) =>
+      hasHan.test(whole.charAt(offset - 1)) || hasHan.test(whole.charAt(offset + dot.length))
+        ? ""
+        : dot,
+    )
+    .replace(new RegExp(`(?<=[${han}])(?=[A-Za-z0-9])|(?<=[A-Za-z0-9])(?=[${han}])`, "g"), " ")
+    .trim();
+}
+
 const LOCALE_INSTRUCTIONS: Partial<Record<Locale, string>> = {
   fr: FRENCH_INSTRUCTION,
   ru: RUSSIAN_INSTRUCTION,
   hi: HINDI_INSTRUCTION,
   ja: JAPANESE_INSTRUCTION,
   ko: KOREAN_INSTRUCTION,
+  zh: CHINESE_INSTRUCTION,
 };
 
 const LOCALE_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
@@ -276,11 +358,16 @@ const LOCALE_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
   hi: normalizeHindiTypography,
   ja: normalizeJapaneseTypography,
   ko: normalizeKoreanTypography,
+  zh: normalizeChineseTypography,
 };
 
-/** Names also lose a middle dot next to Hangul (spec 0051 AC-17); else LOCALE_TYPOGRAPHY. */
+/**
+ * Names also lose a middle dot next to Hangul (spec 0051 AC-17) or next to a
+ * Han character (spec 0052 AC-17); else LOCALE_TYPOGRAPHY.
+ */
 const LOCALE_NAME_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> = {
   ko: normalizeKoreanName,
+  zh: normalizeChineseName,
 };
 
 /** The locale's typography on the text its reader sees; source_name stays as matched. */

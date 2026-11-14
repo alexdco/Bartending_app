@@ -340,13 +340,44 @@ export function hasPartIngredient(
  * Hindi, which writes them in Devanagari with no dots (spec 0048 AC-13).
  * Japanese writes oz as オンス and the litre as a capital L, as Japanese
  * packaging does (spec 0050 AC-14). Korean writes oz as 온스 and the litre as
- * a capital L too (spec 0051 AC-13).
+ * a capital L too (spec 0051 AC-13), and Simplified Chinese writes oz as 盎司
+ * with a capital L (spec 0052 AC-13).
  */
 export const BATCH_UNIT_LABELS: Record<BatchUnit, Record<Locale, string>> = {
-  oz: { en: "oz", es: "oz", pt: "oz", fr: "oz", ru: "унц.", hi: "औंस", ja: "オンス", ko: "온스" },
-  ml: { en: "ml", es: "ml", pt: "ml", fr: "ml", ru: "мл", hi: "मिली", ja: "ml", ko: "ml" },
-  cl: { en: "cl", es: "cl", pt: "cl", fr: "cl", ru: "сл", hi: "सेली", ja: "cl", ko: "cl" },
-  l: { en: "l", es: "l", pt: "l", fr: "l", ru: "л", hi: "ली", ja: "L", ko: "L" },
+  oz: {
+    en: "oz",
+    es: "oz",
+    pt: "oz",
+    fr: "oz",
+    ru: "унц.",
+    hi: "औंस",
+    ja: "オンス",
+    ko: "온스",
+    zh: "盎司",
+  },
+  ml: {
+    en: "ml",
+    es: "ml",
+    pt: "ml",
+    fr: "ml",
+    ru: "мл",
+    hi: "मिली",
+    ja: "ml",
+    ko: "ml",
+    zh: "ml",
+  },
+  cl: {
+    en: "cl",
+    es: "cl",
+    pt: "cl",
+    fr: "cl",
+    ru: "сл",
+    hi: "सेली",
+    ja: "cl",
+    ko: "cl",
+    zh: "cl",
+  },
+  l: { en: "l", es: "l", pt: "l", fr: "l", ru: "л", hi: "ली", ja: "L", ko: "L", zh: "L" },
 };
 
 export function batchUnitLabel(unit: BatchUnit, locale: Locale = DEFAULT_LOCALE): string {

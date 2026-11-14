@@ -13,6 +13,8 @@ import {
   hreflangAlternates,
   isLaunchedLocale,
   isNonDefaultLocale,
+  isTraditionalChineseTag,
+  localeForLanguageTag,
   parseAcceptLanguage,
   resolveRedirectLocale,
   resolveStoredLocale,
@@ -21,6 +23,7 @@ import { normalizeRussianTypography } from "./russianTypography";
 import { normalizeHindiTypography } from "./hindiTypography";
 import { normalizeJapaneseTypography } from "./japaneseTypography";
 import { normalizeKoreanName, normalizeKoreanTypography } from "./koreanTypography";
+import { normalizeChineseName, normalizeChineseTypography } from "./chineseTypography";
 
 const repoRoot = fileURLToPath(new URL("../../../", import.meta.url));
 const migrationsDir = join(repoRoot, "supabase/migrations");
@@ -143,6 +146,87 @@ describe("parseAcceptLanguage", () => {
   it("returns null for an empty header", () => {
     expect(parseAcceptLanguage(null)).toBeNull();
     expect(parseAcceptLanguage("")).toBeNull();
+  });
+});
+
+// Spec 0052 AC-8: a Traditional Chinese tag never picks Simplified Chinese.
+describe("isTraditionalChineseTag", () => {
+  it.each(["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-CN", "zh-Hant-TW", "ZH-tw", "zh_TW"])(
+    "%s is Traditional",
+    (tag) => {
+      expect(isTraditionalChineseTag(tag)).toBe(true);
+    },
+  );
+
+  it.each(["zh", "zh-CN", "zh-SG", "zh-MY", "zh-Hans", "zh-Hans-HK", "zh-hans-tw", "zh_CN"])(
+    "%s is not Traditional",
+    (tag) => {
+      expect(isTraditionalChineseTag(tag)).toBe(false);
+    },
+  );
+
+  it("is false for every other language, whatever its region", () => {
+    for (const tag of ["en-HK", "en-TW", "ja", "pt-MO", "", "hant", "tw"]) {
+      expect(isTraditionalChineseTag(tag)).toBe(false);
+    }
+  });
+});
+
+describe("localeForLanguageTag", () => {
+  it.each(["zh", "zh-CN", "zh-SG", "zh-MY", "zh-Hans", "zh-Hans-HK", "ZH-cn"])(
+    "%s picks zh once zh is allowed",
+    (tag) => {
+      expect(localeForLanguageTag(tag, SUPPORTED_LOCALES)).toBe("zh");
+    },
+  );
+
+  it.each(["zh-TW", "zh-HK", "zh-MO", "zh-Hant", "zh-Hant-CN", "ZH-tw"])(
+    "%s picks nothing",
+    (tag) => {
+      expect(localeForLanguageTag(tag, SUPPORTED_LOCALES)).toBeNull();
+    },
+  );
+
+  it("reads the primary subtag at a hyphen only, so an underscore tag picks nothing", () => {
+    for (const tag of ["zh_TW", "zh_CN", "es_ES"]) {
+      expect(localeForLanguageTag(tag, SUPPORTED_LOCALES)).toBeNull();
+    }
+  });
+
+  it("gives every other tag its primary subtag, in any case", () => {
+    expect(localeForLanguageTag("pt-BR")).toBe("pt");
+    expect(localeForLanguageTag("ES-mx")).toBe("es");
+    expect(localeForLanguageTag("ko")).toBe("ko");
+    expect(localeForLanguageTag("en-HK")).toBe("en");
+  });
+
+  it("returns null for an empty, missing, or unsupported tag", () => {
+    expect(localeForLanguageTag(null)).toBeNull();
+    expect(localeForLanguageTag(undefined)).toBeNull();
+    expect(localeForLanguageTag("")).toBeNull();
+    expect(localeForLanguageTag("de-DE")).toBeNull();
+  });
+
+  it("never picks a locale outside the allowed list, and defaults to the launched list", () => {
+    expect(localeForLanguageTag("pt-BR", ["en", "es"])).toBeNull();
+    expect(localeForLanguageTag("zh-CN", ["en", "es"])).toBeNull();
+    expect(localeForLanguageTag("zh-CN")).toBe(isLaunchedLocale("zh") ? "zh" : null);
+  });
+});
+
+// Run with every supported locale allowed, so the cases hold before launch.
+describe("parseAcceptLanguage with Chinese tags (spec 0052 AC-8)", () => {
+  it.each([
+    ["zh-CN,zh;q=0.9", "zh"],
+    ["zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7", "en"],
+    ["zh-TW,zh-CN;q=0.9", "zh"],
+    ["zh-HK", null],
+    ["zh,zh-TW;q=0.9", "zh"],
+    ["zh-Hant,zh-Hans;q=0.9", "zh"],
+    ["zh-TW,ZH;q=0.9,ja;q=0.8", "ja"],
+    ["zh-TW,zh;q=0.9", null],
+  ] as const)("%s gives %s", (header, expected) => {
+    expect(parseAcceptLanguage(header, SUPPORTED_LOCALES)).toBe(expected);
   });
 });
 
@@ -586,6 +670,86 @@ describe("generate-drink-idea's Korean hand copies", () => {
 
   it("types Korean names exactly like the shared normalizeKoreanName", () => {
     expect(samples.map(edgeFunctions().name)).toEqual(samples.map(normalizeKoreanName));
+  });
+});
+
+// Spec 0052 AC-17, AC-22: the same hand copy check for Simplified Chinese,
+// over both the typography pass and the name pass.
+describe("generate-drink-idea's Chinese hand copies", () => {
+  const source = readFileSync(drinkIdeaFunction, "utf8");
+
+  /** The decoded text of the edge function's CHINESE_INSTRUCTION constant. */
+  const chineseInstruction = (): string => {
+    const body = /const CHINESE_INSTRUCTION =([\s\S]*?);\n/.exec(source)?.[1];
+    if (body === undefined) throw new Error("No CHINESE_INSTRUCTION in generate-drink-idea");
+    return [...body.matchAll(/"((?:[^"\\]|\\.)*)"/g)]
+      .map(([, literal]) => JSON.parse(`"${literal ?? ""}"`) as string)
+      .join("");
+  };
+
+  /** The edge function's two Chinese functions, with their type annotations removed. */
+  const edgeFunctions = (): {
+    readonly typography: (text: string) => string;
+    readonly name: (text: string) => string;
+  } => {
+    const extract = (fnName: string): string => {
+      const fn = new RegExp(
+        `function ${fnName}\\(text: string\\): string \\{[\\s\\S]*?\\n\\}\\r?\\n`,
+      ).exec(source)?.[0];
+      if (fn === undefined) throw new Error(`No ${fnName} in generate-drink-idea`);
+      return fn.replace("(text: string): string", "(text)");
+    };
+    return new Function(
+      `${extract("normalizeChineseTypography")}\n${extract("normalizeChineseName")}\n` +
+        "return { typography: normalizeChineseTypography, name: normalizeChineseName };",
+    )() as { typography: (text: string) => string; name: (text: string) => string };
+  };
+
+  it.each(["«你»", "«您»", "«青柠»", "«柠檬»", "«，»", "«。»", "«“ ”»"])(
+    "both copies pin %s",
+    (term) => {
+      expect(LOCALE_AI_TERMS.zh).toContain(term);
+      expect(chineseInstruction()).toContain(term);
+    },
+  );
+
+  it("stores both copies in Unicode NFC with no full width digits or letters, ideographic space, or Japanese quotes", () => {
+    for (const copy of [LOCALE_AI_TERMS.zh, chineseInstruction()]) {
+      expect(copy).toBe(copy.normalize("NFC"));
+      expect(copy).not.toMatch(/[０-９Ａ-Ｚａ-ｚ　「」『』]/);
+    }
+  });
+
+  const samples = [
+    "１５ml ＧＩＮ　金酒",
+    "加入冰块.",
+    "加入冰块. 摇匀. 滤入杯中.\n饰以青柠角.",
+    "青柠,柠檬 好了吗? 干杯! 比例:金酒;味美思",
+    '「金汤力」 『金汤力』 "金汤力" " 金酒 "',
+    "加入30 ml金酒 用Boston摇酒壶 30盎司 2滴",
+    "冰块 ， 青柠 。\t摇匀",
+    "加入 30 ml, 摇匀\n（可选）, 摇匀\n加入 Campari. 搅拌\n加入金酒 30 ml!",
+    "金 汤力",
+    "1.5 30ml 1:1 10:30 B-52 https://example.com/a.b",
+    "(青柠) （青柠） 酒精度40%的金酒",
+    "Shake well. Strain.\nShake well, then strain!",
+    'Say "hi", then go! 2" 杯',
+    "汤姆·柯林斯 汤姆 · 柯林斯 汤姆・柯林斯 汤姆･柯林斯 汤姆•柯林斯 汤姆‧柯林斯 汤姆∙柯林斯",
+    "金·Tonic Gin · 汤力 B·52 A·B",
+    " 「汤姆·柯林斯」 ",
+    "Jamaica Kiss",
+    "é 金酒",
+    "",
+  ];
+
+  it("types Chinese exactly like the shared normalizeChineseTypography", () => {
+    expect(samples.map(edgeFunctions().typography)).toEqual(
+      samples.map(normalizeChineseTypography),
+    );
+  });
+
+  it("types Chinese names exactly like the shared normalizeChineseName", () => {
+    expect(samples.map(edgeFunctions().name)).toEqual(samples.map(normalizeChineseName));
   });
 });
 

@@ -76,7 +76,12 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
           // text for any unparseable or part line, unaffected by the toggle.
           const amount = displayAmount(ingredient, unit, locale) ?? ingredient.measure;
           return (
-            <li key={ingredient.ingredientId} className="flex items-center justify-between gap-two">
+            // `wrap-break-word` keeps each flex child at least one word wide, so a
+            // Korean name never splits mid word at 360 px (spec 0051, AC-11).
+            <li
+              key={ingredient.ingredientId}
+              className="flex items-center justify-between gap-two wrap-break-word"
+            >
               <Text variant="body">
                 {amount ? `${amount} ` : ""}
                 {ingredient.name}

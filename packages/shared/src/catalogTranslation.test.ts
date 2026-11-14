@@ -1,8 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+  assertTranslationIds,
+  chineseMeasureUnits,
+  chineseRecipeReplyProblems,
+  unquotedSource,
   localeNameTypography,
   localeTypography,
   nameTranslationPrompt,
+  translatedEntityName,
   needsRecipeTranslation,
   selectsRow,
   translatableMeasures,
@@ -140,9 +145,38 @@ describe("localeTypography", () => {
     expect(localeTypography("ko")("진·토닉")).toBe("진·토닉");
   });
 
+  // covers: spec 0052 AC-1, AC-22
+  it("applies Chinese typography to zh output, keeping middle dots in prose", () => {
+    expect(localeTypography("zh")('"金汤力"加入１５ml金酒, 摇匀. 冰块·青柠')).toBe(
+      "“金汤力”加入 15ml 金酒，摇匀。冰块·青柠",
+    );
+  });
+
+  // covers: spec 0052 AC-14
+  it("removes a middle dot next to Han from zh names only", () => {
+    expect(localeNameTypography("zh")("汤姆·柯林斯")).toBe("汤姆柯林斯");
+    expect(localeTypography("zh")("汤姆·柯林斯")).toBe("汤姆·柯林斯");
+  });
+
+  // covers: spec 0052 AC-14
+  it("keeps the English source name for a zh name with no Han character", () => {
+    expect(translatedEntityName("zh", "jamaica kiss", "Jamaica Kiss")).toBe("Jamaica Kiss");
+    expect(translatedEntityName("zh", "玛格丽特", "Margarita")).toBe("玛格丽特");
+    expect(translatedEntityName("zh", "汤姆·柯林斯", "Tom Collins")).toBe("汤姆柯林斯");
+  });
+
+  it("stores every other locale's name as its localeNameTypography gives it", () => {
+    for (const locale of SUPPORTED_LOCALES.filter((l) => l !== "zh")) {
+      expect(translatedEntityName(locale, "Jamaica kiss", "Jamaica Kiss")).toBe("Jamaica kiss");
+      expect(translatedEntityName(locale, "진·토닉", "Gin Tonic")).toBe(
+        localeNameTypography(locale)("진·토닉"),
+      );
+    }
+  });
+
   it("gives every other locale its localeTypography for names", () => {
     const samples = ['"Gin" · Tonic .', "진·토닉", "ジン・トニック.", "Gin: 30 ml !", ""];
-    for (const locale of SUPPORTED_LOCALES.filter((l) => l !== "ko")) {
+    for (const locale of SUPPORTED_LOCALES.filter((l) => l !== "ko" && l !== "zh")) {
       expect(samples.map(localeNameTypography(locale))).toEqual(
         samples.map(localeTypography(locale)),
       );
@@ -154,5 +188,109 @@ describe("localeTypography", () => {
     expect(localeTypography("ru")('Коктейль "Мохито" - классика.')).toBe(
       "Коктейль «Мохито» — классика.",
     );
+  });
+});
+
+// The Chinese backfill exposed duplicate model ids that caused Postgres 21000.
+describe("translation response ids", () => {
+  const expected = [{ id: "a" }, { id: "b" }];
+
+  it("accepts every requested id once, regardless of reply order", () => {
+    expect(() => assertTranslationIds(expected, [{ id: "b" }, { id: "a" }])).not.toThrow();
+  });
+
+  it.each([
+    { reason: "duplicate", translated: [{ id: "a" }, { id: "a" }] },
+    { reason: "missing", translated: [{ id: "a" }] },
+    { reason: "unexpected", translated: [{ id: "a" }, { id: "c" }] },
+    { reason: "extra", translated: [{ id: "a" }, { id: "b" }, { id: "b" }] },
+  ])("rejects a $reason response before any upsert", ({ translated }) => {
+    expect(() => assertTranslationIds(expected, translated)).toThrow(
+      "every requested id exactly once",
+    );
+  });
+});
+
+// covers: spec 0052 AC-2, AC-13. The Opus sample review found cl stored as ml,
+// oz converted to ml, `0. 5`, and instructions cut off at a source quote.
+describe("chineseRecipeReplyProblems", () => {
+  const source = {
+    instructions: "Shake with ice. If served 'On the rocks', strain into an old-fashioned glass.",
+    ingredients: [
+      { ingredient_id: "gin", measure: "4 cl" },
+      { ingredient_id: "rum", measure: "1/2 oz" },
+      { ingredient_id: "salt", measure: null },
+    ],
+  };
+  const good = {
+    instructions: "加冰摇匀。若加冰饮用，则滤入古典杯。",
+    ingredient_measures: [
+      { ingredient_id: "gin", measure: "4 cl" },
+      { ingredient_id: "rum", measure: "0.5 盎司" },
+      { ingredient_id: "salt", measure: null },
+    ],
+  };
+
+  it("accepts a reply that keeps units, decimals, and the whole method", () => {
+    expect(chineseRecipeReplyProblems(source, good)).toEqual([]);
+  });
+
+  it.each([
+    { reason: "cl stored as ml", gin: "4 ml", rum: "0.5 盎司", problem: "gin changed its unit" },
+    { reason: "oz converted to ml", gin: "4 cl", rum: "15 ml", problem: "rum changed its unit" },
+    { reason: "a split decimal", gin: "4 cl", rum: "0. 5 盎司", problem: "rum splits a decimal" },
+  ])("flags $reason", ({ gin, rum, problem }) => {
+    const reply = {
+      ...good,
+      ingredient_measures: [
+        { ingredient_id: "gin", measure: gin },
+        { ingredient_id: "rum", measure: rum },
+      ],
+    };
+    expect(chineseRecipeReplyProblems(source, reply).join()).toContain(problem);
+  });
+
+  it("flags instructions cut off before a quote", () => {
+    expect(
+      chineseRecipeReplyProblems(source, { ...good, instructions: "加冰摇匀。如果要选择" }),
+    ).toEqual(['instructions end mid sentence: "…加冰摇匀。如果要选择"']);
+  });
+
+  it("accepts an unpunctuated ending when the source has none", () => {
+    expect(
+      chineseRecipeReplyProblems(
+        { ...source, instructions: "shake well... serve cold" },
+        { ...good, instructions: "充分摇匀…冰凉享用" },
+      ),
+    ).toEqual([]);
+  });
+});
+
+// covers: spec 0052 AC-13. Haiku kept writing oz in Chinese measures.
+describe("chineseMeasureUnits", () => {
+  it.each([
+    ["8 oz", "8 盎司"],
+    ["2oz", "2盎司"],
+    ["70 ml/2 fl oz", "70 ml/2 液量盎司"],
+    ["4 cl", "4 cl"],
+    ["1 小杯", "1 小杯"],
+  ])("%s → %s", (input, expected) => {
+    expect(chineseMeasureUnits(input)).toBe(expected);
+  });
+});
+
+// covers: spec 0052 AC-2. A straight quote copied into a structured reply
+// ended the JSON string and cut the Whiskey Sour steps short.
+describe("unquotedSource", () => {
+  it.each([
+    ["If served 'On the rocks', strain.", "If served On the rocks, strain."],
+    [
+      'Heat to a "coffee temperature" (DO NOT BOIL).',
+      "Heat to a coffee temperature (DO NOT BOIL).",
+    ],
+    ["Thanks, Kirby's bar.", "Thanks, Kirby's bar."],
+    ["Called “Sun and Shade”.", "Called Sun and Shade."],
+  ])("%s", (input, expected) => {
+    expect(unquotedSource(input)).toBe(expected);
   });
 });

@@ -52,6 +52,15 @@ describe("batchUnitLabel (spec 0047 AC-13)", () => {
     ]);
   });
 
+  it("writes oz as 盎司 and the litre as a capital L for zh (spec 0052 AC-13)", () => {
+    expect((["oz", "ml", "cl", "l"] as const).map((unit) => batchUnitLabel(unit, "zh"))).toEqual([
+      "盎司",
+      "ml",
+      "cl",
+      "L",
+    ]);
+  });
+
   it("keeps the Latin labels in every other locale", () => {
     for (const locale of ["en", "es", "pt", "fr"] as const) {
       expect(

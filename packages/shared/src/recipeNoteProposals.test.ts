@@ -52,6 +52,11 @@ const notesByLocale: Record<
     bartender_tip: "얼음을 넉넉히 넣고 세게 흔들어 차갑고 살짝 희석되게 만들어요.",
     presentation_tip: "잔 테두리의 절반에만 소금을 묻히면 손님이 한 모금씩 고를 수 있어요.",
   },
+  zh: {
+    drink_style_note: "以龙舌兰为基酒，用青柠和橙味利口酒平衡的酸酒。",
+    bartender_tip: "加入充足冰块，用力摇匀，使酒液冰凉并适度稀释。",
+    presentation_tip: "只在半边杯口抹盐，让每一口都可按喜好选择。",
+  },
 };
 
 // One block per CATALOG_TRANSLATION_LOCALES code, so the fixture stays valid at launch.

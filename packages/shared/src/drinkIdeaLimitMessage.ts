@@ -159,6 +159,26 @@ const COPY: Record<Locale, Copy> = {
       before: "오늘은 드링크 아이디어 요청이 너무 많아요. {time} 이후에 다시 시도해 보세요.",
     },
   },
+  // Hand written Simplified Chinese with 你 (spec 0052 AC-13), checked by the
+  // AI second pass (AC-20). The formatted time starts and ends with a digit,
+  // so {time} has a space on each side (AC-1).
+  zh: {
+    signIn: "登录",
+    signInLimit: {
+      before: "你今天的免费饮品灵感已用完。",
+      after: "后今天可以获得更多，或在 {time} 之后再试。",
+    },
+    limit: {
+      before: "你已达到今天的饮品灵感上限。请在 {time} 之后再试。",
+    },
+    busySignIn: {
+      before: "今天饮品灵感的请求太多了。",
+      after: "后可以继续使用，或在 {time} 之后再试。",
+    },
+    busy: {
+      before: "今天饮品灵感的请求太多了。请在 {time} 之后再试。",
+    },
+  },
 };
 
 function copyCase(limitReason: DrinkIdeaLimitReason, signInHelps: boolean): CopyCase {

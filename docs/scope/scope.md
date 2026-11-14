@@ -84,11 +84,14 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 71 | Hindi | Slice 39 | in-progress |
 | 72 | Japanese | Slice 39 | in-progress |
 | 73 | Korean | Slice 39 | in-progress |
-| 74 | Simplified Chinese | Slice 39 | planned |
+| 74 | Simplified Chinese | Slice 39 | in-progress |
 | 75 | Arabic | Slice 39 | planned |
 | 76 | European Portuguese | Slice 39 | planned |
 | 77 | Accent insensitive search | Slice 39 | planned |
 | 78 | Korean initial consonant search | Slice 39 | planned |
+| 79 | Traditional to Simplified search folding | Slice 39 | planned |
+| 80 | Traditional Chinese | Slice 39 | planned |
+| 81 | Drink idea names and garnish | Hardening | planned |
 
 ## Foundations
 
@@ -857,14 +860,19 @@ Keep the catalog right as it changes: decide whether the import job or an admin 
 - [ ] Design it (spec): `/architect catalog freshness rules`
 
 ### 60. Store listing copy and app icon
-Store title, subtitle, keywords, and description in English, Spanish, Brazilian Portuguese, French, and Japanese, plus a designed app icon and an iOS Icon Composer `.icon` dropped in as `assets/brand/mark.svg` (from specs 0037, 0045, 0046, and 0050, features 45, 54, 69, and 72).
-**Done when:** listing copy exists for all five locales within each store's length limits, and the designed icon replaces the placeholder in both store builds.
+Store title, subtitle, keywords, and description in English, Spanish, Brazilian Portuguese, French, Japanese, and Simplified Chinese, plus a designed app icon and an iOS Icon Composer `.icon` dropped in as `assets/brand/mark.svg` (from specs 0037, 0045, 0046, and 0050, features 45, 54, 69, and 72).
+**Done when:** listing copy exists for all six locales within each store's length limits, and the designed icon replaces the placeholder in both store builds.
 - [ ] Build it: `/develop store listing copy and app icon`
 
 ### 61. Automated accessibility checks · needs a decision
 Playwright plus `@axe-core/playwright` on key web pages, run in CI, plus a look at whether a maintained React Native accessibility lint fits Expo's config (from spec 0038, features 2 and 46). Needs feature 48's CI first.
 **Done when:** CI fails on serious axe violations on the key web pages, and mobile either runs an accessibility lint or the spec records why not.
 - [ ] Design it (spec): `/architect automated accessibility checks`
+
+### 81. Drink idea names and garnish · needs a decision
+The shared drink idea prompt lets an idea's name claim a mixer the recipe lacks (soda, tonic) or borrow a cocktail name (Margarita, Mojito), and lets the steps add a garnish the pantry does not hold, in every language. Found by the Opus review of live Chinese ideas (spec 0052, feature 74), which judged it not language specific.
+**Done when:** across languages, an idea's name only names ingredients the recipe uses or an established cocktail it truly is, and no step adds an ingredient or garnish outside the pantry unless it is clearly marked optional.
+- [ ] Design it (spec): `/architect drink idea names and garnish`
 
 ## Slice 32: Search sort control
 
@@ -980,18 +988,27 @@ Adds Korean (`ko`) on the Japanese path in 해요체, with no SQL function chang
 **Done when:** `/ko` pages and the mobile app read in Korean (untranslated content falls back to English), Korean search finds drinks and ingredients, and Korean is launched in the switcher, detection, sitemap, and hreflang.
 - [x] Design it (spec): `/architect korean locale`
 - [ ] Build it: `/develop korean locale`
-  - [ ] Thin thread, unlaunched: the `ko` row, `locale.ts` entries, both Korean normalizers with `localeNameTypography` and the edge function copies with the hand copies test, the `ko` font entry with the per entry face minimum and widened postbuild matcher, `:lang(ko)` CSS, the iOS `hangul-word` Text prop, the `ko` strings scan, mobile registration, one recipe translated, and the English set phone checks, satisfies AC-4 to AC-7, AC-9 to AC-12, AC-17 to AC-19, AC-21, AC-22
-  - [ ] Content: the AI terms pass, full catalog backfill with the Hanja, dot, lime, and lemon checks, the live `ko` searches, the `--locale ko` notes proposal, and the Korean UI strings, satisfies AC-1 to AC-3, AC-13 to AC-16
-  - [ ] AI second pass (Opus, the verify.md checklist) over strings, catalog sample, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-15, AC-17, AC-20, AC-21
-  - [ ] Launch (after the AI pass is recorded): `ko` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit with the launch tests, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-8, AC-23, AC-24
+  - [ ] Thin thread, unlaunched: the `ko` row, `locale.ts` entries, both Korean normalizers with `localeNameTypography` and the edge function copies with the hand copies test, the `ko` font entry with the per entry face minimum and widened postbuild matcher, `:lang(ko)` CSS, the iOS `hangul-word` Text prop, the `ko` strings scan, mobile registration, one recipe translated, and the English set phone checks, satisfies AC-4 to AC-7, AC-9 to AC-12, AC-17 to AC-19, AC-21, AC-22 (thin thread commit de8b06f 2026-11-12; the stored `ko` preference check, the mobile dev and production build lists, and the English set phone checks are still owed)
+  - [x] Content: the AI terms pass, full catalog backfill with the Hanja, dot, lime, and lemon checks, the live `ko` searches, the `--locale ko` notes proposal, and the Korean UI strings, satisfies AC-1 to AC-3, AC-13 to AC-16 (2026-11-13: terms pass applied, catalog backfilled with every check clean, live `ko` searches pass, 473 notes proposed, UI strings drafted in fad5564; the AC-16 admin save still needs a confirmed click through)
+  - [ ] AI second pass (Opus, the verify.md checklist) over strings, catalog sample, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-15, AC-17, AC-20, AC-21 (2026-11-13: review fixes in 56a7104, notes applied to 473 `ko` rows; notes facts pass done and reapplied on 2026-11-13, 176 lines fixed; still owed: 2 drink ideas after the redeploy and limit reset, and the 360 px and phone checks)
+  - [ ] Launch (after the AI pass is recorded): `ko` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit with the launch tests, a mobile build, the production sitemap and hreflang check, and the store listings, satisfies AC-8, AC-23, AC-24 (launch commit fbe627d 2026-11-13; the mobile build, production check, and store listings are still owed)
 - [ ] Verify it: `/check verify korean locale`
 - [ ] Test it: `/test korean locale`
 Spec [0051](../specs/0051-korean-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
-### 74. Simplified Chinese · needs a decision
-Adds Simplified Chinese (`zh`, hreflang `zh-CN`). No word spaces; reuses the CJK search from spec 0050 (a `('zh', 'simple')` row, no SQL function change) and its font and share image maps. The spec should decide whether search folds Traditional to Simplified characters, and whether the URL code is `zh` or `zh-cn`, leaving room for Traditional Chinese later.
+### 74. Simplified Chinese · in-progress
+Adds Simplified Chinese (`zh`, hreflang `zh-Hans`) on the Korean path, with no SQL function change: a `('zh', 'simple')` row reuses spec 0050's CJK contains search, with no Traditional to Simplified folding. Detection never picks `zh` from a Traditional tag (`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`), through a shared `localeForLanguageTag` helper. `normalizeChineseTypography` sets mainland punctuation and spacing, and `normalizeChineseName` removes middle dots from names; drinks with no established Chinese name keep their English name. A curated Traditional character list and a banned terms list back a strings scan and catalog SQL checks. Noto Sans SC and Noto Serif SC 600 on `/zh` only. No human review: an Opus second pass against a checklist in verify.md gates launch.
 **Done when:** `/zh` pages and the mobile app read in Simplified Chinese (untranslated content falls back to English), Chinese search finds drinks and ingredients, and Simplified Chinese is launched in the switcher, detection, sitemap, and hreflang.
-- [ ] Design it (spec): `/architect simplified chinese locale`
+- [x] Design it (spec): `/architect simplified chinese locale`
+- [ ] Build it: `/develop simplified chinese locale`
+  - [ ] Thin thread, unlaunched: the `zh` row, `locale.ts` entries, the Traditional aware detection helper on web and mobile, `chineseScript.ts`, both Chinese normalizers with the kept English name step and the edge function copies with the hand copies test, the `zh` font entry and widened postbuild matcher, `:lang(zh-Hans)` CSS, the `zh` strings scans, mobile registration, one recipe translated, and the English set phone checks, satisfies AC-4 to AC-7, AC-9 to AC-12, AC-17 to AC-19, AC-21, AC-22
+  - [ ] Content: the AI terms pass, full catalog backfill with the Traditional, kana, Hangul, banned term, dot, name, lime, and lemon checks, the live `zh` searches, the `--locale zh` notes proposal, and the Chinese UI strings, satisfies AC-1 to AC-3, AC-13 to AC-16
+  - [ ] AI second pass (Opus, the verify.md checklist) over strings, every recipe and ingredient name, a catalog sample, drink ideas, and every note, then the notes apply, satisfies AC-1, AC-15, AC-17, AC-20, AC-21
+  - [ ] Launch (after the AI pass is recorded): `zh` in `LAUNCHED_LOCALES` and `CATALOG_TRANSLATION_LOCALES` in one commit with the launch tests, a mobile build, the production sitemap, hreflang, and detection check, and the store listings, satisfies AC-8, AC-23, AC-24
+- [ ] Verify it: `/check verify simplified chinese locale`
+- [ ] Test it: `/test simplified chinese locale`
+Build progress (2026-11-13): UI strings, catalog, and notes are reviewed and live, unlaunched. Two Opus recipe reviews (all 475 names, two 30 recipe samples) and a full catalog scan drove pipeline fixes (no quote truncation, units kept, a reply check before upsert) and a 71 name glossary; every catalog scan returns zero. 1,419 note lines reviewed (611 findings fixed) and applied to 473 `zh` rows; other locales unchanged by hash. SQL structure query and security advisor pass. Edge Function deployed (version 21); three drink idea batches reviewed; Chinese conventions met (AC-17, AC-20), the shared name and garnish issue accepted and tracked separately. No pronoun step rule deployed (version 24); one live idea to confirm it. Still owed: the AC-16 admin save, 360 px and phone checks, then launch. Evidence: [verify.md](../specs/0052-simplified-chinese-locale/verify.md).
+Spec [0052](../specs/0052-simplified-chinese-locale/index.md) · code in `supabase/migrations`, `packages/shared`, `packages/import-job`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`
 
 ### 75. Arabic · needs a decision
 Adds Arabic (`ar`), the first right to left locale. Web needs `dir="rtl"` and logical CSS properties; mobile needs `I18nManager` RTL with its app restart, plus mirrored icons and layouts. Built in `arabic` search config.
@@ -1012,6 +1029,16 @@ Search ignores accents only for French translated recipe names (spec 0046). Ingr
 Korean users often search by initial consonants only (ㅁㄱㄹㅌ for 마가리타), and a query ending in a half typed consonant (진ㅌ) finds nothing new today. Needs a stored decomposed name (or an immutable helper with an index) and a SQL step gated by a script test, never a locale test, so the 0045 no locale in SQL rule holds (from spec 0051, feature 73).
 **Done when:** on `/ko`, a query of only initial consonants finds recipes and ingredients whose names start with or contain those consonants, a trailing loose consonant no longer blocks a match, and a before and after snapshot shows no change for any query without a loose jamo.
 - [ ] Design it (spec): `/architect korean initial consonant search`
+
+### 79. Traditional to Simplified search folding · needs a decision
+On `/zh`, a query typed in Traditional characters (瑪格麗特) finds only names that share those exact characters. Needs a character map in or beside `search_fold`, gated by script, never by locale, with care for pairs where several Traditional characters share one Simplified form (from spec 0052, feature 74).
+**Done when:** a Traditional spelling of a drink or ingredient name finds the same rows as its Simplified spelling, and a before and after snapshot shows no change for any query without a Traditional character in every locale.
+- [ ] Design it (spec): `/architect traditional to simplified search folding`
+
+### 80. Traditional Chinese · needs a decision
+A separate Traditional Chinese locale beside `zh`. It would be the first hyphenated code (`zh-hant`), would claim the language tags that `isTraditionalChineseTag` skips today (`zh-TW`, `zh-HK`, `zh-MO`, `zh-Hant`), and needs its own fonts under `:lang(zh-Hant)`, its own terms (Taiwan wording), and a decision on fallback between the two Chinese locales (from spec 0052, feature 74).
+**Done when:** Traditional Chinese visitors land on Traditional pages, Simplified visitors still land on `/zh`, and both are listed distinctly in the switcher and hreflang.
+- [ ] Design it (spec): `/architect traditional chinese locale`
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.

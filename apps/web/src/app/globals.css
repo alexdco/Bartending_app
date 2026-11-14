@@ -172,6 +172,34 @@
   overflow-wrap: anywhere;
 }
 
+/* Spec 0051 AC-11: buttons and chips are shrinking flex children, and
+   `anywhere` lets them collapse to one syllable per line at 360 px.
+   `break-word` keeps their min content at the longest word, so labels
+   break only between words, while an overlong label still wraps. */
+:root:lang(ko) button {
+  overflow-wrap: break-word;
+}
+
+/* Simplified Chinese (spec 0052 AC-10, AC-11). The /zh stylesheet supplies
+   Noto SC only on Chinese pages. Inter handles Latin body text, while all
+   heading characters use Noto Serif SC 600. Strict line breaking keeps
+   closing punctuation off the start of a line. */
+:root:lang(zh-Hans) {
+  --font-body-script: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC";
+  --font-display-loaded: "Noto Serif SC", "Songti SC", "SimSun", "Noto Serif CJK SC";
+  --font-body: var(--font-body-loaded), var(--font-body-script), var(--font-body-fallback);
+  --leading-display: 1.3;
+  --leading-heading: 1.4;
+  --leading-subheading: 1.45;
+  --leading-body: 1.8;
+  --leading-body-small: 1.7;
+  --leading-label: 1.5;
+}
+
+:root:lang(zh-Hans) body {
+  line-break: strict;
+}
+
 /* Age gate (spec 0037). The inline head script sets html[data-age] before
    paint; these rules are unlayered so they win over Tailwind utilities. The
    page stays visible under the scrim, never display: none or visibility:

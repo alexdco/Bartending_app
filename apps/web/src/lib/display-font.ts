@@ -8,7 +8,7 @@ import type { Locale } from "@bartendingapp/shared";
 // font here and in layout.tsx.
 
 export type DisplayFont =
-  "fraunces" | "lora" | "notoSerifDevanagari" | "notoSerifJp" | "notoSerifKr";
+  "fraunces" | "lora" | "notoSerifDevanagari" | "notoSerifJp" | "notoSerifKr" | "notoSerifSc";
 
 export const DISPLAY_FONT_BY_LOCALE: Record<Locale, DisplayFont> = {
   en: "fraunces",
@@ -19,6 +19,7 @@ export const DISPLAY_FONT_BY_LOCALE: Record<Locale, DisplayFont> = {
   hi: "notoSerifDevanagari",
   ja: "notoSerifJp",
   ko: "notoSerifKr",
+  zh: "notoSerifSc",
 };
 
 /**
@@ -27,7 +28,8 @@ export const DISPLAY_FONT_BY_LOCALE: Record<Locale, DisplayFont> = {
  * keeps Inter alone, and the font is downloaded only on pages whose locale
  * names it.
  */
-export type BodyScriptFont = "none" | "notoSansDevanagari" | "notoSansJp" | "notoSansKr";
+export type BodyScriptFont =
+  "none" | "notoSansDevanagari" | "notoSansJp" | "notoSansKr" | "notoSansSc";
 
 export const BODY_SCRIPT_FONT_BY_LOCALE: Record<Locale, BodyScriptFont> = {
   en: "none",
@@ -38,6 +40,7 @@ export const BODY_SCRIPT_FONT_BY_LOCALE: Record<Locale, BodyScriptFont> = {
   hi: "notoSansDevanagari",
   ja: "notoSansJp",
   ko: "notoSansKr",
+  zh: "notoSansSc",
 };
 
 /**
@@ -57,6 +60,8 @@ export const SCRIPT_FONT_STYLESHEET_BY_LOCALE: Record<Locale, string | null> = {
   ja: "/fonts/ja/fonts.css",
   // Spec 0051 AC-10.
   ko: "/fonts/ko/fonts.css",
+  // Spec 0052 AC-10: Simplified Chinese fonts load only on /zh.
+  zh: "/fonts/zh/fonts.css",
 };
 
 /** The display fonts the share image bundles; a locale without one maps away in SHARE_IMAGE_LOCALE. */

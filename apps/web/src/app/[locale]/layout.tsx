@@ -70,6 +70,8 @@ const DISPLAY_FONTS: Record<DisplayFont, { readonly variable: string }> = {
   // No class: the /ko stylesheet and the :root:lang(ko) block supply Noto
   // Serif KR (spec 0051 AC-10).
   notoSerifKr: { variable: "" },
+  // The /zh stylesheet and :root:lang(zh-Hans) supply Noto Serif SC (spec 0052 AC-10).
+  notoSerifSc: { variable: "" },
 };
 
 // Devanagari body text on /hi, after Inter in the :lang(hi) --font-body, so
@@ -89,6 +91,8 @@ const BODY_SCRIPT_FONT_CLASS: Record<BodyScriptFont, string> = {
   notoSansJp: "",
   // No class: the /ko stylesheet and :root:lang(ko) supply Noto Sans KR (spec 0051 AC-10).
   notoSansKr: "",
+  // The /zh stylesheet and :root:lang(zh-Hans) supply Noto Sans SC (spec 0052 AC-10).
+  notoSansSc: "",
 };
 
 const inter = Inter({

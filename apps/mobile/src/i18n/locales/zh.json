@@ -1,0 +1,154 @@
+{
+  "common": {
+    "back": "返回",
+    "showPassword": "显示密码",
+    "hidePassword": "隐藏密码",
+    "retry": "重试",
+    "somethingWentWrong": "出了点问题"
+  },
+  "nav": {
+    "home": "首页",
+    "search": "搜索",
+    "pantry": "原料柜",
+    "shoppingList": "购物清单",
+    "drinkIdeas": "调酒灵感",
+    "popular": "热门",
+    "service": "出品",
+    "learn": "学习",
+    "quizzes": "测验"
+  },
+  "menu": {
+    "account": "账号",
+    "signOut": "退出登录",
+    "language": "语言",
+    "bartenderMode": "调酒师模式"
+  },
+  "account": {
+    "heading": "账号",
+    "viewFavorites": "查看收藏",
+    "signedOut": "已退出登录",
+    "sessionExpiredDescription": "登录已过期。请重新登录，继续同步你的原料柜和收藏。",
+    "loadingAccount": "正在加载账号",
+    "signIn": "登录",
+    "createAccount": "注册账号",
+    "email": "邮箱",
+    "password": "密码",
+    "nameOptional": "名字（选填）",
+    "pleaseWait": "请稍等…",
+    "createAccountAction": "注册",
+    "needAccountSignUp": "还没有账号？注册",
+    "alreadyHaveAccountSignIn": "已有账号？登录",
+    "checkYourInbox": "查看收件箱",
+    "checkEmailToFinish": "请查看邮件，完成账号注册。如果已有账号，请直接登录。",
+    "name": "名字",
+    "displayName": "显示名称",
+    "saving": "正在保存…",
+    "saveName": "保存名字",
+    "nameTooLong": "名字不能超过 50 个字符。",
+    "nameTooShort": "名字至少需要 1 个字符。",
+    "nameSaveFailed": "无法保存名字。请检查网络后重试。",
+    "signedIn": "已登录",
+    "signingOut": "正在退出…",
+    "signOut": "退出登录",
+    "changeEmail": "修改邮箱",
+    "newEmail": "新邮箱",
+    "checkNewEmailToConfirm": "请查看新邮箱中的邮件，确认修改。",
+    "updateEmail": "更新邮箱",
+    "changePassword": "修改密码",
+    "resetEmailDescription": "我们会通过邮件发送设置新密码的链接。",
+    "checkEmailForResetLink": "请查看邮件中的重置链接。",
+    "sendResetEmail": "发送重置邮件",
+    "sendingResetEmail": "正在发送…",
+    "deleteAccount": "删除账号",
+    "deleteAccountDescription": "这会永久删除你的账号、原料柜、收藏和偏好设置，且无法撤销。输入 DELETE 确认。",
+    "typeDeleteToConfirm": "输入 DELETE 确认",
+    "deleteAccountFailed": "无法删除账号。请检查网络后重试。",
+    "deleteMyAccount": "删除我的账号",
+    "deleting": "正在删除…",
+    "privacyPolicy": "隐私政策",
+    "errorWeakPassword": "密码至少需要 6 个字符。",
+    "errorInvalidCredentials": "邮箱或密码不正确。",
+    "errorEmailAlreadyRegistered": "请查看邮件，完成账号注册。如果已有账号，请直接登录。",
+    "errorNoSession": "无法验证登录状态。请检查网络后重试。",
+    "errorGeneric": "出了点问题。请检查网络后重试。",
+    "responsibleDrinking": "请理性饮酒。"
+  },
+  "ageGate": {
+    "title": "进入之前",
+    "question": "你已达到居住地的法定饮酒年龄吗？",
+    "yes": "是的",
+    "no": "没有",
+    "blockedTitle": "以后再来吧",
+    "blockedBody": "Cocktailist 仅供达到法定饮酒年龄的人使用，请在达到年龄要求后再来。",
+    "privacyLink": "隐私政策",
+    "responsibleDrinking": "请理性饮酒。"
+  },
+  "home": {
+    "classicsTitle": "从经典开始"
+  },
+  "popular": {
+    "emptyTitle": "暂无热门饮品",
+    "emptyDescription": "我们正在整理各地最受欢迎的饮品。你可以先浏览全部配方。",
+    "regionEmptyTitle": "该地区暂无热门饮品",
+    "regionEmptyDescription": "该地区暂无饮品，先浏览全部配方吧。",
+    "browseAll": "浏览全部配方"
+  },
+  "drinkIdeas": {
+    "emptyPantryTitle": "添加几种原料，获取灵感",
+    "emptyPantryDescription": "告诉我们你的吧台有哪些原料，看看能调什么酒。",
+    "addIngredients": "添加原料"
+  },
+  "service": {
+    "loading": "正在加载出品页面",
+    "loadFailed": "无法加载出品页面。请检查网络后重试。",
+    "loadingBar": "正在加载酒吧数据",
+    "loadBarFailed": "无法加载这家酒吧",
+    "checkConnection": "请检查网络后重试。"
+  },
+  "ratings": {
+    "none": "暂无评分，来写下第一条吧。",
+    "summary_other": "{{average}}（{{count}} 条评分）",
+    "starsLabel_other": "根据 {{count}} 条评分，平均 {{average}} 分，满分 5 分"
+  },
+  "favorites": {
+    "toggleLabel": "收藏{{name}}"
+  },
+  "recipe": {
+    "instructions": "做法",
+    "cocktailDbCredit": "配方和图片来自 TheCocktailDB",
+    "drinkStyle": "酒款风格",
+    "bartenderTip": "调酒技巧",
+    "presentationTip": "摆盘技巧",
+    "allergens": "过敏原信息",
+    "allergensNone": "所列原料不含常见过敏原。",
+    "allergensIncomplete": "过敏原信息不完整，部分原料尚未审核。",
+    "allergensDisclaimer": "信息基于所列原料。不同品牌可能有差异，请务必查看产品标签。",
+    "drinkStyles": {
+      "sour": "酸酒",
+      "highball": "高球",
+      "spirit_forward": "烈酒主导",
+      "fizz_collins": "菲兹与柯林斯",
+      "tiki": "提基",
+      "flip_cream": "蛋酒与奶油酒",
+      "punch": "潘趣",
+      "shooter": "一口饮",
+      "hot": "热饮",
+      "frozen": "冰沙",
+      "other": "其他"
+    },
+    "allergenLabels": {
+      "egg": "鸡蛋",
+      "milk": "牛奶",
+      "tree_nuts": "树坚果",
+      "peanuts": "花生",
+      "gluten": "麸质",
+      "soy": "大豆",
+      "sulfites": "亚硫酸盐",
+      "fish": "鱼类",
+      "shellfish": "贝类及甲壳类",
+      "celery": "芹菜",
+      "sesame": "芝麻",
+      "mustard": "芥末"
+    }
+  }
+}

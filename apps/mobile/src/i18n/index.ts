@@ -4,7 +4,7 @@ import * as Localization from "expo-localization";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import {
   DEFAULT_LOCALE,
-  isLaunchedLocale,
+  localeForLanguageTag,
   isSupportedLocale,
   LAUNCHED_LOCALES,
   resolveStoredLocale,
@@ -19,6 +19,7 @@ import ru from "./locales/ru.json";
 import hi from "./locales/hi.json";
 import ja from "./locales/ja.json";
 import ko from "./locales/ko.json";
+import zh from "./locales/zh.json";
 
 const STORAGE_KEY = "localePreference";
 
@@ -32,7 +33,7 @@ export const selectableLocales: readonly Locale[] = showAllLocales
 function detectDeviceLocale(): Locale {
   const [primary] = Localization.getLocales();
   // Detection never picks an unlaunched locale (spec 0045 AC-7).
-  return isLaunchedLocale(primary?.languageCode) ? primary.languageCode : DEFAULT_LOCALE;
+  return localeForLanguageTag(primary?.languageTag) ?? DEFAULT_LOCALE;
 }
 
 export async function getStoredLocale(): Promise<Locale | null> {
@@ -76,6 +77,8 @@ export async function initI18n(): Promise<void> {
         ja: { translation: ja },
         // Korean has one plural form too, so i18next only reads _other (spec 0051 AC-12).
         ko: { translation: ko },
+        // Simplified Chinese uses only _other (spec 0052 AC-12).
+        zh: { translation: zh },
       },
       lng: initialLocale,
       fallbackLng: DEFAULT_LOCALE,

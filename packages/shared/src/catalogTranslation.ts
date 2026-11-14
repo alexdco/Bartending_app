@@ -19,6 +19,8 @@ import { normalizeRussianTypography } from "./russianTypography";
 import { normalizeHindiTypography } from "./hindiTypography";
 import { normalizeJapaneseTypography } from "./japaneseTypography";
 import { normalizeKoreanName, normalizeKoreanTypography } from "./koreanTypography";
+import { normalizeChineseName, normalizeChineseTypography } from "./chineseTypography";
+import { keepSourceNameUnlessChinese } from "./chineseScript";
 import {
   CATALOG_TRANSLATION_LOCALES,
   LOCALE_AI_LANGUAGE,
@@ -77,7 +79,8 @@ export interface NameInput {
  * The punctuation pass a locale's AI output gets before it is stored: French
  * typography for `fr` (spec 0046 AC-1), Russian for `ru` (spec 0047 AC-1),
  * Hindi for `hi` (spec 0048 AC-1), Japanese for `ja` (spec 0050 AC-1),
- * Korean for `ko` (spec 0051 AC-1), unchanged text for every other locale.
+ * Korean for `ko` (spec 0051 AC-1), Chinese for `zh` (spec 0052 AC-1),
+ * unchanged text for every other locale.
  */
 export function localeTypography(locale: Locale): (text: string) => string {
   if (locale === "fr") return normalizeFrenchTypography;
@@ -85,17 +88,33 @@ export function localeTypography(locale: Locale): (text: string) => string {
   if (locale === "hi") return normalizeHindiTypography;
   if (locale === "ja") return normalizeJapaneseTypography;
   if (locale === "ko") return normalizeKoreanTypography;
+  if (locale === "zh") return normalizeChineseTypography;
   return (text) => text;
 }
 
 /**
  * The pass a translated name (recipe, glass, ingredient, tag) gets: Korean
  * names also lose any middle dot next to Hangul, so search can see past it
- * (spec 0051 AC-3, AC-14). Every other locale gets its localeTypography.
+ * (spec 0051 AC-3, AC-14), and Chinese names lose any middle dot next to a
+ * Han character (spec 0052 AC-14). Every other locale gets its
+ * localeTypography.
  */
 export function localeNameTypography(locale: Locale): (text: string) => string {
   if (locale === "ko") return normalizeKoreanName;
+  if (locale === "zh") return normalizeChineseName;
   return localeTypography(locale);
+}
+
+/**
+ * The stored name of a translated recipe or ingredient: its
+ * localeNameTypography, and for `zh` the English source name unchanged when
+ * the model returned a name with no Han character, so a kept English name
+ * never drifts in case, apostrophes, or `&` (spec 0052 AC-14). Glass and tag
+ * names do not use this; they are always translated.
+ */
+export function translatedEntityName(locale: Locale, translated: string, source: string): string {
+  const typeset = localeNameTypography(locale)(translated);
+  return locale === "zh" ? keepSourceNameUnlessChinese(typeset, source) : typeset;
 }
 
 /**
@@ -156,6 +175,98 @@ async function withRetry<T>(label: string, fn: () => Promise<T>): Promise<T | nu
   return null;
 }
 
+// A source unit and the token its Chinese measure must still hold (spec 0052
+// AC-13): the model must never convert between units or swap cl for ml.
+const CHINESE_MEASURE_UNITS: readonly (readonly [RegExp, RegExp])[] = [
+  [/\bcl\b/i, /cl/i],
+  [/\bml\b/i, /ml/i],
+  [/\boz\b/i, /盎司/],
+];
+const SOURCE_SENTENCE_END = /[.!?)"'”’]\s*$/;
+const CHINESE_SENTENCE_END = /[。！？…”）)!?.]\s*$/;
+
+/**
+ * The source instructions with quote marks removed, before they go into the
+ * Chinese prompt (spec 0052 AC-2). Quoted words make the model reach for a
+ * Chinese quote, which it can emit as a straight `"` that ends the JSON string
+ * of its structured reply and loses the rest of the steps. `'On the rocks'`
+ * becomes `On the rocks`; apostrophes (`Kirby's`) are left alone.
+ */
+export function unquotedSource(text: string): string {
+  return text.replace(/(^|[\s(])'([^'\n]+)'(?=[\s.,;:!?)]|$)/g, "$1$2").replace(/["“”]/g, "");
+}
+
+/**
+ * A Chinese measure with its ounces labelled 盎司 (spec 0052 AC-13):
+ * `2 fl oz` → `2 液量盎司`, `8 oz` → `8 盎司`. Pure text, no other change.
+ */
+export function chineseMeasureUnits(measure: string): string {
+  return measure
+    .replace(/(?<![A-Za-z])fl\.?\s*oz(?![A-Za-z])/gi, "液量盎司")
+    .replace(/(?<![A-Za-z])oz(?![A-Za-z])/gi, "盎司");
+}
+
+/**
+ * What is wrong with one Chinese recipe reply, so the retry can catch it
+ * before the upsert (spec 0052 AC-2, AC-13): a measure whose unit changed
+ * (cl to ml, oz to ml), a decimal split by a space (`0. 5`), or instructions
+ * cut short (a source sentence that ends in punctuation, translated into text
+ * that does not, which is how a stray ASCII quote truncates a reply). Empty
+ * when the reply is fine.
+ */
+export function chineseRecipeReplyProblems(
+  source: {
+    readonly instructions: string;
+    readonly ingredients: readonly {
+      readonly ingredient_id: string;
+      readonly measure: string | null;
+    }[];
+  },
+  reply: {
+    readonly instructions: string;
+    readonly ingredient_measures: readonly {
+      readonly ingredient_id: string;
+      readonly measure: string | null;
+    }[];
+  },
+): readonly string[] {
+  const sourceMeasures = new Map(source.ingredients.map((i) => [i.ingredient_id, i.measure ?? ""]));
+  const measureProblems = reply.ingredient_measures.flatMap(({ ingredient_id, measure }) => {
+    const from = sourceMeasures.get(ingredient_id) ?? "";
+    const to = measure ?? "";
+    const unitChanged = CHINESE_MEASURE_UNITS.some(
+      ([sourceUnit, chineseUnit]) => sourceUnit.test(from) && to !== "" && !chineseUnit.test(to),
+    );
+    return [
+      ...(unitChanged
+        ? [`measure ${ingredient_id} changed its unit: "${from}" became "${to}"`]
+        : []),
+      ...(/\d\.\s+\d/.test(to) ? [`measure ${ingredient_id} splits a decimal: "${to}"`] : []),
+    ];
+  });
+  const cutShort =
+    SOURCE_SENTENCE_END.test(source.instructions.trim()) &&
+    !CHINESE_SENTENCE_END.test(reply.instructions.trim());
+  return [
+    ...measureProblems,
+    ...(cutShort
+      ? [`instructions end mid sentence: "…${reply.instructions.trim().slice(-24)}"`]
+      : []),
+  ];
+}
+
+/** Reject malformed model batches before upsert, while the call can still retry. */
+export function assertTranslationIds(
+  expected: readonly { readonly id: string }[],
+  translated: readonly { readonly id: string }[],
+): void {
+  const wanted = expected.map(({ id }) => id).sort();
+  const received = translated.map(({ id }) => id).sort();
+  if (wanted.length !== received.length || wanted.some((id, index) => id !== received[index])) {
+    throw new Error("Translation response must contain every requested id exactly once");
+  }
+}
+
 async function translateRecipeBatch(
   anthropic: Anthropic,
   localeName: string,
@@ -171,7 +282,8 @@ async function translateRecipeBatch(
         )
         .join("\n");
       return (
-        `id: ${r.id}\nname: ${r.name}\nglass: ${r.glass ?? "(none)"}\ninstructions: ${r.instructions}\n` +
+        `id: ${r.id}\nname: ${r.name}\nglass: ${r.glass ?? "(none)"}\n` +
+        `instructions: ${localeName === LOCALE_AI_LANGUAGE.zh ? unquotedSource(r.instructions) : r.instructions}\n` +
         `ingredients:\n${ingredientLines}`
       );
     })
@@ -190,7 +302,12 @@ async function translateRecipeBatch(
           `translate or alter an ingredient_id. Keep cocktail terminology natural for a home bartender ` +
           `reading in ${localeName}. Return one entry per recipe, in the same order, referencing each by ` +
           `its id, and one ingredient_measures entry per ingredient listed, in the same order, referencing ` +
-          `each by its ingredient_id.${terms}\n\n${recipesText}`,
+          `each by its ingredient_id.${terms}` +
+          (localeName === LOCALE_AI_LANGUAGE.zh
+            ? " Every non-null glass field must contain Chinese characters. Glass labels are not cocktail names: translate the glass type even when a proper name stays English (Nick and Nora glass becomes Nick and Nora 杯)." +
+              " Keep every measure's number and unit as the source gives them: cl stays cl, ml stays ml, oz becomes 盎司, cup becomes 杯, and a decimal keeps its dot with no space (0.5). Never convert between units. Translate the complete instructions to their last sentence. Write no quotation marks of any kind in the instructions."
+            : "") +
+          `\n\n${recipesText}`,
       },
     ],
     output_config: {
@@ -202,7 +319,26 @@ async function translateRecipeBatch(
   if (!parsed) {
     throw new Error("recipe translation call did not return a parseable response");
   }
-  return parsed.recipes;
+  assertTranslationIds(batch, parsed.recipes);
+  if (localeName !== LOCALE_AI_LANGUAGE.zh) return parsed.recipes;
+
+  const replies = parsed.recipes.map((reply) => ({
+    ...reply,
+    ingredient_measures: reply.ingredient_measures.map((m) => ({
+      ...m,
+      measure: m.measure === null ? null : chineseMeasureUnits(m.measure),
+    })),
+  }));
+  const byId = new Map(batch.map((r) => [r.id, r]));
+  const problems = replies.flatMap((reply) =>
+    chineseRecipeReplyProblems(byId.get(reply.id)!, reply).map(
+      (problem) => `${reply.id}: ${problem}`,
+    ),
+  );
+  if (problems.length > 0) {
+    throw new Error(`Chinese recipe reply failed its checks: ${problems.join("; ")}`);
+  }
+  return replies;
 }
 
 /**
@@ -223,7 +359,11 @@ export function nameTranslationPrompt(
     `home bartender shopping or reading a recipe in ${localeName} would recognize. Return one item ` +
     `per input, in the same order, referencing each by its id. Each name is a short label: return ` +
     `only the translated name itself, with no quotes, no description, and no sentence; the style ` +
-    `notes below are for full sentences and do not apply to these names.${terms}\n\n${itemsText}`
+    `notes below are for full sentences and do not apply to these names.${terms}` +
+    (kind === "tag" && localeName === LOCALE_AI_LANGUAGE.zh
+      ? " These inputs are descriptive tags, not recipe names. Every returned tag must contain Chinese characters. Translate ordinary occasion, flavour, ingredient, and drink-style tags fully, even when a tag matches a cocktail title (Mother's Day becomes 母亲节; Apple Pie becomes 苹果派). The exception that keeps English recipe names never applies to tags. Preserve an English brand token with a Chinese category stated by the source, or add 品牌 when none is stated."
+      : "") +
+    `\n\n${itemsText}`
   );
 }
 
@@ -252,6 +392,7 @@ async function translateNameBatch(
   if (!parsed) {
     throw new Error(`${kind} translation call did not return a parseable response`);
   }
+  assertTranslationIds(batch, parsed.items);
   return parsed.items;
 }
 
@@ -344,7 +485,7 @@ async function translateRecipes(
       .map((r) => ({
         recipe_id: r.id,
         locale,
-        name: typesetName(r.name),
+        name: translatedEntityName(locale, r.name, byId.get(r.id)!.name),
         instructions: typeset(r.instructions),
         glass: r.glass === null ? null : typesetName(r.glass),
         source_name_hash: byId.get(r.id)!.hash,
@@ -448,13 +589,12 @@ async function translateIngredients(
     }
 
     const byId = new Map(batch.map((i) => [i.id, i]));
-    const typesetName = localeNameTypography(locale);
     const rows = result
       .filter((r) => byId.has(r.id))
       .map((r) => ({
         ingredient_id: r.id,
         locale,
-        name: typesetName(r.name),
+        name: translatedEntityName(locale, r.name, byId.get(r.id)!.name),
         source_name_hash: byId.get(r.id)!.hash,
       }));
 

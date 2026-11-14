@@ -10,4 +10,7 @@ export const SCRIPT_FONT_STYLESHEETS = [
   // Spec 0051 AC-10. Both KR families measured 124 faces on 2026-11-12, above
   // the default minimum, so this entry sets no minFacesPerFamily of its own.
   { dir: "ko", families: ["Noto+Sans+KR:wght@100..900", "Noto+Serif+KR:wght@600"] },
+  // Spec 0052 AC-10. Both SC families measured 101 faces on 2026-11-13,
+  // above the default minimum, so no override is needed.
+  { dir: "zh", families: ["Noto+Sans+SC:wght@100..900", "Noto+Serif+SC:wght@600"] },
 ];

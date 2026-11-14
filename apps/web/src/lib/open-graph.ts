@@ -24,6 +24,7 @@ export const SHARE_IMAGE_LOCALE: Record<Locale, Locale> = {
   hi: "en",
   ja: "en",
   ko: "en",
+  zh: "en",
 };
 
 // Next merges metadata shallowly per key, so a page that sets its own
