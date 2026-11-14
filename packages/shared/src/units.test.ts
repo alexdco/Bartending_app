@@ -213,8 +213,8 @@ describe("isVolumeUnit and isCountedUnit (spec 0054)", () => {
   });
 
   it("keeps counted lines out of the toggle", () => {
-    expect(formatAmountInUnit(2, "dash", "ml")).toBeNull();
-    expect(formatAmountInUnit(1, "each", "oz")).toBeNull();
+    expect(formatAmountInUnit(2, "dash", "ml", "en")).toBeNull();
+    expect(formatAmountInUnit(1, "each", "oz", "en")).toBeNull();
   });
 
   it("recognizes the counted units when read back from the database", () => {
@@ -300,15 +300,24 @@ describe("splitIngredientLines", () => {
 
 describe("formatAmountOrRangeInUnit (spec 0054 AC-6)", () => {
   it("converts both ends of a volume range, joined by an en dash", () => {
-    expect(formatAmountOrRangeInUnit(2, 3, "cl", "ml")).toBe("20–30");
+    expect(formatAmountOrRangeInUnit(2, 3, "cl", "ml", "en")).toBe("20–30");
   });
 
   it("formats a single amount as before", () => {
-    expect(formatAmountOrRangeInUnit(2, null, "cl", "ml")).toBe("20");
+    expect(formatAmountOrRangeInUnit(2, null, "cl", "ml", "en")).toBe("20");
+  });
+
+  it("uses the locale's decimal separator and keeps oz fractions (spec 0055 AC-1, AC-9)", () => {
+    expect(formatAmountOrRangeInUnit(1, null, "shot", "ml", "fr")).toBe("44,4");
+    expect(formatAmountOrRangeInUnit(1, null, "shot", "ml", "en")).toBe("44.4");
+    expect(formatAmountOrRangeInUnit(1, null, "shot", "cl", "es")).toBe("4,4");
+    expect(formatAmountOrRangeInUnit(1, null, "shot", "ml", "zh")).toBe("44.4");
+    expect(formatAmountOrRangeInUnit(2, 3, "cl", "ml", "fr")).toBe("20–30");
+    expect(formatAmountOrRangeInUnit(45, null, "ml", "oz", "fr")).toBe("1 1/2");
   });
 
   it("returns null for a counted range, which shows its measure text", () => {
-    expect(formatAmountOrRangeInUnit(2, 3, "dash", "ml")).toBeNull();
+    expect(formatAmountOrRangeInUnit(2, 3, "dash", "ml", "en")).toBeNull();
   });
 });
 

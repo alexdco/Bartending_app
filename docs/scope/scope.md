@@ -68,7 +68,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 55 | Staples in AI drink ideas | Hardening | in-progress |
 | 56 | Learn route caching | Hardening | in-progress |
 | 57 | Batch calculator v2 | Hardening | in-progress |
-| 58 | Locale aware number formatting | Hardening | planned |
+| 58 | Locale aware number formatting | Hardening | in-progress |
 | 59 | Catalog freshness rules | Hardening | planned |
 | 60 | Store listing copy and app icon | Hardening | planned |
 | 61 | Automated accessibility checks | Hardening | planned |
@@ -865,10 +865,18 @@ Three batch gaps from spec 0035: counted lines scale silently (`2 dashes` × 25 
 - [ ] Test it: `/test batch calculator v2`
 Spec [0054](../specs/0054-batch-calculator-v2/index.md) · code in `packages/shared`, `packages/import-job`, `supabase/migrations`, `apps/web`, `apps/mobile`
 
-### 58. Locale aware number formatting · needs a decision
+### 58. Locale aware number formatting · in-progress
 `es`, `pt`, and `fr` use a decimal comma (French also uses a space as the thousands separator), but measures format the same in every locale (from specs 0045 and 0046, features 54 and 69).
 **Done when:** measures, conversions, and batch amounts show the right decimal separator for each locale on web and mobile, from one shared formatter.
-- [ ] Design it (spec): `/architect locale aware number formatting`
+- [x] Design it (spec): `/architect locale aware number formatting`
+- [ ] Build it: `/develop locale aware number formatting`
+  - [x] Thin thread: `numberFormat.ts` (`formatNumber`, `localizeDecimalText`, `parseDecimalInput`), required locale on the conversion formatters, both ingredient lists including verbatim measure text, satisfies AC-1, AC-4, AC-9, AC-10, AC-11
+  - [ ] Batch and Quick Build: required locale on batch formatters, counts, `formatParts`, and `computeBatch`; unscaled lines and Quick Build fallbacks normalized, satisfies AC-2, AC-3, AC-4, AC-9, AC-11
+  - [ ] Inputs: comma or dot in part size, dilution, and bar amount; locale prefill; bar form inline error in nine locales; formatted numbers in `partSizeError`, satisfies AC-6, AC-7, AC-8, AC-12
+  - [ ] Drink idea amounts, the `String(`/`toFixed(` sweep, and an iOS comma region keypad check, satisfies AC-5, AC-6, AC-11
+- [ ] Verify it: `/check verify locale aware number formatting`
+- [ ] Test it: `/test locale aware number formatting`
+Spec [0055](../specs/0055-locale-aware-number-formatting.md) · code in `packages/shared`, `apps/web`, `apps/mobile`
 
 ### 59. Catalog freshness rules · needs a decision
 Keep the catalog right as it changes: decide whether the import job or an admin edit wins on a catalog recipe (spec 0035), give new imports and admin adds a fame score so they do not sort last (spec 0038), and add a hidden duplicate's name as a `recipe_aliases` entry on the kept recipe (spec 0036).
@@ -1068,6 +1076,8 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Scale whole items as prep counts**: `1 wedge`, `2 slices`, `1 twist`, `1 sprig` × servings, as counts only (feature 57) · from spec 0054
 - **Translate straining**: a checked list plus labels in nine locales, like method (feature 57) · needs a decision · from spec 0054
 - **Caching for other public pages**: quizzes, recipes, popular, and home also render per request because no page calls `setRequestLocale`; decide whether to cache them, possibly as a cross cutting standard or a Cache Components switch (feature 56) · needs a decision · from spec 0053
+- **Decimal separator rule in drink idea steps**: a per locale separator line in the idea prompt, if steps show mixed separators in review (feature 58) · from spec 0055
+- **No break space between number and unit**: French typography, so `4,5` and `cl` never wrap apart (feature 58) · needs a decision · from spec 0055
 
 ## Legend
 

@@ -8,6 +8,7 @@ import {
   CONVERTIBLE_UNITS,
   formatAmountOrRangeInUnit,
   hasVolumeIngredient,
+  localizeDecimalText,
   unitLabel,
   type ConvertibleUnit,
   type Locale,
@@ -25,15 +26,20 @@ export interface IngredientListProps {
   onUnitChange: (unit: ConvertibleUnit) => void;
 }
 
+function localizedMeasure(ingredient: RecipeIngredientDetail, locale: Locale): string | null {
+  return ingredient.measure === null ? null : localizeDecimalText(ingredient.measure, locale);
+}
+
 function displayAmount(
   ingredient: RecipeIngredientDetail,
   unit: ConvertibleUnit,
   locale: Locale,
 ): string | null {
   // oz selected and the source is already oz: show the original measure text
-  // verbatim (preserves "1 1/2" exactly), never re-derived (spec 0021 AC-2).
+  // verbatim (preserves "1 1/2" exactly), never re-derived (spec 0021 AC-2),
+  // with only its decimal separator localized (spec 0055 AC-4).
   if (unit === "oz" && ingredient.amountUnit === "oz") {
-    return ingredient.measure;
+    return localizedMeasure(ingredient, locale);
   }
   // Null for an unparsed or part line, which then shows its measure text (spec 0035 AC-4).
   const amount = formatAmountOrRangeInUnit(
@@ -41,6 +47,7 @@ function displayAmount(
     ingredient.amountMaxValue,
     ingredient.amountUnit,
     unit,
+    locale,
   );
   return amount === null ? null : `${amount} ${unitLabel(unit, locale)}`;
 }
@@ -79,7 +86,8 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
           const onShoppingList = shoppingListIds.has(ingredient.ingredientId);
           // Falls back to the already coalesced (possibly translated) measure
           // text for any unparseable or part line, unaffected by the toggle.
-          const amount = displayAmount(ingredient, unit, locale) ?? ingredient.measure;
+          const amount =
+            displayAmount(ingredient, unit, locale) ?? localizedMeasure(ingredient, locale);
           return (
             // `wrap-break-word` keeps each flex child at least one word wide, so a
             // Korean name never splits mid word at 360 px (spec 0051, AC-11).

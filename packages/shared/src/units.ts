@@ -5,6 +5,7 @@
 // Spec: docs/specs/0021-recipe-ingredient-unit-conversion/index.md
 
 import { DEFAULT_LOCALE, type Locale } from "./locale";
+import { formatNumber } from "./numberFormat";
 
 /**
  * Units with a fixed volume, convertible to ml (spec 0035 AC-2). Enforced,
@@ -512,16 +513,20 @@ export function convertAmount(
   }
 }
 
-/** Trims a trailing ".0" for display (44.0 -> "44", 44.4 stays "44.4"). */
-export function formatDecimal(value: number): string {
-  return String(value);
+/**
+ * Formats a tenth rounded value with the locale's separators, trimming a
+ * trailing zero (44.0 -> "44"; 44.4 -> "44.4" in en, "44,4" in fr; spec 0055).
+ */
+export function formatDecimal(value: number, locale: Locale): string {
+  return formatNumber(value, locale, 1);
 }
 
 /**
  * Formats an oz amount as a mixed number rounded to the nearest eighth
  * ("1 1/2", not "1.5"; "2", not "2 0/8"). Used only when displaying a non oz
  * sourced amount converted into oz; an oz sourced line renders its original
- * `measure` text verbatim instead (never re derived from this).
+ * `measure` text verbatim instead (never re derived from this). Locale free
+ * by design: whole and fraction stay ASCII digits in every locale (spec 0055).
  */
 export function formatOunces(value: number): string {
   const eighths = Math.round(value * 8);
@@ -549,11 +554,15 @@ function gcd(a: number, b: number): number {
  * a decimal rounded to the nearest tenth, oz as a fraction via formatOunces
  * (AC-2).
  */
-export function formatConvertedAmount(value: number, targetUnit: ConvertibleUnit): string {
+export function formatConvertedAmount(
+  value: number,
+  targetUnit: ConvertibleUnit,
+  locale: Locale,
+): string {
   if (targetUnit === "oz") {
     return formatOunces(value);
   }
-  return formatDecimal(roundToTenth(value));
+  return formatDecimal(roundToTenth(value), locale);
 }
 
 /**
@@ -566,11 +575,16 @@ export function formatAmountInUnit(
   amountValue: number | null,
   amountUnit: RecognizedUnit | null,
   targetUnit: ConvertibleUnit,
+  locale: Locale,
 ): string | null {
   if (amountValue === null || amountUnit === null || !isVolumeUnit(amountUnit)) {
     return null;
   }
-  return formatConvertedAmount(convertAmount(amountValue, amountUnit, targetUnit), targetUnit);
+  return formatConvertedAmount(
+    convertAmount(amountValue, amountUnit, targetUnit),
+    targetUnit,
+    locale,
+  );
 }
 
 /**
@@ -584,12 +598,13 @@ export function formatAmountOrRangeInUnit(
   amountMaxValue: number | null,
   amountUnit: RecognizedUnit | null,
   targetUnit: ConvertibleUnit,
+  locale: Locale,
 ): string | null {
-  const low = formatAmountInUnit(amountValue, amountUnit, targetUnit);
+  const low = formatAmountInUnit(amountValue, amountUnit, targetUnit, locale);
   if (low === null || amountMaxValue === null) {
     return low;
   }
-  const high = formatAmountInUnit(amountMaxValue, amountUnit, targetUnit);
+  const high = formatAmountInUnit(amountMaxValue, amountUnit, targetUnit, locale);
   return high === null || high === low ? low : `${low}–${high}`;
 }
 

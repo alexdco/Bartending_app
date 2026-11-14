@@ -8,6 +8,7 @@ import {
   formatAmountInUnit,
   formatParts,
   formatQuickBuildInstructions,
+  isSupportedLocale,
   quickBuildMethodText,
 } from "@bartendingapp/shared";
 
@@ -47,7 +48,8 @@ function MethodLine({ method, straining }: { method: string | null; straining: s
 
 export default function QuickBuildModeScreen() {
   const theme = useTheme();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  const locale = isSupportedLocale(i18n.language) ? i18n.language : "en";
   const router = useRouter();
   const params = useLocalSearchParams<{ kind: QuickBuildKind; id: string }>();
   const { kind, id } = params;
@@ -157,7 +159,7 @@ export default function QuickBuildModeScreen() {
     // (spec 0035 AC-10, spec 0054 AC-6).
     const amount =
       ingredient.amountMaxValue === null
-        ? formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit)
+        ? formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit, locale)
         : null;
     return amount !== null ? `${amount} ${unit}` : (ingredient.measure ?? "");
   });

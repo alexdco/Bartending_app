@@ -1,13 +1,14 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import {
   computeParts,
   formatAmountInUnit,
   formatParts,
   formatQuickBuildInstructions,
   quickBuildMethodText,
+  type Locale,
 } from "@bartendingapp/shared";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
@@ -135,6 +136,7 @@ export interface QuickBuildPageClientProps {
 
 export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
   const t = useTranslations("service");
+  const locale = useLocale() as Locale;
   const tCommon = useTranslations("common");
   const tMethods = useTranslations("methods");
   const [unit, setUnit] = useState<QuickBuildUnit | null>(null);
@@ -213,7 +215,7 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
     // (spec 0035 AC-10, spec 0054 AC-6).
     const amount =
       ingredient.amountMaxValue === null
-        ? formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit)
+        ? formatAmountInUnit(ingredient.amountValue, ingredient.amountUnit, unit, locale)
         : null;
     return amount !== null ? `${amount} ${unit}` : (ingredient.measure ?? "");
   });

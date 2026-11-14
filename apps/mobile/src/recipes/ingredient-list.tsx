@@ -11,6 +11,7 @@ import {
   formatAmountOrRangeInUnit,
   hasVolumeIngredient,
   isSupportedLocale,
+  localizeDecimalText,
   unitLabel,
   type ConvertibleUnit,
   type RecipeIngredientDetail,
@@ -41,11 +42,16 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
   // A recipe written only in parts has nothing to convert, so no toggle (spec 0035 AC-4).
   const hasConvertible = hasVolumeIngredient(ingredients);
 
+  // Stored measure text with only its decimal separator localized (spec 0055 AC-4).
+  function localizedMeasure(ingredient: RecipeIngredientDetail): string | null {
+    return ingredient.measure === null ? null : localizeDecimalText(ingredient.measure, locale);
+  }
+
   function amountFor(ingredient: RecipeIngredientDetail): string | null {
     // oz selected and the source is already oz: show the original measure
     // text verbatim (preserves "1 1/2" exactly), never re-derived (spec 0021 AC-2).
     if (unit === "oz" && ingredient.amountUnit === "oz") {
-      return ingredient.measure;
+      return localizedMeasure(ingredient);
     }
     // Falls back to the already coalesced (possibly translated) measure
     // text for any unparseable or part line, unaffected by the toggle.
@@ -54,8 +60,9 @@ export function IngredientList({ ingredients, unit, onUnitChange }: IngredientLi
       ingredient.amountMaxValue,
       ingredient.amountUnit,
       unit,
+      locale,
     );
-    return amount === null ? ingredient.measure : `${amount} ${unitLabel(unit, locale)}`;
+    return amount === null ? localizedMeasure(ingredient) : `${amount} ${unitLabel(unit, locale)}`;
   }
 
   return (

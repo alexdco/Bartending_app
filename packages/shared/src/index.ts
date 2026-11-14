@@ -35,6 +35,7 @@ export * from "./koreanTypography";
 export * from "./chineseTypography";
 export * from "./chineseScript";
 export * from "./pluralForms";
+export * from "./numberFormat";
 export * from "./units";
 export * from "./batch";
 export * from "./bar";
