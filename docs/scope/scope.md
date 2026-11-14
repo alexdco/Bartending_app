@@ -845,7 +845,7 @@ Spec 0025 promised `revalidate = 60` on the Learn routes, but the code has none.
 - [x] Design it (spec): `/architect learn route caching`
 - [ ] Build it: `/develop learn route caching`
   - [x] Article route end to end: locale from params (no `getLocale()`), `setRequestLocale`, `cache()`'d `resolveArticle`, `revalidate = 60`, empty `generateStaticParams`, satisfies AC-1, AC-3, AC-6, AC-7
-  - [ ] Category and landing routes prebuilt per locale with `revalidate = 60`, plus the spec 0025 pointer, satisfies AC-1, AC-2, AC-7, AC-9, AC-10
+  - [x] Category and landing routes prebuilt per locale with `revalidate = 60`, plus the spec 0025 pointer, satisfies AC-1, AC-2, AC-7, AC-9, AC-10
   - [ ] Deployed gate on a Vercel preview: redirect and 404 checks, measured edit and unpublish delay, satisfies AC-4, AC-5, AC-8
 - [ ] Verify it: `/check verify learn route caching`
 - [ ] Test it: `/test learn route caching`
