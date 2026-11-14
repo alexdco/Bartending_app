@@ -373,6 +373,32 @@ describe("launched Korean", () => {
   });
 });
 
+// Simplified Chinese is launched (spec 0052 AC-8, AC-23).
+describe("launched Simplified Chinese", () => {
+  it("is launched and translated by the import job", () => {
+    expect(isLaunchedLocale("zh")).toBe(true);
+    expect(CATALOG_TRANSLATION_LOCALES).toContain("zh");
+  });
+
+  it("maps Simplified and unmarked Chinese headers to zh", () => {
+    for (const header of ["zh", "zh-CN", "zh-SG", "zh-Hans", "zh-CN,zh;q=0.9,en;q=0.8"]) {
+      expect(parseAcceptLanguage(header)).toBe("zh");
+      expect(resolveRedirectLocale(null, header)).toBe("zh");
+    }
+  });
+
+  it("never picks zh for a Traditional header", () => {
+    expect(resolveRedirectLocale(null, "zh-TW,zh;q=0.9,en-US;q=0.8,en;q=0.7")).toBe("en");
+    expect(resolveRedirectLocale(null, "zh-HK")).toBe("en");
+    expect(resolveRedirectLocale(null, "zh-Hant")).toBe("en");
+  });
+
+  it("keeps a stored zh, ahead of a Traditional header", () => {
+    expect(resolveStoredLocale("zh")).toBe("zh");
+    expect(resolveRedirectLocale("zh", "zh-TW")).toBe("zh");
+  });
+});
+
 describe("resolveRedirectLocale", () => {
   it("prefers a launched stored locale, then the header, then English", () => {
     expect(resolveRedirectLocale("es", "en-US")).toBe("es");
@@ -401,6 +427,7 @@ describe("hreflangAlternates", () => {
       hi: "/hi",
       ja: "/ja",
       ko: "/ko",
+      "zh-Hans": "/zh",
     };
     expect(hreflangAlternates("en", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("pt", (locale) => `/${locale}`)).toEqual(expected);
@@ -409,6 +436,7 @@ describe("hreflangAlternates", () => {
     expect(hreflangAlternates("hi", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("ja", (locale) => `/${locale}`)).toEqual(expected);
     expect(hreflangAlternates("ko", (locale) => `/${locale}`)).toEqual(expected);
+    expect(hreflangAlternates("zh", (locale) => `/${locale}`)).toEqual(expected);
   });
 });
 
