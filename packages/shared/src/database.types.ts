@@ -1083,6 +1083,7 @@ export type Database = {
           image_source_url: string | null;
           image_url: string | null;
           instructions: string;
+          latest_source_hash: string | null;
           merged_into_recipe_id: string | null;
           method: string | null;
           method_source: string | null;
@@ -1093,6 +1094,7 @@ export type Database = {
           presentation_tip: string | null;
           region: string | null;
           source: string;
+          source_hash: string | null;
           source_id: string;
           straining: string | null;
           updated_at: string;
@@ -1116,6 +1118,7 @@ export type Database = {
           image_source_url?: string | null;
           image_url?: string | null;
           instructions: string;
+          latest_source_hash?: string | null;
           merged_into_recipe_id?: string | null;
           method?: string | null;
           method_source?: string | null;
@@ -1126,6 +1129,7 @@ export type Database = {
           presentation_tip?: string | null;
           region?: string | null;
           source?: string;
+          source_hash?: string | null;
           source_id: string;
           straining?: string | null;
           updated_at?: string;
@@ -1149,6 +1153,7 @@ export type Database = {
           image_source_url?: string | null;
           image_url?: string | null;
           instructions?: string;
+          latest_source_hash?: string | null;
           merged_into_recipe_id?: string | null;
           method?: string | null;
           method_source?: string | null;
@@ -1159,6 +1164,7 @@ export type Database = {
           presentation_tip?: string | null;
           region?: string | null;
           source?: string;
+          source_hash?: string | null;
           source_id?: string;
           straining?: string | null;
           updated_at?: string;
@@ -1430,6 +1436,10 @@ export type Database = {
         Returns: Json;
       };
       admin_delete_recipe: { Args: { p_recipe_id: string }; Returns: undefined };
+      admin_reset_recipe_to_source: {
+        Args: { p_recipe_id: string };
+        Returns: undefined;
+      };
       admin_set_ingredient_allergens: {
         Args: { p_allergens: string[]; p_ingredient_id: string };
         Returns: undefined;
@@ -1604,7 +1614,12 @@ export type Database = {
       };
       has_cjk: { Args: { t: string }; Returns: boolean };
       import_catalog: {
-        Args: { drinks: Json; merges?: Json; staple_names?: string[] };
+        Args: {
+          drinks: Json;
+          hidden_source_ids?: string[];
+          merges?: Json;
+          staple_names?: string[];
+        };
         Returns: Json;
       };
       import_custom_recipes: { Args: { recipes: Json }; Returns: Json };

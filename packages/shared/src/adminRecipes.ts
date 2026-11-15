@@ -34,10 +34,48 @@ export interface AdminRecipeSummary {
   createdAt: string;
   /** When an admin took this catalog recipe over; null while the import owns it (spec 0056). */
   adminLockedAt: string | null;
+  /** Locked and TheCocktailDB (or customRecipes.json) changed it since (spec 0056 AC-5). */
+  changedUpstream: boolean;
+  /** Soft deleted; only listed by the "deleted" status filter (spec 0056 AC-7). */
+  deletedAt: string | null;
+}
+
+/** Which recipes the admin list shows: live ones (the default) or soft deleted ones. */
+export type AdminRecipeStatus = "live" | "deleted";
+
+/**
+ * Spec 0056 AC-7: a locked recipe whose latest source version differs from
+ * the acknowledged one. A null source_hash means no hashed import has set a
+ * baseline yet, so nothing can be flagged.
+ */
+export function isChangedUpstream(row: {
+  admin_locked_at: string | null;
+  source_hash: string | null;
+  latest_source_hash: string | null;
+}): boolean {
+  return (
+    row.admin_locked_at !== null &&
+    row.source_hash !== null &&
+    row.latest_source_hash !== row.source_hash
+  );
+}
+
+/**
+ * Spec 0056 AC-7: the edit page loads a deleted recipe only when it is a
+ * locked catalog recipe, so the admin can Reset it. Live recipes always load.
+ */
+export function canOpenAdminRecipe(row: {
+  deleted_at: string | null;
+  admin_locked_at: string | null;
+  source: string;
+}): boolean {
+  return row.deleted_at === null || (row.admin_locked_at !== null && row.source === "catalog");
 }
 
 export interface FetchAdminRecipesParams {
   query?: string;
+  /** Defaults to "live"; "deleted" lists soft deleted recipes instead. */
+  status?: AdminRecipeStatus;
   pageLimit?: number;
   beforeCreatedAt?: string;
   beforeId?: string;
@@ -49,8 +87,8 @@ export interface FetchAdminRecipesResult {
 }
 
 /**
- * Admin scoped recipe list: every non deleted recipe (catalog or admin
- * sourced), newest first, same keyset pagination shape as fetchAllComments
+ * Admin scoped recipe list: every live recipe (catalog or admin sourced), or
+ * with status "deleted" every soft deleted one (spec 0056 AC-7), newest first, same keyset pagination shape as fetchAllComments
  * (spec 0028). A caller without is_admin gets an empty, not an error,
  * result: RLS's SELECT policy already allows any viewer to read recipes,
  * so this list's protection is entirely the admin page's own session gate.
@@ -59,6 +97,7 @@ export async function fetchAdminRecipes(
   client: SupabaseClient<Database>,
   {
     query = "",
+    status = "live",
     pageLimit = ADMIN_RECIPES_PAGE_SIZE,
     beforeCreatedAt,
     beforeId,
@@ -66,11 +105,15 @@ export async function fetchAdminRecipes(
 ): Promise<FetchAdminRecipesResult> {
   let dbQuery = client
     .from("recipes")
-    .select("id, name, glass, alcoholic_status, source, created_at, admin_locked_at")
-    .is("deleted_at", null)
+    .select(
+      "id, name, glass, alcoholic_status, source, created_at, admin_locked_at, source_hash, latest_source_hash, deleted_at",
+    )
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
     .limit(pageLimit + 1);
+
+  dbQuery =
+    status === "deleted" ? dbQuery.not("deleted_at", "is", null) : dbQuery.is("deleted_at", null);
 
   const trimmedQuery = query.trim();
 
@@ -103,6 +146,8 @@ export async function fetchAdminRecipes(
       source: row.source,
       createdAt: row.created_at,
       adminLockedAt: row.admin_locked_at,
+      changedUpstream: isChangedUpstream(row),
+      deletedAt: row.deleted_at,
     })),
     hasMore,
   };
@@ -128,6 +173,10 @@ export interface AdminRecipeDetail {
   source: string;
   /** When an admin took this catalog recipe over; null while the import owns it (spec 0056). */
   adminLockedAt: string | null;
+  /** Locked and changed at the source since it was locked or last saved (spec 0056 AC-5). */
+  changedUpstream: boolean;
+  /** Set only for a locked, deleted catalog recipe, which opens with Reset and no Save (AC-7). */
+  deletedAt: string | null;
   /** Build method, whoever set it (classifier or admin); null when none (spec 0054 AC-11). */
   method: RecipeMethod | null;
   ingredients: AdminRecipeIngredient[];
@@ -189,20 +238,20 @@ export async function fetchAdminRecipeDetail(
     .from("recipes")
     .select(
       `id, name, instructions, image_url, glass, alcoholic_status, region, source, method, admin_locked_at,
+       source_hash, latest_source_hash, deleted_at,
        drink_style, drink_style_note, bartender_tip, presentation_tip,
        recipe_ingredients ( measure, sort_order, ingredients ( name, allergens ) ),
        recipe_tags ( tags ( name, kind ) ),
        recipe_translations ( locale, drink_style_note, bartender_tip, presentation_tip )`,
     )
     .eq("id", id)
-    .is("deleted_at", null)
     .maybeSingle();
 
   if (error) {
     throw error;
   }
 
-  if (!data) {
+  if (!data || !canOpenAdminRecipe(data)) {
     return null;
   }
 
@@ -229,6 +278,8 @@ export async function fetchAdminRecipeDetail(
     region: data.region,
     source: data.source,
     adminLockedAt: data.admin_locked_at,
+    changedUpstream: isChangedUpstream(data),
+    deletedAt: data.deleted_at,
     method: toRecipeMethod(data.method),
     ingredients,
     tags,
@@ -544,6 +595,26 @@ export async function deleteAdminRecipe(
   }
 
   return { data: true, error: null };
+}
+
+export type ResetAdminRecipeResult =
+  | { data: true; error: null }
+  | { data: null; error: { reason: "request_failed"; message: string } };
+
+/**
+ * Hands a locked catalog recipe back to the import (spec 0056 AC-6): clears
+ * its lock, so the next import rewrites its import owned content from source
+ * and brings it back if it was deleted and is still in source.
+ */
+export async function resetAdminRecipeToSource(
+  client: SupabaseClient<Database>,
+  recipeId: string,
+): Promise<ResetAdminRecipeResult> {
+  const { error } = await client.rpc("admin_reset_recipe_to_source", { p_recipe_id: recipeId });
+
+  return error
+    ? { data: null, error: { reason: "request_failed", message: error.message } }
+    : { data: true, error: null };
 }
 
 /**

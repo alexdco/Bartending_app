@@ -178,6 +178,20 @@ export function applyOverrides(
   };
 }
 
+/**
+ * Spec 0056 AC-4: source ids the overrides hide (crude or duplicate), as the
+ * transformed ids not present in the applied payload. import_catalog soft
+ * deletes these even when locked, while a locked recipe simply gone from
+ * source stays live.
+ */
+export function findHiddenSourceIds(
+  source: readonly TransformedDrink[],
+  appliedDrinks: readonly OverriddenDrink[],
+): string[] {
+  const kept = new Set(appliedDrinks.map((drink) => drink.recipe.sourceId));
+  return source.map((drink) => drink.recipe.sourceId).filter((sourceId) => !kept.has(sourceId));
+}
+
 export interface OverridesSummary {
   hidden: number;
   merges: number;

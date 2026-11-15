@@ -4,12 +4,13 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import {
   ADMIN_RECIPES_PAGE_SIZE,
   fetchAdminRecipes,
+  type AdminRecipeStatus,
   type AdminRecipeSummary,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 
-export function adminRecipesQueryKey(query: string) {
-  return ["recipes", "admin-list", query] as const;
+export function adminRecipesQueryKey(query: string, status: AdminRecipeStatus) {
+  return ["recipes", "admin-list", status, query] as const;
 }
 
 interface AdminRecipesPage {
@@ -17,12 +18,13 @@ interface AdminRecipesPage {
   hasMore: boolean;
 }
 
-export function useAdminRecipes(query: string) {
+export function useAdminRecipes(query: string, status: AdminRecipeStatus) {
   return useInfiniteQuery({
-    queryKey: adminRecipesQueryKey(query),
+    queryKey: adminRecipesQueryKey(query, status),
     queryFn: ({ pageParam }): Promise<AdminRecipesPage> =>
       fetchAdminRecipes(supabase, {
         query,
+        status,
         pageLimit: ADMIN_RECIPES_PAGE_SIZE,
         beforeCreatedAt: pageParam?.beforeCreatedAt,
         beforeId: pageParam?.beforeId,

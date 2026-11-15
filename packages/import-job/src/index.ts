@@ -21,11 +21,13 @@ import { downloadImage, mapWithConcurrency, processImageBuffer } from "./imagePr
 import { parseCatalogOverrides } from "./catalogOverridesSchema";
 import {
   applyOverrides,
+  findHiddenSourceIds,
   findUnknownStaples,
   summarizeOverrides,
   validateOverrides,
 } from "./overrides";
-import { formatFreshnessReport, parseImportReport } from "./freshnessReport";
+import { findIgnoredOverrides, formatFreshnessReport, parseImportReport } from "./freshnessReport";
+import { catalogSourceHash } from "./sourceHash";
 import {
   BACKFILL_GUARD_MESSAGE,
   backfillGuardBlocks,
@@ -90,6 +92,39 @@ async function hasHashedRun(supabase: SupabaseClient<Database>): Promise<boolean
     throw new Error(`Could not check for a hashed import run: ${error.message}`);
   }
   return (data ?? []).length > 0;
+}
+
+/**
+ * Spec 0056 AC-13: how many recipes are locked, and how many of those are
+ * changed upstream (the same rule as the admin badge). Read only.
+ */
+async function countLockedRecipes(
+  supabase: SupabaseClient<Database>,
+): Promise<{ locked: number; changedUpstream: number }> {
+  const [locked, hashed] = await Promise.all([
+    supabase
+      .from("recipes")
+      .select("id", { count: "exact", head: true })
+      .not("admin_locked_at", "is", null),
+    supabase
+      .from("recipes")
+      .select("source_hash, latest_source_hash")
+      .not("admin_locked_at", "is", null)
+      .not("source_hash", "is", null),
+  ]);
+
+  if (locked.error) {
+    throw new Error(`Could not count locked recipes: ${locked.error.message}`);
+  }
+  if (hashed.error) {
+    throw new Error(`Could not count changed upstream recipes: ${hashed.error.message}`);
+  }
+
+  return {
+    locked: locked.count ?? 0,
+    changedUpstream: (hashed.data ?? []).filter((row) => row.latest_source_hash !== row.source_hash)
+      .length,
+  };
 }
 
 /** Every unlocked live TheCocktailDB recipe's import owned content (spec 0056 AC-8), paged. */
@@ -289,6 +324,10 @@ async function main(): Promise<void> {
     console.log(`  unknown glasses:    ${summary.unknownGlasses.join(", ") || "none"}`);
     console.log(`  staples:            ${applied.stapleNames.join(", ")}`);
 
+    const lockCounts = await countLockedRecipes(supabase);
+    console.log(`  locked recipes:     ${lockCounts.locked}`);
+    console.log(`  changed upstream:   ${lockCounts.changedUpstream}`);
+
     if (flags.diffLocks) {
       const [storedRows, nonCatalogTagNames] = await Promise.all([
         fetchStoredLockRows(supabase),
@@ -324,12 +363,15 @@ async function main(): Promise<void> {
     iba: drink.recipe.iba,
     ingredients: drink.ingredients,
     tags: drink.tags,
+    // Spec 0056 AC-5: what this run would write, after overrides.
+    sourceHash: catalogSourceHash(drink),
   }));
 
   const { data: rawReport, error } = await supabase.rpc("import_catalog", {
     drinks: payload as unknown as Json,
     merges: applied.merges as unknown as Json,
     staple_names: applied.stapleNames,
+    hidden_source_ids: findHiddenSourceIds(transformed, applied.drinks),
   });
 
   if (error) {
@@ -343,7 +385,10 @@ async function main(): Promise<void> {
   // The import has committed by now; an unreadable report is a warning, not a failure.
   const report = parseImportReport(rawReport);
   if (report.error === null) {
-    formatFreshnessReport(report.data).forEach((line) => console.log(line));
+    formatFreshnessReport(
+      report.data,
+      findIgnoredOverrides(overrides.recipes, report.data.lockedSkipped),
+    ).forEach((line) => console.log(line));
   } else {
     console.warn(`Could not read the freshness report: ${report.error}`);
   }

@@ -67,6 +67,7 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "admin.allergensFor": ["name"],
   "admin.saveAllergensFailed": ["message"],
   "admin.pageOf": ["page", "pages"],
+  "admin.deletedRecipeNotice": ["name"],
   "moreLikeThis.metaTitle": ["name"],
   "moreLikeThis.metaDescription": ["name"],
 };

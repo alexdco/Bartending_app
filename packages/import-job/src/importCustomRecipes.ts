@@ -9,6 +9,7 @@ import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
 import { parseCustomRecipes } from "./customRecipesSchema";
 import { formatFreshnessReport, parseImportReport } from "./freshnessReport";
+import { sourceHash } from "./sourceHash";
 
 function requireEnv(name: string): string {
   const value = process.env[name];
@@ -31,29 +32,34 @@ async function main(): Promise<void> {
   const raw: unknown = JSON.parse(readFileSync(CUSTOM_RECIPES_PATH, "utf-8"));
   const recipes = parseCustomRecipes(raw);
 
-  const payload = recipes.map((recipe) => ({
-    sourceId: `custom:${recipe.slug}`,
-    name: recipe.name,
-    instructions: recipe.instructions,
-    imageUrl: recipe.imageUrl,
-    imageOrigin: recipe.imageUrl ? "external_hotlink" : null,
-    // Same casing as the catalog import and admin saves (spec 0036), so the
-    // shared ingredient rows never flip names between imports.
-    glass: canonicalGlass(recipe.glass),
-    alcoholicStatus: recipe.alcoholicStatus,
-    ingredients: recipe.ingredients.map((ingredient, index) => {
-      const parsed = parseMeasure(ingredient.measure);
-      return {
-        ingredientName: canonicalIngredientName(ingredient.ingredientName),
-        measure: ingredient.measure,
-        sortOrder: index + 1,
-        amountValue: parsed?.value ?? null,
-        amountMaxValue: parsed?.maxValue ?? null,
-        amountUnit: parsed?.unit ?? null,
-      };
-    }),
-    tags: recipe.tags.map((tagName) => ({ tagName })),
-  }));
+  const payload = recipes.map((recipe) => {
+    const fields = {
+      sourceId: `custom:${recipe.slug}`,
+      name: recipe.name,
+      instructions: recipe.instructions,
+      imageUrl: recipe.imageUrl,
+      imageOrigin: recipe.imageUrl ? "external_hotlink" : null,
+      // Same casing as the catalog import and admin saves (spec 0036), so the
+      // shared ingredient rows never flip names between imports.
+      glass: canonicalGlass(recipe.glass),
+      alcoholicStatus: recipe.alcoholicStatus,
+      ingredients: recipe.ingredients.map((ingredient, index) => {
+        const parsed = parseMeasure(ingredient.measure);
+        return {
+          ingredientName: canonicalIngredientName(ingredient.ingredientName),
+          measure: ingredient.measure,
+          sortOrder: index + 1,
+          amountValue: parsed?.value ?? null,
+          amountMaxValue: parsed?.maxValue ?? null,
+          amountUnit: parsed?.unit ?? null,
+        };
+      }),
+      tags: recipe.tags.map((tagName) => ({ tagName })),
+    };
+    // Spec 0056 AC-5: the custom import always writes instructions, so they
+    // are hashed; custom recipes have no IBA.
+    return { ...fields, sourceHash: sourceHash(fields) };
+  });
 
   const { data: rawReport, error } = await supabase.rpc("import_custom_recipes", {
     recipes: payload as unknown as Json,

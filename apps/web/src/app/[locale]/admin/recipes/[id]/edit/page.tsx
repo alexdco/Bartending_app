@@ -7,6 +7,7 @@ import { redirect } from "@/i18n/navigation";
 import { Text } from "@/components/text";
 import { AdminNav } from "@/admin/admin-nav";
 import { AdminRecipeForm } from "@/admin/admin-recipe-form";
+import { AdminRecipeReset } from "@/admin/admin-recipe-reset";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("admin");
@@ -43,6 +44,10 @@ export default async function EditAdminRecipePage({
   }
 
   const t = await getTranslations("admin");
+  const isDeleted = recipe.deletedAt !== null;
+  // Spec 0056 AC-6: Reset shows only for a locked catalog recipe. The loader
+  // returns a deleted recipe only in that case (AC-7).
+  const canReset = recipe.source === "catalog" && recipe.adminLockedAt !== null;
 
   return (
     <main className="flex flex-1 flex-col gap-four p-six">
@@ -50,7 +55,18 @@ export default async function EditAdminRecipePage({
         {t("editRecipe")}
       </Text>
       <AdminNav />
-      <AdminRecipeForm existingRecipe={recipe} />
+      {isDeleted && (
+        <Text variant="bodySmall" role="status">
+          {t("deletedRecipeNotice", { name: recipe.name })}
+        </Text>
+      )}
+      {recipe.changedUpstream && (
+        <Text variant="bodySmall" role="status">
+          {t("changedUpstreamNotice")}
+        </Text>
+      )}
+      {canReset && <AdminRecipeReset recipeId={recipe.id} isDeleted={isDeleted} />}
+      {!isDeleted && <AdminRecipeForm existingRecipe={recipe} />}
     </main>
   );
 }

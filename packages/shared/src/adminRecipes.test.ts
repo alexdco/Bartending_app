@@ -2,6 +2,8 @@ import { describe, expect, it, vi } from "vitest";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
 import {
+  canOpenAdminRecipe,
+  isChangedUpstream,
   saveAdminRecipe,
   setRecipeTranslationNotes,
   splitNameList,
@@ -283,5 +285,55 @@ describe("setRecipeTranslationNotes (spec 0045 AC-11)", () => {
       error: { reason: "too_long" },
     });
     expect(rpc).not.toHaveBeenCalled();
+  });
+});
+
+describe("isChangedUpstream (spec 0056 AC-7)", () => {
+  const locked = "2026-11-14T00:00:00Z";
+
+  it("flags a locked recipe whose latest source version differs", () => {
+    expect(
+      isChangedUpstream({
+        admin_locked_at: locked,
+        source_hash: "v1:a",
+        latest_source_hash: "v1:b",
+      }),
+    ).toBe(true);
+  });
+
+  it.each([
+    [
+      "matching hashes",
+      { admin_locked_at: locked, source_hash: "v1:a", latest_source_hash: "v1:a" },
+    ],
+    [
+      "an unlocked recipe",
+      { admin_locked_at: null, source_hash: "v1:a", latest_source_hash: "v1:b" },
+    ],
+    ["no baseline yet", { admin_locked_at: locked, source_hash: null, latest_source_hash: "v1:b" }],
+  ])("does not flag %s", (_label, row) => {
+    expect(isChangedUpstream(row)).toBe(false);
+  });
+});
+
+describe("canOpenAdminRecipe (spec 0056 AC-7)", () => {
+  const deleted = "2026-11-14T00:00:00Z";
+
+  it("opens every live recipe", () => {
+    expect(canOpenAdminRecipe({ deleted_at: null, admin_locked_at: null, source: "admin" })).toBe(
+      true,
+    );
+  });
+
+  it("opens a deleted recipe only when it is a locked catalog recipe", () => {
+    expect(
+      canOpenAdminRecipe({ deleted_at: deleted, admin_locked_at: deleted, source: "catalog" }),
+    ).toBe(true);
+    expect(
+      canOpenAdminRecipe({ deleted_at: deleted, admin_locked_at: null, source: "catalog" }),
+    ).toBe(false);
+    expect(
+      canOpenAdminRecipe({ deleted_at: deleted, admin_locked_at: deleted, source: "admin" }),
+    ).toBe(false);
   });
 });

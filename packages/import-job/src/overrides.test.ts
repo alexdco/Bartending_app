@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { parseCatalogOverrides, type CatalogOverrides } from "./catalogOverridesSchema";
 import {
   applyOverrides,
+  findHiddenSourceIds,
   findUnknownStaples,
   summarizeOverrides,
   validateOverrides,
@@ -228,5 +229,18 @@ describe("summarizeOverrides", () => {
   it("counts what the overrides change", () => {
     const summary = summarizeOverrides(source, applyOverrides(source, overrides));
     expect(summary).toMatchObject({ hidden: 2, merges: 1, glassRenames: 2, fixes: 1 });
+  });
+});
+
+describe("findHiddenSourceIds (spec 0056 AC-4)", () => {
+  it("lists the crude and duplicate ids the overrides drop, in source order", () => {
+    expect(findHiddenSourceIds(source, applyOverrides(source, overrides).drinks)).toEqual([
+      "13751",
+      "11872",
+    ]);
+  });
+
+  it("is empty when nothing is hidden", () => {
+    expect(findHiddenSourceIds(source, applyOverrides(source, makeOverrides()).drinks)).toEqual([]);
   });
 });
