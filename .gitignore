@@ -17,3 +17,11 @@ quiz-source-plan*.json
 
 # Propose and apply review files (specs 0010, 0043): reviewed locally, never committed
 packages/shared/scripts/tagging/
+
+# Agent skills: .claude/skills is the single tracked home (spec 0039)
+.agents/
+
+# Debug captures (spec 0039)
+.debug/
+/.*.html
+/.*.xml
