@@ -1,7 +1,7 @@
 # 0039. Repo hygiene: one skills home, no debug captures, and a CI workflow
 
 **Date**: 2026-10-12
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

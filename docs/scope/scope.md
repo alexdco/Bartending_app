@@ -792,8 +792,8 @@ Debug captures are committed at the repo root (`.home.html`, `.search.html`, `.n
 - [x] Design it (spec): `/architect repo hygiene`
 - [ ] Build it: `/develop repo hygiene`
   - [ ] Base branch and CI: `main` created at `7200f44` and made the GitHub default (manual), clean checkout dry run, `.nvmrc` 24, and a green `ci.yml` that goes red on failure, satisfies AC-6, AC-7, AC-8, AC-9
-  - [ ] Captures removed and `.debug/` plus root dot html and xml ignored, satisfies AC-1, AC-2
-  - [ ] Skills consolidated in `.claude/skills/`, `.agents/` ignored, and the four `AGENTS.md` link sets repointed via `/sync`, satisfies AC-3, AC-4, AC-5
+  - [x] Captures removed and `.debug/` plus root dot html and xml ignored, satisfies AC-1, AC-2
+  - [x] Skills consolidated in `.claude/skills/`, `.agents/` ignored, and the four `AGENTS.md` link sets repointed via `/sync`, satisfies AC-3, AC-4, AC-5
 - [ ] Verify it: `/check verify repo hygiene`
 - [ ] Test it: `/test repo hygiene`
 Spec [0039](../specs/0039-repo-hygiene.md) · code in `.github/workflows/`, `.gitignore`, `.nvmrc`, `package.json`, `.claude/skills/`
