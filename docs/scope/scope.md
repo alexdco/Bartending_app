@@ -790,8 +790,8 @@ Each recipe request fetches the recipe three times (`generateMetadata`, other lo
 Debug captures are committed at the repo root (`.home.html`, `.search.html`, `.negroni.html`, `.noimg.html`, `.noimg2.html`, `.popular.html`, `.404.html`, `.sitemap.xml`). Skills are duplicated in `.agents/skills/` and `.claude/skills/` and will drift. CI is still missing (tracked under feature 2).
 **Done when:** the captures are deleted and ignored, skills live in one place, and feature 2's CI workflow exists.
 - [x] Design it (spec): `/architect repo hygiene`
-- [ ] Build it: `/develop repo hygiene`
-  - [ ] Base branch and CI: `main` created at `7200f44` and made the GitHub default (manual), clean checkout dry run, `.nvmrc` 24, and a green `ci.yml` that goes red on failure, satisfies AC-6, AC-7, AC-8, AC-9
+- [x] Build it: `/develop repo hygiene`
+  - [x] Base branch and CI: `main` created at `7200f44` and made the GitHub default (manual), clean checkout dry run, `.nvmrc` 24, and a green `ci.yml` that goes red on failure, satisfies AC-6, AC-7, AC-8, AC-9
   - [x] Captures removed and `.debug/` plus root dot html and xml ignored, satisfies AC-1, AC-2
   - [x] Skills consolidated in `.claude/skills/`, `.agents/` ignored, and the four `AGENTS.md` link sets repointed via `/sync`, satisfies AC-3, AC-4, AC-5
 - [ ] Verify it: `/check verify repo hygiene`
