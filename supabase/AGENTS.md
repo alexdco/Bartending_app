@@ -37,6 +37,6 @@ After any migration, regenerate `packages/shared/src/database.types.ts` so both 
 
 ## Agent skills
 
-- [supabase-postgres-best-practices](../.agents/skills/supabase-postgres-best-practices/): `supabase/agent-skills`, Postgres/Supabase schema, RLS, migrations, and query conventions
+- [supabase-postgres-best-practices](../.claude/skills/supabase-postgres-best-practices/): `supabase/agent-skills`, Postgres/Supabase schema, RLS, migrations, and query conventions
 
 _Drafted by /sync from the introducing change, worth a quick human pass._

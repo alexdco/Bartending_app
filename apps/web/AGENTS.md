@@ -56,8 +56,8 @@ pnpm --filter web run generate-theme
 
 ## Agent skills
 
-- [nextjs-app-router-patterns](.agents/skills/nextjs-app-router-patterns/): `wshobson/agents`, Next.js App Router SSR/streaming/data fetching conventions
-- [tailwind-4-docs](.agents/skills/tailwind-4-docs/): `lombiq/tailwind-agent-skills`, Tailwind CSS v4 docs snapshot, utilities, configuration, and v3 to v4 gotchas
+- [nextjs-app-router-patterns](../../.claude/skills/nextjs-app-router-patterns/): `wshobson/agents`, Next.js App Router SSR/streaming/data fetching conventions
+- [tailwind-4-docs](../../.claude/skills/tailwind-4-docs/): `lombiq/tailwind-agent-skills`, Tailwind CSS v4 docs snapshot, utilities, configuration, and v3 to v4 gotchas
 - Declined: next-intl-app-router skill (`liuchiawei/agent-skills`), radix-ui-design-system skill (`sickn33/agentic-awesome-skills`), Tailwind and Radix community MCP servers
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._

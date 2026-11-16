@@ -6,7 +6,6 @@ dist
 build
 pnpm-lock.yaml
 *.md
-.agents
 .claude
 assets
 **/*.icon/**

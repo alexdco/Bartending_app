@@ -2,7 +2,7 @@
 
 ## Stack
 
-- **Language / Runtime**: TypeScript, Node >= 20
+- **Language / Runtime**: TypeScript, Node >= 22
 - **Repository layout**: pnpm workspaces + Turborepo monorepo (`apps/web`, `apps/mobile`, `packages/shared`)
 - **Mobile**: React Native via Expo (managed, custom dev client), React Navigation, TanStack Query, EAS Build/Submit
 - **Web**: Next.js (App Router), deployed to Vercel
@@ -70,12 +70,14 @@ Visual language and token reference: [docs/design/design.md](docs/design/design.
 
 ## Agent skills
 
-- [supabase-postgres-best-practices](.agents/skills/supabase-postgres-best-practices/): `supabase/agent-skills`, Postgres/Supabase schema, RLS, migrations, and query conventions
-- [react-native-best-practices](.agents/skills/react-native-best-practices/): `callstackincubator/agent-skills`, React Native/Expo performance and native module conventions
-- [nextjs-app-router-patterns](.agents/skills/nextjs-app-router-patterns/): `wshobson/agents`, Next.js App Router SSR/streaming/data fetching conventions
-- [vitest](.agents/skills/vitest/): `antfu/skills`, Vitest testing conventions (mocking, coverage, fixtures)
-- [sentry-get-started](.agents/skills/sentry-get-started/): `getsentry/sentry-for-ai`, guided Sentry setup across React Native, Next.js, and Supabase Edge Functions
-- [posthog-instrumentation](.agents/skills/posthog-instrumentation/): `posthog/posthog-for-claude`, PostHog event tracking and feature flag instrumentation (web and mobile)
+All project skills live in one tracked place, `.claude/skills/<name>/`, pinned by `skills-lock.json`. `.agents/` is gitignored; never commit skills there (spec 0039).
+
+- [supabase-postgres-best-practices](.claude/skills/supabase-postgres-best-practices/): `supabase/agent-skills`, Postgres/Supabase schema, RLS, migrations, and query conventions
+- [react-native-best-practices](.claude/skills/react-native-best-practices/): `callstackincubator/agent-skills`, React Native/Expo performance and native module conventions
+- [nextjs-app-router-patterns](.claude/skills/nextjs-app-router-patterns/): `wshobson/agents`, Next.js App Router SSR/streaming/data fetching conventions
+- [vitest](.claude/skills/vitest/): `antfu/skills`, Vitest testing conventions (mocking, coverage, fixtures)
+- [sentry-get-started](.claude/skills/sentry-get-started/): `getsentry/sentry-for-ai`, guided Sentry setup across React Native, Next.js, and Supabase Edge Functions
+- [posthog-instrumentation](.claude/skills/posthog-instrumentation/): `posthog/posthog-for-claude`, PostHog event tracking and feature flag instrumentation (web and mobile)
 
 MCP servers: sentry (recommended, official, OAuth at https://mcp.sentry.dev/mcp), thecocktaildb (recommended, community server wrapping TheCocktailDB's REST API)
 

@@ -44,7 +44,7 @@ pnpm --filter mobile lint
 
 ## Agent skills
 
-- [react-native-best-practices](.agents/skills/react-native-best-practices/): `callstackincubator/agent-skills`, React Native/Expo performance and native module conventions
-- [i18next-localization](.agents/skills/i18next-localization/): `i18next/i18next-cli`, i18next setup, wrapping strings in `t()`, and key extraction
+- [react-native-best-practices](../../.claude/skills/react-native-best-practices/): `callstackincubator/agent-skills`, React Native/Expo performance and native module conventions
+- [i18next-localization](../../.claude/skills/i18next-localization/): `i18next/i18next-cli`, i18next setup, wrapping strings in `t()`, and key extraction
 
 _Drafted by /audit from the repo, worth a quick human pass. Edit freely: once a line stops matching this draft, later runs treat it as curated and will flag rather than overwrite it._
