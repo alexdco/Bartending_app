@@ -129,10 +129,83 @@ describe("findListingProblems", () => {
         subtitle: "家にあるもので作る",
         keywords: ["カクテル", "ジン", "ジン"],
       },
+      screenshots: {
+        captions: ["一", "二", "三", "四", "五", "六"],
+        featureGraphicLine: "家にあるもので作る",
+      },
     };
     expect(messages(ja)).toEqual([
       'ja appStore.keywords repeats "ジン"',
       'ja appStore.keywords "カクテル" is already in the name or subtitle',
+    ]);
+  });
+});
+
+describe("screenshot captions (spec 0060, AC-1)", () => {
+  const withCaptions = (captions: readonly string[], locale = en.locale): StoreListing => ({
+    ...en,
+    locale,
+    screenshots: {
+      ...en.screenshots,
+      captions: captions as unknown as StoreListing["screenshots"]["captions"],
+    },
+  });
+  const replaceFirst = (caption: string): readonly string[] => [
+    caption,
+    ...en.screenshots.captions.slice(1),
+  ];
+
+  it("flags a seventh caption", () => {
+    expect(messages(withCaptions([...en.screenshots.captions, "One more shot"]))).toEqual([
+      "en screenshots.captions has 7 captions, expected 6",
+    ]);
+  });
+
+  it("flags an English caption one code point over the limit", () => {
+    const caption = "a".repeat(STORE_LIMITS.screenshotCaption.latin + 1);
+    expect(messages(withCaptions(replaceFirst(caption)))).toEqual([
+      "en screenshots.captions[0] is 41 characters, over the limit of 40",
+    ]);
+  });
+
+  it("uses the CJK limit for ja", () => {
+    const caption = "カ".repeat(STORE_LIMITS.screenshotCaption.cjk + 1);
+    expect(messages(withCaptions(replaceFirst(caption), "ja"))).toContain(
+      "ja screenshots.captions[0] is 19 characters, over the limit of 18",
+    );
+  });
+
+  it("flags a caption with a digit and one with an emoji", () => {
+    expect(
+      messages(
+        withCaptions(["Over 500 recipes", "Cheers 🍸", ...en.screenshots.captions.slice(2)]),
+      ),
+    ).toEqual([
+      "en screenshots.captions[0] contains a number",
+      "en screenshots.captions[1] contains an emoji",
+    ]);
+  });
+
+  it("flags a banned ranking word in the feature graphic line", () => {
+    const listing: StoreListing = {
+      ...en,
+      screenshots: { ...en.screenshots, featureGraphicLine: "The best cocktail app" },
+    };
+    expect(messages(listing)).toEqual([
+      'en screenshots.featureGraphicLine contains the banned ranking word "best"',
+    ]);
+  });
+
+  it("flags a feature graphic line over the limit", () => {
+    const listing: StoreListing = {
+      ...en,
+      screenshots: {
+        ...en.screenshots,
+        featureGraphicLine: "a".repeat(STORE_LIMITS.featureGraphicLine.latin + 1),
+      },
+    };
+    expect(messages(listing)).toEqual([
+      "en screenshots.featureGraphicLine is 49 characters, over the limit of 48",
     ]);
   });
 });

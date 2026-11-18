@@ -1,7 +1,7 @@
 # 0060. Store screenshots captured by Maestro and framed by Satori
 
 **Date**: 2026-11-17
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

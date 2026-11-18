@@ -944,7 +944,7 @@ Store screenshots for every required device size, in the six listing locales, pl
   - [ ] Live set: full EAS run, render, review checklist with AI idea skims, manual upload to both consoles, satisfies AC-12, AC-13
 - [ ] Verify it: `/check verify store screenshots and preview video`
 - [ ] Test it: `/test store screenshots and preview video`
-Spec [0060](../specs/0060-store-screenshots/index.md) · code in `apps/mobile/.maestro`, `apps/mobile/store`, `apps/mobile/scripts`, `.eas/workflows`, `apps/mobile/src`
+Spec [0060](../specs/0060-store-screenshots/index.md) · code in `apps/mobile/.maestro`, `apps/mobile/store`, `apps/mobile/scripts`, `apps/mobile/.eas/workflows`, `apps/mobile/src`
 
 ### 83. Mobile hardcoded strings sweep · planned
 The mobile drink ideas, pantry, search, recipe detail, batch panel, and learn screens (and likely others) still render English literals ("You can make now", "Find a recipe", "Batch this recipe", "Learn", empty and loading states). Wrap them in `t()` across all nine app locales. Gates feature 82's localized captures (from spec 0060).

@@ -23,3 +23,5 @@ packages/import-job/lock-candidates.json
 
 # Store listing output (spec 0057): built from store/listing/ and the site URL env, never committed
 apps/mobile/store/.generated/
+# Store screenshot captures (spec 0060): Maestro output, never committed
+apps/mobile/store/.captures/

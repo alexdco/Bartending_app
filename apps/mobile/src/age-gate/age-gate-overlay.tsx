@@ -73,7 +73,9 @@ export function AgeGateOverlay({ state, onConfirm, onDeny }: Props) {
           </ExternalLink>
         ) : (
           <View style={styles.actions}>
-            <Button onPress={onConfirm}>{t("ageGate.yes")}</Button>
+            <Button testID="age-gate-confirm" onPress={onConfirm}>
+              {t("ageGate.yes")}
+            </Button>
             <Button variant="secondary" onPress={onDeny}>
               {t("ageGate.no")}
             </Button>

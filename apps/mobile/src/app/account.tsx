@@ -81,6 +81,7 @@ function LanguageCard() {
         {selectableLocales.map((value) => (
           <Button
             key={value}
+            testID={`language-option-${value}`}
             variant={value === activeLocale ? "primary" : "secondary"}
             onPress={() => switchLocale(value)}
           >
@@ -132,6 +133,7 @@ function GuestAuthForm({
       </Text>
       <Input
         label={t("account.email")}
+        testID="account-email"
         keyboardType="email-address"
         autoCapitalize="none"
         autoComplete="email"
@@ -140,6 +142,7 @@ function GuestAuthForm({
       />
       <PasswordInput
         label={t("account.password")}
+        testID="account-password"
         autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
         value={password}
         onChangeText={setPassword}
@@ -158,6 +161,7 @@ function GuestAuthForm({
         </Text>
       )}
       <Button
+        testID={mode === "sign-in" ? "account-sign-in" : undefined}
         disabled={active.isPending}
         onPress={() =>
           mode === "sign-up"

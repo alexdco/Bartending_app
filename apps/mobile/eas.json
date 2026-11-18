@@ -27,6 +27,20 @@
         "buildType": "apk"
       }
     },
+    "screenshots": {
+      "distribution": "internal",
+      "channel": "screenshots",
+      "environment": "production",
+      "env": {
+        "EXPO_PUBLIC_DISABLE_ANALYTICS": "true"
+      },
+      "ios": {
+        "simulator": true
+      },
+      "android": {
+        "buildType": "apk"
+      }
+    },
     "production": {
       "channel": "production",
       "environment": "production",

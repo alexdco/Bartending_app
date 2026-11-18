@@ -1,6 +1,7 @@
 import * as Updates from "expo-updates";
 import PostHog from "posthog-react-native";
 
+import { isAnalyticsDisabled } from "./analytics-flag";
 import { resolveAppChannel } from "./app-channel";
 
 let client: PostHog | null = null;
@@ -10,6 +11,12 @@ let client: PostHog | null = null;
 // then client stays null and every helper below is a no op.
 export function initAnalytics(): void {
   if (client) return;
+
+  // Store screenshot builds send nothing (spec 0060, AC-4). Read as a literal
+  // so Expo inlines it at bundle time.
+  if (isAnalyticsDisabled(process.env.EXPO_PUBLIC_DISABLE_ANALYTICS)) {
+    return;
+  }
 
   const apiKey = process.env.EXPO_PUBLIC_POSTHOG_KEY;
   const apiHost = process.env.EXPO_PUBLIC_POSTHOG_HOST;

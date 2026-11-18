@@ -1,0 +1,60 @@
+# One locale's store captures (spec 0060, AC-5). Called by capture-all.yaml
+# with LOCALE, LANGUAGE_LABEL, and MAKE_NOW_LABEL. Every tap targets a testID,
+# never visible text. Any missing element fails the run (non zero exit)
+# before a wrong screen is saved.
+appId: com.cocktailist.app
+name: Store screenshots, ${LOCALE}
+---
+# Fresh install state, and no permission dialog can cover a shot.
+- launchApp:
+    clearState: true
+    permissions:
+      all: allow
+
+- extendedWaitUntil:
+    visible:
+      id: age-gate-confirm
+    timeout: 30000
+- tapOn:
+    id: age-gate-confirm
+
+# Sign in to the demo account (its pantry and favorites come from
+# store/demo-seed.sql).
+- openLink: cocktailist://account
+- extendedWaitUntil:
+    visible:
+      id: account-sign-in
+    timeout: 30000
+- tapOn:
+    id: account-email
+- inputText: ${MAESTRO_DEMO_EMAIL}
+- tapOn:
+    id: account-password
+- inputText: ${MAESTRO_DEMO_PASSWORD}
+- hideKeyboard
+- tapOn:
+    id: account-sign-in
+- extendedWaitUntil:
+    notVisible:
+      id: account-sign-in
+    timeout: 30000
+
+# Pick the language last: signed in, this also writes it to the demo profile.
+- scrollUntilVisible:
+    element:
+      id: language-option-${LOCALE}
+    direction: DOWN
+- tapOn:
+    id: language-option-${LOCALE}
+- extendedWaitUntil:
+    visible: ${LANGUAGE_LABEL}
+    timeout: 10000
+
+# 01 make-now: drink ideas, top of the screen.
+- openLink: cocktailist://drink-ideas
+- extendedWaitUntil:
+    visible: ${MAKE_NOW_LABEL}
+    timeout: 30000
+- waitForAnimationToEnd:
+    timeout: 5000
+- takeScreenshot: store/.captures/${MAESTRO_PLATFORM}/${LOCALE}/01-make-now

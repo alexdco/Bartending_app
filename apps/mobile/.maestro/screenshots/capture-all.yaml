@@ -1,0 +1,27 @@
+# Store screenshots, every listing locale (spec 0060, AC-5).
+#
+# Run from apps/mobile (the Expo project folder, where EAS jobs also start),
+# so captures land in apps/mobile/store/.captures/:
+#   pnpm --filter mobile store:capture:android   (local Android emulator)
+#   apps/mobile/.eas/workflows/store-screenshots.yml (EAS, both platforms)
+#
+# Needs MAESTRO_DEMO_EMAIL, MAESTRO_DEMO_PASSWORD, and MAESTRO_PLATFORM
+# (ios or android) from the shell or the EAS job env.
+#
+# Per locale values are pinned here:
+#   LANGUAGE_LABEL  the account screen's "Language" heading in that locale,
+#                   proof the language switch took effect
+#   MAKE_NOW_LABEL  the drink ideas "You can make now" heading in that locale
+#
+# Slice 1 (tracer bullet): English, shot 01 only. Slice 2 adds the other five
+# shots, FEATURED_RECIPE_ID, SEARCH_QUERY, RECIPE_TITLE, and the AI retry
+# budget. Slice 3 adds es, pt, fr, ja, zh.
+appId: com.cocktailist.app
+name: Store screenshots, all locales
+---
+- runFlow:
+    file: capture-locale.yaml
+    env:
+      LOCALE: en
+      LANGUAGE_LABEL: Language
+      MAKE_NOW_LABEL: You can make now

@@ -8,6 +8,9 @@ export type AppStoreLocale = "en-US" | "es-MX" | "pt-BR" | "fr-FR" | "ja" | "zh-
 
 export type PlayLocale = "en-US" | "es-419" | "pt-BR" | "fr-FR" | "ja-JP" | "zh-CN";
 
+/** One caption per store screenshot, in shot order (spec 0060 shot list). */
+export type ScreenshotCaptions = readonly [string, string, string, string, string, string];
+
 export interface StoreListing {
   /** Our app locale code, also the web URL path segment. */
   readonly locale: ListingLocale;
@@ -35,5 +38,12 @@ export interface StoreListing {
     readonly shortDescription: string;
     /** Ends with `ageLine`. Key terms used naturally, Play has no keyword field. */
     readonly fullDescription: string;
+  };
+  /** Text drawn onto the store images. Spec 0060. */
+  readonly screenshots: {
+    /** Headline above each capture: make now, AI idea, recipe, search, batch, learn. */
+    readonly captions: ScreenshotCaptions;
+    /** The line under `Cocktailist` on the Play feature graphic. */
+    readonly featureGraphicLine: string;
   };
 }

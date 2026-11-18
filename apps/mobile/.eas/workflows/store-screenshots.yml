@@ -1,0 +1,105 @@
+# Store screenshot captures, both platforms (spec 0060, AC-7).
+#
+# Manual only:  cd apps/mobile && npx eas-cli workflow:run .eas/workflows/store-screenshots.yml
+#
+# Builds the `screenshots` profile (release, production data, analytics off),
+# runs .maestro/screenshots/capture-all.yaml on an iPhone Pro Max class
+# simulator and a Pixel emulator, each signed in to its own demo account, and
+# uploads each platform's captures as one artifact, even when a locale fails.
+#
+# Needs these EAS environment variables (secret, production environment):
+#   SCREENSHOT_IOS_EMAIL, SCREENSHOT_IOS_PASSWORD,
+#   SCREENSHOT_ANDROID_EMAIL, SCREENSHOT_ANDROID_PASSWORD
+# Run apps/mobile/store/demo-seed.sql in the SQL editor first.
+#
+# Then download captures-ios and captures-android, unzip them into
+# apps/mobile/store/.captures/, and run `pnpm --filter mobile store:screenshots`.
+#
+# Maestro on EAS is alpha. If a run cannot produce these artifacts, or the
+# device list lacks a Pro Max, stop and route back to /architect (spec 0060).
+name: Store screenshots
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  build_ios:
+    name: Build iOS (screenshots)
+    type: build
+    params:
+      platform: ios
+      profile: screenshots
+
+  build_android:
+    name: Build Android (screenshots)
+    type: build
+    params:
+      platform: android
+      profile: screenshots
+
+  capture_ios:
+    name: Capture iOS
+    needs: [build_ios]
+    type: maestro
+    environment: production
+    env:
+      MAESTRO_PLATFORM: ios
+      MAESTRO_DEMO_EMAIL: ${{ env.SCREENSHOT_IOS_EMAIL }}
+      MAESTRO_DEMO_PASSWORD: ${{ env.SCREENSHOT_IOS_PASSWORD }}
+    params:
+      build_id: ${{ needs.build_ios.outputs.build_id }}
+      flow_path: .maestro/screenshots/capture-all.yaml
+      # 1320 x 2868, the App Store 6.9 inch size, so nothing is upscaled.
+      device_identifier: iPhone 16 Pro Max
+    hooks:
+      before_maestro_tests:
+        - name: Dark appearance and a clean status bar
+          run: |
+            xcrun simctl ui booted appearance dark
+            xcrun simctl status_bar booted override --time "9:41" \
+              --batteryState charged --batteryLevel 100 \
+              --cellularMode active --cellularBars 4 \
+              --wifiMode active --wifiBars 3 --dataNetwork wifi
+      after_maestro_tests:
+        - uses: eas/upload_artifact
+          if: ${{ always() }}
+          with:
+            type: other
+            name: captures-ios
+            path: store/.captures/ios/**/*
+
+  capture_android:
+    name: Capture Android
+    needs: [build_android]
+    type: maestro
+    environment: production
+    runs_on: linux-medium-nested-virtualization
+    env:
+      MAESTRO_PLATFORM: android
+      MAESTRO_DEMO_EMAIL: ${{ env.SCREENSHOT_ANDROID_EMAIL }}
+      MAESTRO_DEMO_PASSWORD: ${{ env.SCREENSHOT_ANDROID_PASSWORD }}
+    params:
+      build_id: ${{ needs.build_android.outputs.build_id }}
+      flow_path: .maestro/screenshots/capture-all.yaml
+      # 1080 x 2400; the renderer fits it onto the 1080 x 1920 Play canvas.
+      device_identifier: pixel_6
+    hooks:
+      before_maestro_tests:
+        - name: Dark mode and the demo mode status bar
+          run: |
+            adb shell cmd uimode night yes
+            adb shell settings put global sysui_demo_allowed 1
+            demo() { adb shell am broadcast -a com.android.systemui.demo -e command "$@"; }
+            demo enter
+            demo clock -e hhmm 0941
+            demo battery -e level 100 -e plugged false
+            demo network -e wifi show -e level 4
+            demo network -e mobile show -e datatype none -e level 4
+            demo notifications -e visible false
+      after_maestro_tests:
+        - uses: eas/upload_artifact
+          if: ${{ always() }}
+          with:
+            type: other
+            name: captures-android
+            path: store/.captures/android/**/*

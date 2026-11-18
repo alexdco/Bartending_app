@@ -62,4 +62,15 @@ export const en: StoreListing = {
     shortDescription: "Make drinks with what you have, and get AI drink ideas from your pantry.",
     fullDescription: DESCRIPTION,
   },
+  screenshots: {
+    captions: [
+      "See what you can make tonight",
+      "Get AI drink ideas from your pantry",
+      "Classic recipes with clear steps",
+      "Search by name or ingredient",
+      "Scale a recipe for a party",
+      "Learn spirits, wine, and bar tools",
+    ],
+    featureGraphicLine: "Make drinks with what you have",
+  },
 };

@@ -17,7 +17,13 @@ export const STORE_LIMITS = {
   playShortDescription: 80,
   description: 4000,
   releaseNotes: 500,
+  /** Short enough to fit two lines on the frame (spec 0060). */
+  screenshotCaption: { latin: 40, cjk: 18 },
+  featureGraphicLine: { latin: 48, cjk: 20 },
 } as const;
+
+/** Store screenshots per locale and platform, one per shot (spec 0060). */
+export const SCREENSHOT_COUNT = 6;
 
 export interface ListingProblem {
   readonly locale: ListingLocale;
@@ -28,6 +34,11 @@ export interface ListingProblem {
 const CJK_LOCALES: ReadonlySet<ListingLocale> = new Set(["ja", "zh"]);
 
 export const isCjkLocale = (locale: ListingLocale): boolean => CJK_LOCALES.has(locale);
+
+const scriptLimit = (
+  locale: ListingLocale,
+  limit: { readonly latin: number; readonly cjk: number },
+): number => (isCjkLocale(locale) ? limit.cjk : limit.latin);
 
 export const codePointLength = (text: string): number => [...text].length;
 
@@ -99,7 +110,31 @@ const textFields = (listing: StoreListing): readonly TextField[] => [
     text: listing.play.fullDescription,
     limit: STORE_LIMITS.description,
   },
+  ...listing.screenshots.captions.map((text, index) => ({
+    field: `screenshots.captions[${index}]`,
+    text,
+    limit: scriptLimit(listing.locale, STORE_LIMITS.screenshotCaption),
+  })),
+  {
+    field: "screenshots.featureGraphicLine",
+    text: listing.screenshots.featureGraphicLine,
+    limit: scriptLimit(listing.locale, STORE_LIMITS.featureGraphicLine),
+  },
 ];
+
+/** Exactly six captions; the tuple type holds it at compile time, this at runtime. */
+const captionCountProblems = (listing: StoreListing): readonly ListingProblem[] => {
+  const count = listing.screenshots.captions.length;
+  return count === SCREENSHOT_COUNT
+    ? []
+    : [
+        {
+          locale: listing.locale,
+          field: "screenshots.captions",
+          message: `has ${count} captions, expected ${SCREENSHOT_COUNT}`,
+        },
+      ];
+};
 
 const fieldProblems = (listing: StoreListing): readonly ListingProblem[] =>
   textFields(listing).flatMap(({ field, text, limit }) => {
@@ -192,6 +227,7 @@ const keywordProblems = (listing: StoreListing): readonly ListingProblem[] => {
 /** Every rule the test can check for one listing; empty means it passes. */
 export const findListingProblems = (listing: StoreListing): readonly ListingProblem[] => [
   ...fieldProblems(listing),
+  ...captionCountProblems(listing),
   ...brandProblems(listing),
   ...ageLineProblems(listing),
   ...keywordProblems(listing),

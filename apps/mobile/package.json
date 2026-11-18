@@ -47,10 +47,13 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@fontsource/fraunces": "5.3.0",
+    "@resvg/resvg-js": "2.6.2",
     "@types/node": "^20.19.43",
     "@types/react": "~19.2.2",
     "eslint": "^9",
     "eslint-config-expo": "~57.0.2",
+    "satori": "0.63.2",
     "tsx": "^4.23.13",
     "typescript": "~6.0.3"
   },
@@ -71,7 +74,9 @@
     "update:preview": "eas env:exec preview \"node scripts/check-public-env.mjs\" && eas update --channel preview --environment preview",
     "update:prod": "eas env:exec production \"node scripts/check-public-env.mjs\" && eas update --channel production --environment production",
     "store:metadata": "tsx scripts/store-metadata.ts",
-    "store:push": "pnpm store:metadata && eas metadata:push"
+    "store:push": "pnpm store:metadata && eas metadata:push",
+    "store:capture:android": "tsx scripts/store-capture-android.ts",
+    "store:screenshots": "tsx scripts/store-screenshots.tsx"
   },
   "private": true
 }
