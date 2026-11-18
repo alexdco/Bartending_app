@@ -1,107 +1,120 @@
 {
-  "version": 1,
+  "version": 2,
   "skills": {
     "architect": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/architect/SKILL.md",
-      "computedHash": "66856595ec9fd2477534954ff9ee1f0b91c537eabbce0b4b9a19f69329c02f72"
+      "computedHash": ""
     },
     "audit": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/audit/SKILL.md",
-      "computedHash": "f388e74b95dcfea40615dcce28223b9166e9213867ac35e9971b549b7cda1eae"
+      "computedHash": ""
     },
     "check": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/check/SKILL.md",
-      "computedHash": "59055fb74dd47dc1443cbdf970152d614e81372dd51aa636159eb3246a627dd8"
+      "computedHash": ""
     },
     "debug": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/debug/SKILL.md",
-      "computedHash": "fa8f950ff8f78b45b5f665d889bc0df9f93b9784deca6dfc588ab08e23152f0e"
+      "computedHash": ""
     },
     "develop": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/develop/SKILL.md",
-      "computedHash": "151812557fd511f80196653d0dae0efc878558cc96e962857f2710ed98789573"
+      "computedHash": ""
     },
     "document": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/document/SKILL.md",
-      "computedHash": "a47c5d29a1263d987c2fa05dbc993a5276aaf6c4ddc54fbd329463a5f3a1aa77"
+      "computedHash": ""
+    },
+    "eas-workflows": {
+      "source": "expo/skills",
+      "commit": "dfdebcc6c4c1bf7a9471cefd6b6f39c7ba6c884d",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-workflows/SKILL.md",
+      "computedHash": "d8ed69300f50bcd1f153c8cf0149d5be0018b4a5c834680d14e2b09b4d734431"
     },
     "i18next-localization": {
       "source": "i18next/i18next-cli",
       "sourceType": "github",
       "skillPath": "skills/i18next-localization/SKILL.md",
-      "computedHash": "b264788d7105224bc961cb5b436f6f9195ad2b4f6edfdb8d800cc6edde4cf29a"
+      "computedHash": "0ce595a4d91a0a94183d8af13ec2de6d81ae4e6bf0f82e9f90f019e1ee9f92cb"
     },
     "nextjs-app-router-patterns": {
       "source": "wshobson/agents",
       "sourceType": "github",
       "skillPath": "plugins/frontend-mobile-development/skills/nextjs-app-router-patterns/SKILL.md",
-      "computedHash": "3a46e9093baecb3a85819529ce05006f817663f48d9e872868c32ae6049c0d5c"
+      "computedHash": "39b84480d3a62355fd1199173dc70b97efe1daf6dbfae560cc7b85e127934a98"
+    },
+    "playwright-best-practices": {
+      "source": "currents-dev/playwright-best-practices-skill",
+      "sourceType": "github",
+      "skillPath": "playwright-best-practices/SKILL.md",
+      "computedHash": "111e9d3e9d63dea34814120fb6583c0b28ee45371662801d8e8d8bdf4b05dcb0"
     },
     "posthog-instrumentation": {
       "source": "posthog/posthog-for-claude",
       "sourceType": "github",
       "skillPath": "skills/posthog-instrumentation/SKILL.md",
-      "computedHash": "2651cf543b937bec0e08d50486e13ed3176ccd285477738d3edb47c356eeeac9"
+      "computedHash": "b5cd0a9913c6cb0ddfe0a954fa1b1061dd81dd7d44fedb53db46ba8b14437368"
     },
     "react-native-best-practices": {
       "source": "callstackincubator/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/react-native-best-practices/SKILL.md",
-      "computedHash": "5b9722518860a462a9308759b7046725e4a1ab59642ad6a6e520afc45bc8373b"
+      "computedHash": "03a527a04426ca72763396170997a51d6d07600100a549f09915a6b4e8dc10c1"
     },
     "scope": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/scope/SKILL.md",
-      "computedHash": "737c19451b3d0e08edf9560b195a864d1a4006e4f70760339ddc3b2d9b6b6447"
+      "computedHash": ""
     },
     "sentry-get-started": {
       "source": "getsentry/sentry-for-ai",
       "sourceType": "github",
       "skillPath": "src/skills/sentry-get-started/SKILL.md",
-      "computedHash": "7b8e2ab6578e53fe31724291ff9f2632bd00fe87b8f7ee0b8d7730a3590ae995"
+      "computedHash": "480462882d198073fbec4aea0f245186ce39cc17ef03db98851b7893bd2fb1cb"
     },
     "supabase-postgres-best-practices": {
       "source": "supabase/agent-skills",
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
-      "computedHash": "128fac78002d916c8ca908245d398e634f540d8bcf20915b2b2359aeb18eba59"
+      "computedHash": "3eb972c2d7c818e544e35cc33ea8d7147d4d78ae08142ef40037b0fbac7a2505"
     },
     "sync": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/sync/SKILL.md",
-      "computedHash": "5986c38a23bbb14f82c018862ff0a601f3f20b4a8a1f429e9731b4da6742a765"
+      "computedHash": ""
     },
     "tailwind-4-docs": {
       "source": "lombiq/tailwind-agent-skills",
       "sourceType": "github",
       "skillPath": "skills/tailwind-4-docs/SKILL.md",
-      "computedHash": "4900f575f24641b1af459cda37cbb8438ecf3f8f1a63148384197cb730895093"
+      "computedHash": "263961b82698e3defdb26dd6a1b7328044517e67a3bbe91c1b33bb2a4273f4ee"
     },
     "test": {
       "source": "jsmastery-pro/skills",
       "sourceType": "github",
       "skillPath": "skills/test/SKILL.md",
-      "computedHash": "6b742c465b3e9cec898bf3621ec555faefb41fdcc0cbbf43ec0a6041fbdcb6be"
+      "computedHash": ""
     },
     "vitest": {
       "source": "antfu/skills",
       "sourceType": "github",
       "skillPath": "skills/vitest/SKILL.md",
-      "computedHash": "3594bf6d97ca50836c611d8b1907322888c03d2c41b2f26761e644b8e67fe106"
+      "computedHash": "f9125ac2bc936894e78858037d05ba83d5b211dfa90a6717a3f710586d963a18"
     }
   }
 }
