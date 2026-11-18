@@ -63,7 +63,9 @@ function errorFor(
         ? t("errorInvalidDrinkStyle")
         : field === "method"
           ? t("errorInvalidMethod")
-          : t("errorInvalidStatus");
+          : field === "fameScore"
+            ? t("errorInvalidFameScore")
+            : t("errorInvalidStatus");
     case "needs_style":
       return t("errorNoteNeedsStyle");
     default:
@@ -136,6 +138,9 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
   );
   const [region, setRegion] = useState(existingRecipe?.region ?? "");
   const [method, setMethod] = useState<RecipeMethod | null>(existingRecipe?.method ?? null);
+  const [fameScore, setFameScore] = useState(
+    existingRecipe?.fameScore == null ? "" : String(existingRecipe.fameScore),
+  );
   const [ingredients, setIngredients] = useState<AdminRecipeFormIngredient[]>(
     existingRecipe?.ingredients.length ? existingRecipe.ingredients : [{ name: "", measure: "" }],
   );
@@ -232,6 +237,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
         ? null
         : flavorProfile,
       method,
+      fameScore,
       drinkStyle,
       drinkStyleNote,
       bartenderTip,
@@ -382,6 +388,27 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
         value={region}
         onChange={(event) => setRegion(event.target.value)}
       />
+
+      <div className="flex flex-col gap-one">
+        {/* Input links only its error by default; this keeps the hint linked too. */}
+        <Input
+          id="fame-score"
+          label={t("fameScore")}
+          value={fameScore}
+          onChange={(event) => setFameScore(event.target.value)}
+          error={errorFor(t, errors, "fameScore")}
+          inputMode="numeric"
+          autoComplete="off"
+          aria-describedby={
+            errorFor(t, errors, "fameScore")
+              ? "fame-score-error fame-score-hint"
+              : "fame-score-hint"
+          }
+        />
+        <Text id="fame-score-hint" variant="bodySmall" muted>
+          {t("fameScoreHint")}
+        </Text>
+      </div>
 
       <div className="flex flex-col gap-one">
         <label htmlFor="method" className="text-label font-medium text-text">

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { RecipeRef, ScoreUnscoredRecipesResult } from "@bartendingapp/shared/fame-scoring";
 
 /**
  * The jsonb report import_catalog and import_custom_recipes return
@@ -75,5 +76,31 @@ export function formatFreshnessReport(
     ...(ignoredOverrides
       ? formatSection("overrides ignored because the recipe is locked", ignoredOverrides)
       : []),
+  ];
+}
+
+const formatRefs = (heading: string, recipes: readonly RecipeRef[]) => [
+  `  ${heading}: ${recipes.length}`,
+  ...recipes.map((recipe) => `    ${recipe.id}  ${recipe.name}`),
+];
+
+/**
+ * The fame lines of the freshness report (AC-9, AC-13): recipes scored,
+ * recipes still unscored, and recipes waiting past the cap. A failed step is
+ * a warning plus the unscored list, never a failed run.
+ */
+export function formatFameReport(result: ScoreUnscoredRecipesResult): readonly string[] {
+  if (result.error !== null) {
+    return [
+      `Fame scoring step failed; the next import run picks these up: ${result.error.message}`,
+      ...formatRefs("recipes still unscored", result.error.unscored),
+    ];
+  }
+
+  return [
+    "Fame scoring:",
+    `  recipes scored: ${result.data.scored.length}`,
+    ...formatRefs("recipes still unscored", result.data.unscored),
+    ...formatRefs("waiting for the next run", result.data.waiting),
   ];
 }

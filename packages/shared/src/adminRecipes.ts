@@ -38,6 +38,8 @@ export interface AdminRecipeSummary {
   changedUpstream: boolean;
   /** Soft deleted; only listed by the "deleted" status filter (spec 0056 AC-7). */
   deletedAt: string | null;
+  /** 0 to 100; null means unscored, so the next import's fame tail scores it (spec 0056 AC-7, AC-9). */
+  fameScore: number | null;
 }
 
 /** Which recipes the admin list shows: live ones (the default) or soft deleted ones. */
@@ -106,7 +108,7 @@ export async function fetchAdminRecipes(
   let dbQuery = client
     .from("recipes")
     .select(
-      "id, name, glass, alcoholic_status, source, created_at, admin_locked_at, source_hash, latest_source_hash, deleted_at",
+      "id, name, glass, alcoholic_status, source, created_at, admin_locked_at, source_hash, latest_source_hash, deleted_at, fame_score",
     )
     .order("created_at", { ascending: false })
     .order("id", { ascending: false })
@@ -148,6 +150,7 @@ export async function fetchAdminRecipes(
       adminLockedAt: row.admin_locked_at,
       changedUpstream: isChangedUpstream(row),
       deletedAt: row.deleted_at,
+      fameScore: row.fame_score,
     })),
     hasMore,
   };
@@ -179,6 +182,8 @@ export interface AdminRecipeDetail {
   deletedAt: string | null;
   /** Build method, whoever set it (classifier or admin); null when none (spec 0054 AC-11). */
   method: RecipeMethod | null;
+  /** 0 to 100; null means the next import scores it (spec 0056 AC-10). */
+  fameScore: number | null;
   ingredients: AdminRecipeIngredient[];
   /** Catalog tags only; taste tags are in flavorProfile. */
   tags: AdminRecipeTag[];
@@ -237,7 +242,7 @@ export async function fetchAdminRecipeDetail(
   const { data, error } = await client
     .from("recipes")
     .select(
-      `id, name, instructions, image_url, glass, alcoholic_status, region, source, method, admin_locked_at,
+      `id, name, instructions, image_url, glass, alcoholic_status, region, source, method, fame_score, admin_locked_at,
        source_hash, latest_source_hash, deleted_at,
        drink_style, drink_style_note, bartender_tip, presentation_tip,
        recipe_ingredients ( measure, sort_order, ingredients ( name, allergens ) ),
@@ -281,6 +286,7 @@ export async function fetchAdminRecipeDetail(
     changedUpstream: isChangedUpstream(data),
     deletedAt: data.deleted_at,
     method: toRecipeMethod(data.method),
+    fameScore: data.fame_score,
     ingredients,
     tags,
     flavorProfile,
@@ -319,6 +325,12 @@ export interface AdminRecipeFormValues {
    * the recipe free for the classifier's next run.
    */
   method: RecipeMethod | null;
+  /**
+   * The fame score field's raw text (spec 0056 AC-10). Always sent with
+   * p_set_fame_score = true: a whole number 0 to 100 is saved, blank saves
+   * null (the next import scores it), anything else is a form error.
+   */
+  fameScore: string;
   /** Spec 0043: null means none. */
   drinkStyle: DrinkStyle | null;
   /** Empty means none. */
@@ -332,6 +344,7 @@ export type AdminRecipeValidationError =
   | { field: "instructions"; reason: "required" | "too_long" }
   | { field: "alcoholicStatus"; reason: "invalid" }
   | { field: "method"; reason: "invalid" }
+  | { field: "fameScore"; reason: "invalid" }
   | { field: "ingredients"; reason: "required" }
   | { field: "drinkStyle"; reason: "invalid" }
   | { field: "drinkStyleNote"; reason: "too_long" | "needs_style" }
@@ -339,6 +352,31 @@ export type AdminRecipeValidationError =
   | { field: "presentationTip"; reason: "too_long" };
 
 const isNoteTooLong = (text: string) => noteLength(text.trim()) > RECIPE_NOTE_MAX_LENGTH;
+
+export const FAME_SCORE_MIN = 0;
+export const FAME_SCORE_MAX = 100;
+
+export type ParseFameScoreResult =
+  { data: number | null; error: null } | { data: null; error: "invalid" };
+
+/**
+ * The admin fame score field (spec 0056 AC-10): blank is null (the next
+ * import scores it), a whole number from 0 to 100 is that number, anything
+ * else (a fraction, a sign, a letter, out of range) is invalid. Pure.
+ */
+export function parseFameScore(text: string): ParseFameScoreResult {
+  const trimmed = text.trim();
+  if (trimmed === "") {
+    return { data: null, error: null };
+  }
+  if (!/^\d{1,3}$/.test(trimmed)) {
+    return { data: null, error: "invalid" };
+  }
+  const value = Number(trimmed);
+  return value >= FAME_SCORE_MIN && value <= FAME_SCORE_MAX
+    ? { data: value, error: null }
+    : { data: null, error: "invalid" };
+}
 
 /**
  * Mirrors admin_upsert_recipe's and admin_set_recipe_notes' own checks
@@ -370,6 +408,10 @@ export function validateAdminRecipeForm(
 
   if (values.method !== null && !isRecipeMethod(values.method)) {
     errors.push({ field: "method", reason: "invalid" });
+  }
+
+  if (parseFameScore(values.fameScore).error !== null) {
+    errors.push({ field: "fameScore", reason: "invalid" });
   }
 
   const nonEmptyIngredients = values.ingredients.filter((i) => i.name.trim().length > 0);
@@ -499,6 +541,9 @@ export async function saveAdminRecipe(
     p_flavor_profile: flavorNames,
     p_set_method: true,
     p_method: values.method,
+    // Validated above, so data is the score or null.
+    p_set_fame_score: true,
+    p_fame_score: parseFameScore(values.fameScore).data,
   } as Database["public"]["Functions"]["admin_upsert_recipe"]["Args"]);
 
   if (error) {

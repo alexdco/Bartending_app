@@ -1471,6 +1471,7 @@ export type Database = {
       admin_upsert_recipe: {
         Args: {
           p_alcoholic_status: string;
+          p_fame_score?: number;
           p_flavor_profile?: string[];
           p_glass: string;
           p_ingredients: Json;
@@ -1479,10 +1480,15 @@ export type Database = {
           p_name: string;
           p_recipe_id: string;
           p_region: string;
+          p_set_fame_score?: boolean;
           p_set_method?: boolean;
           p_tags: Json;
         };
         Returns: string;
+      };
+      apply_fame_on_arrival: {
+        Args: { proposals: Json };
+        Returns: undefined;
       };
       apply_ingredient_allergens: {
         Args: { proposals: Json };
@@ -1729,6 +1735,10 @@ export type Database = {
           name: string;
           score: number;
         }[];
+      };
+      recompute_popularity_ranks: {
+        Args: { p_regions: string[] };
+        Returns: undefined;
       };
       release_ai_generation_slot: {
         Args: { p_day: string; p_ip_hash: string; p_user_id: string };

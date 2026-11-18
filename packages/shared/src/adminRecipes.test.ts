@@ -4,6 +4,7 @@ import type { Database } from "./database.types";
 import {
   canOpenAdminRecipe,
   isChangedUpstream,
+  parseFameScore,
   saveAdminRecipe,
   setRecipeTranslationNotes,
   splitNameList,
@@ -114,6 +115,7 @@ const formValues: AdminRecipeFormValues = {
   tags: [],
   flavorProfile: null,
   method: null,
+  fameScore: "",
   drinkStyle: "sour",
   drinkStyleNote: "A tequila sour.",
   bartenderTip: "  Shake hard.  ",
@@ -335,5 +337,58 @@ describe("canOpenAdminRecipe (spec 0056 AC-7)", () => {
     expect(
       canOpenAdminRecipe({ deleted_at: deleted, admin_locked_at: deleted, source: "admin" }),
     ).toBe(false);
+  });
+});
+
+describe("parseFameScore (spec 0056 AC-10)", () => {
+  it("reads blank as null and whole numbers 0 to 100 as themselves", () => {
+    expect(parseFameScore("")).toEqual({ data: null, error: null });
+    expect(parseFameScore("   ")).toEqual({ data: null, error: null });
+    expect(parseFameScore("0")).toEqual({ data: 0, error: null });
+    expect(parseFameScore(" 72 ")).toEqual({ data: 72, error: null });
+    expect(parseFameScore("100")).toEqual({ data: 100, error: null });
+  });
+
+  it.each(["101", "-1", "50.5", "50,5", "1e2", "abc", "+5", "1000"])("rejects %s", (text) => {
+    expect(parseFameScore(text)).toEqual({ data: null, error: "invalid" });
+  });
+});
+
+describe("saveAdminRecipe fame score (spec 0056 AC-10)", () => {
+  function clientWithRpc() {
+    const rpc = vi.fn((name: string) =>
+      Promise.resolve(
+        name === "admin_upsert_recipe"
+          ? { data: "recipe-id", error: null }
+          : { data: null, error: null },
+      ),
+    );
+    return { rpc, client: { rpc } as unknown as SupabaseClient<Database> };
+  }
+
+  it("always sends p_set_fame_score, with the score or null for blank", async () => {
+    const scored = clientWithRpc();
+    await saveAdminRecipe(scored.client, { ...formValues, fameScore: "88" });
+    expect(scored.rpc).toHaveBeenCalledWith(
+      "admin_upsert_recipe",
+      expect.objectContaining({ p_set_fame_score: true, p_fame_score: 88 }),
+    );
+
+    const blank = clientWithRpc();
+    await saveAdminRecipe(blank.client, { ...formValues, fameScore: "" });
+    expect(blank.rpc).toHaveBeenCalledWith(
+      "admin_upsert_recipe",
+      expect.objectContaining({ p_set_fame_score: true, p_fame_score: null }),
+    );
+  });
+
+  it("saves nothing and reports a form error for an invalid score", async () => {
+    const { rpc, client } = clientWithRpc();
+    const result = await saveAdminRecipe(client, { ...formValues, fameScore: "150" });
+    expect(result).toEqual({
+      data: null,
+      error: { reason: "validation", errors: [{ field: "fameScore", reason: "invalid" }] },
+    });
+    expect(rpc).not.toHaveBeenCalled();
   });
 });

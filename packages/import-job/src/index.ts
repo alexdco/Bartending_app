@@ -26,7 +26,13 @@ import {
   summarizeOverrides,
   validateOverrides,
 } from "./overrides";
-import { findIgnoredOverrides, formatFreshnessReport, parseImportReport } from "./freshnessReport";
+import { FAME_TAIL_LIMIT, scoreUnscoredRecipes } from "@bartendingapp/shared/fame-scoring";
+import {
+  findIgnoredOverrides,
+  formatFameReport,
+  formatFreshnessReport,
+  parseImportReport,
+} from "./freshnessReport";
 import { catalogSourceHash } from "./sourceHash";
 import {
   BACKFILL_GUARD_MESSAGE,
@@ -401,7 +407,9 @@ async function main(): Promise<void> {
 
   const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicApiKey) {
-    console.warn("ANTHROPIC_API_KEY not set; skipping catalog translation step.");
+    console.warn(
+      "ANTHROPIC_API_KEY not set; skipping catalog translation, ingredient classification, and fame scoring.",
+    );
     return;
   }
 
@@ -429,6 +437,13 @@ async function main(): Promise<void> {
       classificationError,
     );
   }
+
+  // Spec 0056 AC-9: new recipes get a fame score the run they arrive. Never
+  // throws; a failure is printed with the unscored recipes, and the run
+  // still succeeds.
+  formatFameReport(
+    await scoreUnscoredRecipes(supabase, anthropic, { limit: FAME_TAIL_LIMIT }),
+  ).forEach((line) => console.log(line));
 }
 
 main().catch((error: unknown) => {

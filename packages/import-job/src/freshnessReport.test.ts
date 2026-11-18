@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { findIgnoredOverrides, formatFreshnessReport, parseImportReport } from "./freshnessReport";
+import {
+  findIgnoredOverrides,
+  formatFameReport,
+  formatFreshnessReport,
+  parseImportReport,
+} from "./freshnessReport";
 
 const margarita = { sourceId: "11007", name: "Margarita" };
 const cloverClub = { sourceId: "custom:clover-club", name: "Clover Club" };
@@ -96,6 +101,40 @@ describe("formatFreshnessReport (spec 0056 AC-13)", () => {
       "  locked recipes skipped: 1",
       "    custom:clover-club  Clover Club",
       "  locked recipes changed upstream: 0",
+    ]);
+  });
+});
+
+describe("formatFameReport (spec 0056 AC-9, AC-13)", () => {
+  it("prints scored, still unscored, and waiting counts with the recipes", () => {
+    expect(
+      formatFameReport({
+        data: {
+          scored: [{ id: "a", name: "Mojito" }],
+          unscored: [{ id: "b", name: "Zombie" }],
+          waiting: [],
+        },
+        error: null,
+      }),
+    ).toEqual([
+      "Fame scoring:",
+      "  recipes scored: 1",
+      "  recipes still unscored: 1",
+      "    b  Zombie",
+      "  waiting for the next run: 0",
+    ]);
+  });
+
+  it("prints a warning and the unscored recipes when the step failed", () => {
+    expect(
+      formatFameReport({
+        data: null,
+        error: { message: "apply failed", unscored: [{ id: "b", name: "Zombie" }] },
+      }),
+    ).toEqual([
+      "Fame scoring step failed; the next import run picks these up: apply failed",
+      "  recipes still unscored: 1",
+      "    b  Zombie",
     ]);
   });
 });

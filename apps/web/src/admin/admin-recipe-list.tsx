@@ -129,6 +129,14 @@ function AdminRecipeRow({ recipe }: { recipe: AdminRecipeSummary }) {
               {t("changedUpstream")}
             </span>
           )}
+          {recipe.fameScore === null && (
+            <span
+              className="rounded-small border border-border px-two py-0.5 text-body-small text-text-muted"
+              title={t("unscoredHint")}
+            >
+              {t("unscored")}
+            </span>
+          )}
           {isDeleted && (
             <span className="rounded-small bg-surface-selected px-two py-0.5 text-body-small text-text-muted">
               {t("deleted")}

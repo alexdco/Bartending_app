@@ -8,7 +8,8 @@ import { parseMeasure } from "@bartendingapp/shared/units";
 import { translateCatalog } from "@bartendingapp/shared/catalog-translation";
 import { classifyIngredients } from "@bartendingapp/shared/ingredient-classification";
 import { parseCustomRecipes } from "./customRecipesSchema";
-import { formatFreshnessReport, parseImportReport } from "./freshnessReport";
+import { FAME_TAIL_LIMIT, scoreUnscoredRecipes } from "@bartendingapp/shared/fame-scoring";
+import { formatFameReport, formatFreshnessReport, parseImportReport } from "./freshnessReport";
 import { sourceHash } from "./sourceHash";
 
 function requireEnv(name: string): string {
@@ -81,7 +82,9 @@ async function main(): Promise<void> {
 
   const anthropicApiKey = process.env.ANTHROPIC_API_KEY;
   if (!anthropicApiKey) {
-    console.warn("ANTHROPIC_API_KEY not set; skipping catalog translation step.");
+    console.warn(
+      "ANTHROPIC_API_KEY not set; skipping catalog translation, ingredient classification, and fame scoring.",
+    );
     return;
   }
 
@@ -108,6 +111,11 @@ async function main(): Promise<void> {
       classificationError,
     );
   }
+
+  // Spec 0056 AC-9: same fame tail as the TheCocktailDB import; never throws.
+  formatFameReport(
+    await scoreUnscoredRecipes(supabase, anthropic, { limit: FAME_TAIL_LIMIT }),
+  ).forEach((line) => console.log(line));
 }
 
 main().catch((error: unknown) => {

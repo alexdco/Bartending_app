@@ -9,38 +9,25 @@
 //   pnpm tag-regions --all   (reprocess every recipe, not just untagged ones)
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
-import { zodOutputFormat } from "@anthropic-ai/sdk/helpers/zod";
-import { z } from "zod/v4";
 import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname } from "node:path";
 import type { Database } from "../src/database.types";
-import { FIXED_REGIONS, type RegionProposal as Proposal } from "../src/regionProposals";
+import type { RegionProposal as Proposal } from "../src/regionProposals";
+// The prompt, schema, and retry live in the shared module the import tail
+// also uses (spec 0056 AC-9), so the two never drift apart.
+import {
+  chunk,
+  FAME_BATCH_SIZE as BATCH_SIZE,
+  tagFameBatchWithRetry,
+  type FameRecipeInput as RecipeInput,
+} from "../src/fameScoring";
 
 const REVIEW_FILE_PATH = new URL(
   "./tagging/popular-by-region-proposals.json",
   import.meta.url,
 ).pathname.replace(/^\/([A-Za-z]:)/, "$1");
 
-const BATCH_SIZE = 25;
 const MAX_RETRIES = 3;
-
-const ProposalSchema = z.object({
-  proposals: z.array(
-    z.object({
-      id: z.string(),
-      region: z.enum(FIXED_REGIONS).nullable(),
-      fame_score: z.number().int().min(0).max(100),
-      reasoning: z.string(),
-    }),
-  ),
-});
-
-interface RecipeInput {
-  id: string;
-  name: string;
-  instructions: string;
-  ingredientNames: string[];
-}
 
 function loadReviewFile(): Proposal[] {
   if (!existsSync(REVIEW_FILE_PATH)) {
@@ -53,80 +40,6 @@ function loadReviewFile(): Proposal[] {
 function saveReviewFile(proposals: Proposal[]): void {
   mkdirSync(dirname(REVIEW_FILE_PATH), { recursive: true });
   writeFileSync(REVIEW_FILE_PATH, JSON.stringify(proposals, null, 2));
-}
-
-function chunk<T>(items: T[], size: number): T[][] {
-  const chunks: T[][] = [];
-  for (let i = 0; i < items.length; i += size) {
-    chunks.push(items.slice(i, i + size));
-  }
-  return chunks;
-}
-
-async function tagBatch(anthropic: Anthropic, batch: RecipeInput[]): Promise<Proposal[]> {
-  const recipesText = batch
-    .map(
-      (r) =>
-        `id: ${r.id}\nname: ${r.name}\ningredients: ${r.ingredientNames.join(", ")}\ninstructions: ${r.instructions}`,
-    )
-    .join("\n---\n");
-
-  const message = await anthropic.messages.parse({
-    model: "claude-haiku-4-5-20251001",
-    max_tokens: 4096,
-    messages: [
-      {
-        role: "user",
-        content:
-          `For each cocktail recipe below, assign a region from this fixed list only: ` +
-          `${FIXED_REGIONS.join(", ")}. Use null if no region genuinely fits (e.g. a drink ` +
-          `with no clear regional origin or association). Also give a fame_score from 0 to ` +
-          `100 rating how famous/well known this specific drink is in general, real world ` +
-          `terms (0 = obscure, 100 = globally iconic). Every recipe gets a fame_score, ` +
-          `including one whose region is null. ` +
-          `Give a one sentence reasoning for each. Return one proposal per recipe, in the ` +
-          `same order, referencing each by its id.\n\n${recipesText}`,
-      },
-    ],
-    output_config: {
-      format: zodOutputFormat(ProposalSchema),
-    },
-  });
-
-  const parsed = message.parsed_output;
-  if (!parsed) {
-    throw new Error("tagging call did not return a parseable response");
-  }
-
-  const byId = new Map(batch.map((r) => [r.id, r]));
-  return parsed.proposals.map((p) => ({
-    id: p.id,
-    name: byId.get(p.id)?.name ?? "",
-    region: p.region,
-    fame_score: p.fame_score,
-    reasoning: p.reasoning,
-  }));
-}
-
-async function tagBatchWithRetry(
-  anthropic: Anthropic,
-  batch: RecipeInput[],
-): Promise<Proposal[] | null> {
-  for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
-    try {
-      return await tagBatch(anthropic, batch);
-    } catch (error) {
-      const isLast = attempt === MAX_RETRIES - 1;
-      console.error(
-        `Batch starting with "${batch[0]?.name}" failed (attempt ${attempt + 1}/${MAX_RETRIES}): ${error}`,
-      );
-      if (isLast) {
-        return null;
-      }
-      await new Promise((resolve) => setTimeout(resolve, 2 ** attempt * 1000));
-    }
-  }
-  return null;
 }
 
 async function main() {
@@ -181,7 +94,7 @@ async function main() {
   let skipped = 0;
 
   for (const batch of chunk(inputs, BATCH_SIZE)) {
-    const result = await tagBatchWithRetry(anthropic, batch);
+    const result = await tagFameBatchWithRetry(anthropic, batch);
     if (result) {
       proposals.push(...result);
       saveReviewFile(proposals);
