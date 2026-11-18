@@ -72,7 +72,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 59 | Catalog freshness rules | Hardening | in-progress |
 | 60 | Store listing copy and app icon | Hardening | in-progress |
 | 61 | Automated accessibility checks | Hardening | in-progress |
-| 62 | Search sort control | Slice 32 | planned |
+| 62 | Search sort control | Slice 32 | in-progress |
 | 63 | Comment safety | Slice 33 | planned |
 | 64 | Translate Learn and quizzes | Slice 34 | planned |
 | 65 | Ingredient substitution suggestions | Slice 35 | planned |
@@ -953,10 +953,18 @@ The mobile drink ideas, pantry, search, recipe detail, batch panel, and learn sc
 
 ## Slice 32: Search sort control
 
-### 62. Search sort control · needs a decision
+### 62. Search sort control · in-progress
 A "Popular / A to Z" toggle on search for people who miss alphabetical browsing (from spec 0038, feature 46).
 **Done when:** search on web and mobile can switch between popular and alphabetical order, and the choice sticks for the session.
-- [ ] Design it (spec): `/architect search sort control`
+- [x] Design it (spec): `/architect search sort control`
+- [ ] Build it: `/develop search sort control`
+  - [x] Thin thread on web: `sort_order` on `search_recipes` (locale collated A to Z within match groups, applied by hand in the SQL editor, rollback file, SQL check), shared `SearchSort` and `searchRecipes` sort, web segmented control, URL param, server render, strings in nine locales, satisfies AC-1, AC-3, AC-4, AC-5, AC-6, AC-7, AC-8, AC-11, AC-12, AC-14
+  - [x] Mobile control: segmented control, in memory sort context in the root layout, query key, new `search` strings namespace in nine locales, satisfies AC-2, AC-10, AC-11, AC-12
+  - [x] Session memory and analytics: web `sessionStorage` restore, `search_sort_changed` event and `sort` on `search_performed` on both apps, satisfies AC-9, AC-13
+  - [ ] Live fame scores: run `tag-regions`, spot check, `apply-regions` (engineer run, blocks verify, also closes spec 0038's open tagging task), satisfies AC-15
+- [ ] Verify it: `/check verify search sort control`
+- [ ] Test it: `/test search sort control`
+Spec [0061](../specs/0061-search-sort-control/index.md) · code in `supabase/migrations`, `packages/shared/src`, `apps/web/src/recipes`, `apps/web/src/components`, `apps/mobile/src/recipes`, `apps/mobile/src/components`
 
 ## Slice 33: Comment safety
 

@@ -8,12 +8,14 @@ import {
   type AlcoholicStatusFilter,
   type Locale,
   type RecipeSearchResult,
+  type SearchSort,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 
 export interface UseRecipeSearchParams {
   query: string;
   statusFilter: AlcoholicStatusFilter | null;
+  sort: SearchSort;
   initialData?: RecipeSearchResult[];
 }
 
@@ -21,15 +23,16 @@ export function recipeSearchQueryKey(
   query: string,
   statusFilter: AlcoholicStatusFilter | null,
   locale: Locale,
+  sort: SearchSort,
 ) {
-  return ["recipes", "search", { query, statusFilter, locale }] as const;
+  return ["recipes", "search", { query, statusFilter, locale, sort }] as const;
 }
 
-export function useRecipeSearch({ query, statusFilter, initialData }: UseRecipeSearchParams) {
+export function useRecipeSearch({ query, statusFilter, sort, initialData }: UseRecipeSearchParams) {
   const locale = useLocale() as Locale;
 
   return useInfiniteQuery({
-    queryKey: recipeSearchQueryKey(query, statusFilter, locale),
+    queryKey: recipeSearchQueryKey(query, statusFilter, locale, sort),
     queryFn: ({ pageParam }) =>
       searchRecipes(supabase, {
         query,
@@ -37,6 +40,7 @@ export function useRecipeSearch({ query, statusFilter, initialData }: UseRecipeS
         pageLimit: RECIPE_SEARCH_PAGE_SIZE,
         pageOffset: pageParam,
         locale,
+        sort,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>

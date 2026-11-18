@@ -18,6 +18,7 @@ import { AgeGateOverlay } from "@/age-gate/age-gate-overlay";
 import { useAgeGate } from "@/age-gate/use-age-gate";
 import { i18n, initI18n } from "@/i18n";
 import { useBarRemovalEviction } from "@/service/use-bar-removal-eviction";
+import { SearchSortProvider } from "@/recipes/search-sort-context";
 
 SplashScreen.preventAutoHideAsync();
 
@@ -115,9 +116,15 @@ export default function TabLayout() {
       <PersistQueryClientProvider client={queryClient} persistOptions={PERSIST_OPTIONS}>
         <BarRemovalEvictionRunner />
         <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <AnimatedSplashOverlay />
-          <AppTabs />
-          <AgeGateOverlay state={ageGate.state} onConfirm={ageGate.confirm} onDeny={ageGate.deny} />
+          <SearchSortProvider>
+            <AnimatedSplashOverlay />
+            <AppTabs />
+            <AgeGateOverlay
+              state={ageGate.state}
+              onConfirm={ageGate.confirm}
+              onDeny={ageGate.deny}
+            />
+          </SearchSortProvider>
         </ThemeProvider>
       </PersistQueryClientProvider>
     </I18nextProvider>

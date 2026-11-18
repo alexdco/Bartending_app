@@ -173,5 +173,10 @@
     "build": "ビルド",
     "blend": "ブレンド",
     "layer": "レイヤー"
+  },
+  "search": {
+    "sortLabel": "並べ替え",
+    "sortPopular": "人気順",
+    "sortAz": "名前順"
   }
 }

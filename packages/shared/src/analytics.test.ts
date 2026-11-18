@@ -5,13 +5,20 @@ import {
   buildDrinkIdeaGeneratedEvent,
   buildPantryItemAddedEvent,
   buildSearchPerformedEvent,
+  buildSearchSortChangedEvent,
 } from "./analytics";
 
 describe("analytics event builders", () => {
-  it("search_performed carries exactly query and result_count", () => {
-    const event = buildSearchPerformedEvent({ query: "margarita", result_count: 12 });
+  it("search_performed carries exactly query, result_count, and sort (spec 0061 AC-13)", () => {
+    const event = buildSearchPerformedEvent({ query: "margarita", result_count: 12, sort: "az" });
     expect(event.name).toBe(ANALYTICS_EVENT_NAMES.searchPerformed);
-    expect(Object.keys(event.properties).sort()).toEqual(["query", "result_count"]);
+    expect(Object.keys(event.properties).sort()).toEqual(["query", "result_count", "sort"]);
+  });
+
+  it("search_sort_changed carries exactly from, to, has_query (spec 0061 AC-13)", () => {
+    const event = buildSearchSortChangedEvent({ from: "popular", to: "az", has_query: false });
+    expect(event.name).toBe("search_sort_changed");
+    expect(event.properties).toEqual({ from: "popular", to: "az", has_query: false });
   });
 
   it("pantry_item_added carries exactly ingredient_id", () => {

@@ -1799,6 +1799,7 @@ export type Database = {
           page_limit?: number;
           page_offset?: number;
           query?: string;
+          sort_order?: string;
           status_filter?: string;
         };
         Returns: {

@@ -31,12 +31,29 @@ export interface RecipeSearchResult {
   alcoholicStatus: string;
 }
 
+/**
+ * Search result order (spec 0061). "popular": best match, then famous drinks
+ * first. "az": match group, then the displayed name in the locale's alphabet.
+ * The same two values are used in SQL, the web URL, and analytics.
+ */
+export const SEARCH_SORTS = ["popular", "az"] as const;
+
+export type SearchSort = (typeof SEARCH_SORTS)[number];
+
+export const DEFAULT_SEARCH_SORT: SearchSort = "popular";
+
+/** Reads a sort from any value (URL param, storage): only exactly "az" is A to Z. */
+export function parseSearchSort(raw: unknown): SearchSort {
+  return raw === "az" ? "az" : DEFAULT_SEARCH_SORT;
+}
+
 export interface RecipeSearchParams {
   query?: string;
   statusFilter?: AlcoholicStatusFilter | null;
   pageLimit?: number;
   pageOffset?: number;
   locale?: Locale;
+  sort?: SearchSort;
 }
 
 export const RECIPE_SEARCH_PAGE_SIZE = 20;
@@ -49,6 +66,7 @@ export async function searchRecipes(
     pageLimit = RECIPE_SEARCH_PAGE_SIZE,
     pageOffset = 0,
     locale = DEFAULT_LOCALE,
+    sort = DEFAULT_SEARCH_SORT,
   }: RecipeSearchParams = {},
 ): Promise<RecipeSearchResult[]> {
   const { data, error } = await client.rpc("search_recipes", {
@@ -57,6 +75,7 @@ export async function searchRecipes(
     page_limit: pageLimit,
     page_offset: pageOffset,
     locale,
+    sort_order: sort,
   });
 
   if (error) {

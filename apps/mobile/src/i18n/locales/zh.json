@@ -173,5 +173,10 @@
     "build": "直调",
     "blend": "搅打",
     "layer": "分层"
+  },
+  "search": {
+    "sortLabel": "排序",
+    "sortPopular": "热门",
+    "sortAz": "按名称"
   }
 }

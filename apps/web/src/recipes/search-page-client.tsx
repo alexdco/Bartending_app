@@ -7,18 +7,28 @@ import { useRouter } from "@/i18n/navigation";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
+import { SegmentedControl } from "@/components/segmented-control";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import {
   buildSearchPerformedEvent,
+  buildSearchSortChangedEvent,
+  parseSearchSort,
   type AlcoholicStatusFilter,
   type RecipeSearchResult,
+  type SearchSort,
 } from "@bartendingapp/shared";
 import { track } from "@/analytics/posthog-client";
 import { alcoholicStatusKey } from "./format";
 import { RecipeCard } from "./recipe-card";
+import {
+  buildSearchUrl,
+  readStoredSearchSort,
+  tabStorage,
+  writeStoredSearchSort,
+} from "./search-url";
 import { useRecipeSearch } from "./use-recipe-search";
 
 const STATUS_FILTERS: readonly AlcoholicStatusFilter[] = ["alcoholic", "non_alcoholic", "optional"];
@@ -27,14 +37,19 @@ const DEBOUNCE_MS = 300;
 
 export interface SearchPageClientProps {
   initialResults: RecipeSearchResult[];
+  /** The sort the server rendered initialResults with (spec 0061 AC-8). */
+  initialSort: SearchSort;
 }
 
-export function SearchPageClient({ initialResults }: SearchPageClientProps) {
+export function SearchPageClient({ initialResults, initialSort }: SearchPageClientProps) {
   const t = useTranslations("search");
   const tStatus = useTranslations("alcoholicStatus");
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
+  // Spec 0061: the URL is the single source of truth for the sort.
+  const sort = parseSearchSort(searchParams.get("sort"));
+  const urlQuery = (searchParams.get("q") ?? "").trim();
 
   const [inputValue, setInputValue] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
@@ -45,18 +60,52 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
     return () => clearTimeout(timeout);
   }, [inputValue]);
 
+  // Typing replaces the current history entry and keeps the sort (AC-8). It
+  // only writes when the typed query differs from the URL, so a sort change or
+  // a restore is never overwritten by a stale URL.
   useEffect(() => {
-    const trimmed = debouncedQuery.trim();
-    const url = trimmed ? `/search?q=${encodeURIComponent(trimmed)}` : "/search";
-    router.replace(url, { scroll: false });
-  }, [debouncedQuery, router]);
+    if (debouncedQuery.trim() === urlQuery) {
+      return;
+    }
+    router.replace(buildSearchUrl(debouncedQuery, sort), { scroll: false });
+  }, [debouncedQuery, urlQuery, sort, router]);
 
-  const isDefaultQuery = debouncedQuery === "" && statusFilter === null;
+  // AC-9: arriving without a sort param restores the tab's last choice. Mount
+  // only, so browser back to a Popular entry stays Popular. Not a user change:
+  // no analytics event, no history entry.
+  const restoredRef = useRef(false);
+  useEffect(() => {
+    if (restoredRef.current) {
+      return;
+    }
+    restoredRef.current = true;
+    if (searchParams.has("sort")) {
+      return;
+    }
+    if (parseSearchSort(readStoredSearchSort(tabStorage())) === "az") {
+      router.replace(buildSearchUrl(searchParams.get("q") ?? "", "az"), { scroll: false });
+    }
+  }, [searchParams, router]);
+
+  const handleSortChange = (next: SearchSort) => {
+    const event = buildSearchSortChangedEvent({
+      from: sort,
+      to: next,
+      has_query: debouncedQuery !== "",
+    });
+    track(event.name, event.properties);
+    writeStoredSearchSort(tabStorage(), next);
+    router.push(buildSearchUrl(debouncedQuery, next), { scroll: false });
+    window.scrollTo({ top: 0 });
+  };
+
+  const isDefaultQuery = debouncedQuery === "" && statusFilter === null && sort === initialSort;
 
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
     useRecipeSearch({
       query: debouncedQuery,
       statusFilter,
+      sort,
       initialData: isDefaultQuery ? initialResults : undefined,
     });
 
@@ -68,7 +117,9 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
     if (!debouncedQuery || isPending || isFetchingNextPage) {
       return;
     }
-    if (lastFiredQueryRef.current === debouncedQuery) {
+    // AC-13: once per query and sort, so a sort change fires again.
+    const firedKey = `${debouncedQuery}:${sort}`;
+    if (lastFiredQueryRef.current === firedKey) {
       return;
     }
 
@@ -77,13 +128,14 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
       return;
     }
 
-    lastFiredQueryRef.current = debouncedQuery;
+    lastFiredQueryRef.current = firedKey;
     const event = buildSearchPerformedEvent({
       query: debouncedQuery,
       result_count: firstPage.length,
+      sort,
     });
     track(event.name, event.properties);
-  }, [debouncedQuery, data, isPending, isFetchingNextPage]);
+  }, [debouncedQuery, sort, data, isPending, isFetchingNextPage]);
 
   const sentinelRef = useRef<HTMLDivElement>(null);
 
@@ -127,6 +179,15 @@ export function SearchPageClient({ initialResults }: SearchPageClientProps) {
           </Chip>
         ))}
       </div>
+      <SegmentedControl
+        label={t("sortLabel")}
+        options={[
+          { value: "popular", label: t("sortPopular") },
+          { value: "az", label: t("sortAz") },
+        ]}
+        value={sort}
+        onValueChange={handleSortChange}
+      />
 
       {error ? (
         <EmptyState

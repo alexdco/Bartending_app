@@ -1,14 +1,26 @@
+import type { SearchSort } from "./recipes";
+
 export const ANALYTICS_EVENT_NAMES = {
   searchPerformed: "search_performed",
   pantryItemAdded: "pantry_item_added",
   drinkIdeaGenerated: "drink_idea_generated",
   recipeFavorited: "recipe_favorited",
   quizSourceLinkClicked: "quiz_source_link_clicked",
+  searchSortChanged: "search_sort_changed",
 } as const;
 
 export interface SearchPerformedProperties {
   query: string;
   result_count: number;
+  /** Spec 0061 AC-13: the sort used for the page this event reports. */
+  sort: SearchSort;
+}
+
+// Spec 0061 AC-13: a user (never a restore) changed the search sort.
+export interface SearchSortChangedProperties {
+  from: SearchSort;
+  to: SearchSort;
+  has_query: boolean;
 }
 
 export interface PantryItemAddedProperties {
@@ -45,6 +57,12 @@ export function buildSearchPerformedEvent(
   properties: SearchPerformedProperties,
 ): AnalyticsEvent<SearchPerformedProperties> {
   return { name: ANALYTICS_EVENT_NAMES.searchPerformed, properties };
+}
+
+export function buildSearchSortChangedEvent(
+  properties: SearchSortChangedProperties,
+): AnalyticsEvent<SearchSortChangedProperties> {
+  return { name: ANALYTICS_EVENT_NAMES.searchSortChanged, properties };
 }
 
 export function buildPantryItemAddedEvent(

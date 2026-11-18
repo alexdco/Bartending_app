@@ -23,3 +23,12 @@ describe("web message files", () => {
     expect(keyPaths(read(locale))).toEqual(keyPaths(read("en")));
   });
 });
+
+describe("search sort strings (spec 0061 AC-11)", () => {
+  it.each(["en", ...NON_DEFAULT_LOCALES])("%s.json has non empty sort labels", (locale) => {
+    const search = read(locale).search as Tree;
+    for (const key of ["sortLabel", "sortPopular", "sortAz"]) {
+      expect(typeof search[key] === "string" && search[key] !== "").toBe(true);
+    }
+  });
+});

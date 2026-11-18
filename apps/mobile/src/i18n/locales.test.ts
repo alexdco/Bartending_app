@@ -69,3 +69,13 @@ describe("ko.json strings scan", () => {
     ]);
   });
 });
+
+describe("search sort strings (spec 0061 AC-11)", () => {
+  const all: Record<string, Tree> = { en, ...resources };
+  it.each(Object.keys(all))("%s.json has non empty sort labels", (locale) => {
+    const search = all[locale]?.search as Tree;
+    for (const key of ["sortLabel", "sortPopular", "sortAz"]) {
+      expect(typeof search[key] === "string" && search[key] !== "").toBe(true);
+    }
+  });
+});

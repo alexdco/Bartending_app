@@ -1,22 +1,27 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { FlatList, SafeAreaView, StyleSheet, View } from "react-native";
+import { useTranslation } from "react-i18next";
 
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { Chip } from "@/components/chip";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
+import { SegmentedControl } from "@/components/segmented-control";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import {
   buildSearchPerformedEvent,
+  buildSearchSortChangedEvent,
   type AlcoholicStatusFilter,
   type RecipeSearchResult,
+  type SearchSort,
 } from "@bartendingapp/shared";
 import { track } from "@/analytics/posthog-client";
 import { RecipeCard } from "@/recipes/recipe-card";
+import { useSearchSort } from "@/recipes/search-sort-context";
 import { useRecipeSearch } from "@/recipes/use-recipe-search";
 
 const STATUS_FILTERS: { value: AlcoholicStatusFilter; label: string }[] = [
@@ -29,6 +34,10 @@ const DEBOUNCE_MS = 300;
 
 export default function SearchScreen() {
   const theme = useTheme();
+  const { t } = useTranslation();
+  // Spec 0061 AC-10: the sort lives above the navigator, so it survives back.
+  const [sort, setSort] = useSearchSort();
+  const listRef = useRef<FlatList<RecipeSearchResult>>(null);
   const [inputValue, setInputValue] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<AlcoholicStatusFilter | null>(null);
@@ -39,7 +48,18 @@ export default function SearchScreen() {
   }, [inputValue]);
 
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
-    useRecipeSearch({ query: debouncedQuery, statusFilter });
+    useRecipeSearch({ query: debouncedQuery, statusFilter, sort });
+
+  const handleSortChange = (next: SearchSort) => {
+    const event = buildSearchSortChangedEvent({
+      from: sort,
+      to: next,
+      has_query: debouncedQuery !== "",
+    });
+    track(event.name, event.properties);
+    setSort(next);
+    listRef.current?.scrollToOffset({ offset: 0, animated: false });
+  };
 
   const results = useMemo<RecipeSearchResult[]>(() => data?.pages.flat() ?? [], [data]);
 
@@ -49,7 +69,9 @@ export default function SearchScreen() {
     if (!debouncedQuery || isPending || isFetchingNextPage) {
       return;
     }
-    if (lastFiredQueryRef.current === debouncedQuery) {
+    // Spec 0061 AC-13: once per query and sort, so a sort change fires again.
+    const firedKey = `${debouncedQuery}:${sort}`;
+    if (lastFiredQueryRef.current === firedKey) {
       return;
     }
 
@@ -58,13 +80,14 @@ export default function SearchScreen() {
       return;
     }
 
-    lastFiredQueryRef.current = debouncedQuery;
+    lastFiredQueryRef.current = firedKey;
     const event = buildSearchPerformedEvent({
       query: debouncedQuery,
       result_count: firstPage.length,
+      sort,
     });
     track(event.name, event.properties);
-  }, [debouncedQuery, data, isPending, isFetchingNextPage]);
+  }, [debouncedQuery, sort, data, isPending, isFetchingNextPage]);
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -88,6 +111,15 @@ export default function SearchScreen() {
             </Chip>
           ))}
         </View>
+        <SegmentedControl
+          label={t("search.sortLabel")}
+          options={[
+            { value: "popular", label: t("search.sortPopular") },
+            { value: "az", label: t("search.sortAz") },
+          ]}
+          value={sort}
+          onValueChange={handleSortChange}
+        />
       </View>
 
       {error ? (
@@ -102,6 +134,7 @@ export default function SearchScreen() {
         </View>
       ) : (
         <FlatList
+          ref={listRef}
           data={results}
           keyExtractor={(item) => item.id}
           numColumns={2}

@@ -178,5 +178,10 @@
     "build": "Build",
     "blend": "Blend",
     "layer": "Layer"
+  },
+  "search": {
+    "sortLabel": "Sort",
+    "sortPopular": "Popular",
+    "sortAz": "A to Z"
   }
 }

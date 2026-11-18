@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { getLocale, getTranslations } from "next-intl/server";
 import {
   localizedPath,
+  parseSearchSort,
   searchRecipes,
   RECIPE_SEARCH_PAGE_SIZE,
   type Locale,
@@ -36,20 +37,27 @@ export async function generateMetadata({
   };
 }
 
-export default async function SearchPage() {
+export default async function SearchPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ sort?: string | string[] }>;
+}) {
   const locale = (await getLocale()) as Locale;
+  // Spec 0061 AC-8: /search?sort=az renders A to Z in the first server render.
+  const initialSort = parseSearchSort((await searchParams).sort);
   const initialResults = await searchRecipes(supabasePublic, {
     query: "",
     statusFilter: null,
     pageLimit: RECIPE_SEARCH_PAGE_SIZE,
     pageOffset: 0,
     locale,
+    sort: initialSort,
   });
 
   return (
     <main className="flex flex-1 flex-col">
       <Suspense>
-        <SearchPageClient initialResults={initialResults} />
+        <SearchPageClient initialResults={initialResults} initialSort={initialSort} />
       </Suspense>
     </main>
   );

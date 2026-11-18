@@ -173,5 +173,10 @@
     "build": "빌드",
     "blend": "블렌드",
     "layer": "레이어"
+  },
+  "search": {
+    "sortLabel": "정렬",
+    "sortPopular": "인기순",
+    "sortAz": "이름순"
   }
 }

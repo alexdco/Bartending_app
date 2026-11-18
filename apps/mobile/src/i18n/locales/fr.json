@@ -178,5 +178,10 @@
     "build": "Monter",
     "blend": "Mixer",
     "layer": "Superposer"
+  },
+  "search": {
+    "sortLabel": "Trier",
+    "sortPopular": "Populaires",
+    "sortAz": "A à Z"
   }
 }
