@@ -96,7 +96,9 @@
   "drinkIdeas": {
     "emptyPantryTitle": "Agrega algunos ingredientes para ver ideas",
     "emptyPantryDescription": "Cuéntanos qué tienes en tu bar y te mostraremos lo que puedes preparar.",
-    "addIngredients": "Agregar ingredientes"
+    "addIngredients": "Agregar ingredientes",
+    "garnish": "Decoración: {{name}}",
+    "optionalGarnish": "Decoración opcional: {{name}} (no está en tu despensa)"
   },
   "service": {
     "loading": "Cargando Servicio",

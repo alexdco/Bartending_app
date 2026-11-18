@@ -329,6 +329,8 @@
     "almostThere": "Almost there",
     "aiGenerated": "AI generated",
     "ingredients": "Ingredients",
+    "garnish": "Garnish: {name}",
+    "optionalGarnish": "Optional garnish: {name} (not in your pantry)",
     "steps": "Steps",
     "metaDescription": "Get cocktail ideas from the ingredients you already have.",
     "emptyPantryTitle": "Add a few ingredients to get ideas",

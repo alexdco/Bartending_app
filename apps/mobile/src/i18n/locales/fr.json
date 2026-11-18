@@ -96,7 +96,9 @@
   "drinkIdeas": {
     "emptyPantryTitle": "Ajoutez quelques ingrédients pour avoir des idées",
     "emptyPantryDescription": "Dites-nous ce que contient votre bar et nous vous montrerons ce que vous pouvez préparer.",
-    "addIngredients": "Ajouter des ingrédients"
+    "addIngredients": "Ajouter des ingrédients",
+    "garnish": "Garniture : {{name}}",
+    "optionalGarnish": "Garniture facultative : {{name}} (absente de votre garde-manger)"
   },
   "service": {
     "loading": "Chargement de Service",

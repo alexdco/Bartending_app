@@ -329,6 +329,8 @@
     "almostThere": "Presque",
     "aiGenerated": "Généré par l’IA",
     "ingredients": "Ingrédients",
+    "garnish": "Garniture : {name}",
+    "optionalGarnish": "Garniture facultative : {name} (absente de votre garde-manger)",
     "steps": "Étapes",
     "metaDescription": "Trouvez des idées de cocktails avec les ingrédients que vous avez déjà.",
     "emptyPantryTitle": "Ajoutez quelques ingrédients pour avoir des idées",

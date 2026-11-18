@@ -329,6 +329,8 @@
     "almostThere": "あと少しで作れる",
     "aiGenerated": "AI が作成",
     "ingredients": "材料",
+    "garnish": "ガーニッシュ：{name}",
+    "optionalGarnish": "任意のガーニッシュ：{name}（パントリーにありません）",
     "steps": "手順",
     "metaDescription": "手元にある材料からカクテルのアイデアを見つけましょう。",
     "emptyPantryTitle": "材料を追加してアイデアを見る",

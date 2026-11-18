@@ -22,6 +22,9 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "batch.countDrop": ["value"],
   "batch.approx": ["amount"],
   "drinkIdeas.quotaExceededUntil": ["time"],
+  // The AI idea's garnish, label plus value in every locale (spec 0059 AC-2).
+  "drinkIdeas.garnish": ["name"],
+  "drinkIdeas.optionalGarnish": ["name"],
   "favorites.toggleLabel": ["name"],
   "learn.takeTheQuiz": ["title"],
   "quizzes.best": ["score", "total"],

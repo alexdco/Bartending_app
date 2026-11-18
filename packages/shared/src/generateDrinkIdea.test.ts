@@ -1,7 +1,12 @@
 import { FunctionsHttpError, type SupabaseClient } from "@supabase/supabase-js";
 import { describe, expect, it } from "vitest";
 import type { Database } from "./database.types";
-import { GenerateDrinkIdeaError, generateDrinkIdea, parseLimitDetails } from "./generateDrinkIdea";
+import {
+  GenerateDrinkIdeaError,
+  generateDrinkIdea,
+  parseGeneratedDrinkIdea,
+  parseLimitDetails,
+} from "./generateDrinkIdea";
 
 const RESETS_AT = "2026-10-12T00:00:00.000Z";
 
@@ -77,5 +82,54 @@ describe("parseLimitDetails", () => {
   it("returns no details for a body that is not an object", () => {
     expect(parseLimitDetails(null)).toEqual({});
     expect(parseLimitDetails("oops")).toEqual({});
+  });
+});
+
+// Spec 0059 AC-1, AC-2: the garnish is optional on the wire, so a response from
+// an older deploy or with a malformed garnish still renders, with no garnish line.
+describe("parseGeneratedDrinkIdea", () => {
+  const body = {
+    name: "Lime Vodka Sour",
+    ingredients: [{ name: "Vodka", source_name: "Vodka", amount: "45 ml" }],
+    garnish: { name: "lime wheel", source_name: "Lime", in_pantry: false },
+    steps: ["Shake with ice."],
+    pantry_size: 3,
+  };
+
+  it("keeps a well formed garnish", () => {
+    expect(parseGeneratedDrinkIdea(body)?.garnish).toEqual({
+      name: "lime wheel",
+      source_name: "Lime",
+      in_pantry: false,
+    });
+  });
+
+  it("turns a missing garnish into null", () => {
+    const withoutGarnish = Object.fromEntries(
+      Object.entries(body).filter(([key]) => key !== "garnish"),
+    );
+    expect(parseGeneratedDrinkIdea(withoutGarnish)).toEqual({ ...withoutGarnish, garnish: null });
+  });
+
+  it.each([
+    ["no name", { source_name: "Lime", in_pantry: true }],
+    ["a blank name", { name: "  ", source_name: "Lime", in_pantry: true }],
+    ["no in_pantry", { name: "lime wheel", source_name: "Lime" }],
+    ["a string", "lime wheel"],
+  ])("turns a garnish with %s into null", (_label, garnish) => {
+    expect(parseGeneratedDrinkIdea({ ...body, garnish })?.garnish).toBeNull();
+  });
+
+  it("drops fields the client never sees, such as name_source_names", () => {
+    expect(parseGeneratedDrinkIdea({ ...body, name_source_names: ["Vodka"] })).toEqual(body);
+  });
+
+  it.each([
+    ["null", null],
+    ["an error body", { error: "generation failed" }],
+    ["no steps", { ...body, steps: undefined }],
+    ["a malformed ingredient", { ...body, ingredients: [{ name: "Vodka" }] }],
+  ])("returns null for %s", (_label, value) => {
+    expect(parseGeneratedDrinkIdea(value)).toBeNull();
   });
 });

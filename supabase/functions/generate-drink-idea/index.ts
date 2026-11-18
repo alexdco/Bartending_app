@@ -1,6 +1,7 @@
 // generate-drink-idea: turns a caller's pantry into a novel, AI generated drink idea.
 // Spec: docs/specs/0007-ai-generated-pantry-drink-ideas.md
 // Limits: docs/specs/0034-ai-quota-abuse-hardening/index.md
+// Names and garnish: docs/specs/0059-drink-idea-names-garnish.md
 //
 // - Never accepts a pantry ingredient list from the caller; always resolves the
 //   caller's own pantry server side via auth.uid() (0007 AC-8).
@@ -10,8 +11,9 @@
 //   checked and claimed in one database transaction before the Claude call, so
 //   concurrent requests cannot push any counter past its limit (0034 AC-1 to AC-4).
 // - A generation that still fails after its retry gives its slots back (0034 AC-4b).
-// - One automatic retry on timeout, schema/pantry mismatch, or a 5xx from
-//   Anthropic; never on a 4xx (0007 AC-7).
+// - One automatic retry on timeout, no output, a pantry or name mismatch, or a
+//   5xx from Anthropic; never on a 4xx (0007 AC-7, 0059 AC-4).
+// - The garnish's in_pantry is decided here, never by the model (0059 AC-1).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import Anthropic from "npm:@anthropic-ai/sdk@0.124.0";
 import { zodOutputFormat } from "npm:@anthropic-ai/sdk@0.124.0/helpers/zod";
@@ -19,6 +21,12 @@ import { zodOutputFormat } from "npm:@anthropic-ai/sdk@0.124.0/helpers/zod";
 import { z } from "npm:zod@3.25.76/v4";
 import * as Sentry from "npm:@sentry/deno@10";
 import { clientIpFromHeaders, hashIpBucket, ipBucket } from "../_shared/ip-bucket.ts";
+import {
+  checkIdea,
+  stapleNamesOutsidePantry,
+  type CheckedDrinkIdea,
+  type IdeaCheckFailure,
+} from "./idea-checks.ts";
 
 const MIN_PANTRY_INGREDIENTS = 2;
 const ANON_DAILY_QUOTA = 5;
@@ -274,10 +282,11 @@ const CHINESE_INSTRUCTION =
   "Write natural Simplified Chinese as used in mainland China, with no Traditional characters, addressing the reader as \u00AB\u4F60\u00BB, never \u00AB\u60A8\u00BB. " +
   "Lime is \u00AB\u9752\u67E0\u00BB and lemon is \u00AB\u67E0\u6AAC\u00BB. " +
   "Use the established mainland Chinese cocktail name where one exists, otherwise keep the name in English, with no middle dot; keep brand names in English. " +
-  // Added after the AC-20 review of ten live ideas (2026-11-13). The tool and
-  // syrup words are step wording, as in the Hindi and Korean sentences, so no
-  // tool turns into an ingredient and fails the pantry check (0007 AC-8).
-  "The name may mention only ingredients the recipe uses: never write \u00AB\u82CF\u6253\u00BB or another mixer the recipe does not use, and never borrow an established cocktail name such as \u00AB\u83AB\u5409\u6258\u00BB or \u00AB\u9A6C\u5929\u5C3C\u00BB unless the recipe is that cocktail. Write generic ingredient names in Chinese (Lime Vodka is \u00AB\u9752\u67E0\u4F0F\u7279\u52A0\u00BB); only brand names stay in English. " +
+  // Added after the AC-20 review of ten live ideas (2026-11-13). The mixer and
+  // borrowed name rule now lives in the shared prompt (spec 0059 AC-6). The tool
+  // and syrup words are step wording, as in the Hindi and Korean sentences, so
+  // no tool turns into an ingredient and fails the pantry check (0007 AC-8).
+  "Write generic ingredient names in Chinese (Lime Vodka is \u00AB\u9752\u67E0\u4F0F\u7279\u52A0\u00BB); only brand names stay in English. " +
   "When a step names these, write simple syrup \u00AB\u7CD6\u6D46\u00BB, lime juice \u00AB\u9752\u67E0\u6C41\u00BB, shaker \u00AB\u6447\u9152\u58F6\u00BB, strainer \u00AB\u6EE4\u51B0\u5668\u00BB, and bar spoon \u00AB\u5427\u52FA\u00BB; strain is \u00AB\u6EE4\u5165\u00BB, never \u00AB\u5012\u5165\u00BB, chilled is \u00AB\u51B0\u9547\u00BB, and serve is \u00AB\u4EAB\u7528\u00BB or \u00AB\u5949\u4E0A\u00BB. Write steps as short commands with no pronoun (\u52A0\u5165\u51B0\u5757\uFF0C\u6447\u5300); never \u00AB\u4EAB\u7528\u4F60\u7684\u2026\u00BB. " +
   "Write amounts with ml, cl, L, or \u00AB\u76CE\u53F8\u00BB, never oz or \u00AB\u6BEB\u5347\u00BB, with a space between the number and the unit (30 ml). " +
   "Use half width digits, full width punctuation (\u00AB\uFF0C\u00BB \u00AB\u3002\u00BB \u00AB\uFF1F\u00BB \u00AB\uFF01\u00BB), \u00AB\u201C \u201D\u00BB for quotes, and one space between Chinese and Latin letters or digits. End every step with \u00AB\u3002\u00BB. ";
@@ -372,8 +381,12 @@ const LOCALE_NAME_TYPOGRAPHY: Partial<Record<Locale, (text: string) => string>> 
   zh: normalizeChineseName,
 };
 
-/** The locale's typography on the text its reader sees; source_name stays as matched. */
-function typesetIdea(idea: DrinkIdea, locale: Locale): DrinkIdea {
+/**
+ * The locale's typography on the text its reader sees; source names and
+ * in_pantry stay as checked (spec 0059: the garnish name is typeset like an
+ * ingredient name).
+ */
+function typesetIdea(idea: CheckedDrinkIdea, locale: Locale): CheckedDrinkIdea {
   const typeset = LOCALE_TYPOGRAPHY[locale];
   if (typeset === undefined) {
     return idea;
@@ -386,6 +399,8 @@ function typesetIdea(idea: DrinkIdea, locale: Locale): DrinkIdea {
       name: typesetName(ingredient.name),
       amount: typeset(ingredient.amount),
     })),
+    garnish:
+      idea.garnish === null ? null : { ...idea.garnish, name: typesetName(idea.garnish.name) },
     steps: idea.steps.map(typeset),
   };
 }
@@ -396,16 +411,26 @@ function parseLocale(value: unknown): Locale {
     : DEFAULT_LOCALE;
 }
 
+// Field order is deliberate: structured output is written in schema order, so
+// the model picks the ingredients, declares what the name will mention, and
+// only then writes the name (spec 0059).
 const DrinkIdeaSchema = z.object({
-  name: z.string().max(60),
   ingredients: z
     .array(z.object({ name: z.string(), source_name: z.string(), amount: z.string() }))
     .min(1)
     .max(8),
+  name_source_names: z.array(z.string()).max(4),
+  name: z.string().max(60),
+  garnish: z.object({ name: z.string(), source_name: z.string() }).nullable(),
   steps: z.array(z.string()).min(1).max(10),
 });
 
-type DrinkIdea = z.infer<typeof DrinkIdeaSchema>;
+/** Why one attempt produced no idea (spec 0059 AC-7). */
+type GenerationFailure = "no_output" | IdeaCheckFailure;
+
+type GenerationResult =
+  | { readonly ok: true; readonly idea: CheckedDrinkIdea }
+  | { readonly ok: false; readonly reason: GenerationFailure; readonly offending?: string };
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -420,40 +445,14 @@ function startOfNextUtcDay(): string {
   return next.toISOString();
 }
 
-function normalizeIngredientName(name: string): string {
-  return name.trim().toLowerCase().replace(/\s+/g, " ");
-}
-
 /**
- * Staples (Ice, Water) are always on hand, so the pantry never holds them
- * (spec 0036 AC-10). Drop any the pantry somehow lists, so no name is offered twice.
+ * The retry's extra sentence after a name_mismatch, so the retry does not
+ * repeat the same name (spec 0059 AC-4). Empty for any other outcome.
  */
-function stapleNamesOutsidePantry(
-  stapleNames: readonly string[],
-  pantryNames: readonly string[],
-): readonly string[] {
-  const pantrySet = new Set(pantryNames.map(normalizeIngredientName));
-  return stapleNames.filter((name) => !pantrySet.has(normalizeIngredientName(name)));
-}
-
-/**
- * Every ingredient must come from the pantry or the staples, and at least one
- * from the pantry: an idea of only Ice and Water is no idea (spec 0036 AC-11).
- */
-function usesOnlyAvailableIngredients(
-  idea: DrinkIdea,
-  pantryNames: readonly string[],
-  stapleNames: readonly string[],
-): boolean {
-  const pantrySet = new Set(pantryNames.map(normalizeIngredientName));
-  const stapleSet = new Set(stapleNames.map(normalizeIngredientName));
-  const sourceNames = idea.ingredients.map((ingredient) =>
-    normalizeIngredientName(ingredient.source_name),
-  );
-  return (
-    sourceNames.every((name) => pantrySet.has(name) || stapleSet.has(name)) &&
-    sourceNames.some((name) => pantrySet.has(name))
-  );
+function retryHintFor(result: GenerationResult): string {
+  return !result.ok && result.reason === "name_mismatch" && result.offending !== undefined
+    ? `Your last name mentioned ${result.offending.slice(0, 60)}, which the recipe does not use. `
+    : "";
 }
 
 async function generateWithClaude(
@@ -461,12 +460,14 @@ async function generateWithClaude(
   pantryNames: readonly string[],
   stapleNames: readonly string[],
   locale: Locale,
-): Promise<DrinkIdea | null> {
+  retryHint: string,
+): Promise<GenerationResult> {
   const languageInstruction =
     locale === DEFAULT_LOCALE
       ? ""
-      : `Write the name, ingredient names, and steps natively in ${LOCALE_NAMES[locale]}, ` +
+      : `Write the name, ingredient names, garnish name, and steps natively in ${LOCALE_NAMES[locale]}, ` +
         `as a native speaker would phrase them, not a literal translation. ` +
+        `Keep "source_name", "name_source_names", and the garnish "source_name" in English. ` +
         (LOCALE_INSTRUCTIONS[locale] ?? "");
 
   // Staples are named as their own list so the model knows it may use them
@@ -476,48 +477,68 @@ async function generateWithClaude(
       ? ""
       : `These are always on hand too, so you may also use them: ${stapleNames.join(", ")}.\n`;
 
-  const message = await anthropic.messages.parse(
-    {
-      model: "claude-haiku-4-5-20251001",
-      max_tokens: 1024,
-      messages: [
-        {
-          role: "user",
-          content:
-            `Invent one original cocktail or mocktail recipe using only these ingredients ` +
-            `(you do not have to use all of them): ${pantryNames.join(", ")}.\n` +
-            `${stapleInstruction}` +
-            `${languageInstruction}` +
-            `Give it a short, appealing name, a rough amount for each ingredient used, ` +
-            `and numbered preparation steps. Do not use any ingredient not in these lists. ` +
-            `For each ingredient, also return "source_name": the exact English ingredient ` +
-            `name from the lists above (unchanged, for matching), alongside "name": the ` +
-            `ingredient name written in the language requested above (or the same as ` +
-            `source_name if no other language was requested).`,
+  // The shared rules every locale receives (spec 0059 AC-5).
+  const content =
+    `Invent one original cocktail or mocktail recipe using only these ingredients ` +
+    `(you do not have to use all of them): ${pantryNames.join(", ")}.\n` +
+    `${stapleInstruction}` +
+    `${languageInstruction}` +
+    `Give a rough amount for each ingredient used and numbered preparation steps. ` +
+    `Do not use any ingredient not in these lists. ` +
+    `For each ingredient, also return "source_name": the exact English ingredient ` +
+    `name from the lists above (unchanged, for matching), alongside "name": the ` +
+    `ingredient name written in the language requested above (or the same as ` +
+    `source_name if no other language was requested).\n` +
+    `Name: give it a short, appealing, original name. Mood and flavor words are welcome, ` +
+    `but every ingredient, mixer, or spirit the name mentions must be one the recipe uses, ` +
+    `and "name_source_names" must list the exact English source_name of each one ` +
+    `(an empty list when the name mentions none). Never use an established cocktail name ` +
+    `(such as Margarita, Mojito, Martini, Daiquiri, or Gin and Tonic), not even with words added.\n` +
+    `Garnish: "garnish" is a small decoration only: a peel, twist, wheel, wedge, sprig, ` +
+    `leaf, cherry, olive, or grated spice, never a liquid. Its "name" is written in the ` +
+    `requested language; its "source_name" is the exact English name from the lists above ` +
+    `when it comes from them, otherwise the plain English ingredient (Lime, not Lime Wheel). ` +
+    `Use null when no garnish suits the drink. Do not list the garnish in the ingredients ` +
+    `unless it is also part of the drink itself.\n` +
+    `Steps: never mention the garnish at all, since it is shown separately, and never name ` +
+    `any ingredient outside the lists above.` +
+    (retryHint === "" ? "" : `\n${retryHint}`);
+
+  let message;
+  try {
+    message = await anthropic.messages.parse(
+      {
+        model: "claude-haiku-4-5-20251001",
+        max_tokens: 1536,
+        messages: [{ role: "user", content }],
+        output_config: {
+          format: zodOutputFormat(DrinkIdeaSchema),
         },
-      ],
-      output_config: {
-        format: zodOutputFormat(DrinkIdeaSchema),
       },
-    },
-    { timeout: ANTHROPIC_TIMEOUT_MS },
-  );
+      { timeout: ANTHROPIC_TIMEOUT_MS },
+    );
+  } catch (error) {
+    // Anthropic errors (timeouts, 4xx, 5xx) go to the caller's retry rule; an
+    // SDK parse error that throws counts as no output (spec 0059 AC-7).
+    if (error instanceof Anthropic.APIError) throw error;
+    console.warn("AI idea: structured output did not parse", error);
+    return { ok: false, reason: "no_output" };
+  }
 
   const idea = message.parsed_output;
   if (!idea) {
-    return null;
+    return { ok: false, reason: "no_output" };
   }
 
-  return usesOnlyAvailableIngredients(idea, pantryNames, stapleNames)
-    ? typesetIdea(idea, locale)
-    : null;
+  const checked = checkIdea(idea, pantryNames, stapleNames);
+  return checked.ok ? { ok: true, idea: typesetIdea(checked.idea, locale) } : checked;
 }
 
 function isRetryableError(error: unknown): boolean {
   if (error instanceof Anthropic.APIError) {
     return error.status === undefined || error.status >= 500;
   }
-  return true; // timeout, network error, or a schema/pantry mismatch (represented as thrown by caller)
+  return true; // timeout or network error
 }
 
 Deno.serve(async (req) => {
@@ -668,22 +689,43 @@ Deno.serve(async (req) => {
 
   const anthropic = new Anthropic({ apiKey: Deno.env.get("ANTHROPIC_API_KEY") });
 
-  let idea: DrinkIdea | null = null;
+  let idea: CheckedDrinkIdea | null = null;
   let lastError: unknown = null;
+  // One entry per attempt: a GenerationFailure, or "api_error" for a throw.
+  let reasons: readonly string[] = [];
+  let retryHint = "";
 
   for (let attempt = 0; attempt < 2; attempt++) {
     try {
-      idea = await generateWithClaude(anthropic, pantryNames, stapleNames, locale);
-      if (idea) break;
-      lastError = new Error("generation did not match the expected shape");
+      const result = await generateWithClaude(
+        anthropic,
+        pantryNames,
+        stapleNames,
+        locale,
+        retryHint,
+      );
+      if (result.ok) {
+        idea = result.idea;
+        break;
+      }
+      reasons = [...reasons, result.reason];
+      lastError = new Error(result.reason);
+      retryHint = retryHintFor(result);
     } catch (error) {
+      reasons = [...reasons, "api_error"];
       lastError = error;
+      retryHint = "";
       if (!isRetryableError(error)) break;
     }
   }
 
   if (!idea) {
-    reportError(lastError, { userId: user.id, stage: "claude_generate" });
+    reportError(lastError, {
+      userId: user.id,
+      stage: "claude_generate",
+      reason: reasons[reasons.length - 1],
+      reasons,
+    });
 
     // Give back every slot this request claimed, on the reserved day, so an
     // Anthropic outage cannot use up the day's caps. A failed release is only

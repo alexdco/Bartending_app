@@ -9,11 +9,68 @@ export interface GeneratedDrinkIdeaIngredient {
   amount: string;
 }
 
+/** The idea's garnish (spec 0059 AC-1); the server alone decides `in_pantry`. */
+export interface GeneratedDrinkIdeaGarnish {
+  /** Localized garnish name, shown on the card. */
+  readonly name: string;
+  /** English ingredient name, for the pantry check only; never shown to the user. */
+  readonly source_name: string;
+  /** False means the card labels it optional and not in your pantry. */
+  readonly in_pantry: boolean;
+}
+
 export interface GeneratedDrinkIdea {
   name: string;
   ingredients: GeneratedDrinkIdeaIngredient[];
+  garnish: GeneratedDrinkIdeaGarnish | null;
   steps: string[];
   pantry_size: number;
+}
+
+const isString = (value: unknown): value is string => typeof value === "string";
+
+function isIngredient(value: unknown): value is GeneratedDrinkIdeaIngredient {
+  if (typeof value !== "object" || value === null) return false;
+  const fields = value as Record<string, unknown>;
+  return isString(fields.name) && isString(fields.source_name) && isString(fields.amount);
+}
+
+function parseGarnish(value: unknown): GeneratedDrinkIdeaGarnish | null {
+  if (typeof value !== "object" || value === null) return null;
+  const fields = value as Record<string, unknown>;
+  return isString(fields.name) &&
+    fields.name.trim() !== "" &&
+    isString(fields.source_name) &&
+    typeof fields.in_pantry === "boolean"
+    ? { name: fields.name, source_name: fields.source_name, in_pantry: fields.in_pantry }
+    : null;
+}
+
+/**
+ * The function's success body as a GeneratedDrinkIdea, or null when its core
+ * fields are missing. A missing or malformed garnish becomes null (spec 0059 AC-1).
+ */
+export function parseGeneratedDrinkIdea(body: unknown): GeneratedDrinkIdea | null {
+  if (typeof body !== "object" || body === null) return null;
+  const fields = body as Record<string, unknown>;
+  const { name, ingredients, steps, pantry_size: pantrySize } = fields;
+  if (
+    !isString(name) ||
+    !Array.isArray(ingredients) ||
+    !ingredients.every(isIngredient) ||
+    !Array.isArray(steps) ||
+    !steps.every(isString) ||
+    typeof pantrySize !== "number"
+  ) {
+    return null;
+  }
+  return {
+    name,
+    ingredients,
+    garnish: parseGarnish(fields.garnish),
+    steps,
+    pantry_size: pantrySize,
+  };
 }
 
 export type GenerateDrinkIdeaErrorReason =
@@ -69,9 +126,10 @@ export async function generateDrinkIdea(
   client: SupabaseClient<Database>,
   locale: Locale = DEFAULT_LOCALE,
 ): Promise<GeneratedDrinkIdea> {
-  const { data, error } = await client.functions.invoke<
-    GeneratedDrinkIdea | { error: string; resetsAt?: string }
-  >("generate-drink-idea", { method: "POST", body: { locale } });
+  const { data, error } = await client.functions.invoke<unknown>("generate-drink-idea", {
+    method: "POST",
+    body: { locale },
+  });
 
   if (error) {
     if (error instanceof FunctionsHttpError) {
@@ -101,9 +159,10 @@ export async function generateDrinkIdea(
     throw new GenerateDrinkIdeaError("generation_failed", "Generation failed.");
   }
 
-  if (!data || !("name" in data)) {
+  const idea = parseGeneratedDrinkIdea(data);
+  if (idea === null) {
     throw new GenerateDrinkIdeaError("generation_failed", "Generation failed.");
   }
 
-  return data;
+  return idea;
 }

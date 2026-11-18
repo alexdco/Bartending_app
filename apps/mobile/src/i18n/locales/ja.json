@@ -96,7 +96,9 @@
   "drinkIdeas": {
     "emptyPantryTitle": "材料を追加してアイデアを見る",
     "emptyPantryDescription": "バーにあるものを教えてください。作れるドリンクをお見せします。",
-    "addIngredients": "材料を追加"
+    "addIngredients": "材料を追加",
+    "garnish": "ガーニッシュ：{{name}}",
+    "optionalGarnish": "任意のガーニッシュ：{{name}}（パントリーにありません）"
   },
   "service": {
     "loading": "サービスを読み込み中",

@@ -329,6 +329,8 @@
     "almostThere": "还差一点",
     "aiGenerated": "AI 生成",
     "ingredients": "原料",
+    "garnish": "装饰：{name}",
+    "optionalGarnish": "可选装饰：{name}（原料柜中没有）",
     "steps": "步骤",
     "metaDescription": "根据已有原料获取鸡尾酒灵感。",
     "emptyPantryTitle": "添加几种原料，获取灵感",

@@ -96,7 +96,9 @@
   "drinkIdeas": {
     "emptyPantryTitle": "आइडिया पाने के लिए कुछ सामग्री जोड़ें",
     "emptyPantryDescription": "हमें बताएँ कि आपके बार में क्या है और हम आपको दिखाएँगे कि आप क्या बना सकते हैं।",
-    "addIngredients": "सामग्री जोड़ें"
+    "addIngredients": "सामग्री जोड़ें",
+    "garnish": "सजावट: {{name}}",
+    "optionalGarnish": "वैकल्पिक सजावट: {{name}} (आपकी पैंट्री में नहीं है)"
   },
   "service": {
     "loading": "सर्विस लोड हो रहा है",

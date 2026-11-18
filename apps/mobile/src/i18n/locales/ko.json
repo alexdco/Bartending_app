@@ -96,7 +96,9 @@
   "drinkIdeas": {
     "emptyPantryTitle": "재료를 추가하고 아이디어를 받아 보세요",
     "emptyPantryDescription": "바에 있는 재료를 알려 주시면 만들 수 있는 드링크를 보여 드려요.",
-    "addIngredients": "재료 추가"
+    "addIngredients": "재료 추가",
+    "garnish": "가니시: {{name}}",
+    "optionalGarnish": "선택 가니시: {{name}} (내 재료에 없어요)"
   },
   "service": {
     "loading": "서비스 불러오는 중",

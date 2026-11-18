@@ -329,6 +329,8 @@
     "almostThere": "Casi listos",
     "aiGenerated": "Generado con IA",
     "ingredients": "Ingredientes",
+    "garnish": "Decoración: {name}",
+    "optionalGarnish": "Decoración opcional: {name} (no está en tu despensa)",
     "steps": "Pasos",
     "metaDescription": "Obtén ideas de cócteles con los ingredientes que ya tienes.",
     "emptyPantryTitle": "Agrega algunos ingredientes para ver ideas",

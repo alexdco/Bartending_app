@@ -1,8 +1,8 @@
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import { Card } from "@/components/card";
 import { Chip } from "@/components/chip";
 import { Text } from "@/components/text";
-import type { GeneratedDrinkIdea } from "@bartendingapp/shared";
+import { localizeDecimalText, type GeneratedDrinkIdea, type Locale } from "@bartendingapp/shared";
 
 export interface GeneratedRecipeCardProps {
   idea: GeneratedDrinkIdea;
@@ -10,6 +10,7 @@ export interface GeneratedRecipeCardProps {
 
 export function GeneratedRecipeCard({ idea }: GeneratedRecipeCardProps) {
   const t = useTranslations("drinkIdeas");
+  const locale = useLocale() as Locale;
 
   return (
     <Card className="flex flex-col gap-three">
@@ -28,11 +29,20 @@ export function GeneratedRecipeCard({ idea }: GeneratedRecipeCardProps) {
           {idea.ingredients.map((ingredient) => (
             <li key={ingredient.name}>
               <Text variant="bodySmall">
-                {ingredient.amount} {ingredient.name}
+                {/* The model's amount text, decimal separator localized; steps stay as written (spec 0055 AC-5). */}
+                {localizeDecimalText(ingredient.amount, locale)} {ingredient.name}
               </Text>
             </li>
           ))}
         </ul>
+        {idea.garnish !== null && (
+          // The server decides in_pantry; a garnish you don't own reads as optional (spec 0059 AC-2).
+          <Text variant="bodySmall">
+            {idea.garnish.in_pantry
+              ? t("garnish", { name: idea.garnish.name })
+              : t("optionalGarnish", { name: idea.garnish.name })}
+          </Text>
+        )}
       </div>
 
       <div className="flex flex-col gap-one">

@@ -329,6 +329,8 @@
     "almostThere": "조금만 더 있으면 돼요",
     "aiGenerated": "AI 생성",
     "ingredients": "재료",
+    "garnish": "가니시: {name}",
+    "optionalGarnish": "선택 가니시: {name} (내 재료에 없어요)",
     "steps": "만드는 법",
     "metaDescription": "이미 가지고 있는 재료로 칵테일 아이디어를 얻어 보세요.",
     "emptyPantryTitle": "재료를 추가하고 아이디어를 받아 보세요",

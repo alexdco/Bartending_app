@@ -96,7 +96,9 @@
   "drinkIdeas": {
     "emptyPantryTitle": "添加几种原料，获取灵感",
     "emptyPantryDescription": "告诉我们你的吧台有哪些原料，看看能调什么酒。",
-    "addIngredients": "添加原料"
+    "addIngredients": "添加原料",
+    "garnish": "装饰：{{name}}",
+    "optionalGarnish": "可选装饰：{{name}}（原料柜中没有）"
   },
   "service": {
     "loading": "正在加载出品页面",

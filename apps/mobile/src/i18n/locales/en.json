@@ -96,7 +96,9 @@
   "drinkIdeas": {
     "emptyPantryTitle": "Add a few ingredients to get ideas",
     "emptyPantryDescription": "Tell us what's in your bar and we'll show you what you can make.",
-    "addIngredients": "Add ingredients"
+    "addIngredients": "Add ingredients",
+    "garnish": "Garnish: {{name}}",
+    "optionalGarnish": "Optional garnish: {{name}} (not in your pantry)"
   },
   "service": {
     "loading": "Loading Service",

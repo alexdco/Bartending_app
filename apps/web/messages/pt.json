@@ -329,6 +329,8 @@
     "almostThere": "Quase lá",
     "aiGenerated": "Gerado por IA",
     "ingredients": "Ingredientes",
+    "garnish": "Guarnição: {name}",
+    "optionalGarnish": "Guarnição opcional: {name} (não está na sua despensa)",
     "steps": "Passos",
     "metaDescription": "Receba ideias de coquetéis com os ingredientes que você já tem.",
     "emptyPantryTitle": "Adicione alguns ingredientes para ver ideias",

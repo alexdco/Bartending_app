@@ -329,6 +329,8 @@
     "almostThere": "बस थोड़ी कमी है",
     "aiGenerated": "AI से बना",
     "ingredients": "सामग्री",
+    "garnish": "सजावट: {name}",
+    "optionalGarnish": "वैकल्पिक सजावट: {name} (आपकी पैंट्री में नहीं है)",
     "steps": "तरीका",
     "metaDescription": "आपके पास पहले से मौजूद सामग्री से कॉकटेल आइडिया पाएँ।",
     "emptyPantryTitle": "आइडिया पाने के लिए कुछ सामग्री जोड़ें",
