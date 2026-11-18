@@ -6,6 +6,7 @@
   "types": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts",
+    "./brand": "./src/brand.ts",
     "./catalog-translation": "./src/catalogTranslation.ts",
     "./fame-scoring": "./src/fameScoring.ts",
     "./ingredient-classification": "./src/ingredientClassification.ts",

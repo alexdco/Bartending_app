@@ -1,7 +1,7 @@
 # 0057. Store listing copy and a designed, layered app icon
 
 **Date**: 2026-11-15
-**Status**: Proposed
+**Status**: In Progress
 
 ## Summary
 

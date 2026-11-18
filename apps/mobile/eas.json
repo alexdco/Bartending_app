@@ -41,6 +41,9 @@
       "android": {
         "track": "internal",
         "releaseStatus": "completed"
+      },
+      "ios": {
+        "metadataPath": "./store/.generated/store.config.json"
       }
     }
   }

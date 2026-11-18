@@ -1,0 +1,19 @@
+{
+  "configVersion": 0,
+  "apple": {
+    "categories": ["FOOD_AND_DRINK", "LIFESTYLE"],
+    "info": {
+      "en-US": {
+        "title": "Cocktailist: Cocktail Recipes",
+        "subtitle": "Make drinks with what you have",
+        "keywords": ["mixology", "bartender"],
+        "promoText": "Promotional text.",
+        "description": "Description.",
+        "releaseNotes": "Release notes.",
+        "supportUrl": "https://cocktailist.app/en/privacy#contact",
+        "privacyPolicyUrl": "https://cocktailist.app/en/privacy",
+        "marketingUrl": "https://cocktailist.app/en"
+      }
+    }
+  }
+}

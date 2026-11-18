@@ -899,7 +899,7 @@ Store title, subtitle, keywords, and description in English, Spanish, Brazilian 
 **Done when:** listing copy exists for all six locales within each store's length limits, and the designed icon replaces the placeholder in both store builds.
 - [x] Design it (spec): `/architect store listing copy and app icon`
 - [ ] Build it: `/develop store listing copy and app icon`
-  - [ ] Copy thread in English: typed `StoreListing`, limits and rules test, `store:metadata` and `store:push` with the URL guard, `metadataPath`, privacy `#contact` anchor, satisfies AC-1, AC-2, AC-3, AC-4, AC-5, AC-10
+  - [x] Copy thread in English: typed `StoreListing`, limits and rules test, `store:metadata` and `store:push` with the URL guard, `metadataPath`, privacy `#contact` anchor, satisfies AC-1, AC-2, AC-3, AC-4, AC-5, AC-10
   - [ ] Icon thread: layered `mark.svg` and `mark-small.svg`, gradient tile, generated `app.icon` bundle, `ios.icon` and `ios.image`, regenerated outputs and tests, satisfies AC-7, AC-8, AC-9
   - [ ] Five more locales: native `es`, `pt`, `fr`, `ja`, `zh` rewrites, second model review of `ja` and `zh`, satisfies AC-1, AC-2, AC-3, AC-4, AC-6
   - [ ] Live rollout: EAS iOS and Android device builds, `store:push`, Play paste, native skim, satisfies AC-5, AC-8, AC-9

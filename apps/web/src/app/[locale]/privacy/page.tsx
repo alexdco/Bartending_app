@@ -75,7 +75,8 @@ export default async function PrivacyPage() {
         <Text variant="body">{t("deletingYourDataBody")}</Text>
       </Card>
 
-      <Card className="flex flex-col gap-two">
+      {/* The store support URL lands here: /<locale>/privacy#contact (spec 0057, AC-10). */}
+      <Card id="contact" className="flex flex-col gap-two">
         <Text variant="subheading">{t("contact")}</Text>
         <Text variant="body">
           {t.rich("contactBody", {

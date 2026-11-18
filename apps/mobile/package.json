@@ -47,9 +47,11 @@
     "react-native-worklets": "0.10.1"
   },
   "devDependencies": {
+    "@types/node": "^20.19.43",
     "@types/react": "~19.2.2",
     "eslint": "^9",
     "eslint-config-expo": "~57.0.2",
+    "tsx": "^4.23.13",
     "typescript": "~6.0.3"
   },
   "scripts": {
@@ -67,7 +69,9 @@
     "build:preview:android": "eas build --profile preview --platform android",
     "build:prod": "eas build --profile production --platform all --auto-submit",
     "update:preview": "eas env:exec preview \"node scripts/check-public-env.mjs\" && eas update --channel preview --environment preview",
-    "update:prod": "eas env:exec production \"node scripts/check-public-env.mjs\" && eas update --channel production --environment production"
+    "update:prod": "eas env:exec production \"node scripts/check-public-env.mjs\" && eas update --channel production --environment production",
+    "store:metadata": "tsx scripts/store-metadata.ts",
+    "store:push": "pnpm store:metadata && eas metadata:push"
   },
   "private": true
 }
