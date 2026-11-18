@@ -70,8 +70,8 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 57 | Batch calculator v2 | Hardening | in-progress |
 | 58 | Locale aware number formatting | Hardening | in-progress |
 | 59 | Catalog freshness rules | Hardening | in-progress |
-| 60 | Store listing copy and app icon | Hardening | planned |
-| 61 | Automated accessibility checks | Hardening | planned |
+| 60 | Store listing copy and app icon | Hardening | in-progress |
+| 61 | Automated accessibility checks | Hardening | in-progress |
 | 62 | Search sort control | Slice 32 | planned |
 | 63 | Comment safety | Slice 33 | planned |
 | 64 | Translate Learn and quizzes | Slice 34 | planned |
@@ -91,7 +91,9 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 78 | Korean initial consonant search | Slice 39 | planned |
 | 79 | Traditional to Simplified search folding | Slice 39 | planned |
 | 80 | Traditional Chinese | Slice 39 | planned |
-| 81 | Drink idea names and garnish | Hardening | planned |
+| 81 | Drink idea names and garnish | Hardening | in-progress |
+| 82 | Store screenshots and preview video | Hardening | in-progress |
+| 83 | Mobile hardcoded strings sweep | Hardening | planned |
 
 ## Foundations
 
@@ -892,20 +894,62 @@ Keep the catalog right as it changes: decide whether the import job or an admin 
 - [ ] Test it: `/test catalog freshness rules`
 Spec [0056](../specs/0056-catalog-freshness-rules/index.md) · code in `packages/import-job`, `packages/shared`, `supabase/migrations`, `apps/web`
 
-### 60. Store listing copy and app icon
+### 60. Store listing copy and app icon · in-progress
 Store title, subtitle, keywords, and description in English, Spanish, Brazilian Portuguese, French, Japanese, and Simplified Chinese, plus a designed app icon and an iOS Icon Composer `.icon` dropped in as `assets/brand/mark.svg` (from specs 0037, 0045, 0046, and 0050, features 45, 54, 69, and 72).
 **Done when:** listing copy exists for all six locales within each store's length limits, and the designed icon replaces the placeholder in both store builds.
+- [x] Design it (spec): `/architect store listing copy and app icon`
 - [ ] Build it: `/develop store listing copy and app icon`
+  - [ ] Copy thread in English: typed `StoreListing`, limits and rules test, `store:metadata` and `store:push` with the URL guard, `metadataPath`, privacy `#contact` anchor, satisfies AC-1, AC-2, AC-3, AC-4, AC-5, AC-10
+  - [ ] Icon thread: layered `mark.svg` and `mark-small.svg`, gradient tile, generated `app.icon` bundle, `ios.icon` and `ios.image`, regenerated outputs and tests, satisfies AC-7, AC-8, AC-9
+  - [ ] Five more locales: native `es`, `pt`, `fr`, `ja`, `zh` rewrites, second model review of `ja` and `zh`, satisfies AC-1, AC-2, AC-3, AC-4, AC-6
+  - [ ] Live rollout: EAS iOS and Android device builds, `store:push`, Play paste, native skim, satisfies AC-5, AC-8, AC-9
+- [ ] Verify it: `/check verify store listing copy and app icon`
+- [ ] Test it: `/test store listing copy and app icon`
+Spec [0057](../specs/0057-store-listing-app-icon/index.md) · code in `apps/mobile`, `assets/brand`, `scripts`, `apps/web`
 
-### 61. Automated accessibility checks · needs a decision
+### 61. Automated accessibility checks · in-progress
 Playwright plus `@axe-core/playwright` on key web pages, run in CI, plus a look at whether a maintained React Native accessibility lint fits Expo's config (from spec 0038, features 2 and 46). Needs feature 48's CI first.
 **Done when:** CI fails on serious axe violations on the key web pages, and mobile either runs an accessibility lint or the spec records why not.
-- [ ] Design it (spec): `/architect automated accessibility checks`
+- [x] Design it (spec): `/architect automated accessibility checks`
+- [ ] Build it: `/develop automated accessibility checks`
+  - [ ] Thin thread: gate on feature 48's `ci.yml`, Playwright plus axe with one shared anonymous session scanning the `en` home page locally, then the parallel `a11y` CI job green, proven red, and guarded against missing variables, satisfies AC-1, AC-4, AC-5, AC-8, AC-9, AC-10, AC-12, AC-13, AC-14
+  - [ ] Variants and overlays: desktop and phone in light and dark, plus the age gate and consent banner scan, with their fixes, satisfies AC-2, AC-3
+  - [ ] Every fixture page and locale with its fixes (including the empty pantry, favorites, and shopping list), the render guard, and the exceptions guard, turning on with an empty exceptions list, satisfies AC-1, AC-6, AC-7, AC-11
+  - [ ] Mobile no lint note and `/sync` handoff, satisfies AC-15
+- [ ] Verify it: `/check verify automated accessibility checks`
+- [ ] Test it: `/test automated accessibility checks`
+Spec [0058](../specs/0058-automated-accessibility-checks/index.md) · code in `apps/web/e2e`, `apps/web/playwright.config.ts`, `.github/workflows/ci.yml`, `packages/shared/src/tokens.ts`, `apps/web/src/favorites`
 
-### 81. Drink idea names and garnish · needs a decision
+### 81. Drink idea names and garnish · in-progress
 The shared drink idea prompt lets an idea's name claim a mixer the recipe lacks (soda, tonic) or borrow a cocktail name (Margarita, Mojito), and lets the steps add a garnish the pantry does not hold, in every language. Found by the Opus review of live Chinese ideas (spec 0052, feature 74), which judged it not language specific.
 **Done when:** across languages, an idea's name only names ingredients the recipe uses or an established cocktail it truly is, and no step adds an ingredient or garnish outside the pantry unless it is clearly marked optional.
-- [ ] Design it (spec): `/architect drink idea names and garnish`
+- [x] Design it (spec): `/architect drink idea names and garnish`
+- [ ] Build it: `/develop drink idea names and garnish`
+  - [x] Thin thread: pure checks module with tests, garnish field through the function, shared type and parser, and the web card line in English, satisfies AC-1, AC-2, AC-8, AC-10
+  - [x] Name check through the retry loop with the retry hint and failure reasons in Sentry, plus the full shared prompt and the Chinese instruction cleanup, satisfies AC-3 to AC-7
+  - [x] Mobile card line and both garnish strings in all nine locales on both apps, satisfies AC-2
+  - [ ] Live proof: 27 ideas (3 pantries × 9 locales) reviewed in each language, satisfies AC-9
+- [ ] Verify it: `/check verify drink idea names and garnish`
+- [ ] Test it: `/test drink idea names and garnish`
+Spec [0059](../specs/0059-drink-idea-names-garnish/index.md) · code in `supabase/functions/generate-drink-idea/`, `packages/shared/src/generateDrinkIdea.ts`, `apps/web/src/drink-ideas/`, `apps/mobile/src/drink-ideas/`
+
+### 82. Store screenshots and preview video · in-progress
+Store screenshots for every required device size, in the six listing locales, plus an optional App Store preview video. Both stores need screenshots before the first submission (from spec 0057, feature 60). The spec covers six captioned shots per locale plus the Play feature graphic; the preview video is deferred.
+**Done when:** each listing locale has the screenshots both stores require at every required device size, captured from the real app in that language.
+- [x] Design it (spec): `/architect store screenshots and preview video`
+- [ ] Build it: `/develop store screenshots and preview video`
+  - [ ] Thin thread, one English shot on both platforms: `screenshots` listing block and limits test, analytics off flag, `screenshots` EAS profile, first testIDs, demo seed and accounts, local Android Maestro run, EAS workflow with both artifacts, one rendered frame per canvas, satisfies AC-1, AC-3, AC-4, AC-5, AC-7, AC-8
+  - [ ] All six shots in English: remaining testIDs and deep links, AI shot with the shared retry budget, batch, search, and learn, featured recipe pinned, renderer validation, frame layout, and determinism test, satisfies AC-5, AC-6, AC-9, AC-10, AC-11, AC-12
+  - [ ] Six locales (after feature 83): native captions and feature graphic lines with the `ja` and `zh` second model pass, per locale queries and titles, the feature graphic, CJK fonts and glyph check, satisfies AC-1, AC-2, AC-5, AC-8, AC-10, AC-11
+  - [ ] Live set: full EAS run, render, review checklist with AI idea skims, manual upload to both consoles, satisfies AC-12, AC-13
+- [ ] Verify it: `/check verify store screenshots and preview video`
+- [ ] Test it: `/test store screenshots and preview video`
+Spec [0060](../specs/0060-store-screenshots/index.md) · code in `apps/mobile/.maestro`, `apps/mobile/store`, `apps/mobile/scripts`, `.eas/workflows`, `apps/mobile/src`
+
+### 83. Mobile hardcoded strings sweep · planned
+The mobile drink ideas, pantry, search, recipe detail, batch panel, and learn screens (and likely others) still render English literals ("You can make now", "Find a recipe", "Batch this recipe", "Learn", empty and loading states). Wrap them in `t()` across all nine app locales. Gates feature 82's localized captures (from spec 0060).
+**Done when:** no user visible English literal remains on mobile screens, at minimum every string visible in spec 0060's six shots, and each reads correctly in all nine locales.
+- [ ] Design it (spec): `/architect mobile hardcoded strings sweep` (skippable if you already know the build: `/develop` directly)
 
 ## Slice 32: Search sort control
 
@@ -1075,6 +1119,10 @@ A separate Traditional Chinese locale beside `zh`. It would be the first hyphena
 
 ## Deferred
 Out of scope for the current build pass, kept so the plan stays honest.
+- **AI drink idea name variety**: the same pantry gives the same name on every request; a temperature or per request style hint would change every idea (feature 81) · needs a decision · from spec 0059
+- **Store keyword tuning**: revisit listing keywords with App Store and Play search analytics about a month after launch (feature 60) · from spec 0057
+- **Korean, Hindi, and Russian store listings**: they see the English listing until those markets show installs (feature 60) · from spec 0057
+- **Store preview video**: an App Store preview and a Play promo video, likely reusing the screenshot Maestro flows with `record_screen`, once launch data shows it is worth it (feature 82) · from spec 0060
 - **Ads or subscription monetization**: no monetization in this build pass; revisit once there is usage · needs a decision
 - **ML/collaborative recommendations**: usage based recommendation model once there is a real user base · needs a decision
 - **Connected accounts section**: view, link, and unlink Google, Apple, and email on the account screen (feature 53) · needs a decision · from spec 0044
@@ -1082,6 +1130,8 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Set a password for provider only accounts**: a backup sign in method (feature 53) · needs a decision · from spec 0044
 - **Google One Tap on web**: GSI script, nonce, cookie consent review (features 13, 53) · needs a decision · from spec 0044
 - **Canadian French**: a separate `fr-CA` locale beside `fr`, with region aware detection and fallback, like European Portuguese (feature 69) · needs a decision · from spec 0046
+- **Accessibility scans of filled and signed in pages**: extend the axe suite to pantry, favorites, and shopping list with seeded rows, and the account page, once the current set is stable (the empty anonymous states are already in feature 61) · from spec 0058
+- **Mobile accessibility lint**: adopt a React Native accessibility ESLint plugin once one declares ESLint 9 or flat config support (feature 61) · from spec 0058
 - **Scale whole items as prep counts**: `1 wedge`, `2 slices`, `1 twist`, `1 sprig` × servings, as counts only (feature 57) · from spec 0054
 - **Translate straining**: a checked list plus labels in nine locales, like method (feature 57) · needs a decision · from spec 0054
 - **Caching for other public pages**: quizzes, recipes, popular, and home also render per request because no page calls `setRequestLocale`; decide whether to cache them, possibly as a cross cutting standard or a Cache Components switch (feature 56) · needs a decision · from spec 0053
