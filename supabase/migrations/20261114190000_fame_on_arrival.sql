@@ -541,7 +541,7 @@ begin
 
   return recipe_row_id;
 end;
-$;
+$$;
 
 
 revoke all on function public.admin_upsert_recipe(
