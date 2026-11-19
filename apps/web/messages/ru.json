@@ -466,6 +466,8 @@
     "edit": "Изменить",
     "anonymous": "Аноним",
     "edited": "(изменено)",
+    "checkingPhoto": "Проверяем фото",
+    "underReview": "Скрыто на время проверки",
     "deleteConfirm": "Удалить этот комментарий?",
     "photoLabel": "Фото {number} из {total}. Автор: {name}",
     "close": "Закрыть",

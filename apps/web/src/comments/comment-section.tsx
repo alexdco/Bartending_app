@@ -333,6 +333,11 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
           {comment.edited ? ` ${t("edited")}` : ""}
         </Text>
       </div>
+      {comment.moderationStatus === "flagged" && (
+        <Text variant="bodySmall" muted>
+          {t("underReview")}
+        </Text>
+      )}
       {comment.body && <Text variant="body">{comment.body}</Text>}
       <CommentPhotoThumbnails photos={comment.photos} displayName={comment.displayName} />
       {isOwn && (

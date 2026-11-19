@@ -466,6 +466,8 @@
     "edit": "Modifier",
     "anonymous": "Anonyme",
     "edited": "(modifié)",
+    "checkingPhoto": "Vérification de la photo",
+    "underReview": "Masqué pendant l’examen",
     "deleteConfirm": "Supprimer ce commentaire ?",
     "photoLabel": "Photo {number} sur {total}, par {name}",
     "close": "Fermer",

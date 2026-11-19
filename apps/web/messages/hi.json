@@ -466,6 +466,8 @@
     "edit": "एडिट करें",
     "anonymous": "गुमनाम",
     "edited": "(एडिट किया गया)",
+    "checkingPhoto": "फ़ोटो की जाँच हो रही है",
+    "underReview": "समीक्षा पूरी होने तक छिपा है",
     "deleteConfirm": "यह कमेंट डिलीट करें?",
     "photoLabel": "फ़ोटो {number}/{total}, भेजने वाले: {name}",
     "close": "बंद करें",

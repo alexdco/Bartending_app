@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import type { ModerationStatus } from "./moderation";
 
 /**
  * Comment photos (spec 0032). Platform neutral: the web canvas pipeline and
@@ -35,6 +36,8 @@ export interface CommentPhoto {
   width: number;
   height: number;
   altText: string | null;
+  /** Spec 0062: anything but `approved` reaches only the author and the admin. */
+  moderationStatus: ModerationStatus;
 }
 
 /** A processed, uploaded photo not yet attached to a comment. */

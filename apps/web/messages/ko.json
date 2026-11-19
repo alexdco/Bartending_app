@@ -466,6 +466,8 @@
     "edit": "수정",
     "anonymous": "익명",
     "edited": "(수정됨)",
+    "checkingPhoto": "사진 확인 중",
+    "underReview": "검토가 끝날 때까지 숨겨짐",
     "deleteConfirm": "이 댓글을 삭제할까요?",
     "photoLabel": "{name}님의 사진 {total}장 중 {number}번째",
     "close": "닫기",

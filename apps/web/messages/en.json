@@ -466,6 +466,8 @@
     "edit": "Edit",
     "anonymous": "Anonymous",
     "edited": "(edited)",
+    "checkingPhoto": "Checking photo",
+    "underReview": "Hidden while under review",
     "deleteConfirm": "Delete this comment?",
     "photoLabel": "Photo {number} of {total} by {name}",
     "close": "Close",

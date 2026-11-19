@@ -9,6 +9,7 @@ import {
   type CommentRpcError,
   type NewCommentPhoto,
 } from "./commentPhotos";
+import { parseModerationStatus, type ModerationStatus } from "./moderation";
 
 export const COMMENT_MIN_LENGTH = 1;
 export const COMMENT_MAX_LENGTH = 1000;
@@ -25,6 +26,8 @@ export interface Comment {
   createdAt: string;
   updatedAt: string;
   edited: boolean;
+  /** Spec 0062: anything but `approved` reaches only the author and the admin. */
+  moderationStatus: ModerationStatus;
 }
 
 export type CommentBodyValidationError = "empty" | "too_long";
@@ -59,6 +62,7 @@ interface CommentPhotoRow {
   width: number;
   height: number;
   alt_text: string | null;
+  moderation_status: string;
 }
 
 interface CommentRow {
@@ -68,11 +72,14 @@ interface CommentRow {
   body: string | null;
   created_at: string;
   updated_at: string;
+  moderation_status: string;
   comment_photos: CommentPhotoRow[];
 }
 
+// moderation_status only: flag_reason and flag_categories have no client
+// select grant (spec 0062 invariant 2a).
 const COMMENT_SELECT =
-  "id, user_id, recipe_id, body, created_at, updated_at, comment_photos(id, storage_path, position, width, height, alt_text)";
+  "id, user_id, recipe_id, body, created_at, updated_at, moderation_status, comment_photos(id, storage_path, position, width, height, alt_text, moderation_status)";
 
 function mapPhotoRow(row: CommentPhotoRow): CommentPhoto {
   return {
@@ -82,6 +89,7 @@ function mapPhotoRow(row: CommentPhotoRow): CommentPhoto {
     width: row.width,
     height: row.height,
     altText: row.alt_text,
+    moderationStatus: parseModerationStatus(row.moderation_status),
   };
 }
 
@@ -96,6 +104,7 @@ function mapRow(row: CommentRow, displayName: string | null): Comment {
     createdAt: row.created_at,
     updatedAt: row.updated_at,
     edited: row.updated_at > row.created_at,
+    moderationStatus: parseModerationStatus(row.moderation_status),
   };
 }
 
@@ -136,6 +145,7 @@ function parsePhotoJson(value: Json): CommentPhotoRow | null {
     width,
     height,
     alt_text: asString(value.alt_text),
+    moderation_status: asString(value.moderation_status) ?? "approved",
   };
 }
 
@@ -171,6 +181,7 @@ function parseCommentJson(value: Json): { row: CommentRow; removedPaths: string[
       body: asString(value.body),
       created_at: createdAt,
       updated_at: updatedAt,
+      moderation_status: asString(value.moderation_status) ?? "approved",
       comment_photos: photos.filter((photo): photo is CommentPhotoRow => photo !== null),
     },
     removedPaths: removedJson.filter((path): path is string => typeof path === "string"),

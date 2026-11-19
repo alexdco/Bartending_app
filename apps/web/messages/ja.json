@@ -466,6 +466,8 @@
     "edit": "編集",
     "anonymous": "匿名",
     "edited": "（編集済み）",
+    "checkingPhoto": "写真を確認中",
+    "underReview": "確認が終わるまで非表示",
     "deleteConfirm": "このコメントを削除しますか？",
     "photoLabel": "{name}さんの写真 {number}/{total}",
     "close": "閉じる",

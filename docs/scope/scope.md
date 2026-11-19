@@ -73,7 +73,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 60 | Store listing copy and app icon | Hardening | in-progress |
 | 61 | Automated accessibility checks | Hardening | in-progress |
 | 62 | Search sort control | Slice 32 | in-progress |
-| 63 | Comment safety | Slice 33 | planned |
+| 63 | Comment safety | Slice 33 | in-progress |
 | 64 | Translate Learn and quizzes | Slice 34 | planned |
 | 65 | Ingredient substitution suggestions | Slice 35 | planned |
 | 66 | Shared shift log | Slice 36 | planned |
@@ -968,10 +968,19 @@ Spec [0061](../specs/0061-search-sort-control/index.md) · code in `supabase/mig
 
 ## Slice 33: Comment safety
 
-### 63. Comment safety · needs a decision
-A report button on comments and photos that feeds the admin comments page, plus automated screening (for example a vision check) that hides a flagged photo until an admin reviews it (from spec 0032, features 31 and 34).
-**Done when:** any viewer can report a comment or photo once, reports show up on the admin comments page, and a flagged upload stays hidden until an admin clears it.
-- [ ] Design it (spec): `/architect comment safety`
+### 63. Comment safety · in-progress
+A report button on comments and photos that feeds the admin comments page, a block action with a Blocked people list, plus Claude Haiku screening that keeps every new photo hidden until it passes and holds a flagged photo until an admin reviews it (from spec 0032, features 31 and 34).
+**Done when:** any signed in user can report a comment or photo once and block another user, reports and flagged photos show up in a Needs review tab on the admin comments page, three reports from established accounts hide an item, and no photo is visible to others before it passes screening or an admin clears it.
+- [x] Design it (spec): [0062](../specs/0062-comment-safety/index.md)
+- [ ] Build it: `/develop comment safety`
+  - [x] Screening thread: moderation status columns and RLS visibility helpers, the screening trigger, cron and 1 hour backstop, the `screen-comment-photo` Edge Function on Haiku 5.5, and the author's status badges on web, satisfies AC-1 through AC-5, AC-10, AC-13, AC-16
+  - [ ] Reports: `content_reports`, `report_content`, delete triggers, and the report dialog with hide for the reporter on web, satisfies AC-6 through AC-9, AC-13, AC-16
+  - [ ] Admin review: the Needs review tab, nav badge, and Clear and Remove on `/admin/comments`, satisfies AC-11, AC-12
+  - [ ] Blocks: `user_blocks`, the Block action, and the Blocked people list on web, satisfies AC-14 through AC-16
+  - [ ] Mobile parity, strings in all 9 locales, and the privacy page paragraph, satisfies AC-17, AC-18
+- [ ] Verify it: `/check verify comment safety`
+- [ ] Test it: `/test comment safety`
+Spec [0062](../specs/0062-comment-safety/index.md)
 
 ## Slice 34: Translate Learn and quizzes
 
@@ -1146,6 +1155,9 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Decimal separator rule in drink idea steps**: a per locale separator line in the idea prompt, if steps show mixed separators in review (feature 58) · from spec 0055
 - **No break space between number and unit**: French typography, so `4,5` and `cl` never wrap apart (feature 58) · needs a decision · from spec 0055
 - **Translated merge aliases**: find a merged duplicate's old name in non English search too (feature 59) · needs a decision · from spec 0056
+- **Suspend posting for repeat offenders**: an admin switch that stops an account from commenting, using report history (feature 63) · needs a decision · from spec 0062
+- **Screen comment text**: run the Haiku check on comment text too, if text abuse shows up (feature 63) · needs a decision · from spec 0062
+- **Comment photo sweep cron key**: move the spec 0032 orphan photo sweep cron to the `secret_key` on `apikey` pattern; it still sends the legacy Bearer key (feature 34) · from spec 0062
 
 ## Legend
 

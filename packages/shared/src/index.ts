@@ -12,6 +12,7 @@ export * from "./favorites";
 export * from "./ratings";
 export * from "./comments";
 export * from "./commentPhotos";
+export * from "./moderation";
 export * from "./recipeImages";
 export * from "./drinkIdeas";
 export * from "./generateDrinkIdea";

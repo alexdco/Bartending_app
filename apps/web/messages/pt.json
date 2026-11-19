@@ -466,6 +466,8 @@
     "edit": "Editar",
     "anonymous": "Anônimo",
     "edited": "(editado)",
+    "checkingPhoto": "Verificando a foto",
+    "underReview": "Oculto enquanto está em análise",
     "deleteConfirm": "Excluir este comentário?",
     "photoLabel": "Foto {number} de {total}, de {name}",
     "close": "Fechar",

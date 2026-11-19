@@ -466,6 +466,8 @@
     "edit": "编辑",
     "anonymous": "匿名",
     "edited": "（已编辑）",
+    "checkingPhoto": "正在检查照片",
+    "underReview": "审核期间已隐藏",
     "deleteConfirm": "删除这条评论？",
     "photoLabel": "{name}的第 {number} 张照片，共 {total} 张",
     "close": "关闭",

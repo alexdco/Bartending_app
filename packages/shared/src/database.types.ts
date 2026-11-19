@@ -345,9 +345,16 @@ export type Database = {
           alt_text: string | null;
           comment_id: string;
           created_at: string;
+          flag_categories: string[] | null;
+          flag_reason: Database["public"]["Enums"]["moderation_flag_reason"] | null;
+          flagged_at: string | null;
           height: number;
           id: string;
+          moderation_status: Database["public"]["Enums"]["moderation_status"];
           position: number;
+          screened_at: string | null;
+          screening_attempts: number;
+          screening_claimed_at: string | null;
           storage_path: string;
           user_id: string;
           width: number;
@@ -356,9 +363,16 @@ export type Database = {
           alt_text?: string | null;
           comment_id: string;
           created_at?: string;
+          flag_categories?: string[] | null;
+          flag_reason?: Database["public"]["Enums"]["moderation_flag_reason"] | null;
+          flagged_at?: string | null;
           height: number;
           id?: string;
+          moderation_status?: Database["public"]["Enums"]["moderation_status"];
           position: number;
+          screened_at?: string | null;
+          screening_attempts?: number;
+          screening_claimed_at?: string | null;
           storage_path: string;
           user_id: string;
           width: number;
@@ -367,9 +381,16 @@ export type Database = {
           alt_text?: string | null;
           comment_id?: string;
           created_at?: string;
+          flag_categories?: string[] | null;
+          flag_reason?: Database["public"]["Enums"]["moderation_flag_reason"] | null;
+          flagged_at?: string | null;
           height?: number;
           id?: string;
+          moderation_status?: Database["public"]["Enums"]["moderation_status"];
           position?: number;
+          screened_at?: string | null;
+          screening_attempts?: number;
+          screening_claimed_at?: string | null;
           storage_path?: string;
           user_id?: string;
           width?: number;
@@ -388,7 +409,10 @@ export type Database = {
         Row: {
           body: string | null;
           created_at: string;
+          flag_reason: Database["public"]["Enums"]["moderation_flag_reason"] | null;
+          flagged_at: string | null;
           id: string;
+          moderation_status: Database["public"]["Enums"]["moderation_status"];
           recipe_id: string;
           updated_at: string;
           user_id: string;
@@ -396,7 +420,10 @@ export type Database = {
         Insert: {
           body?: string | null;
           created_at?: string;
+          flag_reason?: Database["public"]["Enums"]["moderation_flag_reason"] | null;
+          flagged_at?: string | null;
           id?: string;
+          moderation_status?: Database["public"]["Enums"]["moderation_status"];
           recipe_id: string;
           updated_at?: string;
           user_id: string;
@@ -404,7 +431,10 @@ export type Database = {
         Update: {
           body?: string | null;
           created_at?: string;
+          flag_reason?: Database["public"]["Enums"]["moderation_flag_reason"] | null;
+          flagged_at?: string | null;
           id?: string;
+          moderation_status?: Database["public"]["Enums"]["moderation_status"];
           recipe_id?: string;
           updated_at?: string;
           user_id?: string;
@@ -604,6 +634,21 @@ export type Database = {
             referencedColumns: ["id"];
           },
         ];
+      };
+      photo_screening_usage: {
+        Row: {
+          calls: number;
+          day: string;
+        };
+        Insert: {
+          calls?: number;
+          day: string;
+        };
+        Update: {
+          calls?: number;
+          day?: string;
+        };
+        Relationships: [];
       };
       pinned_recipes: {
         Row: {
@@ -1486,10 +1531,7 @@ export type Database = {
         };
         Returns: string;
       };
-      apply_fame_on_arrival: {
-        Args: { proposals: Json };
-        Returns: undefined;
-      };
+      apply_fame_on_arrival: { Args: { proposals: Json }; Returns: undefined };
       apply_ingredient_allergens: {
         Args: { proposals: Json };
         Returns: undefined;
@@ -1514,6 +1556,14 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      can_view_comment: { Args: { p_comment_id: string }; Returns: boolean };
+      claim_pending_comment_photos: {
+        Args: { p_limit?: number; p_photo_id?: string };
+        Returns: {
+          id: string;
+          storage_path: string;
+        }[];
+      };
       classic_recipes: {
         Args: { locale?: string; page_limit?: number };
         Returns: {
@@ -1524,6 +1574,7 @@ export type Database = {
           name: string;
         }[];
       };
+      comment_own_visible: { Args: { p_comment_id: string }; Returns: boolean };
       comment_photo_uploads_last_24h: { Args: never; Returns: number };
       comment_with_photos_json: {
         Args: { p_comment_id: string };
@@ -1618,6 +1669,7 @@ export type Database = {
           name: string;
         }[];
       };
+      flag_stale_pending_photos: { Args: never; Returns: number };
       has_cjk: { Args: { t: string }; Returns: boolean };
       import_catalog: {
         Args: {
@@ -1697,6 +1749,7 @@ export type Database = {
       };
       normalize_comment_body: { Args: { p_body: string }; Returns: string };
       normalize_comment_photo_alt: { Args: { p_item: Json }; Returns: string };
+      photo_own_visible: { Args: { p_photo_id: string }; Returns: boolean };
       popular_recipes_by_region: {
         Args: { locale?: string; region_filter: string };
         Returns: {
@@ -1740,6 +1793,10 @@ export type Database = {
         Args: { p_regions: string[] };
         Returns: undefined;
       };
+      record_photo_screening: {
+        Args: { p_categories?: string[]; p_outcome: string; p_photo_id: string };
+        Returns: Database["public"]["Enums"]["moderation_status"];
+      };
       release_ai_generation_slot: {
         Args: { p_day: string; p_ip_hash: string; p_user_id: string };
         Returns: undefined;
@@ -1765,6 +1822,7 @@ export type Database = {
           total_count: number;
         }[];
       };
+      reserve_photo_screening: { Args: never; Returns: boolean };
       resolve_locale: { Args: { p_locale: string }; Returns: string };
       resolve_recipe_redirect: {
         Args: { p_recipe_id: string };
@@ -1859,7 +1917,8 @@ export type Database = {
       };
     };
     Enums: {
-      [_ in never]: never;
+      moderation_flag_reason: "screening" | "screening_failed" | "reports";
+      moderation_status: "pending" | "approved" | "flagged";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -1980,6 +2039,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      moderation_flag_reason: ["screening", "screening_failed", "reports"],
+      moderation_status: ["pending", "approved", "flagged"],
+    },
   },
 } as const;
