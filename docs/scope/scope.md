@@ -972,15 +972,15 @@ Spec [0061](../specs/0061-search-sort-control/index.md) · code in `supabase/mig
 A report button on comments and photos that feeds the admin comments page, a block action with a Blocked people list, plus Claude Haiku screening that keeps every new photo hidden until it passes and holds a flagged photo until an admin reviews it (from spec 0032, features 31 and 34).
 **Done when:** any signed in user can report a comment or photo once and block another user, reports and flagged photos show up in a Needs review tab on the admin comments page, three reports from established accounts hide an item, and no photo is visible to others before it passes screening or an admin clears it.
 - [x] Design it (spec): [0062](../specs/0062-comment-safety/index.md)
-- [ ] Build it: `/develop comment safety`
+- [x] Build it: `/develop comment safety`
   - [x] Screening thread: moderation status columns and RLS visibility helpers, the screening trigger, cron and 1 hour backstop, the `screen-comment-photo` Edge Function on Haiku 5.5, and the author's status badges on web, satisfies AC-1 through AC-5, AC-10, AC-13, AC-16
   - [x] Reports: `content_reports`, `report_content`, delete triggers, and the report dialog with hide for the reporter on web, satisfies AC-6 through AC-9, AC-13, AC-16
   - [x] Admin review: the Needs review tab, nav badge, and Clear and Remove on `/admin/comments`, satisfies AC-11, AC-12
   - [x] Blocks: `user_blocks`, the Block action, and the Blocked people list on web, satisfies AC-14 through AC-16
-  - [ ] Mobile parity, strings in all 9 locales, and the privacy page paragraph, satisfies AC-17, AC-18
+  - [x] Mobile parity, strings in all 9 locales, and the privacy page paragraph, satisfies AC-17, AC-18
 - [ ] Verify it: `/check verify comment safety`
 - [ ] Test it: `/test comment safety`
-Spec [0062](../specs/0062-comment-safety/index.md)
+Spec [0062](../specs/0062-comment-safety/index.md) · code in `supabase/migrations`, `supabase/functions/screen-comment-photo`, `packages/shared/src`, `apps/web/src/comments`, `apps/web/src/admin`, `apps/mobile/src/comments`
 
 ## Slice 34: Translate Learn and quizzes
 

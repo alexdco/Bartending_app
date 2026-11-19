@@ -65,6 +65,17 @@
     "deleteAccountFailed": "アカウントを削除できませんでした。接続を確認して、もう一度お試しください。",
     "deleteMyAccount": "アカウントを削除する",
     "deleting": "削除中…",
+    "blocked": {
+      "heading": "ブロック中のユーザー",
+      "empty": "ブロックしているユーザーはいません。",
+      "loading": "ブロック中のユーザーを読み込み中",
+      "loadFailed": "ブロックリストを読み込めませんでした。後でもう一度お試しください。",
+      "blockedOn": "ブロック日：{{date}}",
+      "unblock": "ブロック解除",
+      "unblockLabel": "{{name}}のブロックを解除",
+      "unblockFailed": "ブロックを解除できませんでした。もう一度お試しください。",
+      "deletedUser": "削除されたユーザー"
+    },
     "privacyPolicy": "プライバシーポリシー",
     "errorWeakPassword": "パスワードは6文字以上で入力してください。",
     "errorInvalidCredentials": "メールアドレスまたはパスワードが正しくありません。",
@@ -112,6 +123,46 @@
     "none": "まだ評価がありません。最初に評価してみましょう。",
     "summary_other": "{{average}}（{{count}}件の評価）",
     "starsLabel_other": "{{count}}件の評価で5点中{{average}}点"
+  },
+  "comments": {
+    "checkingPhoto": "写真を確認中",
+    "underReview": "確認が終わるまで非表示",
+    "close": "閉じる",
+    "cancel": "キャンセル",
+    "report": {
+      "action": "報告",
+      "photoAction": "写真を報告",
+      "commentTitle": "このコメントを報告",
+      "photoTitle": "この写真を報告",
+      "reasonLabel": "報告する理由は何ですか？",
+      "reasons": {
+        "spam": "スパムまたは宣伝",
+        "offensive": "不快または差別的",
+        "sexual": "性的なコンテンツ",
+        "off_topic": "関係のない内容",
+        "other": "その他"
+      },
+      "noteLabel": "メモを追加（任意）",
+      "noteCounter": "{{count}} / {{max}}",
+      "submit": "報告を送信",
+      "sending": "送信中...",
+      "thanks": "お知らせいただきありがとうございます。今後これは表示されず、管理者が確認します。",
+      "errors": {
+        "already_reported": "これはすでに報告済みです。",
+        "report_limit": "本日の報告の上限に達しました。",
+        "not_found": "これはもう表示できません。",
+        "own_content": "自分のコンテンツは報告できません。",
+        "not_signed_in": "コメントや写真を報告するにはログインしてください。",
+        "invalid_input": "メモは最大{{max}}文字までです。",
+        "generic": "報告を送信できませんでした。もう一度お試しください。"
+      }
+    },
+    "block": {
+      "action": "ブロック",
+      "confirm": "このユーザーをブロックしますか？今後このユーザーのコメントや写真は表示されません。相手には通知されません。",
+      "confirmAction": "ブロック",
+      "failed": "ブロックできませんでした。もう一度お試しください。"
+    }
   },
   "favorites": {
     "toggleLabel": "{{name}}をお気に入りに登録"

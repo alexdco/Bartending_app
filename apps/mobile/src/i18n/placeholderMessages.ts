@@ -19,4 +19,10 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   // Copied from web's reviewed batch.partSizeError; ru keeps the unit as a
   // label in parentheses, and min and max arrive preformatted (spec 0055 AC-12).
   "batch.partSizeError": ["max", "min", "unit"],
+  // Copied from web's reviewed report and blocked list strings (spec 0062):
+  // numbers only, or label plus value in ru.
+  "comments.report.noteCounter": ["max"],
+  "comments.report.errors.invalid_input": ["max"],
+  "account.blocked.blockedOn": ["date"],
+  "account.blocked.unblockLabel": ["name"],
 };

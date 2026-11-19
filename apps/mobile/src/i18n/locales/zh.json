@@ -65,6 +65,17 @@
     "deleteAccountFailed": "无法删除账号。请检查网络后重试。",
     "deleteMyAccount": "删除我的账号",
     "deleting": "正在删除…",
+    "blocked": {
+      "heading": "已屏蔽的用户",
+      "empty": "你还没有屏蔽任何人。",
+      "loading": "正在加载已屏蔽的用户",
+      "loadFailed": "无法加载屏蔽列表，请稍后重试。",
+      "blockedOn": "屏蔽于 {{date}}",
+      "unblock": "取消屏蔽",
+      "unblockLabel": "取消屏蔽 {{name}}",
+      "unblockFailed": "无法取消屏蔽，请重试。",
+      "deletedUser": "已删除的用户"
+    },
     "privacyPolicy": "隐私政策",
     "errorWeakPassword": "密码至少需要 6 个字符。",
     "errorInvalidCredentials": "邮箱或密码不正确。",
@@ -112,6 +123,46 @@
     "none": "暂无评分，来写下第一条吧。",
     "summary_other": "{{average}}（{{count}} 条评分）",
     "starsLabel_other": "根据 {{count}} 条评分，平均 {{average}} 分，满分 5 分"
+  },
+  "comments": {
+    "checkingPhoto": "正在检查照片",
+    "underReview": "审核期间已隐藏",
+    "close": "关闭",
+    "cancel": "取消",
+    "report": {
+      "action": "举报",
+      "photoAction": "举报照片",
+      "commentTitle": "举报这条评论",
+      "photoTitle": "举报这张照片",
+      "reasonLabel": "你为什么要举报？",
+      "reasons": {
+        "spam": "垃圾信息或广告",
+        "offensive": "冒犯或仇恨内容",
+        "sexual": "色情内容",
+        "off_topic": "与主题无关",
+        "other": "其他原因"
+      },
+      "noteLabel": "添加说明（可选）",
+      "noteCounter": "{{count}} / {{max}}",
+      "submit": "提交举报",
+      "sending": "正在提交...",
+      "thanks": "感谢告知。你将不再看到此内容，管理员会进行审核。",
+      "errors": {
+        "already_reported": "你已经举报过此内容。",
+        "report_limit": "你已达到今天的举报次数上限。",
+        "not_found": "此内容已不可用。",
+        "own_content": "不能举报自己的内容。",
+        "not_signed_in": "登录后即可举报评论和照片。",
+        "invalid_input": "说明最多 {{max}} 个字符。",
+        "generic": "举报提交失败，请重试。"
+      }
+    },
+    "block": {
+      "action": "屏蔽",
+      "confirm": "要屏蔽此人吗？你将不再看到其评论和照片，对方不会收到通知。",
+      "confirmAction": "屏蔽",
+      "failed": "无法屏蔽此人，请重试。"
+    }
   },
   "favorites": {
     "toggleLabel": "收藏{{name}}"

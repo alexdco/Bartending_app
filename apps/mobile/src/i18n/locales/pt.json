@@ -65,6 +65,17 @@
     "deleteAccountFailed": "Não conseguimos excluir sua conta. Verifique sua conexão e tente de novo.",
     "deleteMyAccount": "Excluir minha conta",
     "deleting": "Excluindo…",
+    "blocked": {
+      "heading": "Pessoas bloqueadas",
+      "empty": "Você não bloqueou ninguém.",
+      "loading": "Carregando pessoas bloqueadas",
+      "loadFailed": "Não foi possível carregar sua lista de bloqueios. Tente mais tarde.",
+      "blockedOn": "Bloqueado em {{date}}",
+      "unblock": "Desbloquear",
+      "unblockLabel": "Desbloquear {{name}}",
+      "unblockFailed": "Não foi possível desbloquear. Tente de novo.",
+      "deletedUser": "Usuário excluído"
+    },
     "privacyPolicy": "Política de privacidade",
     "errorWeakPassword": "A senha deve ter pelo menos 6 caracteres.",
     "errorInvalidCredentials": "E-mail ou senha incorretos.",
@@ -114,6 +125,46 @@
     "summary_other": "{{average}} ({{count}} avaliações)",
     "starsLabel_one": "Nota {{average}} de 5, com base em {{count}} avaliação",
     "starsLabel_other": "Nota {{average}} de 5, com base em {{count}} avaliações"
+  },
+  "comments": {
+    "checkingPhoto": "Verificando a foto",
+    "underReview": "Oculto enquanto está em análise",
+    "close": "Fechar",
+    "cancel": "Cancelar",
+    "report": {
+      "action": "Denunciar",
+      "photoAction": "Denunciar foto",
+      "commentTitle": "Denunciar este comentário",
+      "photoTitle": "Denunciar esta foto",
+      "reasonLabel": "Por que você está denunciando?",
+      "reasons": {
+        "spam": "Spam ou publicidade",
+        "offensive": "Ofensivo ou de ódio",
+        "sexual": "Conteúdo sexual",
+        "off_topic": "Fora do assunto",
+        "other": "Outro motivo"
+      },
+      "noteLabel": "Adicione uma nota (opcional)",
+      "noteCounter": "{{count}} / {{max}}",
+      "submit": "Enviar denúncia",
+      "sending": "Enviando...",
+      "thanks": "Obrigado por avisar. Você não verá mais isso, e o administrador vai analisar.",
+      "errors": {
+        "already_reported": "Você já denunciou isso.",
+        "report_limit": "Você atingiu o limite de denúncias de hoje.",
+        "not_found": "Isso não está mais disponível.",
+        "own_content": "Você não pode denunciar seu próprio conteúdo.",
+        "not_signed_in": "Entre para denunciar comentários e fotos.",
+        "invalid_input": "As notas podem ter no máximo {{max}} caracteres.",
+        "generic": "Não foi possível enviar a denúncia. Tente de novo."
+      }
+    },
+    "block": {
+      "action": "Bloquear",
+      "confirm": "Bloquear esta pessoa? Você não verá mais os comentários nem as fotos dela. Ela não será avisada.",
+      "confirmAction": "Bloquear",
+      "failed": "Não foi possível bloquear esta pessoa. Tente de novo."
+    }
   },
   "favorites": {
     "toggleLabel": "Marcar {{name}} como favorito"

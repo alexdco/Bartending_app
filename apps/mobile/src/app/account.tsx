@@ -38,6 +38,7 @@ import {
   useSignUp,
 } from "@/auth/use-auth-mutations";
 import { changeLocale, selectableLocales, useActiveLocale } from "@/i18n";
+import { BlockedPeopleCard } from "@/comments/blocked-people-card";
 
 function useAuthErrorMessage() {
   const { t } = useTranslation();
@@ -281,6 +282,8 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
       <BartenderModeCard />
 
       <DisplayNameCard email={email} prefillName={prefillName} />
+
+      <BlockedPeopleCard />
 
       <Card style={styles.card}>
         <Text variant="heading">{t("account.changeEmail")}</Text>

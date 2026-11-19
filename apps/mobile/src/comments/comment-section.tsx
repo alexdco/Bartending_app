@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Pressable, StyleSheet, TextInput, View } from "react-native";
 import { router } from "expo-router";
+import { useTranslation } from "react-i18next";
 
 import {
   COMMENT_MAX_LENGTH,
@@ -11,6 +12,7 @@ import {
   type EditCommentError,
   type EditCommentPhotoInput,
   type PostCommentError,
+  type ReportTarget,
 } from "@bartendingapp/shared";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -24,6 +26,8 @@ import { usePostComment, useEditComment, useDeleteComment } from "./use-comment-
 import { CommentPhotoThumbnails } from "./comment-photo-thumbnails";
 import { PhotoDraftField } from "./photo-draft-field";
 import { usePhotoDrafts } from "./use-photo-drafts";
+import { ReportDialog } from "./report-dialog";
+import { useBlockUser } from "./use-blocks";
 
 export interface CommentSectionProps {
   recipeId: string;
@@ -37,6 +41,7 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
     useRecipeComments(recipeId);
 
   const comments = useMemo(() => data?.pages.flatMap((page) => page.comments) ?? [], [data]);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
 
   return (
     <View style={styles.container}>
@@ -60,7 +65,12 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
       ) : (
         <View style={styles.list}>
           {comments.map((comment) => (
-            <CommentRow key={comment.id} recipeId={recipeId} comment={comment} />
+            <CommentRow
+              key={comment.id}
+              recipeId={recipeId}
+              comment={comment}
+              onReport={setReportTarget}
+            />
           ))}
 
           {hasNextPage && (
@@ -76,6 +86,19 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
           )}
         </View>
       )}
+
+      <ReportDialog
+        key={
+          reportTarget
+            ? reportTarget.kind === "photo"
+              ? reportTarget.photoId
+              : reportTarget.commentId
+            : "closed"
+        }
+        recipeId={recipeId}
+        target={reportTarget}
+        onClose={() => setReportTarget(null)}
+      />
     </View>
   );
 }
@@ -306,8 +329,17 @@ function CommentEditForm({
   );
 }
 
-function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment }) {
+function CommentRow({
+  recipeId,
+  comment,
+  onReport,
+}: {
+  recipeId: string;
+  comment: Comment;
+  onReport: (target: ReportTarget) => void;
+}) {
   const theme = useTheme();
+  const { t } = useTranslation();
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const deleteComment = useDeleteComment(recipeId);
@@ -331,8 +363,22 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
           {comment.edited ? " (edited)" : ""}
         </Text>
       </View>
+      {comment.moderationStatus === "flagged" && (
+        <Text variant="bodySmall" muted>
+          {t("comments.underReview")}
+        </Text>
+      )}
       {comment.body && <Text variant="body">{comment.body}</Text>}
-      <CommentPhotoThumbnails photos={comment.photos} displayName={comment.displayName} />
+      <CommentPhotoThumbnails
+        photos={comment.photos}
+        displayName={comment.displayName}
+        onReportPhoto={
+          isOwn
+            ? undefined
+            : (photoId) => onReport({ kind: "photo", commentId: comment.id, photoId })
+        }
+      />
+      {!isOwn && <OtherAuthorActions comment={comment} onReport={onReport} />}
       {isOwn && (
         <View style={styles.rowActions}>
           {isConfirmingDelete ? (
@@ -366,6 +412,65 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
             </>
           )}
         </View>
+      )}
+    </View>
+  );
+}
+
+/**
+ * Report and Block on someone else's comment (spec 0062 AC-6, AC-14). Block
+ * needs a signed in account and a confirm step, and is silent for the
+ * blocked person.
+ */
+function OtherAuthorActions({
+  comment,
+  onReport,
+}: {
+  comment: Comment;
+  onReport: (target: ReportTarget) => void;
+}) {
+  const theme = useTheme();
+  const { t } = useTranslation();
+  const { isLinked } = useSession();
+  const [isConfirmingBlock, setIsConfirmingBlock] = useState(false);
+  const block = useBlockUser();
+  const failed = block.data?.error != null;
+
+  return (
+    <View style={styles.otherActions}>
+      {isConfirmingBlock ? (
+        <>
+          <Text variant="bodySmall" muted>
+            {t("comments.block.confirm")}
+          </Text>
+          <View style={styles.rowActions}>
+            <Button variant="secondary" onPress={() => setIsConfirmingBlock(false)}>
+              {t("comments.cancel")}
+            </Button>
+            <Button disabled={block.isPending} onPress={() => block.mutate(comment.userId)}>
+              {t("comments.block.confirmAction")}
+            </Button>
+          </View>
+        </>
+      ) : (
+        <View style={styles.rowActions}>
+          <Button
+            variant="secondary"
+            onPress={() => onReport({ kind: "comment", commentId: comment.id })}
+          >
+            {t("comments.report.action")}
+          </Button>
+          {isLinked && (
+            <Button variant="secondary" onPress={() => setIsConfirmingBlock(true)}>
+              {t("comments.block.action")}
+            </Button>
+          )}
+        </View>
+      )}
+      {failed && (
+        <Text variant="bodySmall" style={{ color: theme.danger }} accessibilityLiveRegion="polite">
+          {t("comments.block.failed")}
+        </Text>
       )}
     </View>
   );
@@ -408,6 +513,10 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
     alignSelf: "flex-end",
     alignItems: "center",
+  },
+  otherActions: {
+    alignItems: "flex-end",
+    gap: Spacing.one,
   },
   centered: {
     alignItems: "center",

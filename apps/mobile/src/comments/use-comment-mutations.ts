@@ -3,12 +3,16 @@ import {
   postComment,
   editComment,
   deleteComment,
+  reportContent,
+  withoutReportedTarget,
+  type ReportContentInput,
   type Comment,
   type EditCommentPhotoInput,
   type NewCommentPhoto,
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { recipeCommentsQueryKey } from "./use-comments";
+import { warnContentHidden } from "./moderation-warning";
 
 interface CommentsPage {
   comments: Comment[];
@@ -105,6 +109,39 @@ export function useDeleteComment(recipeId: string) {
           pages: current.pages.map((page) => ({
             ...page,
             comments: page.comments.filter((comment) => comment.id !== commentId),
+          })),
+        };
+      });
+    },
+  });
+}
+
+/**
+ * Files a report (spec 0062). On success the target leaves this list at once
+ * (AC-8); RLS keeps it hidden after a reload and on other devices. When the
+ * server says it was already reported or is gone, the list refetches.
+ */
+export function useReportContent(recipeId: string) {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: (input: ReportContentInput) =>
+      reportContent(supabase, input, { onBecameHidden: warnContentHidden }),
+    onSuccess: (result, { target }) => {
+      if (!result.data) {
+        if (result.error.reason === "already_reported" || result.error.reason === "not_found") {
+          queryClient.invalidateQueries({ queryKey: recipeCommentsQueryKey(recipeId) });
+        }
+        return;
+      }
+
+      queryClient.setQueryData<CommentsData>(recipeCommentsQueryKey(recipeId), (current) => {
+        if (!current) return current;
+        return {
+          ...current,
+          pages: current.pages.map((page) => ({
+            ...page,
+            comments: withoutReportedTarget(page.comments, target),
           })),
         };
       });

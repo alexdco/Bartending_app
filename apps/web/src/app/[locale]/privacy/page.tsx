@@ -5,7 +5,7 @@ import { BackButton } from "@/components/back-button";
 import { Text } from "@/components/text";
 import { Card } from "@/components/card";
 
-const EFFECTIVE_DATE = new Date("2026-09-07T00:00:00Z");
+const EFFECTIVE_DATE = new Date("2026-11-19T00:00:00Z");
 const CONTACT_EMAIL = "privacy@bartendingapp.example.com";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -55,6 +55,11 @@ export default async function PrivacyPage() {
           <li>
             <Text variant="body" as="span">
               <strong>{t("aiDataTitle")}</strong> {t("aiDataBody")} {t("aiIpHashBody")}
+            </Text>
+          </li>
+          <li>
+            <Text variant="body" as="span">
+              <strong>{t("commentDataTitle")}</strong> {t("commentDataBody")}
             </Text>
           </li>
           <li>

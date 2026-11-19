@@ -65,6 +65,17 @@
     "deleteAccountFailed": "Nous n’avons pas pu supprimer votre compte. Vérifiez votre connexion et réessayez.",
     "deleteMyAccount": "Supprimer mon compte",
     "deleting": "Suppression…",
+    "blocked": {
+      "heading": "Personnes bloquées",
+      "empty": "Vous n'avez bloqué personne.",
+      "loading": "Chargement des personnes bloquées",
+      "loadFailed": "Impossible de charger votre liste de blocages. Réessayez plus tard.",
+      "blockedOn": "Bloqué le {{date}}",
+      "unblock": "Débloquer",
+      "unblockLabel": "Débloquer {{name}}",
+      "unblockFailed": "Impossible de débloquer. Réessayez.",
+      "deletedUser": "Utilisateur supprimé"
+    },
     "privacyPolicy": "Politique de confidentialité",
     "errorWeakPassword": "Le mot de passe doit comporter au moins 6 caractères.",
     "errorInvalidCredentials": "E-mail ou mot de passe incorrect.",
@@ -114,6 +125,46 @@
     "summary_other": "{{average}} ({{count}} notes)",
     "starsLabel_one": "Noté {{average}} sur 5 d’après {{count}} note",
     "starsLabel_other": "Noté {{average}} sur 5 d’après {{count}} notes"
+  },
+  "comments": {
+    "checkingPhoto": "Vérification de la photo",
+    "underReview": "Masqué pendant l’examen",
+    "close": "Fermer",
+    "cancel": "Annuler",
+    "report": {
+      "action": "Signaler",
+      "photoAction": "Signaler la photo",
+      "commentTitle": "Signaler ce commentaire",
+      "photoTitle": "Signaler cette photo",
+      "reasonLabel": "Pourquoi le signalez-vous ?",
+      "reasons": {
+        "spam": "Spam ou publicité",
+        "offensive": "Offensant ou haineux",
+        "sexual": "Contenu sexuel",
+        "off_topic": "Hors sujet",
+        "other": "Autre raison"
+      },
+      "noteLabel": "Ajouter une note (facultatif)",
+      "noteCounter": "{{count}} / {{max}}",
+      "submit": "Envoyer le signalement",
+      "sending": "Envoi...",
+      "thanks": "Merci de nous avoir prévenus. Vous ne verrez plus ce contenu et l'administrateur va l'examiner.",
+      "errors": {
+        "already_reported": "Vous avez déjà signalé ce contenu.",
+        "report_limit": "Vous avez atteint la limite de signalements pour aujourd'hui.",
+        "not_found": "Ce contenu n'est plus disponible.",
+        "own_content": "Vous ne pouvez pas signaler votre propre contenu.",
+        "not_signed_in": "Connectez-vous pour signaler des commentaires et des photos.",
+        "invalid_input": "Une note peut contenir au maximum {{max}} caractères.",
+        "generic": "Impossible d'envoyer le signalement. Réessayez."
+      }
+    },
+    "block": {
+      "action": "Bloquer",
+      "confirm": "Bloquer cette personne ? Vous ne verrez plus ses commentaires ni ses photos. Elle n'en sera pas informée.",
+      "confirmAction": "Bloquer",
+      "failed": "Impossible de bloquer cette personne. Réessayez."
+    }
   },
   "favorites": {
     "toggleLabel": "Mettre {{name}} en favori"

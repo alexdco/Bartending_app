@@ -131,6 +131,8 @@
     "aiDataTitle": "Dados de ideias de drinks geradas por IA.",
     "aiDataBody": "Quando você pede uma ideia de drink com base na sua despensa, o conteúdo da despensa e o pedido são enviados à Anthropic, nossa provedora de IA, para gerar uma sugestão.",
     "aiIpHashBody": "Quando um visitante (sem entrar na conta) pede uma ideia de drink por IA, guardamos um hash irreversível do endereço IP dele por até 8 dias, só para limitar o abuso desse recurso. O hash não pode ser convertido de volta no seu endereço IP e é excluído automaticamente.",
+    "commentDataTitle": "Comentários e fotos.",
+    "commentDataBody": "Os comentários e as fotos que você publica nas receitas são públicos. Antes que outra pessoa veja uma foto nova, ela é verificada por um serviço automatizado, a Anthropic, para garantir que é segura. Os comentários e as fotos denunciados por outras pessoas são analisados pelo administrador do Cocktailist, e a observação opcional de uma denúncia fica visível apenas para o administrador.",
     "analyticsDataTitle": "Análise de uso do produto.",
     "analyticsDataBody": "Na web, depois que você aceita o aviso de cookies, e no app para celular, enviamos ao PostHog, nosso provedor de análise, eventos de ações como buscar, adicionar um item à despensa e gerar uma ideia de drink, ligados à sua identidade de visitante ou de conta. Um evento de busca inclui o texto que você buscou. Não rastreamos visualizações de página, cliques nem gravações de sessão.",
     "diagnosticDataTitle": "Registros de erros e diagnóstico (planejado, ainda não coletado).",

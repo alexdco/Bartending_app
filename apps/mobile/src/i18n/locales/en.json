@@ -65,6 +65,17 @@
     "deleteAccountFailed": "We couldn't delete your account. Check your connection and try again.",
     "deleteMyAccount": "Delete my account",
     "deleting": "Deleting…",
+    "blocked": {
+      "heading": "Blocked people",
+      "empty": "You haven't blocked anyone.",
+      "loading": "Loading blocked people",
+      "loadFailed": "Couldn't load your blocked list. Try again later.",
+      "blockedOn": "Blocked {{date}}",
+      "unblock": "Unblock",
+      "unblockLabel": "Unblock {{name}}",
+      "unblockFailed": "Couldn't unblock. Try again.",
+      "deletedUser": "Deleted user"
+    },
     "privacyPolicy": "Privacy Policy",
     "errorWeakPassword": "Password must be at least 6 characters.",
     "errorInvalidCredentials": "Incorrect email or password.",
@@ -114,6 +125,46 @@
     "summary_other": "{{average}} ({{count}} ratings)",
     "starsLabel_one": "Rated {{average}} out of 5 from {{count}} rating",
     "starsLabel_other": "Rated {{average}} out of 5 from {{count}} ratings"
+  },
+  "comments": {
+    "checkingPhoto": "Checking photo",
+    "underReview": "Hidden while under review",
+    "close": "Close",
+    "cancel": "Cancel",
+    "report": {
+      "action": "Report",
+      "photoAction": "Report photo",
+      "commentTitle": "Report this comment",
+      "photoTitle": "Report this photo",
+      "reasonLabel": "Why are you reporting this?",
+      "reasons": {
+        "spam": "Spam or advertising",
+        "offensive": "Offensive or hateful",
+        "sexual": "Sexual content",
+        "off_topic": "Off topic",
+        "other": "Something else"
+      },
+      "noteLabel": "Add a note (optional)",
+      "noteCounter": "{{count}} / {{max}}",
+      "submit": "Send report",
+      "sending": "Sending...",
+      "thanks": "Thanks for letting us know. You won't see this anymore, and the admin will take a look.",
+      "errors": {
+        "already_reported": "You already reported this.",
+        "report_limit": "You have reached today's report limit.",
+        "not_found": "This is no longer available.",
+        "own_content": "You can't report your own content.",
+        "not_signed_in": "Sign in to report comments and photos.",
+        "invalid_input": "Notes can be at most {{max}} characters.",
+        "generic": "Couldn't send your report. Try again."
+      }
+    },
+    "block": {
+      "action": "Block",
+      "confirm": "Block this person? You won't see their comments or photos anymore. They won't be told.",
+      "confirmAction": "Block",
+      "failed": "Couldn't block this person. Try again."
+    }
   },
   "favorites": {
     "toggleLabel": "Favorite {{name}}"
