@@ -11,6 +11,7 @@ import {
   type EditCommentError,
   type EditCommentPhotoInput,
   type PostCommentError,
+  type ReportTarget,
 } from "@bartendingapp/shared";
 import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/button";
@@ -23,6 +24,7 @@ import { usePostComment, useEditComment, useDeleteComment } from "./use-comment-
 import { CommentPhotoThumbnails } from "./comment-photo-thumbnails";
 import { PhotoDraftField } from "./photo-draft-field";
 import { usePhotoDrafts } from "./use-photo-drafts";
+import { ReportDialog } from "./report-dialog";
 
 export interface CommentSectionProps {
   recipeId: string;
@@ -35,6 +37,7 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
   const { isLinked, isLoading: isSessionLoading } = useSession();
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage } =
     useRecipeComments(recipeId);
+  const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
 
   const comments = useMemo(() => data?.pages.flatMap((page) => page.comments) ?? [], [data]);
 
@@ -61,7 +64,7 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
           <ul className="flex flex-col gap-three">
             {comments.map((comment) => (
               <li key={comment.id}>
-                <CommentRow recipeId={recipeId} comment={comment} />
+                <CommentRow recipeId={recipeId} comment={comment} onReport={setReportTarget} />
               </li>
             ))}
           </ul>
@@ -77,6 +80,19 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
           )}
         </>
       )}
+
+      <ReportDialog
+        key={
+          reportTarget
+            ? reportTarget.kind === "photo"
+              ? reportTarget.photoId
+              : reportTarget.commentId
+            : "closed"
+        }
+        recipeId={recipeId}
+        target={reportTarget}
+        onClose={() => setReportTarget(null)}
+      />
     </section>
   );
 }
@@ -306,7 +322,15 @@ function CommentEditForm({
   );
 }
 
-function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment }) {
+function CommentRow({
+  recipeId,
+  comment,
+  onReport,
+}: {
+  recipeId: string;
+  comment: Comment;
+  onReport: (target: ReportTarget) => void;
+}) {
   const t = useTranslations("comments");
   const tCommon = useTranslations("common");
   const format = useFormatter();
@@ -339,7 +363,24 @@ function CommentRow({ recipeId, comment }: { recipeId: string; comment: Comment 
         </Text>
       )}
       {comment.body && <Text variant="body">{comment.body}</Text>}
-      <CommentPhotoThumbnails photos={comment.photos} displayName={comment.displayName} />
+      <CommentPhotoThumbnails
+        photos={comment.photos}
+        displayName={comment.displayName}
+        onReportPhoto={
+          isOwn
+            ? undefined
+            : (photoId) => onReport({ kind: "photo", commentId: comment.id, photoId })
+        }
+      />
+      {!isOwn && (
+        <Button
+          variant="secondary"
+          onClick={() => onReport({ kind: "comment", commentId: comment.id })}
+          className="self-end"
+        >
+          {t("report.action")}
+        </Button>
+      )}
       {isOwn && (
         <div className="flex gap-two self-end">
           {isConfirmingDelete ? (

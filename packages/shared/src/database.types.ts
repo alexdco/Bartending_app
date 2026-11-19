@@ -456,6 +456,69 @@ export type Database = {
           },
         ];
       };
+      content_reports: {
+        Row: {
+          comment_id: string | null;
+          content_author_id: string | null;
+          counts_toward_hide: boolean;
+          created_at: string;
+          id: string;
+          note: string | null;
+          photo_id: string | null;
+          reason: Database["public"]["Enums"]["report_reason"];
+          reporter_id: string;
+          resolution: Database["public"]["Enums"]["report_resolution"] | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          target_kind: Database["public"]["Enums"]["report_target_kind"];
+        };
+        Insert: {
+          comment_id?: string | null;
+          content_author_id?: string | null;
+          counts_toward_hide: boolean;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          photo_id?: string | null;
+          reason: Database["public"]["Enums"]["report_reason"];
+          reporter_id: string;
+          resolution?: Database["public"]["Enums"]["report_resolution"] | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          target_kind: Database["public"]["Enums"]["report_target_kind"];
+        };
+        Update: {
+          comment_id?: string | null;
+          content_author_id?: string | null;
+          counts_toward_hide?: boolean;
+          created_at?: string;
+          id?: string;
+          note?: string | null;
+          photo_id?: string | null;
+          reason?: Database["public"]["Enums"]["report_reason"];
+          reporter_id?: string;
+          resolution?: Database["public"]["Enums"]["report_resolution"] | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          target_kind?: Database["public"]["Enums"]["report_target_kind"];
+        };
+        Relationships: [
+          {
+            foreignKeyName: "content_reports_comment_id_fkey";
+            columns: ["comment_id"];
+            isOneToOne: false;
+            referencedRelation: "comments";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "content_reports_photo_id_fkey";
+            columns: ["photo_id"];
+            isOneToOne: false;
+            referencedRelation: "comment_photos";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       favorites: {
         Row: {
           created_at: string;
@@ -1801,6 +1864,16 @@ export type Database = {
         Args: { p_day: string; p_ip_hash: string; p_user_id: string };
         Returns: undefined;
       };
+      report_content: {
+        Args: {
+          p_comment_id: string;
+          p_note?: string;
+          p_photo_id?: string;
+          p_reason?: string;
+          p_target_kind: string;
+        };
+        Returns: Json;
+      };
       require_comment_author: { Args: never; Returns: string };
       reserve_ai_generation_quota: {
         Args: { p_day: string; p_limit: number; p_user_id: string };
@@ -1919,6 +1992,9 @@ export type Database = {
     Enums: {
       moderation_flag_reason: "screening" | "screening_failed" | "reports";
       moderation_status: "pending" | "approved" | "flagged";
+      report_reason: "spam" | "offensive" | "sexual" | "off_topic" | "other";
+      report_resolution: "cleared" | "removed";
+      report_target_kind: "comment" | "photo";
     };
     CompositeTypes: {
       [_ in never]: never;
@@ -2042,6 +2118,9 @@ export const Constants = {
     Enums: {
       moderation_flag_reason: ["screening", "screening_failed", "reports"],
       moderation_status: ["pending", "approved", "flagged"],
+      report_reason: ["spam", "offensive", "sexual", "off_topic", "other"],
+      report_resolution: ["cleared", "removed"],
+      report_target_kind: ["comment", "photo"],
     },
   },
 } as const;

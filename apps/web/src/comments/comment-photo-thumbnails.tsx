@@ -15,6 +15,8 @@ const THUMBNAIL_HEIGHT = 112;
 export interface CommentPhotoThumbnailsProps {
   photos: readonly CommentPhoto[];
   displayName: string | null;
+  /** Set when the viewer may report these photos (not their author). */
+  onReportPhoto?: (photoId: string) => void;
 }
 
 /**
@@ -26,7 +28,11 @@ export interface CommentPhotoThumbnailsProps {
  * while under review", spec 0062 AC-1, AC-10). Only its author and the admin
  * ever receive such a photo; RLS hides it from everyone else.
  */
-export function CommentPhotoThumbnails({ photos, displayName }: CommentPhotoThumbnailsProps) {
+export function CommentPhotoThumbnails({
+  photos,
+  displayName,
+  onReportPhoto,
+}: CommentPhotoThumbnailsProps) {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
   const commentPhotoLabel = useCommentPhotoLabel();
   const t = useTranslations("comments");
@@ -71,6 +77,7 @@ export function CommentPhotoThumbnails({ photos, displayName }: CommentPhotoThum
         openIndex={openIndex}
         onChangeIndex={setOpenIndex}
         onClose={() => setOpenIndex(null)}
+        onReportPhoto={onReportPhoto}
       />
     </>
   );

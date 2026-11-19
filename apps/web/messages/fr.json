@@ -468,6 +468,35 @@
     "edited": "(modifié)",
     "checkingPhoto": "Vérification de la photo",
     "underReview": "Masqué pendant l’examen",
+    "report": {
+      "action": "Signaler",
+      "photoAction": "Signaler la photo",
+      "commentTitle": "Signaler ce commentaire",
+      "photoTitle": "Signaler cette photo",
+      "reasonLabel": "Pourquoi le signalez-vous ?",
+      "reasons": {
+        "spam": "Spam ou publicité",
+        "offensive": "Offensant ou haineux",
+        "sexual": "Contenu sexuel",
+        "off_topic": "Hors sujet",
+        "other": "Autre raison"
+      },
+      "noteLabel": "Ajouter une note (facultatif)",
+      "noteCounter": "{count} / {max}",
+      "submit": "Envoyer le signalement",
+      "sending": "Envoi...",
+      "thanks": "Merci de nous avoir prévenus. Vous ne verrez plus ce contenu et l'administrateur va l'examiner.",
+      "signIn": "<link>Connectez-vous</link> pour signaler des commentaires et des photos.",
+      "errors": {
+        "already_reported": "Vous avez déjà signalé ce contenu.",
+        "report_limit": "Vous avez atteint la limite de signalements pour aujourd'hui.",
+        "not_found": "Ce contenu n'est plus disponible.",
+        "own_content": "Vous ne pouvez pas signaler votre propre contenu.",
+        "not_signed_in": "Connectez-vous pour signaler des commentaires et des photos.",
+        "invalid_input": "Une note peut contenir au maximum {max} caractères.",
+        "generic": "Impossible d'envoyer le signalement. Réessayez."
+      }
+    },
     "deleteConfirm": "Supprimer ce commentaire ?",
     "photoLabel": "Photo {number} sur {total}, par {name}",
     "close": "Fermer",

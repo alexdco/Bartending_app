@@ -16,6 +16,8 @@ export interface CommentPhotoViewerProps {
   openIndex: number | null;
   onChangeIndex: (index: number) => void;
   onClose: () => void;
+  /** Shows a Report photo action; the viewer closes first so the report dialog takes focus. */
+  onReportPhoto?: (photoId: string) => void;
 }
 
 /**
@@ -29,6 +31,7 @@ export function CommentPhotoViewer({
   openIndex,
   onChangeIndex,
   onClose,
+  onReportPhoto,
 }: CommentPhotoViewerProps) {
   const t = useTranslations("comments");
   const commentPhotoLabel = useCommentPhotoLabel();
@@ -81,9 +84,22 @@ export function CommentPhotoViewer({
             <Text variant="bodySmall" muted aria-live="polite">
               {openIndex + 1} / {photos.length}
             </Text>
-            <Button variant="secondary" onClick={onClose}>
-              {t("close")}
-            </Button>
+            <div className="flex gap-two">
+              {onReportPhoto && (
+                <Button
+                  variant="secondary"
+                  onClick={() => {
+                    onClose();
+                    onReportPhoto(photo.id);
+                  }}
+                >
+                  {t("report.photoAction")}
+                </Button>
+              )}
+              <Button variant="secondary" onClick={onClose}>
+                {t("close")}
+              </Button>
+            </div>
           </div>
           <div
             className="relative mx-auto w-full"

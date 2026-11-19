@@ -468,6 +468,35 @@
     "edited": "（編集済み）",
     "checkingPhoto": "写真を確認中",
     "underReview": "確認が終わるまで非表示",
+    "report": {
+      "action": "報告",
+      "photoAction": "写真を報告",
+      "commentTitle": "このコメントを報告",
+      "photoTitle": "この写真を報告",
+      "reasonLabel": "報告する理由は何ですか？",
+      "reasons": {
+        "spam": "スパムまたは宣伝",
+        "offensive": "不快または差別的",
+        "sexual": "性的なコンテンツ",
+        "off_topic": "関係のない内容",
+        "other": "その他"
+      },
+      "noteLabel": "メモを追加（任意）",
+      "noteCounter": "{count} / {max}",
+      "submit": "報告を送信",
+      "sending": "送信中...",
+      "thanks": "お知らせいただきありがとうございます。今後これは表示されず、管理者が確認します。",
+      "signIn": "コメントや写真を報告するには<link>ログイン</link>してください。",
+      "errors": {
+        "already_reported": "これはすでに報告済みです。",
+        "report_limit": "本日の報告の上限に達しました。",
+        "not_found": "これはもう表示できません。",
+        "own_content": "自分のコンテンツは報告できません。",
+        "not_signed_in": "コメントや写真を報告するにはログインしてください。",
+        "invalid_input": "メモは最大{max}文字までです。",
+        "generic": "報告を送信できませんでした。もう一度お試しください。"
+      }
+    },
     "deleteConfirm": "このコメントを削除しますか？",
     "photoLabel": "{name}さんの写真 {number}/{total}",
     "close": "閉じる",

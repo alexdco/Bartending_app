@@ -468,6 +468,35 @@
     "edited": "(edited)",
     "checkingPhoto": "Checking photo",
     "underReview": "Hidden while under review",
+    "report": {
+      "action": "Report",
+      "photoAction": "Report photo",
+      "commentTitle": "Report this comment",
+      "photoTitle": "Report this photo",
+      "reasonLabel": "Why are you reporting this?",
+      "reasons": {
+        "spam": "Spam or advertising",
+        "offensive": "Offensive or hateful",
+        "sexual": "Sexual content",
+        "off_topic": "Off topic",
+        "other": "Something else"
+      },
+      "noteLabel": "Add a note (optional)",
+      "noteCounter": "{count} / {max}",
+      "submit": "Send report",
+      "sending": "Sending...",
+      "thanks": "Thanks for letting us know. You won't see this anymore, and the admin will take a look.",
+      "signIn": "<link>Sign in</link> to report comments and photos.",
+      "errors": {
+        "already_reported": "You already reported this.",
+        "report_limit": "You have reached today's report limit.",
+        "not_found": "This is no longer available.",
+        "own_content": "You can't report your own content.",
+        "not_signed_in": "Sign in to report comments and photos.",
+        "invalid_input": "Notes can be at most {max} characters.",
+        "generic": "Couldn't send your report. Try again."
+      }
+    },
     "deleteConfirm": "Delete this comment?",
     "photoLabel": "Photo {number} of {total} by {name}",
     "close": "Close",

@@ -468,6 +468,35 @@
     "edited": "（已编辑）",
     "checkingPhoto": "正在检查照片",
     "underReview": "审核期间已隐藏",
+    "report": {
+      "action": "举报",
+      "photoAction": "举报照片",
+      "commentTitle": "举报这条评论",
+      "photoTitle": "举报这张照片",
+      "reasonLabel": "你为什么要举报？",
+      "reasons": {
+        "spam": "垃圾信息或广告",
+        "offensive": "冒犯或仇恨内容",
+        "sexual": "色情内容",
+        "off_topic": "与主题无关",
+        "other": "其他原因"
+      },
+      "noteLabel": "添加说明（可选）",
+      "noteCounter": "{count} / {max}",
+      "submit": "提交举报",
+      "sending": "正在提交...",
+      "thanks": "感谢告知。你将不再看到此内容，管理员会进行审核。",
+      "signIn": "<link>登录</link>后即可举报评论和照片。",
+      "errors": {
+        "already_reported": "你已经举报过此内容。",
+        "report_limit": "你已达到今天的举报次数上限。",
+        "not_found": "此内容已不可用。",
+        "own_content": "不能举报自己的内容。",
+        "not_signed_in": "登录后即可举报评论和照片。",
+        "invalid_input": "说明最多 {max} 个字符。",
+        "generic": "举报提交失败，请重试。"
+      }
+    },
     "deleteConfirm": "删除这条评论？",
     "photoLabel": "{name}的第 {number} 张照片，共 {total} 张",
     "close": "关闭",

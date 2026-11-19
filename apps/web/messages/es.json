@@ -468,6 +468,35 @@
     "edited": "(editado)",
     "checkingPhoto": "Revisando la foto",
     "underReview": "Oculto mientras se revisa",
+    "report": {
+      "action": "Denunciar",
+      "photoAction": "Denunciar foto",
+      "commentTitle": "Denunciar este comentario",
+      "photoTitle": "Denunciar esta foto",
+      "reasonLabel": "¿Por qué lo denuncias?",
+      "reasons": {
+        "spam": "Spam o publicidad",
+        "offensive": "Ofensivo o de odio",
+        "sexual": "Contenido sexual",
+        "off_topic": "Fuera de tema",
+        "other": "Otro motivo"
+      },
+      "noteLabel": "Añade una nota (opcional)",
+      "noteCounter": "{count} / {max}",
+      "submit": "Enviar denuncia",
+      "sending": "Enviando...",
+      "thanks": "Gracias por avisarnos. Ya no verás esto y el administrador lo revisará.",
+      "signIn": "<link>Inicia sesión</link> para denunciar comentarios y fotos.",
+      "errors": {
+        "already_reported": "Ya denunciaste esto.",
+        "report_limit": "Alcanzaste el límite de denuncias de hoy.",
+        "not_found": "Esto ya no está disponible.",
+        "own_content": "No puedes denunciar tu propio contenido.",
+        "not_signed_in": "Inicia sesión para denunciar comentarios y fotos.",
+        "invalid_input": "Las notas pueden tener como máximo {max} caracteres.",
+        "generic": "No se pudo enviar la denuncia. Inténtalo de nuevo."
+      }
+    },
     "deleteConfirm": "¿Eliminar este comentario?",
     "photoLabel": "Foto {number} de {total} de {name}",
     "close": "Cerrar",
