@@ -54,6 +54,9 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "comments.retryLabel": ["number"],
   "comments.addPhoto": ["count", "max"],
   "comments.photosMax": ["max"],
+  // Report dialog note limit and counter, numbers only (spec 0062).
+  "comments.report.noteCounter": ["count", "max"],
+  "comments.report.errors.invalid_input": ["max"],
   "service.invitingTo": ["bar"],
   "service.seeMoreCount": ["count"],
   "service.partsAmount": ["parts"],
