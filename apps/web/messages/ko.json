@@ -680,6 +680,44 @@
     "removePhotoConfirm": "이 사진을 삭제할까요?",
     "removePhoto": "사진 삭제",
     "removePhotoLabel": "삭제: {label}",
+    "review": {
+      "tabsLabel": "댓글 보기",
+      "allTab": "모든 댓글",
+      "needsReviewTab": "검토 필요",
+      "badgeLabel": "{count, plural, other {검토가 필요한 댓글 #개}}",
+      "loadFailed": "검토 목록을 불러오지 못했습니다. 나중에 다시 시도하세요.",
+      "loading": "검토 목록을 불러오는 중",
+      "emptyTitle": "검토할 항목이 없습니다",
+      "emptyDescription": "신고되거나 표시된 댓글과 사진이 여기에 나타납니다.",
+      "targetComment": "댓글",
+      "targetPhoto": "사진 {number}",
+      "status": {
+        "pending": "아직 확인 안 됨",
+        "approved": "공개됨",
+        "flagged": "숨겨짐"
+      },
+      "flagReasons": {
+        "screening": "사진 검사에서 표시됨",
+        "screening_failed": "사진 검사 실패",
+        "reports": "신고로 숨겨짐"
+      },
+      "categories": {
+        "nudity_sexual": "노출 또는 성적인 콘텐츠",
+        "gore_violence": "폭력 또는 잔혹한 내용",
+        "hate_symbols": "혐오 상징",
+        "illegal_drugs": "불법 약물",
+        "minor_with_alcohol": "술과 함께 있는 미성년자",
+        "personal_info": "개인정보"
+      },
+      "openReports": "처리되지 않은 신고",
+      "notes": "신고 메모",
+      "clear": "승인",
+      "clearLabel": "{target} 승인",
+      "remove": "삭제",
+      "removeLabel": "{target} 삭제",
+      "removeCommentConfirm": "이 댓글과 사진을 모두 삭제할까요?",
+      "actionFailed": "처리하지 못했습니다. 다시 시도하세요."
+    },
     "errorRequired": "필수 항목이에요.",
     "errorNameTooLong": "이름은 200자 이하로 입력해 주세요.",
     "errorInstructionsTooLong": "만드는 법은 10,000자 이하로 입력해 주세요.",

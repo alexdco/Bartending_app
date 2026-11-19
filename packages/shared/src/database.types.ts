@@ -1539,6 +1539,14 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      admin_clear_moderation: {
+        Args: {
+          p_comment_id: string;
+          p_photo_id?: string;
+          p_target_kind: string;
+        };
+        Returns: Json;
+      };
       admin_delete_comment_photo: {
         Args: { p_photo_id: string };
         Returns: Json;
@@ -1547,6 +1555,35 @@ export type Database = {
       admin_reset_recipe_to_source: {
         Args: { p_recipe_id: string };
         Returns: undefined;
+      };
+      admin_review_candidates: {
+        Args: never;
+        Returns: {
+          comment_id: string;
+          review_group: number;
+          sort_at: string;
+        }[];
+      };
+      admin_review_count: { Args: never; Returns: number };
+      admin_review_queue: {
+        Args: {
+          p_cursor_group?: number;
+          p_cursor_id?: string;
+          p_cursor_sort_at?: string;
+          p_limit?: number;
+        };
+        Returns: Json;
+      };
+      admin_review_target_json: {
+        Args: {
+          p_comment_id: string;
+          p_flag_categories: string[];
+          p_flag_reason: Database["public"]["Enums"]["moderation_flag_reason"];
+          p_kind: Database["public"]["Enums"]["report_target_kind"];
+          p_photo_id: string;
+          p_status: Database["public"]["Enums"]["moderation_status"];
+        };
+        Returns: Json;
       };
       admin_set_ingredient_allergens: {
         Args: { p_allergens: string[]; p_ingredient_id: string };

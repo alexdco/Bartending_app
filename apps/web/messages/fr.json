@@ -680,6 +680,44 @@
     "removePhotoConfirm": "Retirer cette photo ?",
     "removePhoto": "Retirer la photo",
     "removePhotoLabel": "Retirer {label}",
+    "review": {
+      "tabsLabel": "Affichage des commentaires",
+      "allTab": "Tous les commentaires",
+      "needsReviewTab": "À examiner",
+      "badgeLabel": "{count, plural, one {# commentaire à examiner} other {# commentaires à examiner}}",
+      "loadFailed": "Impossible de charger la file d'examen. Réessayez plus tard.",
+      "loading": "Chargement de la file d'examen",
+      "emptyTitle": "Rien à examiner",
+      "emptyDescription": "Les commentaires et photos signalés ou marqués apparaissent ici.",
+      "targetComment": "Commentaire",
+      "targetPhoto": "Photo {number}",
+      "status": {
+        "pending": "Pas encore vérifiée",
+        "approved": "Visible",
+        "flagged": "Masqué"
+      },
+      "flagReasons": {
+        "screening": "Marquée par la vérification des photos",
+        "screening_failed": "La vérification des photos a échoué",
+        "reports": "Masqué par des signalements"
+      },
+      "categories": {
+        "nudity_sexual": "Nudité ou contenu sexuel",
+        "gore_violence": "Violence ou contenu sanglant",
+        "hate_symbols": "Symboles haineux",
+        "illegal_drugs": "Drogues illégales",
+        "minor_with_alcohol": "Mineur avec de l'alcool",
+        "personal_info": "Informations personnelles"
+      },
+      "openReports": "Signalements ouverts",
+      "notes": "Notes des signalements",
+      "clear": "Approuver",
+      "clearLabel": "Approuver {target}",
+      "remove": "Supprimer",
+      "removeLabel": "Supprimer {target}",
+      "removeCommentConfirm": "Supprimer tout ce commentaire et ses photos ?",
+      "actionFailed": "Cela n'a pas fonctionné. Réessayez."
+    },
     "errorRequired": "Ce champ est obligatoire.",
     "errorNameTooLong": "Le nom doit comporter 200 caractères au maximum.",
     "errorInstructionsTooLong": "La préparation doit comporter 10 000 caractères au maximum.",

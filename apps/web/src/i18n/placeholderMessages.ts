@@ -57,6 +57,11 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   // Report dialog note limit and counter, numbers only (spec 0062).
   "comments.report.noteCounter": ["count", "max"],
   "comments.report.errors.invalid_input": ["max"],
+  // Admin review targets: "Photo 2", and Clear / Remove labels naming the
+  // target, label plus value in ru (spec 0062).
+  "admin.review.targetPhoto": ["number"],
+  "admin.review.clearLabel": ["target"],
+  "admin.review.removeLabel": ["target"],
   "service.invitingTo": ["bar"],
   "service.seeMoreCount": ["count"],
   "service.partsAmount": ["parts"],

@@ -4,7 +4,7 @@ import { getTranslations } from "next-intl/server";
 import { createSupabaseServerClient } from "@/lib/supabase-server";
 import { redirect } from "@/i18n/navigation";
 import { Text } from "@/components/text";
-import { AdminCommentList } from "@/admin/admin-comment-list";
+import { AdminCommentsTabs } from "@/admin/admin-comments-tabs";
 import { AdminNav } from "@/admin/admin-nav";
 
 export async function generateMetadata(): Promise<Metadata> {
@@ -42,7 +42,7 @@ export default async function AdminCommentsPage({
         {t("comments")}
       </Text>
       <AdminNav />
-      <AdminCommentList />
+      <AdminCommentsTabs />
     </main>
   );
 }

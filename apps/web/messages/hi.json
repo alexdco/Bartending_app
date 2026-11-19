@@ -680,6 +680,44 @@
     "removePhotoConfirm": "यह फ़ोटो हटाएँ?",
     "removePhoto": "फ़ोटो हटाएँ",
     "removePhotoLabel": "हटाएँ: {label}",
+    "review": {
+      "tabsLabel": "टिप्पणी दृश्य",
+      "allTab": "सभी टिप्पणियाँ",
+      "needsReviewTab": "समीक्षा बाकी",
+      "badgeLabel": "{count, plural, one {# टिप्पणी की समीक्षा बाकी है} other {# टिप्पणियों की समीक्षा बाकी है}}",
+      "loadFailed": "समीक्षा सूची लोड नहीं हो सकी। बाद में फिर से कोशिश करें।",
+      "loading": "समीक्षा सूची लोड हो रही है",
+      "emptyTitle": "समीक्षा के लिए कुछ नहीं",
+      "emptyDescription": "रिपोर्ट की गई और चिह्नित टिप्पणियाँ और फ़ोटो यहाँ दिखती हैं।",
+      "targetComment": "टिप्पणी",
+      "targetPhoto": "फ़ोटो {number}",
+      "status": {
+        "pending": "अभी जाँची नहीं गई",
+        "approved": "दिख रही है",
+        "flagged": "छिपी हुई"
+      },
+      "flagReasons": {
+        "screening": "फ़ोटो जाँच ने चिह्नित किया",
+        "screening_failed": "फ़ोटो जाँच विफल रही",
+        "reports": "रिपोर्ट के कारण छिपी"
+      },
+      "categories": {
+        "nudity_sexual": "नग्नता या यौन सामग्री",
+        "gore_violence": "हिंसा या खून-खराबा",
+        "hate_symbols": "नफ़रत के प्रतीक",
+        "illegal_drugs": "अवैध नशीले पदार्थ",
+        "minor_with_alcohol": "शराब के साथ नाबालिग",
+        "personal_info": "निजी जानकारी"
+      },
+      "openReports": "खुली रिपोर्ट",
+      "notes": "रिपोर्ट के नोट",
+      "clear": "स्वीकार करें",
+      "clearLabel": "{target} स्वीकार करें",
+      "remove": "हटाएँ",
+      "removeLabel": "{target} हटाएँ",
+      "removeCommentConfirm": "यह पूरी टिप्पणी और इसकी फ़ोटो हटाएँ?",
+      "actionFailed": "यह नहीं हो सका। फिर से कोशिश करें।"
+    },
     "errorRequired": "यह फ़ील्ड ज़रूरी है।",
     "errorNameTooLong": "नाम 200 अक्षरों या उससे कम का होना चाहिए।",
     "errorInstructionsTooLong": "तरीका 10,000 अक्षरों या उससे कम का होना चाहिए।",

@@ -680,6 +680,44 @@
     "removePhotoConfirm": "Удалить это фото?",
     "removePhoto": "Удалить фото",
     "removePhotoLabel": "Удалить: {label}",
+    "review": {
+      "tabsLabel": "Просмотр комментариев",
+      "allTab": "Все комментарии",
+      "needsReviewTab": "На проверку",
+      "badgeLabel": "{count, plural, one {На проверку: # комментарий} few {На проверку: # комментария} many {На проверку: # комментариев} other {На проверку: # комментария}}",
+      "loadFailed": "Не удалось загрузить очередь проверки. Попробуйте позже.",
+      "loading": "Загрузка очереди проверки",
+      "emptyTitle": "Проверять нечего",
+      "emptyDescription": "Здесь появляются комментарии и фото, на которые пожаловались или которые отмечены.",
+      "targetComment": "Комментарий",
+      "targetPhoto": "Фото {number}",
+      "status": {
+        "pending": "Ещё не проверено",
+        "approved": "Видно",
+        "flagged": "Скрыто"
+      },
+      "flagReasons": {
+        "screening": "Отмечено проверкой фото",
+        "screening_failed": "Проверка фото не удалась",
+        "reports": "Скрыто по жалобам"
+      },
+      "categories": {
+        "nudity_sexual": "Нагота или сексуальный контент",
+        "gore_violence": "Насилие или жестокость",
+        "hate_symbols": "Символы ненависти",
+        "illegal_drugs": "Запрещённые вещества",
+        "minor_with_alcohol": "Несовершеннолетний с алкоголем",
+        "personal_info": "Личные данные"
+      },
+      "openReports": "Открытые жалобы",
+      "notes": "Пояснения к жалобам",
+      "clear": "Одобрить",
+      "clearLabel": "Одобрить: {target}",
+      "remove": "Удалить",
+      "removeLabel": "Удалить: {target}",
+      "removeCommentConfirm": "Удалить весь комментарий и его фото?",
+      "actionFailed": "Не получилось. Попробуйте ещё раз."
+    },
     "errorRequired": "Это поле обязательно.",
     "errorNameTooLong": "Название должно быть не длиннее 200 символов.",
     "errorInstructionsTooLong": "Описание приготовления должно быть не длиннее 10 000 символов.",

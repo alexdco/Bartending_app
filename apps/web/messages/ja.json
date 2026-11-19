@@ -680,6 +680,44 @@
     "removePhotoConfirm": "この写真を削除しますか？",
     "removePhoto": "写真を削除",
     "removePhotoLabel": "{label}を削除",
+    "review": {
+      "tabsLabel": "コメントの表示",
+      "allTab": "すべてのコメント",
+      "needsReviewTab": "要確認",
+      "badgeLabel": "{count, plural, other {確認が必要なコメント#件}}",
+      "loadFailed": "確認キューを読み込めませんでした。後でもう一度お試しください。",
+      "loading": "確認キューを読み込み中",
+      "emptyTitle": "確認するものはありません",
+      "emptyDescription": "報告されたり検出されたりしたコメントや写真がここに表示されます。",
+      "targetComment": "コメント",
+      "targetPhoto": "写真{number}",
+      "status": {
+        "pending": "未チェック",
+        "approved": "表示中",
+        "flagged": "非表示"
+      },
+      "flagReasons": {
+        "screening": "写真チェックで検出",
+        "screening_failed": "写真チェックに失敗",
+        "reports": "報告により非表示"
+      },
+      "categories": {
+        "nudity_sexual": "ヌードまたは性的なコンテンツ",
+        "gore_violence": "暴力または流血",
+        "hate_symbols": "差別的なシンボル",
+        "illegal_drugs": "違法薬物",
+        "minor_with_alcohol": "未成年と酒類",
+        "personal_info": "個人情報"
+      },
+      "openReports": "未処理の報告",
+      "notes": "報告のメモ",
+      "clear": "承認",
+      "clearLabel": "{target}を承認",
+      "remove": "削除",
+      "removeLabel": "{target}を削除",
+      "removeCommentConfirm": "このコメントと写真をすべて削除しますか？",
+      "actionFailed": "うまくいきませんでした。もう一度お試しください。"
+    },
     "errorRequired": "この項目は必須です。",
     "errorNameTooLong": "名前は200文字以内で入力してください。",
     "errorInstructionsTooLong": "作り方は10,000文字以内で入力してください。",

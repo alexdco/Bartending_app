@@ -975,7 +975,7 @@ A report button on comments and photos that feeds the admin comments page, a blo
 - [ ] Build it: `/develop comment safety`
   - [x] Screening thread: moderation status columns and RLS visibility helpers, the screening trigger, cron and 1 hour backstop, the `screen-comment-photo` Edge Function on Haiku 5.5, and the author's status badges on web, satisfies AC-1 through AC-5, AC-10, AC-13, AC-16
   - [x] Reports: `content_reports`, `report_content`, delete triggers, and the report dialog with hide for the reporter on web, satisfies AC-6 through AC-9, AC-13, AC-16
-  - [ ] Admin review: the Needs review tab, nav badge, and Clear and Remove on `/admin/comments`, satisfies AC-11, AC-12
+  - [x] Admin review: the Needs review tab, nav badge, and Clear and Remove on `/admin/comments`, satisfies AC-11, AC-12
   - [ ] Blocks: `user_blocks`, the Block action, and the Blocked people list on web, satisfies AC-14 through AC-16
   - [ ] Mobile parity, strings in all 9 locales, and the privacy page paragraph, satisfies AC-17, AC-18
 - [ ] Verify it: `/check verify comment safety`

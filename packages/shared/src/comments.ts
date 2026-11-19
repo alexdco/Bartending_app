@@ -189,6 +189,15 @@ function parseCommentJson(value: Json): { row: CommentRow; removedPaths: string[
 }
 
 /**
+ * A Comment from the jsonb shape comment_with_photos_json builds (also used
+ * by the admin review queue), or null when the shape is wrong.
+ */
+export function parseCommentFromJson(value: Json, displayName: string | null): Comment | null {
+  const parsed = parseCommentJson(value);
+  return parsed ? mapRow(parsed.row, displayName) : null;
+}
+
+/**
  * user_display_names is a view, not a table comments has a foreign key to,
  * so PostgREST cannot auto-embed it in the comments select; fetched as a
  * second query and merged client side instead.

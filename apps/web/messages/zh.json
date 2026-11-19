@@ -680,6 +680,44 @@
     "removePhotoConfirm": "移除这张照片？",
     "removePhoto": "移除照片",
     "removePhotoLabel": "移除{label}",
+    "review": {
+      "tabsLabel": "评论视图",
+      "allTab": "全部评论",
+      "needsReviewTab": "待审核",
+      "badgeLabel": "{count, plural, other {# 条评论待审核}}",
+      "loadFailed": "无法加载审核队列，请稍后重试。",
+      "loading": "正在加载审核队列",
+      "emptyTitle": "没有待审核的内容",
+      "emptyDescription": "被举报或被标记的评论和照片会显示在这里。",
+      "targetComment": "评论",
+      "targetPhoto": "照片 {number}",
+      "status": {
+        "pending": "尚未检查",
+        "approved": "可见",
+        "flagged": "已隐藏"
+      },
+      "flagReasons": {
+        "screening": "被照片检查标记",
+        "screening_failed": "照片检查失败",
+        "reports": "因举报而隐藏"
+      },
+      "categories": {
+        "nudity_sexual": "裸露或色情内容",
+        "gore_violence": "暴力或血腥",
+        "hate_symbols": "仇恨符号",
+        "illegal_drugs": "非法药物",
+        "minor_with_alcohol": "未成年人与酒精",
+        "personal_info": "个人信息"
+      },
+      "openReports": "未处理的举报",
+      "notes": "举报说明",
+      "clear": "通过",
+      "clearLabel": "通过{target}",
+      "remove": "删除",
+      "removeLabel": "删除{target}",
+      "removeCommentConfirm": "删除整条评论及其照片？",
+      "actionFailed": "操作失败，请重试。"
+    },
     "errorRequired": "此项必填。",
     "errorNameTooLong": "名称不能超过 200 个字符。",
     "errorInstructionsTooLong": "做法不能超过 10,000 个字符。",

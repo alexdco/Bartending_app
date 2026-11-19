@@ -680,6 +680,44 @@
     "removePhotoConfirm": "¿Quitar esta foto?",
     "removePhoto": "Quitar foto",
     "removePhotoLabel": "Quitar {label}",
+    "review": {
+      "tabsLabel": "Vista de comentarios",
+      "allTab": "Todos los comentarios",
+      "needsReviewTab": "Por revisar",
+      "badgeLabel": "{count, plural, one {# comentario por revisar} other {# comentarios por revisar}}",
+      "loadFailed": "No se pudo cargar la cola de revisión. Inténtalo más tarde.",
+      "loading": "Cargando la cola de revisión",
+      "emptyTitle": "Nada que revisar",
+      "emptyDescription": "Aquí aparecen los comentarios y fotos denunciados o marcados.",
+      "targetComment": "Comentario",
+      "targetPhoto": "Foto {number}",
+      "status": {
+        "pending": "Sin revisar aún",
+        "approved": "Visible",
+        "flagged": "Oculto"
+      },
+      "flagReasons": {
+        "screening": "Marcada por la revisión de fotos",
+        "screening_failed": "La revisión de fotos falló",
+        "reports": "Oculto por denuncias"
+      },
+      "categories": {
+        "nudity_sexual": "Desnudez o contenido sexual",
+        "gore_violence": "Violencia o contenido sangriento",
+        "hate_symbols": "Símbolos de odio",
+        "illegal_drugs": "Drogas ilegales",
+        "minor_with_alcohol": "Menor con alcohol",
+        "personal_info": "Información personal"
+      },
+      "openReports": "Denuncias abiertas",
+      "notes": "Notas de las denuncias",
+      "clear": "Aprobar",
+      "clearLabel": "Aprobar {target}",
+      "remove": "Eliminar",
+      "removeLabel": "Eliminar {target}",
+      "removeCommentConfirm": "¿Eliminar todo este comentario y sus fotos?",
+      "actionFailed": "No funcionó. Inténtalo de nuevo."
+    },
     "errorRequired": "Este campo es obligatorio.",
     "errorNameTooLong": "El nombre debe tener 200 caracteres o menos.",
     "errorInstructionsTooLong": "Las instrucciones deben tener 10.000 caracteres o menos.",

@@ -680,6 +680,44 @@
     "removePhotoConfirm": "Remove this photo?",
     "removePhoto": "Remove photo",
     "removePhotoLabel": "Remove {label}",
+    "review": {
+      "tabsLabel": "Comment view",
+      "allTab": "All comments",
+      "needsReviewTab": "Needs review",
+      "badgeLabel": "{count, plural, one {# comment needs review} other {# comments need review}}",
+      "loadFailed": "Couldn't load the review queue. Try again later.",
+      "loading": "Loading the review queue",
+      "emptyTitle": "Nothing to review",
+      "emptyDescription": "Reported and flagged comments and photos show up here.",
+      "targetComment": "Comment",
+      "targetPhoto": "Photo {number}",
+      "status": {
+        "pending": "Not checked yet",
+        "approved": "Visible",
+        "flagged": "Hidden"
+      },
+      "flagReasons": {
+        "screening": "Flagged by the photo check",
+        "screening_failed": "The photo check failed",
+        "reports": "Hidden by reports"
+      },
+      "categories": {
+        "nudity_sexual": "Nudity or sexual content",
+        "gore_violence": "Gore or violence",
+        "hate_symbols": "Hate symbols",
+        "illegal_drugs": "Illegal drugs",
+        "minor_with_alcohol": "Minor with alcohol",
+        "personal_info": "Personal information"
+      },
+      "openReports": "Open reports",
+      "notes": "Report notes",
+      "clear": "Clear",
+      "clearLabel": "Clear {target}",
+      "remove": "Remove",
+      "removeLabel": "Remove {target}",
+      "removeCommentConfirm": "Remove this whole comment and its photos?",
+      "actionFailed": "That didn't work. Try again."
+    },
     "errorRequired": "This field is required.",
     "errorNameTooLong": "Name must be 200 characters or fewer.",
     "errorInstructionsTooLong": "Instructions must be 10,000 characters or fewer.",
