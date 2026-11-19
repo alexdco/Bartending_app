@@ -102,7 +102,18 @@
     "signingYouIn": "正在登录",
     "metaTitle": "账号",
     "resetPasswordMetaTitle": "重置密码",
-    "callbackMetaTitle": "正在登录"
+    "callbackMetaTitle": "正在登录",
+    "blocked": {
+      "heading": "已屏蔽的用户",
+      "empty": "你还没有屏蔽任何人。",
+      "loading": "正在加载已屏蔽的用户",
+      "loadFailed": "无法加载屏蔽列表，请稍后重试。",
+      "blockedOn": "屏蔽于 {date}",
+      "unblock": "取消屏蔽",
+      "unblockLabel": "取消屏蔽 {name}",
+      "unblockFailed": "无法取消屏蔽，请重试。",
+      "deletedUser": "已删除的用户"
+    }
   },
   "privacy": {
     "metaTitle": "隐私政策",
@@ -496,6 +507,12 @@
         "invalid_input": "说明最多 {max} 个字符。",
         "generic": "举报提交失败，请重试。"
       }
+    },
+    "block": {
+      "action": "屏蔽",
+      "confirm": "要屏蔽此人吗？你将不再看到其评论和照片，对方不会收到通知。",
+      "confirmAction": "屏蔽",
+      "failed": "无法屏蔽此人，请重试。"
     },
     "deleteConfirm": "删除这条评论？",
     "photoLabel": "{name}的第 {number} 张照片，共 {total} 张",

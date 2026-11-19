@@ -25,6 +25,7 @@ import { CommentPhotoThumbnails } from "./comment-photo-thumbnails";
 import { PhotoDraftField } from "./photo-draft-field";
 import { usePhotoDrafts } from "./use-photo-drafts";
 import { ReportDialog } from "./report-dialog";
+import { useBlockUser } from "./use-blocks";
 
 export interface CommentSectionProps {
   recipeId: string;
@@ -372,15 +373,7 @@ function CommentRow({
             : (photoId) => onReport({ kind: "photo", commentId: comment.id, photoId })
         }
       />
-      {!isOwn && (
-        <Button
-          variant="secondary"
-          onClick={() => onReport({ kind: "comment", commentId: comment.id })}
-          className="self-end"
-        >
-          {t("report.action")}
-        </Button>
-      )}
+      {!isOwn && <OtherAuthorActions comment={comment} onReport={onReport} />}
       {isOwn && (
         <div className="flex gap-two self-end">
           {isConfirmingDelete ? (
@@ -414,6 +407,65 @@ function CommentRow({
             </>
           )}
         </div>
+      )}
+    </div>
+  );
+}
+
+/**
+ * Report and Block on someone else's comment (spec 0062 AC-6, AC-14). Report
+ * opens the section's dialog (guests get its sign in prompt); Block needs a
+ * signed in account and a confirm step, and is silent for the blocked person.
+ */
+function OtherAuthorActions({
+  comment,
+  onReport,
+}: {
+  comment: Comment;
+  onReport: (target: ReportTarget) => void;
+}) {
+  const t = useTranslations("comments");
+  const tCommon = useTranslations("common");
+  const { isLinked } = useSession();
+  const [isConfirmingBlock, setIsConfirmingBlock] = useState(false);
+  const block = useBlockUser();
+  const failed = block.data?.error != null;
+
+  return (
+    <div className="flex flex-col items-end gap-one">
+      <div className="flex flex-wrap justify-end gap-two">
+        {isConfirmingBlock ? (
+          <>
+            <Text variant="bodySmall" muted>
+              {t("block.confirm")}
+            </Text>
+            <Button variant="secondary" onClick={() => setIsConfirmingBlock(false)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button disabled={block.isPending} onClick={() => block.mutate(comment.userId)}>
+              {t("block.confirmAction")}
+            </Button>
+          </>
+        ) : (
+          <>
+            <Button
+              variant="secondary"
+              onClick={() => onReport({ kind: "comment", commentId: comment.id })}
+            >
+              {t("report.action")}
+            </Button>
+            {isLinked && (
+              <Button variant="secondary" onClick={() => setIsConfirmingBlock(true)}>
+                {t("block.action")}
+              </Button>
+            )}
+          </>
+        )}
+      </div>
+      {failed && (
+        <Text variant="bodySmall" className="text-danger" role="alert">
+          {t("block.failed")}
+        </Text>
       )}
     </div>
   );

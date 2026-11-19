@@ -102,7 +102,18 @@
     "signingYouIn": "Signing you in",
     "metaTitle": "Account",
     "resetPasswordMetaTitle": "Reset password",
-    "callbackMetaTitle": "Signing you in"
+    "callbackMetaTitle": "Signing you in",
+    "blocked": {
+      "heading": "Blocked people",
+      "empty": "You haven't blocked anyone.",
+      "loading": "Loading blocked people",
+      "loadFailed": "Couldn't load your blocked list. Try again later.",
+      "blockedOn": "Blocked {date}",
+      "unblock": "Unblock",
+      "unblockLabel": "Unblock {name}",
+      "unblockFailed": "Couldn't unblock. Try again.",
+      "deletedUser": "Deleted user"
+    }
   },
   "privacy": {
     "metaTitle": "Privacy Policy",
@@ -496,6 +507,12 @@
         "invalid_input": "Notes can be at most {max} characters.",
         "generic": "Couldn't send your report. Try again."
       }
+    },
+    "block": {
+      "action": "Block",
+      "confirm": "Block this person? You won't see their comments or photos anymore. They won't be told.",
+      "confirmAction": "Block",
+      "failed": "Couldn't block this person. Try again."
     },
     "deleteConfirm": "Delete this comment?",
     "photoLabel": "Photo {number} of {total} by {name}",

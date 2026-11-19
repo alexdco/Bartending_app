@@ -62,6 +62,10 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "admin.review.targetPhoto": ["number"],
   "admin.review.clearLabel": ["target"],
   "admin.review.removeLabel": ["target"],
+  // Blocked people list: the block date and the Unblock label, label plus
+  // value in ru (spec 0062).
+  "account.blocked.blockedOn": ["date"],
+  "account.blocked.unblockLabel": ["name"],
   "service.invitingTo": ["bar"],
   "service.seeMoreCount": ["count"],
   "service.partsAmount": ["parts"],

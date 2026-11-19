@@ -102,7 +102,18 @@
     "signingYouIn": "로그인하는 중",
     "metaTitle": "계정",
     "resetPasswordMetaTitle": "비밀번호 재설정",
-    "callbackMetaTitle": "로그인하는 중"
+    "callbackMetaTitle": "로그인하는 중",
+    "blocked": {
+      "heading": "차단한 사용자",
+      "empty": "차단한 사용자가 없습니다.",
+      "loading": "차단한 사용자를 불러오는 중",
+      "loadFailed": "차단 목록을 불러오지 못했습니다. 나중에 다시 시도하세요.",
+      "blockedOn": "차단일: {date}",
+      "unblock": "차단 해제",
+      "unblockLabel": "{name} 차단 해제",
+      "unblockFailed": "차단을 해제하지 못했습니다. 다시 시도하세요.",
+      "deletedUser": "삭제된 사용자"
+    }
   },
   "privacy": {
     "metaTitle": "개인정보 처리방침",
@@ -496,6 +507,12 @@
         "invalid_input": "메모는 최대 {max}자까지 쓸 수 있습니다.",
         "generic": "신고를 보내지 못했습니다. 다시 시도하세요."
       }
+    },
+    "block": {
+      "action": "차단",
+      "confirm": "이 사용자를 차단할까요? 이제 이 사용자의 댓글과 사진이 보이지 않습니다. 상대방에게는 알리지 않습니다.",
+      "confirmAction": "차단",
+      "failed": "차단하지 못했습니다. 다시 시도하세요."
     },
     "deleteConfirm": "이 댓글을 삭제할까요?",
     "photoLabel": "{name}님의 사진 {total}장 중 {number}번째",

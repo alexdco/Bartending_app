@@ -102,7 +102,18 @@
     "signingYouIn": "Connexion en cours",
     "metaTitle": "Compte",
     "resetPasswordMetaTitle": "Réinitialiser le mot de passe",
-    "callbackMetaTitle": "Connexion en cours"
+    "callbackMetaTitle": "Connexion en cours",
+    "blocked": {
+      "heading": "Personnes bloquées",
+      "empty": "Vous n'avez bloqué personne.",
+      "loading": "Chargement des personnes bloquées",
+      "loadFailed": "Impossible de charger votre liste de blocages. Réessayez plus tard.",
+      "blockedOn": "Bloqué le {date}",
+      "unblock": "Débloquer",
+      "unblockLabel": "Débloquer {name}",
+      "unblockFailed": "Impossible de débloquer. Réessayez.",
+      "deletedUser": "Utilisateur supprimé"
+    }
   },
   "privacy": {
     "metaTitle": "Politique de confidentialité",
@@ -496,6 +507,12 @@
         "invalid_input": "Une note peut contenir au maximum {max} caractères.",
         "generic": "Impossible d'envoyer le signalement. Réessayez."
       }
+    },
+    "block": {
+      "action": "Bloquer",
+      "confirm": "Bloquer cette personne ? Vous ne verrez plus ses commentaires ni ses photos. Elle n'en sera pas informée.",
+      "confirmAction": "Bloquer",
+      "failed": "Impossible de bloquer cette personne. Réessayez."
     },
     "deleteConfirm": "Supprimer ce commentaire ?",
     "photoLabel": "Photo {number} sur {total}, par {name}",

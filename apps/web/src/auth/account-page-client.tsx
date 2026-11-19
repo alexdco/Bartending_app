@@ -11,6 +11,7 @@ import { Input } from "@/components/input";
 import { PasswordInput } from "@/components/password-input";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
+import { BlockedPeopleCard } from "@/comments/blocked-people-card";
 import { useSession } from "./use-session";
 import { useProfile, useUpdateDisplayName } from "./use-preferences";
 import {
@@ -219,6 +220,8 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
       </Card>
 
       <DisplayNameCard email={email} prefillName={prefillName} />
+
+      <BlockedPeopleCard />
 
       <Card>
         <form

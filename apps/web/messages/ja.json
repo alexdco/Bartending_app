@@ -102,7 +102,18 @@
     "signingYouIn": "ログインしています",
     "metaTitle": "アカウント",
     "resetPasswordMetaTitle": "パスワードのリセット",
-    "callbackMetaTitle": "ログインしています"
+    "callbackMetaTitle": "ログインしています",
+    "blocked": {
+      "heading": "ブロック中のユーザー",
+      "empty": "ブロックしているユーザーはいません。",
+      "loading": "ブロック中のユーザーを読み込み中",
+      "loadFailed": "ブロックリストを読み込めませんでした。後でもう一度お試しください。",
+      "blockedOn": "ブロック日：{date}",
+      "unblock": "ブロック解除",
+      "unblockLabel": "{name}のブロックを解除",
+      "unblockFailed": "ブロックを解除できませんでした。もう一度お試しください。",
+      "deletedUser": "削除されたユーザー"
+    }
   },
   "privacy": {
     "metaTitle": "プライバシーポリシー",
@@ -496,6 +507,12 @@
         "invalid_input": "メモは最大{max}文字までです。",
         "generic": "報告を送信できませんでした。もう一度お試しください。"
       }
+    },
+    "block": {
+      "action": "ブロック",
+      "confirm": "このユーザーをブロックしますか？今後このユーザーのコメントや写真は表示されません。相手には通知されません。",
+      "confirmAction": "ブロック",
+      "failed": "ブロックできませんでした。もう一度お試しください。"
     },
     "deleteConfirm": "このコメントを削除しますか？",
     "photoLabel": "{name}さんの写真 {number}/{total}",

@@ -102,7 +102,18 @@
     "signingYouIn": "Entrando na sua conta",
     "metaTitle": "Conta",
     "resetPasswordMetaTitle": "Redefinir senha",
-    "callbackMetaTitle": "Entrando na sua conta"
+    "callbackMetaTitle": "Entrando na sua conta",
+    "blocked": {
+      "heading": "Pessoas bloqueadas",
+      "empty": "Você não bloqueou ninguém.",
+      "loading": "Carregando pessoas bloqueadas",
+      "loadFailed": "Não foi possível carregar sua lista de bloqueios. Tente mais tarde.",
+      "blockedOn": "Bloqueado em {date}",
+      "unblock": "Desbloquear",
+      "unblockLabel": "Desbloquear {name}",
+      "unblockFailed": "Não foi possível desbloquear. Tente de novo.",
+      "deletedUser": "Usuário excluído"
+    }
   },
   "privacy": {
     "metaTitle": "Política de Privacidade",
@@ -496,6 +507,12 @@
         "invalid_input": "As notas podem ter no máximo {max} caracteres.",
         "generic": "Não foi possível enviar a denúncia. Tente de novo."
       }
+    },
+    "block": {
+      "action": "Bloquear",
+      "confirm": "Bloquear esta pessoa? Você não verá mais os comentários nem as fotos dela. Ela não será avisada.",
+      "confirmAction": "Bloquear",
+      "failed": "Não foi possível bloquear esta pessoa. Tente de novo."
     },
     "deleteConfirm": "Excluir este comentário?",
     "photoLabel": "Foto {number} de {total}, de {name}",
