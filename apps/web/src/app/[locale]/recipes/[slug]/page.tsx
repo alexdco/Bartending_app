@@ -28,6 +28,7 @@ import { RecipeNotesSections } from "@/recipes/recipe-notes-sections";
 import { AllergenSection } from "@/recipes/allergen-section";
 import { buildRecipeJsonLd } from "@/recipes/recipe-json-ld";
 import { RecommendationsSection } from "@/recipe-recommendations/recommendations-section";
+import { MocktailsUnavailable } from "@/mocktails/mocktails-unavailable";
 
 interface RecipePageParams {
   slug: string;
@@ -156,40 +157,48 @@ export default async function RecipeDetailPage({ params }: { params: Promise<Rec
         />
       ) : null}
 
-      <BackButton fallbackHref="/search" />
-      <RecipeDetailHeader recipe={recipe} />
+      {/* Spec 0063 AC-6, AC-14: a recipe that is not mocktail safe is hidden
+          by CSS before paint in mocktails only mode, and the notice shows. */}
+      {recipe.mocktailSafe ? null : <MocktailsUnavailable />}
+      <div
+        className="flex flex-col gap-four"
+        data-mocktails={recipe.mocktailSafe ? undefined : "hide"}
+      >
+        <BackButton fallbackHref="/search" />
+        <RecipeDetailHeader recipe={recipe} />
 
-      <FlavorProfileSection heading={t("flavorProfile")} flavors={recipe.flavorProfile} />
+        <FlavorProfileSection heading={t("flavorProfile")} flavors={recipe.flavorProfile} />
 
-      <RecipeMeasures
-        key={recipe.id}
-        recipeId={recipe.id}
-        method={recipe.method}
-        ingredients={recipe.ingredients}
-        ingredientsHeading={t("ingredients")}
-        instructions={
-          <section className="flex flex-col gap-two">
-            <Text variant="heading" as="h2">
-              {t("instructions")}
-            </Text>
-            <Text variant="body" className="whitespace-pre-line">
-              {recipe.instructions}
-            </Text>
-          </section>
-        }
-      />
+        <RecipeMeasures
+          key={recipe.id}
+          recipeId={recipe.id}
+          method={recipe.method}
+          ingredients={recipe.ingredients}
+          ingredientsHeading={t("ingredients")}
+          instructions={
+            <section className="flex flex-col gap-two">
+              <Text variant="heading" as="h2">
+                {t("instructions")}
+              </Text>
+              <Text variant="body" className="whitespace-pre-line">
+                {recipe.instructions}
+              </Text>
+            </section>
+          }
+        />
 
-      <RecipeNotesSections recipe={recipe} />
+        <RecipeNotesSections recipe={recipe} />
 
-      <AllergenSection ingredients={recipe.ingredients} />
+        <AllergenSection ingredients={recipe.ingredients} />
 
-      <RecommendationsSection
-        recipeId={recipe.id}
-        recipeName={recipe.name}
-        recipeBaseName={recipe.baseName}
-      />
+        <RecommendationsSection
+          recipeId={recipe.id}
+          recipeName={recipe.name}
+          recipeBaseName={recipe.baseName}
+        />
 
-      <CommentSection recipeId={recipe.id} />
+        <CommentSection recipeId={recipe.id} />
+      </div>
     </main>
   );
 }

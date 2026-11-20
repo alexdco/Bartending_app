@@ -307,6 +307,13 @@ export type Database = {
             foreignKeyName: "bar_recipes_base_recipe_id_fkey";
             columns: ["base_recipe_id"];
             isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "bar_recipes_base_recipe_id_fkey";
+            columns: ["base_recipe_id"];
+            isOneToOne: false;
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
@@ -444,6 +451,13 @@ export type Database = {
             foreignKeyName: "comments_recipe_id_fkey";
             columns: ["recipe_id"];
             isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "comments_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
@@ -536,6 +550,13 @@ export type Database = {
           user_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "favorites_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "favorites_recipe_id_fkey";
             columns: ["recipe_id"];
@@ -750,6 +771,13 @@ export type Database = {
             foreignKeyName: "pinned_recipes_recipe_id_fkey";
             columns: ["recipe_id"];
             isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pinned_recipes_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
@@ -856,6 +884,13 @@ export type Database = {
             foreignKeyName: "quiz_questions_source_recipe_id_fkey";
             columns: ["source_recipe_id"];
             isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_questions_source_recipe_id_fkey";
+            columns: ["source_recipe_id"];
+            isOneToOne: false;
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
@@ -928,6 +963,13 @@ export type Database = {
             foreignKeyName: "ratings_recipe_id_fkey";
             columns: ["recipe_id"];
             isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ratings_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
@@ -963,6 +1005,13 @@ export type Database = {
           source?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "recipe_aliases_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "recipe_aliases_recipe_id_fkey";
             columns: ["recipe_id"];
@@ -1055,6 +1104,13 @@ export type Database = {
             foreignKeyName: "recipe_ingredients_recipe_id_fkey";
             columns: ["recipe_id"];
             isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_ingredients_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
             referencedRelation: "recipes";
             referencedColumns: ["id"];
           },
@@ -1081,6 +1137,13 @@ export type Database = {
           tag_id?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "recipe_tags_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "recipe_tags_recipe_id_fkey";
             columns: ["recipe_id"];
@@ -1154,6 +1217,13 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "supported_locales";
             referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "recipe_translations_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
           },
           {
             foreignKeyName: "recipe_translations_recipe_id_fkey";
@@ -1278,6 +1348,13 @@ export type Database = {
           updated_at?: string;
         };
         Relationships: [
+          {
+            foreignKeyName: "recipes_merged_into_recipe_id_fkey";
+            columns: ["merged_into_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
           {
             foreignKeyName: "recipes_merged_into_recipe_id_fkey";
             columns: ["merged_into_recipe_id"];
@@ -1459,6 +1536,24 @@ export type Database = {
       };
     };
     Views: {
+      mocktail_safe_recipes: {
+        Row: {
+          id: string | null;
+        };
+        Insert: {
+          id?: string | null;
+        };
+        Update: {
+          id?: string | null;
+        };
+        Relationships: [];
+      };
+      mocktail_visible_ingredients: {
+        Row: {
+          id: string | null;
+        };
+        Relationships: [];
+      };
       pinned_recipes_visible: {
         Row: {
           bar_recipe_id: string | null;
@@ -1490,6 +1585,13 @@ export type Database = {
             columns: ["bar_recipe_id"];
             isOneToOne: false;
             referencedRelation: "bar_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "pinned_recipes_recipe_id_fkey";
+            columns: ["recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
             referencedColumns: ["id"];
           },
           {
@@ -1764,6 +1866,7 @@ export type Database = {
           is_cocktaildb_recipe: boolean;
           is_favorited: boolean;
           method: string;
+          mocktail_safe: boolean;
           name: string;
           presentation_tip: string;
           straining: string;
@@ -1982,6 +2085,7 @@ export type Database = {
       search_recipes: {
         Args: {
           locale?: string;
+          mocktails_only?: boolean;
           page_limit?: number;
           page_offset?: number;
           query?: string;

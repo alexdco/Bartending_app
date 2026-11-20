@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   AGE_GATE_EXEMPT_PATTERN,
   isAgeGateExemptPath,
+  isMocktailsOnly,
   resolveAgeGateState,
   type AgeGateState,
 } from "./ageGate";
@@ -49,6 +50,7 @@ describe("isAgeGateExemptPath", () => {
 describe("resolveAgeGateState", () => {
   const storedValues = [null, "1", "0", "2"] as const;
   const deniedFlags = [false, true] as const;
+  const mocktailsFlags = [false, true] as const;
   const pathnames = [
     "/privacy",
     "/es/privacy/",
@@ -61,32 +63,79 @@ describe("resolveAgeGateState", () => {
   const expected = (
     confirmedValue: string | null,
     denied: boolean,
+    mocktails: boolean,
     pathname: string,
   ): AgeGateState => {
     if (pathname !== "/" && !pathname.includes("recipes")) return "exempt";
     if (confirmedValue === "1") return "confirmed";
+    if (mocktails) return "mocktails";
     return denied ? "denied" : "ask";
   };
 
   const cases = storedValues.flatMap((confirmedValue) =>
     deniedFlags.flatMap((denied) =>
-      pathnames.map((pathname) => ({ confirmedValue, denied, pathname })),
+      mocktailsFlags.flatMap((mocktails) =>
+        pathnames.map((pathname) => ({ confirmedValue, denied, mocktails, pathname })),
+      ),
     ),
   );
 
-  it.each(cases)("$confirmedValue / denied $denied / $pathname", (input) => {
+  it.each(cases)("$confirmedValue / denied $denied / mocktails $mocktails / $pathname", (input) => {
     expect(resolveAgeGateState(input)).toBe(
-      expected(input.confirmedValue, input.denied, input.pathname),
+      expected(input.confirmedValue, input.denied, input.mocktails, input.pathname),
     );
   });
 
   it("treats a stale version as unanswered", () => {
-    expect(resolveAgeGateState({ confirmedValue: "0", denied: false, pathname: null })).toBe("ask");
+    expect(
+      resolveAgeGateState({ confirmedValue: "0", denied: false, mocktails: false, pathname: null }),
+    ).toBe("ask");
   });
 
   it("lets a stored yes win over a denied flag", () => {
-    expect(resolveAgeGateState({ confirmedValue: "1", denied: true, pathname: null })).toBe(
-      "confirmed",
-    );
+    expect(
+      resolveAgeGateState({ confirmedValue: "1", denied: true, mocktails: false, pathname: null }),
+    ).toBe("confirmed");
+  });
+});
+
+describe("mocktails only mode (spec 0063)", () => {
+  it("lets a stored yes win over mocktails (AC-3)", () => {
+    expect(
+      resolveAgeGateState({ confirmedValue: "1", denied: true, mocktails: true, pathname: null }),
+    ).toBe("confirmed");
+  });
+
+  it("lets mocktails win over a denial", () => {
+    expect(
+      resolveAgeGateState({ confirmedValue: null, denied: true, mocktails: true, pathname: null }),
+    ).toBe("mocktails");
+  });
+
+  it("keeps exempt routes exempt in the mode (AC-3)", () => {
+    expect(
+      resolveAgeGateState({
+        confirmedValue: null,
+        denied: true,
+        mocktails: true,
+        pathname: "/en/privacy",
+      }),
+    ).toBe("exempt");
+  });
+
+  it("treats a stale confirmed version as unanswered, so mocktails holds", () => {
+    expect(
+      resolveAgeGateState({ confirmedValue: "0", denied: false, mocktails: true, pathname: null }),
+    ).toBe("mocktails");
+  });
+
+  it.each<[AgeGateState, boolean]>([
+    ["mocktails", true],
+    ["confirmed", false],
+    ["exempt", false],
+    ["denied", false],
+    ["ask", false],
+  ])("isMocktailsOnly(%s) is %s", (state, expectedValue) => {
+    expect(isMocktailsOnly(state)).toBe(expectedValue);
   });
 });

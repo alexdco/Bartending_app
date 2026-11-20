@@ -252,7 +252,8 @@
     "loading": "Loading recipes",
     "loadingMore": "Loading more recipes",
     "emptyTitle": "No recipes found",
-    "emptyDescription": "Try a different search or filter."
+    "emptyDescription": "Try a different search or filter.",
+    "mocktailsEmpty": "No mocktails match your search."
   },
   "batch": {
     "title": "Batch this recipe",
@@ -840,7 +841,14 @@
     "blockedTitle": "Come back later",
     "blockedBody": "Cocktailist is for people of legal drinking age. Come back when you're of age.",
     "privacyLink": "Privacy Policy",
-    "responsibleDrinking": "Please drink responsibly."
+    "responsibleDrinking": "Please drink responsibly.",
+    "mocktailsButton": "Continue with mocktails only"
+  },
+  "mocktails": {
+    "badge": "Mocktails only",
+    "unavailableTitle": "Not available in mocktails only mode",
+    "unavailableBody": "This page is only for people of legal drinking age. Browse mocktails instead.",
+    "browseLink": "Browse mocktails"
   },
   "moreLikeThis": {
     "metaTitle": "More like {name}",

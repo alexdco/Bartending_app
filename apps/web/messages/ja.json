@@ -252,7 +252,8 @@
     "loading": "レシピを読み込み中",
     "loadingMore": "さらにレシピを読み込み中",
     "emptyTitle": "レシピが見つかりません",
-    "emptyDescription": "別のキーワードや絞り込みをお試しください。"
+    "emptyDescription": "別のキーワードや絞り込みをお試しください。",
+    "mocktailsEmpty": "検索に一致するモクテルはありません。"
   },
   "batch": {
     "title": "このレシピをまとめて作る",
@@ -840,7 +841,14 @@
     "blockedTitle": "またのお越しをお待ちしています",
     "blockedBody": "Cocktailist は飲酒が認められる年齢の方を対象としています。年齢に達してから、またお越しください。",
     "privacyLink": "プライバシーポリシー",
-    "responsibleDrinking": "お酒は適量を楽しみましょう。"
+    "responsibleDrinking": "お酒は適量を楽しみましょう。",
+    "mocktailsButton": "モクテルのみで続ける"
+  },
+  "mocktails": {
+    "badge": "モクテルのみ",
+    "unavailableTitle": "モクテルのみモードでは利用できません",
+    "unavailableBody": "このページは法定飲酒年齢に達した方専用です。代わりにモクテルをご覧ください。",
+    "browseLink": "モクテルを見る"
   },
   "moreLikeThis": {
     "metaTitle": "{name}に似たドリンク",

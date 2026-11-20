@@ -252,7 +252,8 @@
     "loading": "Carregando receitas",
     "loadingMore": "Carregando mais receitas",
     "emptyTitle": "Nenhuma receita encontrada",
-    "emptyDescription": "Tente outra busca ou outro filtro."
+    "emptyDescription": "Tente outra busca ou outro filtro.",
+    "mocktailsEmpty": "Nenhum mocktail corresponde à sua pesquisa."
   },
   "batch": {
     "title": "Fazer esta receita em quantidade",
@@ -840,7 +841,14 @@
     "blockedTitle": "Volte mais tarde",
     "blockedBody": "O Cocktailist é para pessoas com a idade mínima para beber. Volte quando tiver.",
     "privacyLink": "Política de Privacidade",
-    "responsibleDrinking": "Beba com moderação."
+    "responsibleDrinking": "Beba com moderação.",
+    "mocktailsButton": "Continuar só com mocktails"
+  },
+  "mocktails": {
+    "badge": "Só mocktails",
+    "unavailableTitle": "Indisponível no modo só mocktails",
+    "unavailableBody": "Esta página é apenas para pessoas com idade legal para beber. Explore os mocktails.",
+    "browseLink": "Explorar mocktails"
   },
   "moreLikeThis": {
     "metaTitle": "Parecidos com {name}",

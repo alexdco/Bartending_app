@@ -4,6 +4,7 @@ import { getLocale, getTranslations } from "next-intl/server";
 import { extractIdFromRecipeSlug, fetchRecipeDetail, type Locale } from "@bartendingapp/shared";
 import { supabasePublic } from "@/lib/supabase-public";
 import { MoreLikeThisClient } from "@/recipe-recommendations/more-like-this-client";
+import { MocktailsUnavailable } from "@/mocktails/mocktails-unavailable";
 
 export async function generateMetadata({
   params,
@@ -35,5 +36,22 @@ export default async function MoreLikeThisPage({ params }: { params: Promise<{ s
     notFound();
   }
 
-  return <MoreLikeThisClient recipeId={id} recipeSlug={slug} />;
+  // Spec 0063 AC-6: the more like this page of a recipe that is not mocktail
+  // safe shows the notice in mocktails only mode. A missing recipe fails
+  // closed the same way.
+  const recipe = await fetchRecipeDetail(supabasePublic, id, (await getLocale()) as Locale);
+  if (recipe?.mocktailSafe) {
+    return <MoreLikeThisClient recipeId={id} recipeSlug={slug} />;
+  }
+
+  return (
+    <>
+      <div data-mocktails="hide" className="flex flex-col">
+        <MoreLikeThisClient recipeId={id} recipeSlug={slug} />
+      </div>
+      <main data-mocktails="notice" className="flex flex-col gap-four p-six">
+        <MocktailsUnavailable />
+      </main>
+    </>
+  );
 }

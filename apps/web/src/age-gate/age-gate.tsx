@@ -6,10 +6,12 @@ import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/button";
 import { Text } from "@/components/text";
 import {
+  chooseMocktails,
   confirmAge,
   denyAge,
   useAgeGateDomSync,
   useAgeGateState,
+  useMocktailsState,
   type WebAgeGateState,
 } from "./age-gate-store";
 
@@ -79,7 +81,8 @@ function Panel({
 export function AgeGate() {
   const t = useTranslations("ageGate");
   const state = useAgeGateState();
-  useAgeGateDomSync(state);
+  const mocktails = useMocktailsState();
+  useAgeGateDomSync(state, mocktails);
   useFocusOnShow(state);
 
   const notice = (
@@ -122,6 +125,8 @@ export function AgeGate() {
           {t("blockedTitle")}
         </Text>
         <Text variant="body">{t("blockedBody")}</Text>
+        {/* Spec 0063 AC-1: the only way on from here; nothing asks the age question again. */}
+        <Button onClick={chooseMocktails}>{t("mocktailsButton")}</Button>
         <Link href="/privacy" className="underline">
           <Text variant="label" as="span">
             {t("privacyLink")}

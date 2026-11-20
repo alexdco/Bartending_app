@@ -53,7 +53,13 @@ export function useAgeGate(): AgeGate {
 
   return {
     ready: confirmedValue !== undefined,
-    state: resolveAgeGateState({ confirmedValue: confirmedValue ?? null, denied, pathname: null }),
+    state: resolveAgeGateState({
+      confirmedValue: confirmedValue ?? null,
+      denied,
+      // Mobile mocktails only mode lands with spec 0063 build task 5.
+      mocktails: false,
+      pathname: null,
+    }),
     confirm,
     deny,
   };

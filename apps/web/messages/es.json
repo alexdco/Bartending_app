@@ -252,7 +252,8 @@
     "loading": "Cargando recetas",
     "loadingMore": "Cargando más recetas",
     "emptyTitle": "No encontramos recetas",
-    "emptyDescription": "Prueba con otra búsqueda o filtro."
+    "emptyDescription": "Prueba con otra búsqueda o filtro.",
+    "mocktailsEmpty": "Ningún mocktail coincide con tu búsqueda."
   },
   "batch": {
     "title": "Prepara esta receta en lote",
@@ -840,7 +841,14 @@
     "blockedTitle": "Vuelve más adelante",
     "blockedBody": "Cocktailist es para personas con la edad legal para beber. Vuelve cuando la tengas.",
     "privacyLink": "Política de privacidad",
-    "responsibleDrinking": "Bebe con responsabilidad."
+    "responsibleDrinking": "Bebe con responsabilidad.",
+    "mocktailsButton": "Continuar solo con mocktails"
+  },
+  "mocktails": {
+    "badge": "Solo mocktails",
+    "unavailableTitle": "No disponible en el modo solo mocktails",
+    "unavailableBody": "Esta página es solo para personas con la edad legal para beber. Explora los mocktails.",
+    "browseLink": "Explorar mocktails"
   },
   "moreLikeThis": {
     "metaTitle": "Más como {name}",

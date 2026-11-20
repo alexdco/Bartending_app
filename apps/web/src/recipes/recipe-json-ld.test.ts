@@ -23,6 +23,7 @@ const recipe: RecipeDetail = {
   drinkStyleNote: null,
   bartenderTip: null,
   presentationTip: null,
+  mocktailSafe: false,
 };
 
 describe("buildRecipeJsonLd", () => {

@@ -252,7 +252,8 @@
     "loading": "레시피 불러오는 중",
     "loadingMore": "레시피 더 불러오는 중",
     "emptyTitle": "레시피를 찾지 못했어요",
-    "emptyDescription": "다른 검색어나 필터로 시도해 보세요."
+    "emptyDescription": "다른 검색어나 필터로 시도해 보세요.",
+    "mocktailsEmpty": "검색과 일치하는 목테일이 없습니다."
   },
   "batch": {
     "title": "배치로 만들기",
@@ -840,7 +841,14 @@
     "blockedTitle": "나중에 다시 방문해 주세요",
     "blockedBody": "Cocktailist는 법정 음주 가능 연령에 해당하는 분들을 위한 서비스예요. 해당 연령이 되면 다시 방문해 주세요.",
     "privacyLink": "개인정보 처리방침",
-    "responsibleDrinking": "책임감 있게 즐겨 주세요."
+    "responsibleDrinking": "책임감 있게 즐겨 주세요.",
+    "mocktailsButton": "목테일만 보고 계속하기"
+  },
+  "mocktails": {
+    "badge": "목테일 전용",
+    "unavailableTitle": "목테일 전용 모드에서는 이용할 수 없습니다",
+    "unavailableBody": "이 페이지는 법적 음주 연령 이상인 분만 이용할 수 있습니다. 대신 목테일을 둘러보세요.",
+    "browseLink": "목테일 둘러보기"
   },
   "moreLikeThis": {
     "metaTitle": "{name}와(과) 비슷한 레시피",

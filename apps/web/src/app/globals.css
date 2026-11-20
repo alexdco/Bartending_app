@@ -233,3 +233,14 @@ html[data-age="ask"] body,
 html[data-age="denied"] body {
   overflow: hidden;
 }
+
+/* Mocktails only mode (spec 0063, AC-14). The head script sets
+   html[data-age="mocktails"] before paint, so server rendered content marked
+   data-mocktails="hide" never shows in the mode, even before hydration.
+   Notices (data-mocktails="notice") are hidden everywhere else and keep
+   their own display utilities in the mode. Unlayered, like the gate rules,
+   so they win over Tailwind utilities. */
+html[data-age="mocktails"] [data-mocktails="hide"],
+html:not([data-age="mocktails"]) [data-mocktails="notice"] {
+  display: none !important;
+}

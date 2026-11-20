@@ -54,6 +54,8 @@ export interface RecipeSearchParams {
   pageOffset?: number;
   locale?: Locale;
   sort?: SearchSort;
+  /** Mocktails only mode (spec 0063): only mocktail safe recipes, filtered in SQL. */
+  mocktailsOnly?: boolean;
 }
 
 export const RECIPE_SEARCH_PAGE_SIZE = 20;
@@ -67,6 +69,7 @@ export async function searchRecipes(
     pageOffset = 0,
     locale = DEFAULT_LOCALE,
     sort = DEFAULT_SEARCH_SORT,
+    mocktailsOnly = false,
   }: RecipeSearchParams = {},
 ): Promise<RecipeSearchResult[]> {
   const { data, error } = await client.rpc("search_recipes", {
@@ -76,6 +79,9 @@ export async function searchRecipes(
     page_offset: pageOffset,
     locale,
     sort_order: sort,
+    // Omitted when false, so adult calls send exactly the arguments they did
+    // before spec 0063 (AC-17).
+    ...(mocktailsOnly ? { mocktails_only: true } : {}),
   });
 
   if (error) {
@@ -173,6 +179,8 @@ export interface RecipeDetail {
   drinkStyleNote: string | null;
   bartenderTip: string | null;
   presentationTip: string | null;
+  /** Shown in mocktails only mode; false hides the recipe behind a notice (spec 0063 AC-6). */
+  mocktailSafe: boolean;
 }
 
 interface RecipeDetailIngredientRow {
@@ -237,6 +245,8 @@ export async function fetchRecipeDetail(
     drinkStyleNote: data.drink_style_note ?? null,
     bartenderTip: data.bartender_tip ?? null,
     presentationTip: data.presentation_tip ?? null,
+    // Fails closed: a missing column reads as not safe.
+    mocktailSafe: data.mocktail_safe === true,
   };
 }
 

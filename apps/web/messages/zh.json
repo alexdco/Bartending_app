@@ -252,7 +252,8 @@
     "loading": "正在加载配方",
     "loadingMore": "正在加载更多配方",
     "emptyTitle": "没有找到配方",
-    "emptyDescription": "试试其他关键词或筛选条件。"
+    "emptyDescription": "试试其他关键词或筛选条件。",
+    "mocktailsEmpty": "没有符合搜索的无酒精饮品。"
   },
   "batch": {
     "title": "批量调制",
@@ -840,7 +841,14 @@
     "blockedTitle": "以后再来吧",
     "blockedBody": "Cocktailist 仅供达到法定饮酒年龄的人使用，请在达到年龄要求后再来。",
     "privacyLink": "隐私政策",
-    "responsibleDrinking": "请理性饮酒。"
+    "responsibleDrinking": "请理性饮酒。",
+    "mocktailsButton": "仅浏览无酒精饮品继续"
+  },
+  "mocktails": {
+    "badge": "仅限无酒精饮品",
+    "unavailableTitle": "仅限无酒精饮品模式下不可用",
+    "unavailableBody": "此页面仅供达到法定饮酒年龄的人士浏览。请改为浏览无酒精饮品。",
+    "browseLink": "浏览无酒精饮品"
   },
   "moreLikeThis": {
     "metaTitle": "更多类似{name}的饮品",

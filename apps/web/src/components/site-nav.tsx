@@ -852,6 +852,20 @@ function MobileNavDrawer({
   );
 }
 
+// Spec 0063 AC-15: plain text, not a control. Server rendered and marked as a
+// notice, so globals.css shows it only in mocktails only mode, before paint.
+function MocktailsBadge() {
+  const t = useTranslations("mocktails");
+  return (
+    <span
+      data-mocktails="notice"
+      className="inline-flex items-center rounded-full border border-border bg-surface-selected px-three py-one text-label text-text"
+    >
+      {t("badge")}
+    </span>
+  );
+}
+
 export function SiteNav() {
   const pathname = usePathname();
   const t = useTranslations("nav");
@@ -863,6 +877,7 @@ export function SiteNav() {
     <nav className="flex items-center justify-between border-b border-border px-six py-three">
       <div className="flex items-center gap-five">
         <SiteLogo />
+        <MocktailsBadge />
         <div className="hidden md:flex items-center gap-four">
           {links.map(({ href, key }) => {
             const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);

@@ -16,6 +16,10 @@ export interface UseRecipeSearchParams {
   query: string;
   statusFilter: AlcoholicStatusFilter | null;
   sort: SearchSort;
+  /** Mocktails only mode (spec 0063 AC-5). Part of the query key. */
+  mocktailsOnly: boolean;
+  /** False while the mode is unknown, so no unflagged list is fetched (AC-19). */
+  enabled: boolean;
   initialData?: RecipeSearchResult[];
 }
 
@@ -24,15 +28,23 @@ export function recipeSearchQueryKey(
   statusFilter: AlcoholicStatusFilter | null,
   locale: Locale,
   sort: SearchSort,
+  mocktailsOnly: boolean,
 ) {
-  return ["recipes", "search", { query, statusFilter, locale, sort }] as const;
+  return ["recipes", "search", { query, statusFilter, locale, sort, mocktailsOnly }] as const;
 }
 
-export function useRecipeSearch({ query, statusFilter, sort, initialData }: UseRecipeSearchParams) {
+export function useRecipeSearch({
+  query,
+  statusFilter,
+  sort,
+  mocktailsOnly,
+  enabled,
+  initialData,
+}: UseRecipeSearchParams) {
   const locale = useLocale() as Locale;
 
   return useInfiniteQuery({
-    queryKey: recipeSearchQueryKey(query, statusFilter, locale, sort),
+    queryKey: recipeSearchQueryKey(query, statusFilter, locale, sort, mocktailsOnly),
     queryFn: ({ pageParam }) =>
       searchRecipes(supabase, {
         query,
@@ -41,7 +53,9 @@ export function useRecipeSearch({ query, statusFilter, sort, initialData }: UseR
         pageOffset: pageParam,
         locale,
         sort,
+        mocktailsOnly,
       }),
+    enabled,
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < RECIPE_SEARCH_PAGE_SIZE

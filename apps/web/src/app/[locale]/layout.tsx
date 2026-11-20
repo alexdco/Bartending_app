@@ -14,6 +14,7 @@ import {
   AGE_CONFIRMED_KEY,
   AGE_DENIED_KEY,
   AGE_GATE_VERSION,
+  AGE_MOCKTAILS_KEY,
   BRAND_NAME,
   colors,
   isLaunchedLocale,
@@ -144,16 +145,26 @@ const themeInitScript = `
 `;
 
 // Decides the age gate before paint (spec 0037, AC-9): sets html[data-age]
-// to exempt, ok, denied, or ask, which globals.css reads to show the gate.
+// to exempt, ok, mocktails, denied, or ask, which globals.css reads to show
+// the gate or, for mocktails (spec 0063 AC-14), to hide marked content.
+// Confirmed wins over mocktails; an exempt route in the mode reads mocktails
+// so the nav keeps its hidden entries.
 // Falls back to ask when storage throws (AC-16).
 const ageGateInitScript = `
 (function () {
   var state = "ask";
   try {
-    if (new RegExp(${JSON.stringify(AGE_GATE_EXEMPT_PATTERN.source)}).test(location.pathname)) {
-      state = "exempt";
-    } else if (localStorage.getItem("${AGE_CONFIRMED_KEY}") === "${AGE_GATE_VERSION}") {
+    var exempt = new RegExp(${JSON.stringify(AGE_GATE_EXEMPT_PATTERN.source)}).test(location.pathname);
+    // Set first, so storage that throws still leaves exempt routes ungated.
+    if (exempt) state = "exempt";
+    var confirmed = localStorage.getItem(${JSON.stringify(AGE_CONFIRMED_KEY)}) === ${JSON.stringify(AGE_GATE_VERSION)};
+    var mocktails = !confirmed && sessionStorage.getItem(${JSON.stringify(AGE_MOCKTAILS_KEY)}) === "1";
+    if (exempt) {
+      state = mocktails ? "mocktails" : "exempt";
+    } else if (confirmed) {
       state = "ok";
+    } else if (mocktails) {
+      state = "mocktails";
     } else if (sessionStorage.getItem("${AGE_DENIED_KEY}") === "1") {
       state = "denied";
     }
