@@ -1009,12 +1009,12 @@ A build history for a bar, saved on the server and visible to all staff, beyond 
 Let under age visitors in with alcoholic recipes hidden everywhere, instead of turning them away at the age gate (from spec 0037, feature 45).
 **Done when:** a visitor who fails the age gate can choose mocktails only and never sees an alcoholic recipe in search, detail, ideas, Learn, or recommendations.
 - [x] Design it (spec): `/architect mocktails only mode`
-- [ ] Build it: `/develop mocktails only mode`
+- [x] Build it: `/develop mocktails only mode`
   - [x] Thin thread on web: the `mocktails` gate state, the blocked screen button, migration 1 (both views, the Fancy White Russian fix, `search_recipes`, `fetch_recipe_detail`), filtered search, the recipe notice, the badge, satisfies AC-1 to AC-4, AC-6, AC-14 to AC-17, AC-19
   - [x] Every other list on web: migration 2 (ten more functions), drink ideas, recommendations, popular, homepage, favorites, pantry, ingredient search, shopping list, and the AI ideas flag, satisfies AC-5, AC-7, AC-8, AC-17
   - [x] Hidden areas on web: Learn spirits, wine, and beer; quizzes; service; account and admin; comment and rating controls; nav, satisfies AC-9 to AC-13
   - [x] Mobile parity, satisfies AC-1 to AC-16, AC-19
-  - [ ] Seven more locales and `verify.md`, satisfies AC-18
+  - [x] Seven more locales and `verify.md`, satisfies AC-18
 - [ ] Verify it: `/check verify mocktails only mode`
 - [ ] Test it: `/test mocktails only mode`
 Spec [0063](../specs/0063-mocktails-only-mode/index.md) · code in `supabase/migrations`, `packages/shared`, `supabase/functions/generate-drink-idea`, `apps/web`, `apps/mobile`

@@ -128,3 +128,30 @@ Run on a dev client build. Answering "No" lives in memory, so force quit the app
 
 ### Acceptance criteria coverage (milestone 4)
 - AC-1 overlay button · AC-2 memory only · AC-3 resolver precedence · AC-5 every list hook passes the flag and keys on it · AC-6 recipe and more like this notice after a loading only state · AC-7 pantry, shopping list, ingredient search · AC-8 AI ideas flag · AC-9 Learn grid and routes · AC-10 quiz links and routes · AC-11 service tab and bar screens · AC-12 account badge, account screens, comments, rating, limit message · AC-13 analytics wait for `confirmed` (no change) · AC-15 Home pill · AC-16 nothing stored, so nothing can throw · AC-19 lists wait for the provider's known state
+
+## Milestone 5: seven more locales, accessibility, and the full manual pass
+
+The six new keys were already translated in pt, fr, ru, hi, ja, ko, and zh on both apps, with identical wording on web and mobile. None of them inserts a value, so nothing new goes on the reviewed placeholder lists (`placeholderMessages.ts`, the list spec 0062 used).
+
+### UI / manual: locales
+- [ ] In the mode, switch the web locale through `pt`, `fr`, `ru`, `hi`, `ja`, `ko`, `zh` on the header and on the Fancy White Russian page → the badge and notice title read: pt "Só mocktails" / "Indisponível no modo só mocktails"; fr "Mocktails uniquement" / "Indisponible en mode mocktails uniquement"; ru "Только моктейли" / "Недоступно в режиме «только моктейли»"; hi "सिर्फ़ मॉकटेल" / "सिर्फ़ मॉकटेल मोड में उपलब्ध नहीं"; ja "モクテルのみ" / "モクテルのみモードでは利用できません"; ko "목테일 전용" / "목테일 전용 모드에서는 이용할 수 없습니다"; zh "仅限无酒精饮品" / "仅限无酒精饮品模式下不可用"; no English text left in the notice, badge, or empty search message → AC-18
+- [ ] In a fresh tab on `/ja` and `/hi`, answer "No" → the button reads "モクテルのみで続ける" and "सिर्फ़ मॉकटेल के साथ आगे बढ़ें", and the text fits the blocked screen at phone width without clipping → AC-1, AC-18
+- [ ] On mobile, set the device language to one of the seven, force quit, answer No → the overlay button, the Home pill, and a recipe notice show the same strings as web → AC-18
+
+### UI / manual: accessibility of the notice and badge
+- [ ] Web, in the mode, open the Fancy White Russian page with a screen reader (NVDA or VoiceOver) → the notice title is announced as heading level 1 and gets focus; Tab reaches "Browse mocktails" next and it is announced as a link → AC-18
+- [ ] Web, the header badge is plain text: Tab skips it, the screen reader reads "Mocktails only" in reading order, and its contrast holds in light and dark → AC-15, AC-18
+- [ ] Mobile, with TalkBack or VoiceOver, deep link to an alcoholic recipe → focus lands on the title, announced as a heading; the next swipe reaches the body, then "Browse mocktails" announced as a link → AC-18
+- [ ] Optional now, required once feature 61 lands: run the axe suite (`pnpm --filter web test:a11y`) with the notice page and the header badge in the fixture list → no serious or critical violation → AC-18
+
+### UI / manual: one full pass, start to finish
+- [ ] Web, fresh tab: age gate No → Continue → walk Home, Search, a mocktail recipe, an alcoholic recipe, More like this, Popular, Drink ideas (plus Generate), Favorites, Pantry, Shopping list, Learn, a quiz URL, Service, Account → only mocktails anywhere, the notice everywhere else → AC-1, AC-5 to AC-12
+- [ ] Open a new tab (not a duplicate) → the age question again; duplicate the original tab → still in the mode → AC-2
+- [ ] Private window with site data blocked: No → Continue → the mode works for that page load; reload asks again → AC-16
+
+### Commands
+- [ ] `npx vitest run apps/web/src/i18n apps/mobile/src/i18n` → all pass (key parity in all nine locales on both apps, the Chinese and Korean string checks, the placeholder lists) → AC-18
+- [ ] `pnpm --filter web exec eslint src/mocktails src/components/site-nav.tsx src/age-gate` and `pnpm --filter mobile exec eslint src/mocktails src/age-gate` → no errors (web includes `jsx-a11y`) → AC-18
+
+### Acceptance criteria coverage (milestone 5)
+- AC-18 every new key in all nine locales on both apps (parity test plus the per locale manual step), notice heading, link, and focus (screen reader steps), automated checks (the `jsx-a11y` lint today; the axe scan once feature 61 ships). The full pass rechecks AC-1, AC-2, AC-5 to AC-12, and AC-16 end to end.
