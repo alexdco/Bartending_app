@@ -1011,7 +1011,7 @@ Let under age visitors in with alcoholic recipes hidden everywhere, instead of t
 - [x] Design it (spec): `/architect mocktails only mode`
 - [ ] Build it: `/develop mocktails only mode`
   - [x] Thin thread on web: the `mocktails` gate state, the blocked screen button, migration 1 (both views, the Fancy White Russian fix, `search_recipes`, `fetch_recipe_detail`), filtered search, the recipe notice, the badge, satisfies AC-1 to AC-4, AC-6, AC-14 to AC-17, AC-19
-  - [ ] Every other list on web: migration 2 (ten more functions), drink ideas, recommendations, popular, homepage, favorites, pantry, ingredient search, shopping list, and the AI ideas flag, satisfies AC-5, AC-7, AC-8, AC-17
+  - [x] Every other list on web: migration 2 (ten more functions), drink ideas, recommendations, popular, homepage, favorites, pantry, ingredient search, shopping list, and the AI ideas flag, satisfies AC-5, AC-7, AC-8, AC-17
   - [ ] Hidden areas on web: Learn spirits, wine, and beer; quizzes; service; account and admin; comment and rating controls; nav, satisfies AC-9 to AC-13
   - [ ] Mobile parity, satisfies AC-1 to AC-16, AC-19
   - [ ] Seven more locales and `verify.md`, satisfies AC-18
