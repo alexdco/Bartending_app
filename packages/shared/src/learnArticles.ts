@@ -7,6 +7,20 @@ export const LEARN_CATEGORIES = ["tools", "spirits", "wine", "beer", "other"] as
 
 export type LearnCategory = (typeof LEARN_CATEGORIES)[number];
 
+/**
+ * Learn categories hidden in mocktails only mode (spec 0063 AC-9): their grid
+ * tiles, article lists, and routes. `tools` and `other` stay visible.
+ */
+export const MOCKTAILS_HIDDEN_LEARN_CATEGORIES: readonly LearnCategory[] = [
+  "spirits",
+  "wine",
+  "beer",
+];
+
+export function isMocktailsHiddenLearnCategory(category: string): boolean {
+  return (MOCKTAILS_HIDDEN_LEARN_CATEGORIES as readonly string[]).includes(category);
+}
+
 export function isLearnCategory(value: string | null | undefined): value is LearnCategory {
   return LEARN_CATEGORIES.includes(value as LearnCategory);
 }

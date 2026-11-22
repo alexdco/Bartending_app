@@ -17,6 +17,7 @@ import { SiteLogo } from "./site-logo";
 import { useSession } from "@/auth/use-session";
 import { useProfile, useUpdateLocale, useUpdateBartenderModeEnabled } from "@/auth/use-preferences";
 import { useSignOut } from "@/auth/use-auth-mutations";
+import { useMocktailsOnly } from "@/age-gate/age-gate-store";
 import { useTheme, type ThemePreference } from "@/theme/use-theme";
 
 function PersonIcon() {
@@ -143,6 +144,10 @@ function NavBadge() {
   const { preference, setTheme } = useTheme();
   const updateBartenderModeEnabled = useUpdateBartenderModeEnabled();
   const t = useTranslations("nav");
+  // Spec 0063 AC-11, AC-12: no sign in, account, or Bartender Mode entry in
+  // mocktails only mode. This menu renders only after hydration (it waits for
+  // the session), so leaving the items out is enough.
+  const mocktailsOnly = useMocktailsOnly();
 
   if (isLoading) {
     return null;
@@ -167,17 +172,21 @@ function NavBadge() {
             sideOffset={8}
             className="min-w-40 rounded-medium border border-border bg-surface py-two shadow-lg"
           >
-            <DropdownMenu.Item asChild>
-              <Link
-                href="/account"
-                className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
-              >
-                <Text variant="label" as="span">
-                  {t("signIn")}
-                </Text>
-              </Link>
-            </DropdownMenu.Item>
-            <DropdownMenu.Separator className="my-two h-px bg-border" />
+            {!mocktailsOnly && (
+              <>
+                <DropdownMenu.Item asChild>
+                  <Link
+                    href="/account"
+                    className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
+                  >
+                    <Text variant="label" as="span">
+                      {t("signIn")}
+                    </Text>
+                  </Link>
+                </DropdownMenu.Item>
+                <DropdownMenu.Separator className="my-two h-px bg-border" />
+              </>
+            )}
             <DropdownMenu.Item asChild>
               <Link
                 href="/favorites"
@@ -217,16 +226,18 @@ function NavBadge() {
           sideOffset={8}
           className="min-w-40 rounded-medium border border-border bg-surface py-two shadow-lg"
         >
-          <DropdownMenu.Item asChild>
-            <Link
-              href="/account"
-              className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
-            >
-              <Text variant="label" as="span">
-                {t("account")}
-              </Text>
-            </Link>
-          </DropdownMenu.Item>
+          {!mocktailsOnly && (
+            <DropdownMenu.Item asChild>
+              <Link
+                href="/account"
+                className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
+              >
+                <Text variant="label" as="span">
+                  {t("account")}
+                </Text>
+              </Link>
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Item asChild>
             <Link
               href="/favorites"
@@ -273,20 +284,22 @@ function NavBadge() {
             </DropdownMenu.Portal>
           </DropdownMenu.Sub>
           <LanguageSubmenu />
-          <DropdownMenu.Item
-            className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
-            onSelect={(event) => {
-              event.preventDefault();
-              updateBartenderModeEnabled.mutate(!(profile?.bartenderModeEnabled ?? true));
-            }}
-          >
-            <Text variant="label" as="span">
-              {t("bartenderMode")}
-            </Text>
-            <Text variant="label" as="span" className="text-text-muted">
-              {(profile?.bartenderModeEnabled ?? true) ? t("on") : t("off")}
-            </Text>
-          </DropdownMenu.Item>
+          {!mocktailsOnly && (
+            <DropdownMenu.Item
+              className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
+              onSelect={(event) => {
+                event.preventDefault();
+                updateBartenderModeEnabled.mutate(!(profile?.bartenderModeEnabled ?? true));
+              }}
+            >
+              <Text variant="label" as="span">
+                {t("bartenderMode")}
+              </Text>
+              <Text variant="label" as="span" className="text-text-muted">
+                {(profile?.bartenderModeEnabled ?? true) ? t("on") : t("off")}
+              </Text>
+            </DropdownMenu.Item>
+          )}
           <DropdownMenu.Separator className="my-two h-px bg-border" />
           <DropdownMenu.Item
             className="block cursor-pointer px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
@@ -322,8 +335,17 @@ const learnSubLinks = [
   { href: "/quizzes", key: "quizzes" },
 ] as const;
 
-function visibleNavLinks(bartenderModeEnabled: boolean) {
-  return navLinks.filter((link) => !("requiresBartenderMode" in link) || bartenderModeEnabled);
+// Spec 0063 AC-11: Service is a bar feature, hidden in mocktails only mode.
+function visibleNavLinks(bartenderModeEnabled: boolean, mocktailsOnly: boolean) {
+  return navLinks.filter(
+    (link) => !("requiresBartenderMode" in link) || (bartenderModeEnabled && !mocktailsOnly),
+  );
+}
+
+// Spec 0063 AC-10: quizzes are hidden in mocktails only mode. Both Learn
+// menus render their sub links only after hydration, so filtering is enough.
+function visibleLearnSubLinks(mocktailsOnly: boolean) {
+  return learnSubLinks.filter((link) => !mocktailsOnly || link.key !== "quizzes");
 }
 
 function NavPantryDropdown({ isActive }: { isActive: boolean }) {
@@ -407,6 +429,7 @@ function NavPantryDropdown({ isActive }: { isActive: boolean }) {
 function NavLearnDropdown({ isActive }: { isActive: boolean }) {
   const pathname = usePathname();
   const t = useTranslations("nav");
+  const subLinks = visibleLearnSubLinks(useMocktailsOnly());
   const [open, setOpen] = useState(false);
   const closeTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -455,7 +478,7 @@ function NavLearnDropdown({ isActive }: { isActive: boolean }) {
             onMouseLeave={closeSoon}
             className="min-w-40 rounded-medium border border-border bg-surface py-two shadow-lg"
           >
-            {learnSubLinks.map((link) => {
+            {subLinks.map((link) => {
               const linkIsActive = pathname.startsWith(link.href);
 
               return (
@@ -588,6 +611,7 @@ function DrawerLearnSection({ onNavigate }: { onNavigate: () => void }) {
   const t = useTranslations("nav");
   const isActive = pathname.startsWith("/learn") || pathname.startsWith("/quizzes");
   const [expanded, setExpanded] = useState(isActive);
+  const subLinks = visibleLearnSubLinks(useMocktailsOnly());
 
   return (
     <div>
@@ -608,7 +632,7 @@ function DrawerLearnSection({ onNavigate }: { onNavigate: () => void }) {
       </button>
       {expanded ? (
         <div className="flex flex-col gap-one pl-three">
-          {learnSubLinks.map((link) => {
+          {subLinks.map((link) => {
             const linkIsActive = pathname.startsWith(link.href);
 
             return (
@@ -642,6 +666,8 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
   const updateBartenderModeEnabled = useUpdateBartenderModeEnabled();
   const [themeExpanded, setThemeExpanded] = useState(false);
   const t = useTranslations("nav");
+  // Spec 0063 AC-11, AC-12: the drawer opens only after hydration.
+  const mocktailsOnly = useMocktailsOnly();
 
   if (isLoading) {
     return null;
@@ -650,15 +676,17 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
   if (!isLinked) {
     return (
       <div className="flex flex-col gap-two">
-        <Link
-          href="/account"
-          onClick={onNavigate}
-          className="block rounded-medium px-three py-two hover:bg-surface-selected"
-        >
-          <Text variant="label" as="span">
-            {t("signIn")}
-          </Text>
-        </Link>
+        {!mocktailsOnly && (
+          <Link
+            href="/account"
+            onClick={onNavigate}
+            className="block rounded-medium px-three py-two hover:bg-surface-selected"
+          >
+            <Text variant="label" as="span">
+              {t("signIn")}
+            </Text>
+          </Link>
+        )}
         <Link
           href="/favorites"
           onClick={onNavigate}
@@ -686,15 +714,17 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
           </Text>
         </span>
       </div>
-      <Link
-        href="/account"
-        onClick={onNavigate}
-        className="block rounded-medium px-three py-two hover:bg-surface-selected"
-      >
-        <Text variant="label" as="span">
-          {t("account")}
-        </Text>
-      </Link>
+      {!mocktailsOnly && (
+        <Link
+          href="/account"
+          onClick={onNavigate}
+          className="block rounded-medium px-three py-two hover:bg-surface-selected"
+        >
+          <Text variant="label" as="span">
+            {t("account")}
+          </Text>
+        </Link>
+      )}
       <Link
         href="/favorites"
         onClick={onNavigate}
@@ -739,18 +769,22 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
           </div>
         ) : null}
       </div>
-      <button
-        type="button"
-        onClick={() => updateBartenderModeEnabled.mutate(!(profile?.bartenderModeEnabled ?? true))}
-        className="flex w-full items-center justify-between rounded-medium px-three py-two hover:bg-surface-selected"
-      >
-        <Text variant="label" as="span">
-          {t("bartenderMode")}
-        </Text>
-        <Text variant="label" as="span" className="text-text-muted">
-          {(profile?.bartenderModeEnabled ?? true) ? t("on") : t("off")}
-        </Text>
-      </button>
+      {!mocktailsOnly && (
+        <button
+          type="button"
+          onClick={() =>
+            updateBartenderModeEnabled.mutate(!(profile?.bartenderModeEnabled ?? true))
+          }
+          className="flex w-full items-center justify-between rounded-medium px-three py-two hover:bg-surface-selected"
+        >
+          <Text variant="label" as="span">
+            {t("bartenderMode")}
+          </Text>
+          <Text variant="label" as="span" className="text-text-muted">
+            {(profile?.bartenderModeEnabled ?? true) ? t("on") : t("off")}
+          </Text>
+        </button>
+      )}
       <button
         type="button"
         onClick={() => signOut.mutate()}
@@ -774,7 +808,7 @@ function MobileNavDrawer({
   const pathname = usePathname();
   const t = useTranslations("nav");
   const { data: profile } = useProfile();
-  const links = visibleNavLinks(profile?.bartenderModeEnabled ?? true);
+  const links = visibleNavLinks(profile?.bartenderModeEnabled ?? true, useMocktailsOnly());
 
   useEffect(() => {
     onOpenChange(false);
@@ -871,7 +905,7 @@ export function SiteNav() {
   const t = useTranslations("nav");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { data: profile } = useProfile();
-  const links = visibleNavLinks(profile?.bartenderModeEnabled ?? true);
+  const links = visibleNavLinks(profile?.bartenderModeEnabled ?? true, useMocktailsOnly());
 
   return (
     <nav className="flex items-center justify-between border-b border-border px-six py-three">
@@ -899,6 +933,9 @@ export function SiteNav() {
               <Link
                 key={href}
                 href={href}
+                // Spec 0063 AC-11, AC-14: this link is server rendered before
+                // the mode is known, so CSS hides it before paint as well.
+                data-mocktails={key === "service" ? "hide" : undefined}
                 className={
                   isActive
                     ? "rounded-medium bg-accent px-three py-one text-accent-text"

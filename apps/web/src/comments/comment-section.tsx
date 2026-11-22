@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { useSession } from "@/auth/use-session";
+import { useMocktailsOnly } from "@/age-gate/age-gate-store";
 import { useRecipeComments } from "./use-comments";
 import { usePostComment, useEditComment, useDeleteComment } from "./use-comment-mutations";
 import { CommentPhotoThumbnails } from "./comment-photo-thumbnails";
@@ -176,9 +177,11 @@ function Composer({
   const photos = usePhotoDrafts();
   const postComment = usePostComment(recipeId);
 
+  // Spec 0063 AC-12: no composer and no sign in prompt in mocktails only
+  // mode. Both roots are server rendered, so they are marked for CSS.
   if (!isSessionLoading && !isLinked) {
     return (
-      <Text variant="bodySmall" muted>
+      <Text variant="bodySmall" muted data-mocktails="hide">
         {t.rich("signInToComment", {
           link: (chunks) => (
             <Link href="/account" className="underline">
@@ -227,6 +230,7 @@ function Composer({
         void submit();
       }}
       className="flex flex-col gap-two"
+      data-mocktails="hide"
     >
       <textarea
         value={body}
@@ -339,6 +343,7 @@ function CommentRow({
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const deleteComment = useDeleteComment(recipeId);
   const { session } = useSession();
+  const mocktailsOnly = useMocktailsOnly();
 
   const isOwn = session?.user.id === comment.userId;
 
@@ -368,14 +373,17 @@ function CommentRow({
         photos={comment.photos}
         displayName={comment.displayName}
         onReportPhoto={
-          isOwn
+          // Spec 0063 AC-12: no report control in mocktails only mode. The
+          // photo viewer opens only after hydration, so this check is enough.
+          isOwn || mocktailsOnly
             ? undefined
             : (photoId) => onReport({ kind: "photo", commentId: comment.id, photoId })
         }
       />
       {!isOwn && <OtherAuthorActions comment={comment} onReport={onReport} />}
       {isOwn && (
-        <div className="flex gap-two self-end">
+        // Posting is off in mocktails only mode (spec 0063 AC-12).
+        <div className="flex gap-two self-end" data-mocktails="hide">
           {isConfirmingDelete ? (
             <>
               <Text variant="bodySmall" muted>
@@ -432,7 +440,9 @@ function OtherAuthorActions({
   const failed = block.data?.error != null;
 
   return (
-    <div className="flex flex-col items-end gap-one">
+    // Spec 0063 AC-12: no report or block control in mocktails only mode.
+    // Server rendered (the session is unknown there), so marked for CSS.
+    <div className="flex flex-col items-end gap-one" data-mocktails="hide">
       <div className="flex flex-wrap justify-end gap-two">
         {isConfirmingBlock ? (
           <>

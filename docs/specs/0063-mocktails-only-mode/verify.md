@@ -65,3 +65,30 @@ _Steps derived from spec 0063 acceptance criteria. `/check verify` runs these; `
 
 ### Acceptance criteria coverage (milestone 2)
 - AC-5 drink ideas, recommendations, more like this, popular, homepage, favorites, recently viewed · AC-7 pantry, ingredient search, shopping list, visible view · AC-8 AI ideas flag, filtered pantry, prompt · AC-17 SQL default checks for the ten functions · AC-19 `enabled` waits for the gate state on every list
+
+## Milestone 3: hidden areas on web
+
+### UI / manual
+- [ ] In the mode, open `/learn` → tiles for Tools and Other only; no Spirits, Wine, or Beer tile and no quiz link, before hydration too (throttle JavaScript) → AC-9, AC-10, AC-14
+- [ ] In the mode, open `/learn/spirits`, `/learn/wine`, `/learn/beer`, and an article under each → the notice, focus on its heading, tab title `mocktails.unavailableTitle` → AC-9, AC-18
+- [ ] In the mode, `/learn/tools` and an article under it render normally, with no quiz link → AC-9, AC-10
+- [ ] In the mode, `/quizzes` and a quiz page → the notice; no Quizzes entry in the Learn dropdown or the mobile drawer → AC-10
+- [ ] In the mode, `/service` and each `/service/*` route (invite accept too) → the notice; no Service link in the header or drawer, before hydration too → AC-11, AC-14
+- [ ] In the mode, the account menu (header and drawer) has no Sign in, Account, or Bartender Mode entry; Favorites, Theme, and Language stay → AC-11, AC-12
+- [ ] In the mode, `/account` and `/account/reset-password` → the notice → AC-12
+- [ ] In the mode, signed in as an admin, `/admin/recipes`, `/admin/comments`, and `/admin/ingredients` → the notice → AC-12
+- [ ] In the mode, on a mocktail safe recipe: the rating summary and other people's comments (names, text, screened photos) show; no composer, no sign in prompt, no rating stars to tap, no Report or Block button, no report action in the photo viewer, no edit or delete on own comments → AC-12
+- [ ] In the mode, reach the AI ideas daily limit → the message has no sign in offer → AC-12
+- [ ] In the mode, no consent banner and no request to the PostHog host on any page → AC-13
+- [ ] As an adult, every page above looks exactly as before (no notice, every link and control present) → AC-17
+
+### Commands
+- [ ] `pnpm --filter web typecheck` and `pnpm test` pass → AC-9 to AC-12
+- [ ] `curl` the server HTML of `/en/learn/spirits`, `/en/quizzes`, `/en/account`, `/en/service` → each holds a `data-mocktails="hide"` wrapper and a `data-mocktails="notice"` block → AC-14
+
+### Value sourcing
+- [ ] Learn notice: hidden categories come from `MOCKTAILS_HIDDEN_LEARN_CATEGORIES` (`spirits`, `wine`, `beer`) checked against the route's `category`; `tools` and `other` stay → Value sourcing row 5
+- [ ] Quiz, service, account, admin notices: the route itself, through each area's layout → Value sourcing row 6
+
+### Acceptance criteria coverage (milestone 3)
+- AC-9 Learn tiles, category and article routes · AC-10 quiz links, nav entry, quiz routes · AC-11 Service link, Bartender Mode toggle, service routes · AC-12 account and admin routes, sign in entries, composer, report, block, photo report, rating control, limit message · AC-13 no change needed (providers wait for `confirmed`) · AC-14 server rendered markers on every hidden area

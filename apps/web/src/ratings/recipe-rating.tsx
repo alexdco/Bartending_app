@@ -44,14 +44,18 @@ export function RecipeRating({ recipeId }: RecipeRatingProps) {
           {t("none")}
         </Text>
       )}
+      {/* Spec 0063 AC-12: the summary above stays, but the rating control
+          and its sign in prompt are hidden in mocktails only mode. */}
       {!isLoading && isLinked ? (
-        <StarRating
-          value={myRating.data ?? 0}
-          disabled={submitRating.isPending}
-          onRate={(score: RatingScore) => submitRating.mutate({ score })}
-        />
+        <div data-mocktails="hide">
+          <StarRating
+            value={myRating.data ?? 0}
+            disabled={submitRating.isPending}
+            onRate={(score: RatingScore) => submitRating.mutate({ score })}
+          />
+        </div>
       ) : !isLoading ? (
-        <Text variant="bodySmall" muted>
+        <Text variant="bodySmall" muted data-mocktails="hide">
           {t.rich("signInToRate", {
             link: (chunks) => (
               <Link href="/account" className="underline">

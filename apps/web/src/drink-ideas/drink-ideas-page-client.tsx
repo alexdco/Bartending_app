@@ -20,6 +20,7 @@ import {
 import { track } from "@/analytics/posthog-client";
 import { useDrinkIdeas } from "./use-drink-ideas";
 import { useGenerateDrinkIdea } from "./use-generate-drink-idea";
+import { useMocktailsOnly } from "@/age-gate/age-gate-store";
 import { GeneratedRecipeCard } from "./generated-recipe-card";
 
 const MIN_PANTRY_INGREDIENTS_FOR_GENERATION = 2;
@@ -50,6 +51,7 @@ function generateErrorDescription(
   t: DrinkIdeasTranslator,
   error: unknown,
   locale: Locale,
+  mocktailsOnly: boolean,
 ): ReactNode {
   if (!(error instanceof GenerateDrinkIdeaError)) {
     return generateErrorMessage(t, locale, "generation_failed");
@@ -57,7 +59,14 @@ function generateErrorDescription(
 
   const limitMessage =
     error.reason === "quota_exceeded"
-      ? drinkIdeaLimitMessage(error, { copyLocale: locale, formatLocale: locale })
+      ? drinkIdeaLimitMessage(
+          // Spec 0063 AC-12: the visitor stays a guest in mocktails only mode,
+          // so the copy without the sign in offer is chosen.
+          mocktailsOnly
+            ? { resetsAt: error.resetsAt, limitReason: error.limitReason, signInHelps: false }
+            : error,
+          { copyLocale: locale, formatLocale: locale },
+        )
       : null;
 
   if (!limitMessage) {
@@ -84,6 +93,7 @@ export function DrinkIdeasPageClient() {
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
     useDrinkIdeas({ enabled: pantry.isSuccess && pantry.data.length > 0 });
   const generateDrinkIdea = useGenerateDrinkIdea();
+  const mocktailsOnly = useMocktailsOnly();
   const locale = useLocale() as Locale;
   const t = useTranslations("drinkIdeas");
   const tCommon = useTranslations("common");
@@ -139,7 +149,7 @@ export function DrinkIdeasPageClient() {
       ) : generateDrinkIdea.error ? (
         <EmptyState
           title={t("generateErrorTitle")}
-          description={generateErrorDescription(t, generateDrinkIdea.error, locale)}
+          description={generateErrorDescription(t, generateDrinkIdea.error, locale, mocktailsOnly)}
           action={<Button onClick={() => generateDrinkIdea.mutate()}>{tCommon("retry")}</Button>}
         />
       ) : (

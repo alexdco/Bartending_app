@@ -7,13 +7,24 @@ import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Spinner } from "@/components/spinner";
 import { usePathname, useRouter } from "@/i18n/navigation";
+import { MocktailsHiddenArea } from "@/mocktails/mocktails-hidden-area";
 
 const INVITE_ACCEPT_PATH = "/service/invite";
+
+// Spec 0063 AC-11: every /service route shows the notice in mocktails only
+// mode (the invite accept page too).
+export default function ServiceLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <MocktailsHiddenArea>
+      <ServiceGate>{children}</ServiceGate>
+    </MocktailsHiddenArea>
+  );
+}
 
 // Spec 0038 AC-6: Service is never blank. This layout owns the profile
 // loading and error state; the page owns the current bar's. `retry: 1` so a
 // failure shows within about a second.
-export default function ServiceLayout({ children }: { children: React.ReactNode }) {
+function ServiceGate({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const t = useTranslations("service");

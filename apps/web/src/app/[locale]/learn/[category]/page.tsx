@@ -99,7 +99,11 @@ export default async function LearnCategoryPage({
       )}
 
       {quiz && (
-        <Link href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}>
+        <Link
+          href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}
+          // Quizzes are hidden in mocktails only mode (spec 0063 AC-10).
+          data-mocktails="hide"
+        >
           <Card className="border-accent">
             <Text variant="label">{t("takeTheQuiz", { title: quiz.title })}</Text>
           </Card>
