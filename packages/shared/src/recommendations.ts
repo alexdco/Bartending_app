@@ -18,6 +18,8 @@ export interface RecipeRecommendationsParams {
   pageLimit?: number;
   pageOffset?: number;
   locale?: Locale;
+  /** Mocktails only mode (spec 0063): only mocktail safe candidates. */
+  mocktailsOnly?: boolean;
 }
 
 export const RECOMMENDATIONS_PAGE_SIZE = 20;
@@ -30,6 +32,7 @@ export async function fetchRecipeRecommendations(
     pageLimit = RECOMMENDATIONS_PAGE_SIZE,
     pageOffset = 0,
     locale = DEFAULT_LOCALE,
+    mocktailsOnly = false,
   }: RecipeRecommendationsParams = {},
 ): Promise<RecommendedRecipe[]> {
   const { data, error } = await client.rpc("recommend_recipes", {
@@ -38,6 +41,8 @@ export async function fetchRecipeRecommendations(
     page_limit: pageLimit,
     page_offset: pageOffset,
     locale,
+    // Omitted when false, so adult calls are unchanged (spec 0063 AC-17).
+    ...(mocktailsOnly ? { mocktails_only: true } : {}),
   });
 
   if (error) {

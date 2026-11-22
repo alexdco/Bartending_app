@@ -10,8 +10,14 @@ export interface PantryItem {
 export async function fetchPantryItems(
   client: SupabaseClient<Database>,
   locale: Locale = DEFAULT_LOCALE,
+  { mocktailsOnly = false }: { mocktailsOnly?: boolean } = {},
 ): Promise<PantryItem[]> {
-  const { data, error } = await client.rpc("fetch_pantry_items", { p_locale: locale });
+  // Mocktails only mode hides rows outside the visible ingredients; they stay
+  // stored (spec 0063 AC-7). Omitted when false (AC-17).
+  const { data, error } = await client.rpc("fetch_pantry_items", {
+    p_locale: locale,
+    ...(mocktailsOnly ? { p_mocktails_only: true } : {}),
+  });
 
   if (error) {
     throw error;
@@ -73,6 +79,8 @@ export interface SearchIngredientsOptions {
    * which never hold a staple; true for recipe forms (spec 0036, AC-10, AC-13).
    */
   includeStaples?: boolean;
+  /** Mocktails only mode (spec 0063 AC-7): only mocktail visible ingredients. */
+  mocktailsOnly?: boolean;
 }
 
 export async function searchIngredients(
@@ -80,13 +88,15 @@ export async function searchIngredients(
   query: string,
   resultLimit = 20,
   locale: Locale = DEFAULT_LOCALE,
-  { includeStaples = false }: SearchIngredientsOptions = {},
+  { includeStaples = false, mocktailsOnly = false }: SearchIngredientsOptions = {},
 ): Promise<IngredientSearchResult[]> {
   const { data, error } = await client.rpc("search_ingredients", {
     query,
     result_limit: resultLimit,
     locale,
     include_staples: includeStaples,
+    // Mocktails only mode (spec 0063); omitted when false (AC-17).
+    ...(mocktailsOnly ? { mocktails_only: true } : {}),
   });
 
   if (error) {

@@ -10,8 +10,14 @@ export interface ShoppingListItem {
 export async function fetchShoppingListItems(
   client: SupabaseClient<Database>,
   locale: Locale = DEFAULT_LOCALE,
+  { mocktailsOnly = false }: { mocktailsOnly?: boolean } = {},
 ): Promise<ShoppingListItem[]> {
-  const { data, error } = await client.rpc("fetch_shopping_list_items", { p_locale: locale });
+  // Mocktails only mode hides rows outside the visible ingredients; they stay
+  // stored (spec 0063 AC-7). Omitted when false (AC-17).
+  const { data, error } = await client.rpc("fetch_shopping_list_items", {
+    p_locale: locale,
+    ...(mocktailsOnly ? { p_mocktails_only: true } : {}),
+  });
 
   if (error) {
     throw error;

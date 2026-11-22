@@ -63,6 +63,49 @@ export function stapleNamesOutsidePantry(
 }
 
 /**
+ * Mocktails only mode (spec 0063 AC-8): only a literal `true` in the request
+ * body turns it on; anything else (missing, "true", 1) reads as false.
+ */
+export function parseMocktailsOnly(body: unknown): boolean {
+  return (
+    typeof body === "object" &&
+    body !== null &&
+    (body as Record<string, unknown>).mocktailsOnly === true
+  );
+}
+
+/** An ingredient row as read for the prompt: its id and its English name. */
+export interface NamedIngredientRow {
+  readonly id: string;
+  readonly name: string;
+}
+
+/**
+ * The names to offer the model. With no visible set (adults) every row is
+ * kept; in mocktails only mode only rows whose id is in the
+ * `mocktail_visible_ingredients` view (spec 0063 AC-7, AC-8), so `checkIdea`
+ * then rejects any idea that uses anything else.
+ */
+export function visibleIngredientNames(
+  rows: readonly NamedIngredientRow[],
+  visibleIds: ReadonlySet<string> | null,
+): readonly string[] {
+  return rows.filter((row) => visibleIds === null || visibleIds.has(row.id)).map((row) => row.name);
+}
+
+/** The prompt's opening words; the mode asks for a non alcoholic drink only (spec 0063 AC-8). */
+export function ideaPromptOpening(mocktailsOnly: boolean): string {
+  return mocktailsOnly
+    ? "Invent one original non alcoholic drink (a mocktail) using only these ingredients "
+    : "Invent one original cocktail or mocktail recipe using only these ingredients ";
+}
+
+/** The extra rule the mode adds to the prompt; empty otherwise (spec 0063 AC-8). */
+export function ideaPromptMocktailsRule(mocktailsOnly: boolean): string {
+  return mocktailsOnly ? "Do not use or mention any alcoholic ingredient. " : "";
+}
+
+/**
  * Every ingredient must come from the pantry or the staples, and at least one
  * from the pantry: an idea of only Ice and Water is no idea (spec 0036 AC-11).
  */

@@ -24,11 +24,17 @@ export function isSessionError(error: unknown): boolean {
 // has a fame score.
 export async function fetchClassicRecipes(
   client: SupabaseClient<Database>,
-  { locale = DEFAULT_LOCALE, limit = CLASSICS_ROW_SIZE }: { locale?: Locale; limit?: number } = {},
+  {
+    locale = DEFAULT_LOCALE,
+    limit = CLASSICS_ROW_SIZE,
+    mocktailsOnly = false,
+  }: { locale?: Locale; limit?: number; mocktailsOnly?: boolean } = {},
 ): Promise<RecipeSearchResult[]> {
   const { data, error } = await client.rpc("classic_recipes", {
     page_limit: limit,
     locale,
+    // Mocktails only mode (spec 0063 AC-5); omitted when false (AC-17).
+    ...(mocktailsOnly ? { mocktails_only: true } : {}),
   });
 
   if (error) {

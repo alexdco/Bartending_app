@@ -125,10 +125,13 @@ export function parseLimitDetails(body: unknown): DrinkIdeaLimitDetails {
 export async function generateDrinkIdea(
   client: SupabaseClient<Database>,
   locale: Locale = DEFAULT_LOCALE,
+  { mocktailsOnly = false }: { mocktailsOnly?: boolean } = {},
 ): Promise<GeneratedDrinkIdea> {
   const { data, error } = await client.functions.invoke<unknown>("generate-drink-idea", {
     method: "POST",
-    body: { locale },
+    // Mocktails only mode (spec 0063 AC-8): a non alcoholic idea from the
+    // visible pantry only. Omitted when false, so adult requests are unchanged.
+    body: mocktailsOnly ? { locale, mocktailsOnly: true } : { locale },
   });
 
   if (error) {

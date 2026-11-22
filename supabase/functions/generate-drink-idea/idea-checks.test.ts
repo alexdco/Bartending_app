@@ -2,9 +2,13 @@ import { describe, expect, it } from "vitest";
 import {
   checkGarnish,
   checkIdea,
+  ideaPromptMocktailsRule,
+  ideaPromptOpening,
   nameEntryOutsideRecipe,
+  parseMocktailsOnly,
   stapleNamesOutsidePantry,
   usesOnlyAvailableIngredients,
+  visibleIngredientNames,
   type IdeaIngredient,
   type RawDrinkIdea,
 } from "./idea-checks";
@@ -187,5 +191,65 @@ describe("usesOnlyAvailableIngredients", () => {
 describe("stapleNamesOutsidePantry", () => {
   it("drops staples the pantry already lists", () => {
     expect(stapleNamesOutsidePantry(["Ice", "Water"], ["vodka", " ICE "])).toEqual(["Water"]);
+  });
+});
+
+// Spec 0063 AC-8: mocktails only mode.
+describe("parseMocktailsOnly", () => {
+  it("is true only for a literal true", () => {
+    expect(parseMocktailsOnly({ locale: "en", mocktailsOnly: true })).toBe(true);
+    expect(parseMocktailsOnly({ mocktailsOnly: "true" })).toBe(false);
+    expect(parseMocktailsOnly({ mocktailsOnly: 1 })).toBe(false);
+    expect(parseMocktailsOnly({ locale: "en" })).toBe(false);
+    expect(parseMocktailsOnly(null)).toBe(false);
+    expect(parseMocktailsOnly("mocktailsOnly")).toBe(false);
+  });
+});
+
+describe("visibleIngredientNames", () => {
+  const rows = [
+    { id: "vodka", name: "Vodka" },
+    { id: "lime", name: "Lime Juice" },
+    { id: "soda", name: "Soda Water" },
+  ];
+
+  it("keeps every row for adults", () => {
+    expect(visibleIngredientNames(rows, null)).toEqual(["Vodka", "Lime Juice", "Soda Water"]);
+  });
+
+  it("keeps only visible ingredients in the mode", () => {
+    expect(visibleIngredientNames(rows, new Set(["lime", "soda", "ice"]))).toEqual([
+      "Lime Juice",
+      "Soda Water",
+    ]);
+  });
+
+  it("rejects an idea that uses a filtered out spirit", () => {
+    const mocktailPantry = visibleIngredientNames(rows, new Set(["lime", "soda"]));
+    const result = checkIdea(
+      idea({
+        ingredients: [ingredient("Vodka"), ingredient("Lime Juice"), ingredient("Soda Water")],
+        name_source_names: ["Lime Juice"],
+        name: "Lime Fizz",
+        garnish: null,
+      }),
+      mocktailPantry,
+      staples,
+    );
+    expect(result.ok).toBe(false);
+  });
+});
+
+describe("prompt wording", () => {
+  it("asks for a non alcoholic drink only in the mode", () => {
+    expect(ideaPromptOpening(true)).toContain("non alcoholic drink");
+    expect(ideaPromptMocktailsRule(true)).toContain("Do not use or mention any alcoholic");
+  });
+
+  it("keeps the adult wording unchanged", () => {
+    expect(ideaPromptOpening(false)).toBe(
+      "Invent one original cocktail or mocktail recipe using only these ingredients ",
+    );
+    expect(ideaPromptMocktailsRule(false)).toBe("");
   });
 });

@@ -11,6 +11,7 @@ import {
 } from "@bartendingapp/shared";
 import { supabase } from "@/lib/supabase";
 import { pantryQueryKeyPrefix } from "@/pantry/use-pantry";
+import { useMocktailsOnly } from "@/age-gate/age-gate-store";
 import { shoppingListQueryKey, shoppingListQueryKeyPrefix } from "./use-shopping-list";
 
 interface MutationContext {
@@ -20,7 +21,7 @@ interface MutationContext {
 export function useAddShoppingListItem() {
   const queryClient = useQueryClient();
   const locale = useLocale() as Locale;
-  const queryKey = shoppingListQueryKey(locale);
+  const queryKey = shoppingListQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string; name: string }) =>
@@ -53,7 +54,7 @@ export function useAddShoppingListItem() {
 export function useRemoveShoppingListItem() {
   const queryClient = useQueryClient();
   const locale = useLocale() as Locale;
-  const queryKey = shoppingListQueryKey(locale);
+  const queryKey = shoppingListQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string }) =>
@@ -82,7 +83,7 @@ export function useRemoveShoppingListItem() {
 export function useBuyShoppingListItem() {
   const queryClient = useQueryClient();
   const locale = useLocale() as Locale;
-  const queryKey = shoppingListQueryKey(locale);
+  const queryKey = shoppingListQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string }) =>

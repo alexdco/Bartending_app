@@ -1785,7 +1785,11 @@ export type Database = {
         }[];
       };
       classic_recipes: {
-        Args: { locale?: string; page_limit?: number };
+        Args: {
+          locale?: string;
+          mocktails_only?: boolean;
+          page_limit?: number;
+        };
         Returns: {
           alcoholic_status: string;
           base_name: string;
@@ -1831,6 +1835,7 @@ export type Database = {
       fetch_favorite_recipes: {
         Args: {
           p_locale?: string;
+          p_mocktails_only?: boolean;
           p_page_limit?: number;
           p_page_offset?: number;
         };
@@ -1843,7 +1848,7 @@ export type Database = {
         }[];
       };
       fetch_pantry_items: {
-        Args: { p_locale?: string };
+        Args: { p_locale?: string; p_mocktails_only?: boolean };
         Returns: {
           ingredient_id: string;
           name: string;
@@ -1874,7 +1879,11 @@ export type Database = {
         }[];
       };
       fetch_recipes_by_ids: {
-        Args: { p_ids: string[]; p_locale?: string };
+        Args: {
+          p_ids: string[];
+          p_locale?: string;
+          p_mocktails_only?: boolean;
+        };
         Returns: {
           alcoholic_status: string;
           base_name: string;
@@ -1884,7 +1893,7 @@ export type Database = {
         }[];
       };
       fetch_shopping_list_items: {
-        Args: { p_locale?: string };
+        Args: { p_locale?: string; p_mocktails_only?: boolean };
         Returns: {
           ingredient_id: string;
           name: string;
@@ -1945,7 +1954,7 @@ export type Database = {
         Returns: string[];
       };
       list_popular_regions: {
-        Args: never;
+        Args: { mocktails_only?: boolean };
         Returns: {
           region_name: string;
         }[];
@@ -1955,6 +1964,7 @@ export type Database = {
         Args: {
           locale?: string;
           max_ratio?: number;
+          mocktails_only?: boolean;
           page_limit?: number;
           page_offset?: number;
         };
@@ -1972,7 +1982,11 @@ export type Database = {
       normalize_comment_photo_alt: { Args: { p_item: Json }; Returns: string };
       photo_own_visible: { Args: { p_photo_id: string }; Returns: boolean };
       popular_recipes_by_region: {
-        Args: { locale?: string; region_filter: string };
+        Args: {
+          locale?: string;
+          mocktails_only?: boolean;
+          region_filter: string;
+        };
         Returns: {
           alcoholic_status: string;
           base_name: string;
@@ -1997,6 +2011,7 @@ export type Database = {
         Args: {
           current_recipe_id?: string;
           locale?: string;
+          mocktails_only?: boolean;
           page_limit?: number;
           page_offset?: number;
           recent_recipe_ids?: string[];
@@ -2074,6 +2089,7 @@ export type Database = {
         Args: {
           include_staples?: boolean;
           locale?: string;
+          mocktails_only?: boolean;
           query?: string;
           result_limit?: number;
         };

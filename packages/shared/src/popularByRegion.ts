@@ -12,8 +12,19 @@ export interface PopularRecipe {
   popularityRank: number;
 }
 
-export async function listPopularRegions(client: SupabaseClient<Database>): Promise<string[]> {
-  const { data, error } = await client.rpc("list_popular_regions");
+/** Mocktails only mode (spec 0063): only mocktail safe recipes, filtered in SQL. */
+export interface MocktailsOnlyOption {
+  mocktailsOnly?: boolean;
+}
+
+export async function listPopularRegions(
+  client: SupabaseClient<Database>,
+  { mocktailsOnly = false }: MocktailsOnlyOption = {},
+): Promise<string[]> {
+  // Mocktails only mode keeps only regions with a safe recipe (spec 0063 AC-5).
+  const { data, error } = mocktailsOnly
+    ? await client.rpc("list_popular_regions", { mocktails_only: true })
+    : await client.rpc("list_popular_regions");
 
   if (error) {
     throw error;
@@ -26,10 +37,13 @@ export async function fetchPopularByRegion(
   client: SupabaseClient<Database>,
   region: string,
   locale: Locale = DEFAULT_LOCALE,
+  { mocktailsOnly = false }: MocktailsOnlyOption = {},
 ): Promise<PopularRecipe[]> {
   const { data, error } = await client.rpc("popular_recipes_by_region", {
     region_filter: region,
     locale,
+    // Mocktails only mode (spec 0063); omitted when false (AC-17).
+    ...(mocktailsOnly ? { mocktails_only: true } : {}),
   });
 
   if (error) {

@@ -19,6 +19,7 @@ import { EmptyState } from "@/components/empty-state";
 import { LinkButton } from "@/components/link-button";
 import { Text } from "@/components/text";
 import { supabasePublic } from "@/lib/supabase-public";
+import { PopularRegionMocktails } from "@/popular/popular-region-mocktails";
 import { PopularRegionPicker } from "@/popular/popular-region-picker";
 import { RecipeCard } from "@/recipes/recipe-card";
 
@@ -92,38 +93,51 @@ export default async function PopularRegionPage({
         {t("title")}
       </Text>
 
-      <PopularRegionPicker regions={regions} selectedRegion={region} />
+      {/* Spec 0063 AC-14: the full region list and recipes are hidden by CSS
+          before paint in mocktails only mode; PopularRegionMocktails shows
+          the filtered ones instead (AC-5). */}
+      <PopularRegionMocktails region={region} />
+
+      <div data-mocktails="hide">
+        <PopularRegionPicker regions={regions} selectedRegion={region} />
+      </div>
 
       {quiz && (
-        <Link href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}>
+        <Link
+          href={`/quizzes/${buildQuizSlugPath(quiz.id, quiz.title)}`}
+          // Quizzes are hidden in mocktails only mode (spec 0063 AC-10).
+          data-mocktails="hide"
+        >
           <Card className="border-accent">
             <Text variant="label">{t("takeTheQuiz", { title: quiz.title })}</Text>
           </Card>
         </Link>
       )}
 
-      {recipes.length === 0 ? (
-        <EmptyState
-          title={t("regionEmptyTitle")}
-          description={t("regionEmptyDescription")}
-          action={<LinkButton href="/search">{t("browseAll")}</LinkButton>}
-        />
-      ) : (
-        <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
-          {recipes.map((recipe) => (
-            <RecipeCard
-              key={recipe.id}
-              recipe={{
-                id: recipe.id,
-                name: recipe.name,
-                baseName: recipe.baseName,
-                imageUrl: recipe.imageUrl,
-                alcoholicStatus: recipe.alcoholicStatus,
-              }}
-            />
-          ))}
-        </div>
-      )}
+      <div data-mocktails="hide" className="flex flex-col gap-four">
+        {recipes.length === 0 ? (
+          <EmptyState
+            title={t("regionEmptyTitle")}
+            description={t("regionEmptyDescription")}
+            action={<LinkButton href="/search">{t("browseAll")}</LinkButton>}
+          />
+        ) : (
+          <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
+            {recipes.map((recipe) => (
+              <RecipeCard
+                key={recipe.id}
+                recipe={{
+                  id: recipe.id,
+                  name: recipe.name,
+                  baseName: recipe.baseName,
+                  imageUrl: recipe.imageUrl,
+                  alcoholicStatus: recipe.alcoholicStatus,
+                }}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

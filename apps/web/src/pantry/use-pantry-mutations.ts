@@ -12,6 +12,7 @@ import {
 import { supabase } from "@/lib/supabase";
 import { track } from "@/analytics/posthog-client";
 import { drinkIdeasQueryKeyPrefix } from "@/drink-ideas/use-drink-ideas";
+import { useMocktailsOnly } from "@/age-gate/age-gate-store";
 import { pantryQueryKey, pantryQueryKeyPrefix } from "./use-pantry";
 
 const recommendationsQueryKeyPrefix = ["recommendations"] as const;
@@ -23,7 +24,7 @@ interface MutationContext {
 export function useAddPantryItem() {
   const queryClient = useQueryClient();
   const locale = useLocale() as Locale;
-  const queryKey = pantryQueryKey(locale);
+  const queryKey = pantryQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string; name: string }) =>
@@ -62,7 +63,7 @@ export function useAddPantryItem() {
 export function useRemovePantryItem() {
   const queryClient = useQueryClient();
   const locale = useLocale() as Locale;
-  const queryKey = pantryQueryKey(locale);
+  const queryKey = pantryQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string }) =>

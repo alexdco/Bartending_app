@@ -13,14 +13,23 @@ import {
   getRecentlyViewedRecipeIds,
   recordRecentlyViewedRecipe,
 } from "@/recipes/recently-viewed-storage";
+import { useMocktailsQuery } from "@/mocktails/use-mocktails-query";
 
 export function recommendationsQueryKey(
   currentRecipeId: string,
   recentRecipeIds: string[],
   pageOffset: number,
   locale: Locale,
+  mocktailsOnly: boolean,
 ) {
-  return ["recommendations", currentRecipeId, recentRecipeIds, pageOffset, locale] as const;
+  return [
+    "recommendations",
+    currentRecipeId,
+    recentRecipeIds,
+    pageOffset,
+    locale,
+    { mocktailsOnly },
+  ] as const;
 }
 
 export function useRecordRecentlyViewedRecipe(recipeId: string) {
@@ -32,9 +41,17 @@ export function useRecordRecentlyViewedRecipe(recipeId: string) {
 export function useRecipeRecommendations(currentRecipeId: string, pageOffset = 0) {
   const [recentRecipeIds] = useState(() => getRecentlyViewedRecipeIds());
   const locale = useLocale() as Locale;
+  // Spec 0063 AC-5: more like this and recommendations hold only safe recipes.
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   return useQuery({
-    queryKey: recommendationsQueryKey(currentRecipeId, recentRecipeIds, pageOffset, locale),
+    queryKey: recommendationsQueryKey(
+      currentRecipeId,
+      recentRecipeIds,
+      pageOffset,
+      locale,
+      mocktailsOnly,
+    ),
     queryFn: () =>
       fetchRecipeRecommendations(supabase, {
         currentRecipeId,
@@ -42,6 +59,8 @@ export function useRecipeRecommendations(currentRecipeId: string, pageOffset = 0
         pageLimit: RECOMMENDATIONS_PAGE_SIZE,
         pageOffset,
         locale,
+        mocktailsOnly,
       }),
+    enabled: ready,
   });
 }

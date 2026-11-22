@@ -254,6 +254,7 @@ export async function fetchRecipesByIds(
   client: SupabaseClient<Database>,
   ids: string[],
   locale: Locale = DEFAULT_LOCALE,
+  { mocktailsOnly = false }: { mocktailsOnly?: boolean } = {},
 ): Promise<RecipeSearchResult[]> {
   if (ids.length === 0) {
     return [];
@@ -262,6 +263,8 @@ export async function fetchRecipesByIds(
   const { data, error } = await client.rpc("fetch_recipes_by_ids", {
     p_ids: ids,
     p_locale: locale,
+    // Mocktails only mode (spec 0063); omitted when false (AC-17).
+    ...(mocktailsOnly ? { p_mocktails_only: true } : {}),
   });
 
   if (error) {

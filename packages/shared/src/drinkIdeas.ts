@@ -23,6 +23,8 @@ export interface DrinkIdeaMatchParams {
   pageLimit?: number;
   pageOffset?: number;
   locale?: Locale;
+  /** Mocktails only mode (spec 0063): safe recipes only, matched on visible pantry rows. */
+  mocktailsOnly?: boolean;
 }
 
 export const DRINK_IDEAS_PAGE_SIZE = 20;
@@ -35,6 +37,7 @@ export async function fetchDrinkIdeaMatches(
     pageLimit = DRINK_IDEAS_PAGE_SIZE,
     pageOffset = 0,
     locale = DEFAULT_LOCALE,
+    mocktailsOnly = false,
   }: DrinkIdeaMatchParams = {},
 ): Promise<DrinkIdeaMatch[]> {
   const { data, error } = await client.rpc("match_recipes_to_pantry", {
@@ -42,6 +45,8 @@ export async function fetchDrinkIdeaMatches(
     page_limit: pageLimit,
     page_offset: pageOffset,
     locale,
+    // Omitted when false, so adult calls are unchanged (spec 0063 AC-17).
+    ...(mocktailsOnly ? { mocktails_only: true } : {}),
   });
 
   if (error) {

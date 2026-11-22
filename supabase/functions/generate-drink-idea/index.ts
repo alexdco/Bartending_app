@@ -2,6 +2,7 @@
 // Spec: docs/specs/0007-ai-generated-pantry-drink-ideas.md
 // Limits: docs/specs/0034-ai-quota-abuse-hardening/index.md
 // Names and garnish: docs/specs/0059-drink-idea-names-garnish.md
+// Mocktails only mode: docs/specs/0063-mocktails-only-mode/index.md
 //
 // - Never accepts a pantry ingredient list from the caller; always resolves the
 //   caller's own pantry server side via auth.uid() (0007 AC-8).
@@ -23,9 +24,14 @@ import * as Sentry from "npm:@sentry/deno@10";
 import { clientIpFromHeaders, hashIpBucket, ipBucket } from "../_shared/ip-bucket.ts";
 import {
   checkIdea,
+  ideaPromptMocktailsRule,
+  ideaPromptOpening,
+  parseMocktailsOnly,
   stapleNamesOutsidePantry,
+  visibleIngredientNames,
   type CheckedDrinkIdea,
   type IdeaCheckFailure,
+  type NamedIngredientRow,
 } from "./idea-checks.ts";
 
 const MIN_PANTRY_INGREDIENTS = 2;
@@ -461,6 +467,7 @@ async function generateWithClaude(
   stapleNames: readonly string[],
   locale: Locale,
   retryHint: string,
+  mocktailsOnly: boolean,
 ): Promise<GenerationResult> {
   const languageInstruction =
     locale === DEFAULT_LOCALE
@@ -479,12 +486,13 @@ async function generateWithClaude(
 
   // The shared rules every locale receives (spec 0059 AC-5).
   const content =
-    `Invent one original cocktail or mocktail recipe using only these ingredients ` +
+    ideaPromptOpening(mocktailsOnly) +
     `(you do not have to use all of them): ${pantryNames.join(", ")}.\n` +
     `${stapleInstruction}` +
     `${languageInstruction}` +
     `Give a rough amount for each ingredient used and numbered preparation steps. ` +
     `Do not use any ingredient not in these lists. ` +
+    ideaPromptMocktailsRule(mocktailsOnly) +
     `For each ingredient, also return "source_name": the exact English ingredient ` +
     `name from the lists above (unchanged, for matching), alongside "name": the ` +
     `ingredient name written in the language requested above (or the same as ` +
@@ -549,9 +557,12 @@ Deno.serve(async (req) => {
   const authHeader = req.headers.get("Authorization") ?? "";
 
   let locale: Locale = DEFAULT_LOCALE;
+  // Spec 0063 AC-8: never logged or stored; only shapes this one idea.
+  let mocktailsOnly = false;
   try {
     const body = await req.json();
     locale = parseLocale(body?.locale);
+    mocktailsOnly = parseMocktailsOnly(body);
   } catch {
     // No body, or not JSON; default to English (matches the request's
     // pre step 8 shape, which never sent a body).
@@ -572,16 +583,36 @@ Deno.serve(async (req) => {
 
   const { data: pantryRows, error: pantryError } = await supabase
     .from("pantry_items")
-    .select("ingredients ( name )");
+    .select("ingredient_id, ingredients ( name )");
 
   if (pantryError) {
     reportError(pantryError, { userId: user.id, stage: "pantry_read" });
     return jsonResponse({ error: "failed to read pantry" }, 502);
   }
 
-  const pantryNames = (pantryRows ?? [])
-    .map((row) => (row.ingredients as { name: string } | null)?.name)
-    .filter((name): name is string => Boolean(name));
+  // Spec 0063 AC-8: in mocktails only mode, only mocktail visible ingredients
+  // reach the prompt and the pantry check. A separate read, since a view
+  // carries no foreign keys for PostgREST embedding. Fails closed: if it
+  // can't be read, no idea is generated.
+  let visibleIds: ReadonlySet<string> | null = null;
+  if (mocktailsOnly) {
+    const { data: visibleRows, error: visibleError } = await supabase
+      .from("mocktail_visible_ingredients")
+      .select("id");
+    if (visibleError) {
+      reportError(visibleError, { userId: user.id, stage: "visible_ingredients_read" });
+      return jsonResponse({ error: "failed to read pantry" }, 502);
+    }
+    visibleIds = new Set((visibleRows ?? []).map((row) => row.id as string));
+  }
+
+  const pantryNames = visibleIngredientNames(
+    (pantryRows ?? []).flatMap((row): NamedIngredientRow[] => {
+      const name = (row.ingredients as { name: string } | null)?.name;
+      return name ? [{ id: row.ingredient_id as string, name }] : [];
+    }),
+    visibleIds,
+  );
 
   if (pantryNames.length < MIN_PANTRY_INGREDIENTS) {
     return jsonResponse({ error: "pantry too small to generate from" }, 422);
@@ -591,7 +622,7 @@ Deno.serve(async (req) => {
   // is still made from the pantry alone, as before feature 55.
   const { data: stapleRows, error: stapleError } = await supabase
     .from("ingredients")
-    .select("name")
+    .select("id, name")
     .eq("is_staple", true);
 
   if (stapleError) {
@@ -603,7 +634,12 @@ Deno.serve(async (req) => {
   }
 
   const stapleNames = stapleNamesOutsidePantry(
-    (stapleRows ?? []).map((row) => row.name as string).filter(Boolean),
+    visibleIngredientNames(
+      (stapleRows ?? [])
+        .filter((row) => Boolean(row.name))
+        .map((row) => ({ id: row.id as string, name: row.name as string })),
+      visibleIds,
+    ),
     pantryNames,
   );
 
@@ -703,6 +739,7 @@ Deno.serve(async (req) => {
         stapleNames,
         locale,
         retryHint,
+        mocktailsOnly,
       );
       if (result.ok) {
         idea = result.idea;

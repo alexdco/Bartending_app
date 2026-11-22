@@ -58,6 +58,8 @@ export interface FetchFavoriteRecipesParams {
   pageLimit?: number;
   pageOffset?: number;
   locale?: Locale;
+  /** Mocktails only mode (spec 0063): only mocktail safe favorites are returned. */
+  mocktailsOnly?: boolean;
 }
 
 export async function fetchFavoriteRecipes(
@@ -66,12 +68,15 @@ export async function fetchFavoriteRecipes(
     pageLimit = FAVORITES_PAGE_SIZE,
     pageOffset = 0,
     locale = DEFAULT_LOCALE,
+    mocktailsOnly = false,
   }: FetchFavoriteRecipesParams = {},
 ): Promise<RecipeSearchResult[]> {
   const { data, error } = await client.rpc("fetch_favorite_recipes", {
     p_locale: locale,
     p_page_limit: pageLimit,
     p_page_offset: pageOffset,
+    // Mocktails only mode (spec 0063); omitted when false (AC-17).
+    ...(mocktailsOnly ? { p_mocktails_only: true } : {}),
   });
 
   if (error) {
