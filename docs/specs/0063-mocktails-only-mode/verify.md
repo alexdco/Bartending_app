@@ -1,4 +1,4 @@
-# Verify: Mocktails only mode · spec 0063 · updated 2026-11-19
+# Verify: Mocktails only mode · spec 0063 · updated 2026-11-22
 _Steps derived from spec 0063 acceptance criteria. `/check verify` runs these; `/test` locks the durable ones._
 
 ## Milestone 1: thin thread on web
@@ -35,3 +35,33 @@ _Steps derived from spec 0063 acceptance criteria. `/check verify` runs these; `
 
 ### Acceptance criteria coverage (milestone 1)
 - AC-1 gate button and release · AC-2 lifetime and storage · AC-3 precedence, exempt routes · AC-4 SQL check · AC-5 search only (other lists in milestone 2) · AC-6 recipe and more like this notice · AC-14 CSS before paint · AC-15 web badge · AC-16 storage fallback · AC-17 SQL default checks for the two functions · AC-18 web locales (mobile in milestone 4/5) · AC-19 no early fetch on search
+
+## Milestone 2: every other list on web, plus the AI ideas flag
+
+### UI / manual
+- [ ] In the mode, add vodka, lime juice, and soda water to the pantry as a guest, then open `/drink-ideas` → only mocktail safe matches, and missing counts ignore vodka → AC-5, AC-7
+- [ ] In the mode, open `/pantry` with vodka stored → vodka is not listed; leave the mode (fresh tab, answer Yes) → vodka is still there → AC-7
+- [ ] In the mode, type "vodka" in the pantry ingredient search → no results; "lime" → results → AC-7
+- [ ] In the mode, add an ingredient to the shopping list, then check that a stored spirit row is hidden and untouched for adults → AC-7
+- [ ] In the mode, open a safe recipe's more like this and the homepage recommendations → every card is mocktail safe → AC-5
+- [ ] In the mode, homepage classics, recently viewed (after viewing an alcoholic recipe as an adult in the same tab history), and the popular carousel hold only safe recipes → AC-5
+- [ ] In the mode, `/popular/<region>` → the server list and picker are hidden before paint; the client list shows only regions with a safe recipe and only safe recipes → AC-5, AC-14
+- [ ] In the mode, favorite an alcoholic recipe as an adult first, then open `/favorites` in the mode → it is not shown, and paging still fills pages → AC-5
+- [ ] In the mode, generate an AI idea with a pantry of vodka, lime juice, and soda water → the idea uses no vodka and reads as a non alcoholic drink; with only vodka and one other spirit → the "pantry too small" message → AC-8
+- [ ] Network panel in the mode: every list request carries `mocktails_only: true` (or `p_mocktails_only`); as an adult, no request carries the flag → AC-5, AC-17
+- [ ] No filtered list request is sent before the gate state is known → AC-19
+
+### Commands
+- [ ] Paste `supabase/tests/mocktails_only_lists_check.sql` into the SQL editor → every line in the raised report reads PASS → AC-5, AC-7, AC-17
+- [ ] `select count(*) from public.search_ingredients('vodka', 20, 'en', false, true)` → 0; without the flag → more than 0 → AC-7
+- [ ] `select count(*) from public.mocktail_visible_ingredients v join public.ingredients i on i.id = v.id where i.category in ('spirit','liqueur')` → 0 → AC-7
+- [ ] `pnpm test` → idea-checks tests pass (parseMocktailsOnly, visibleIngredientNames, prompt wording) → AC-8
+- [ ] The deployed `generate-drink-idea` imports `idea-checks.ts` and reads `mocktailsOnly` (check its source in the dashboard) → AC-8
+
+### Value sourcing
+- [ ] Ingredient lists: pantry, ingredient search, and shopping list come from `mocktail_visible_ingredients` (staples included, no spirit or liqueur) → Value sourcing row 3
+- [ ] AI idea: allowed pantry names come from pantry rows joined to `mocktail_visible_ingredients` server side, flag from the request body → Value sourcing row 7
+- [ ] Popular region list comes from `list_popular_regions(mocktails_only => true)` → Value sourcing row 8
+
+### Acceptance criteria coverage (milestone 2)
+- AC-5 drink ideas, recommendations, more like this, popular, homepage, favorites, recently viewed · AC-7 pantry, ingredient search, shopping list, visible view · AC-8 AI ideas flag, filtered pantry, prompt · AC-17 SQL default checks for the ten functions · AC-19 `enabled` waits for the gate state on every list
