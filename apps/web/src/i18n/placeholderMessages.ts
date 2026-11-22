@@ -10,6 +10,16 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "home.popularIn": ["region"],
   "recipe.metaDescription": ["ingredients", "name"],
   "recipe.missingIngredients": ["names"],
+  // Spec 0064 AC-16: the credit is label plus name in every locale.
+  "recipe.submittedBy": ["name"],
+  // Spec 0064 submit form: a row number and a character or row limit.
+  "submissions.ingredientName": ["number"],
+  "submissions.measure": ["number"],
+  "submissions.noteHint": ["max"],
+  "submissions.errorTooLong": ["max"],
+  "submissions.errorTooManyIngredients": ["max"],
+  "admin.recipeSubmissions.approveFailed": ["message"],
+  "admin.recipeSubmissions.approveNotesFailed": ["message"],
   "search.metaTitleQuery": ["query"],
   "search.metaDescriptionQuery": ["query"],
   "batch.percent": ["value"],

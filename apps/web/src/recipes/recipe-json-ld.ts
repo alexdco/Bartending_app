@@ -26,5 +26,9 @@ export function buildRecipeJsonLd(recipe: RecipeDetail, canonicalUrl: string) {
     ),
     recipeInstructions: recipe.instructions,
     recipeCategory: recipeCategory(recipe.alcoholicStatus),
+    // Spec 0064 AC-16: only a community recipe with a named author.
+    ...(recipe.credit?.kind === "named"
+      ? { author: { "@type": "Person", name: recipe.credit.name } }
+      : {}),
   };
 }

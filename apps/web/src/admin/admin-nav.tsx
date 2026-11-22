@@ -7,6 +7,7 @@ const adminLinks = [
   { href: "/admin/comments", key: "comments" },
   { href: "/admin/recipes", key: "recipes" },
   { href: "/admin/ingredients", key: "ingredients" },
+  { href: "/admin/submissions", key: "submissions" },
 ] as const;
 
 export function AdminNav() {

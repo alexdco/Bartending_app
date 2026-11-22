@@ -57,6 +57,14 @@ export function RecipeDetailHeader({ recipe }: RecipeDetailHeaderProps) {
         {recipe.glass && <Chip>{recipe.glass}</Chip>}
       </div>
       <RecipeRating recipeId={recipe.id} />
+      {/* Spec 0064 AC-16: the name is plain text, read live from the author's profile. */}
+      {recipe.credit && (
+        <Text variant="bodySmall" muted>
+          {recipe.credit.kind === "named"
+            ? tRecipe("submittedBy", { name: recipe.credit.name })
+            : tRecipe("submittedByCommunity")}
+        </Text>
+      )}
       {recipe.isCocktailDbRecipe && (
         <Text variant="bodySmall" muted>
           <a

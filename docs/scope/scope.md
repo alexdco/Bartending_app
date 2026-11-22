@@ -78,7 +78,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 65 | Ingredient substitution suggestions | Slice 35 | planned |
 | 66 | Shared shift log | Slice 36 | planned |
 | 67 | Mocktails only mode | Slice 37 | in-progress |
-| 68 | User submitted recipes | Slice 38 | planned |
+| 68 | User submitted recipes | Slice 38 | in-progress |
 | 69 | French | Slice 39 | in-progress |
 | 70 | Russian | Slice 39 | done |
 | 71 | Hindi | Slice 39 | in-progress |
@@ -1021,10 +1021,21 @@ Spec [0063](../specs/0063-mocktails-only-mode/index.md) · code in `supabase/mig
 
 ## Slice 38: User submitted recipes
 
-### 68. User submitted recipes · needs a decision · GA
+### 68. User submitted recipes · in-progress · GA
 Signed in users submit their own recipes, and an admin reviews them before they reach the public catalog.
 **Done when:** a signed in user can submit a recipe, it stays private until an admin approves it, and approved recipes appear in search with the author credited.
-- [ ] Design it (spec): `/architect user submitted recipes`
+- [x] Design it (spec): `/architect user submitted recipes`
+- [ ] Build it: `/develop user submitted recipes`
+  - [x] Thin thread on web: submissions table and author and admin functions, `recipes.submitted_by`, shared validation, the approve Edge Function, My recipes and the submit form, the admin queue and review, and the credit line with JSON-LD, satisfies AC-1 to AC-5, AC-10, AC-11, AC-16, AC-21, AC-23
+  - [ ] Author lifecycle and form helpers: edit and resubmit, withdraw, reject with reason, stale review guard, duplicate warning, ingredient autocomplete, search prompt, satisfies AC-6, AC-7, AC-13, AC-14, AC-21
+  - [ ] Photos, screening, and Draft English: the private bucket and copy on approval, the Haiku screening function with trigger, cron, and caps, the "Not screened" warning, and the English draft for non English submissions, satisfies AC-8, AC-9, AC-11, AC-12, AC-15
+  - [ ] Safety and lifecycle: block from submitting, the daily cleanup job, account deletion cleanup, the import guard test, and mocktails hiding, satisfies AC-17 to AC-20, AC-22
+  - [ ] Mobile parity, strings in all 9 locales, analytics, and `verify.md`, satisfies AC-1, AC-3, AC-6 to AC-8, AC-16, AC-20, AC-21, AC-24
+- [ ] Verify it: `/check verify user submitted recipes`
+- [ ] Test it: `/test user submitted recipes`
+- [ ] Review it (fresh model): `/check review user submitted recipes`
+- [ ] Document it: `/document user submitted recipes`
+Spec [0064](../specs/0064-user-submitted-recipes/index.md) · code in `supabase/migrations`, `supabase/functions`, `packages/shared`, `apps/web`, `apps/mobile`
 
 ## Slice 39: More languages
 

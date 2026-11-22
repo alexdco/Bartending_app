@@ -12,10 +12,12 @@ import {
   splitIngredientLines,
   splitNameList,
   uploadRecipeImage,
+  validateAdminRecipeForm,
   type AdminAlcoholicStatus,
   type AdminRecipeDetail,
   type AdminRecipeFormIngredient,
   type AdminRecipeFormTag,
+  type AdminRecipeFormValues,
   type AdminRecipeValidationError,
   type DrinkStyle,
   type RecipeMethod,
@@ -114,27 +116,60 @@ function sameFlavorNames(
   return flavorKey(a) === flavorKey(b);
 }
 
+/** Starting values for a new recipe, e.g. a recipe submission under review (spec 0064 AC-11). */
+export type AdminRecipePrefill = Partial<
+  Pick<
+    AdminRecipeDetail,
+    "name" | "instructions" | "glass" | "alcoholicStatus" | "ingredients" | "bartenderTip"
+  >
+>;
+
+/** Null on success; otherwise field errors or a message to show above the button. */
+export type AdminRecipeSubmitOutcome = {
+  errors?: AdminRecipeValidationError[];
+  message?: string;
+} | null;
+
 export interface AdminRecipeFormProps {
   /** Pass an existing recipe to pre fill the form for editing; omit to create. */
   existingRecipe?: AdminRecipeDetail;
+  /** Pre fills a new recipe without editing an existing one. */
+  prefill?: AdminRecipePrefill;
+  /**
+   * Replaces the default save (admin_upsert_recipe plus image) with the
+   * caller's action, such as approving a submission. The image field is
+   * hidden; the caller navigates on success.
+   */
+  onSubmitValues?: (values: AdminRecipeFormValues) => Promise<AdminRecipeSubmitOutcome>;
+  submitLabel?: string;
+  submittingLabel?: string;
 }
 
-export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
+export function AdminRecipeForm({
+  existingRecipe,
+  prefill,
+  onSubmitValues,
+  submitLabel,
+  submittingLabel,
+}: AdminRecipeFormProps) {
   const t = useTranslations("admin");
   const tCommon = useTranslations("common");
   const tStatus = useTranslations("alcoholicStatus");
   const tRecipe = useTranslations("recipe");
   const tMethods = useTranslations("methods");
   const router = useRouter();
-  const [name, setName] = useState(existingRecipe?.name ?? "");
-  const [instructions, setInstructions] = useState(existingRecipe?.instructions ?? "");
+  const [name, setName] = useState(existingRecipe?.name ?? prefill?.name ?? "");
+  const [instructions, setInstructions] = useState(
+    existingRecipe?.instructions ?? prefill?.instructions ?? "",
+  );
   const [imageChange, setImageChange] = useState<RecipeImageChange>({ kind: "keep" });
   // A new recipe whose details saved but whose image did not: a retry saves
   // into this id instead of creating a second recipe.
   const [savedRecipeId, setSavedRecipeId] = useState<string | null>(null);
-  const [glass, setGlass] = useState(existingRecipe?.glass ?? "");
+  const [glass, setGlass] = useState(existingRecipe?.glass ?? prefill?.glass ?? "");
   const [alcoholicStatus, setAlcoholicStatus] = useState<AdminAlcoholicStatus>(
-    (existingRecipe?.alcoholicStatus as AdminAlcoholicStatus) ?? "unknown",
+    ((existingRecipe?.alcoholicStatus ?? prefill?.alcoholicStatus) as AdminAlcoholicStatus) ??
+      "unknown",
   );
   const [region, setRegion] = useState(existingRecipe?.region ?? "");
   const [method, setMethod] = useState<RecipeMethod | null>(existingRecipe?.method ?? null);
@@ -142,7 +177,11 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
     existingRecipe?.fameScore == null ? "" : String(existingRecipe.fameScore),
   );
   const [ingredients, setIngredients] = useState<AdminRecipeFormIngredient[]>(
-    existingRecipe?.ingredients.length ? existingRecipe.ingredients : [{ name: "", measure: "" }],
+    existingRecipe?.ingredients.length
+      ? existingRecipe.ingredients
+      : prefill?.ingredients?.length
+        ? prefill.ingredients
+        : [{ name: "", measure: "" }],
   );
   const [tags, setTags] = useState<AdminRecipeFormTag[]>(
     existingRecipe?.tags.length ? existingRecipe.tags : [{ name: "" }],
@@ -154,7 +193,9 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
     existingRecipe?.drinkStyle ?? null,
   );
   const [drinkStyleNote, setDrinkStyleNote] = useState(existingRecipe?.drinkStyleNote ?? "");
-  const [bartenderTip, setBartenderTip] = useState(existingRecipe?.bartenderTip ?? "");
+  const [bartenderTip, setBartenderTip] = useState(
+    existingRecipe?.bartenderTip ?? prefill?.bartenderTip ?? "",
+  );
   const [presentationTip, setPresentationTip] = useState(existingRecipe?.presentationTip ?? "");
   const [errors, setErrors] = useState<AdminRecipeValidationError[]>([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -222,7 +263,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
     setIsSaving(true);
     setSaveError(null);
 
-    const result = await saveAdminRecipe(supabase, {
+    const values: AdminRecipeFormValues = {
       recipeId: existingRecipe?.id ?? savedRecipeId,
       name,
       instructions,
@@ -242,7 +283,23 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
       drinkStyleNote,
       bartenderTip,
       presentationTip,
-    });
+    };
+
+    if (onSubmitValues) {
+      const validationErrors = validateAdminRecipeForm(values);
+      if (validationErrors.length > 0) {
+        setErrors(validationErrors);
+        setIsSaving(false);
+        return;
+      }
+      const outcome = await onSubmitValues(values);
+      setIsSaving(false);
+      setErrors(outcome?.errors ?? []);
+      setSaveError(outcome?.message ?? null);
+      return;
+    }
+
+    const result = await saveAdminRecipe(supabase, values);
 
     if (result.error) {
       setIsSaving(false);
@@ -338,12 +395,14 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
         )}
       </div>
 
-      <RecipeImageField
-        currentUrl={existingRecipe?.imageUrl ?? null}
-        change={imageChange}
-        onChange={setImageChange}
-        disabled={isSaving}
-      />
+      {!onSubmitValues && (
+        <RecipeImageField
+          currentUrl={existingRecipe?.imageUrl ?? null}
+          change={imageChange}
+          onChange={setImageChange}
+          disabled={isSaving}
+        />
+      )}
 
       <Input
         label={t("glass")}
@@ -679,7 +738,7 @@ export function AdminRecipeForm({ existingRecipe }: AdminRecipeFormProps) {
       )}
 
       <Button type="submit" disabled={isSaving}>
-        {isSaving ? t("saving") : t("saveRecipe")}
+        {isSaving ? (submittingLabel ?? t("saving")) : (submitLabel ?? t("saveRecipe"))}
       </Button>
     </form>
   );

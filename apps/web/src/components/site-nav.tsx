@@ -137,6 +137,12 @@ function LanguageSubmenu() {
   );
 }
 
+// Spec 0064 AC-21: signed in users only.
+const submissionLinks = [
+  { href: "/my-recipes/new", key: "submitRecipe" },
+  { href: "/my-recipes", key: "myRecipes" },
+] as const;
+
 function NavBadge() {
   const { session, isLinked, isLoading } = useSession();
   const { data: profile } = useProfile();
@@ -248,6 +254,20 @@ function NavBadge() {
               </Text>
             </Link>
           </DropdownMenu.Item>
+          {/* Spec 0064 AC-21; hidden in mocktails only mode (AC-20). */}
+          {!mocktailsOnly &&
+            submissionLinks.map((link) => (
+              <DropdownMenu.Item key={link.href} asChild>
+                <Link
+                  href={link.href}
+                  className="block px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected"
+                >
+                  <Text variant="label" as="span">
+                    {t(link.key)}
+                  </Text>
+                </Link>
+              </DropdownMenu.Item>
+            ))}
           <DropdownMenu.Separator className="my-two h-px bg-border" />
           <DropdownMenu.Sub>
             <DropdownMenu.SubTrigger className="flex cursor-pointer items-center justify-between px-four py-two text-label outline-none data-[highlighted]:bg-surface-selected focus-visible:outline-2 focus-visible:-outline-offset-2 focus-visible:outline-focus hover:bg-surface-selected data-[state=open]:bg-surface-selected">
@@ -734,6 +754,19 @@ function DrawerAccountSection({ onNavigate }: { onNavigate: () => void }) {
           {t("favorites")}
         </Text>
       </Link>
+      {!mocktailsOnly &&
+        submissionLinks.map((link) => (
+          <Link
+            key={link.href}
+            href={link.href}
+            onClick={onNavigate}
+            className="block rounded-medium px-three py-two hover:bg-surface-selected"
+          >
+            <Text variant="label" as="span">
+              {t(link.key)}
+            </Text>
+          </Link>
+        ))}
       <div>
         <button
           type="button"

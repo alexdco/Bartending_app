@@ -24,6 +24,7 @@ const recipe: RecipeDetail = {
   bartenderTip: null,
   presentationTip: null,
   mocktailSafe: false,
+  credit: null,
 };
 
 describe("buildRecipeJsonLd", () => {
@@ -38,6 +39,22 @@ describe("buildRecipeJsonLd", () => {
 
     expect(jsonLd?.image).toEqual([recipeImage]);
     expect(JSON.stringify(jsonLd)).not.toContain("comment-photos");
+  });
+
+  // Spec 0064 AC-16.
+  it("credits a named community author as a Person", () => {
+    const jsonLd = buildRecipeJsonLd(
+      { ...recipe, credit: { kind: "named", name: "Sam" } },
+      "https://example.com",
+    );
+    expect(jsonLd?.author).toEqual({ "@type": "Person", name: "Sam" });
+  });
+
+  it("has no author for catalog recipes or a deleted community author", () => {
+    expect(buildRecipeJsonLd(recipe, "https://example.com")).not.toHaveProperty("author");
+    expect(
+      buildRecipeJsonLd({ ...recipe, credit: { kind: "community" } }, "https://example.com"),
+    ).not.toHaveProperty("author");
   });
 
   it("emits nothing without a recipe image rather than falling back to another image", () => {

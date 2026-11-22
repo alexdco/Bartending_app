@@ -1123,6 +1123,128 @@ export type Database = {
           },
         ];
       };
+      recipe_submission_usage: {
+        Row: {
+          count: number;
+          day: string;
+          user_id: string;
+        };
+        Insert: {
+          count: number;
+          day: string;
+          user_id: string;
+        };
+        Update: {
+          count?: number;
+          day?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
+      recipe_submissions: {
+        Row: {
+          alcoholic_status: string;
+          approved_recipe_id: string | null;
+          author_id: string;
+          created_at: string;
+          glass: string | null;
+          id: string;
+          ingredients: Json;
+          instructions: string;
+          locale: string;
+          name: string;
+          note: string | null;
+          photo_path: string | null;
+          photo_screening: string | null;
+          rejection_reason: string | null;
+          reviewed_at: string | null;
+          screening_attempts: number;
+          screening_claimed_at: string | null;
+          screening_note: string | null;
+          status: string;
+          submitted_at: string;
+          text_screening: string;
+          updated_at: string;
+        };
+        Insert: {
+          alcoholic_status: string;
+          approved_recipe_id?: string | null;
+          author_id: string;
+          created_at?: string;
+          glass?: string | null;
+          id?: string;
+          ingredients: Json;
+          instructions: string;
+          locale: string;
+          name: string;
+          note?: string | null;
+          photo_path?: string | null;
+          photo_screening?: string | null;
+          rejection_reason?: string | null;
+          reviewed_at?: string | null;
+          screening_attempts?: number;
+          screening_claimed_at?: string | null;
+          screening_note?: string | null;
+          status: string;
+          submitted_at?: string;
+          text_screening?: string;
+          updated_at?: string;
+        };
+        Update: {
+          alcoholic_status?: string;
+          approved_recipe_id?: string | null;
+          author_id?: string;
+          created_at?: string;
+          glass?: string | null;
+          id?: string;
+          ingredients?: Json;
+          instructions?: string;
+          locale?: string;
+          name?: string;
+          note?: string | null;
+          photo_path?: string | null;
+          photo_screening?: string | null;
+          rejection_reason?: string | null;
+          reviewed_at?: string | null;
+          screening_attempts?: number;
+          screening_claimed_at?: string | null;
+          screening_note?: string | null;
+          status?: string;
+          submitted_at?: string;
+          text_screening?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "recipe_submissions_approved_recipe_id_fkey";
+            columns: ["approved_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "mocktail_safe_recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_submissions_approved_recipe_id_fkey";
+            columns: ["approved_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_submissions_approved_recipe_id_fkey";
+            columns: ["approved_recipe_id"];
+            isOneToOne: false;
+            referencedRelation: "recipes_localized";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "recipe_submissions_locale_fkey";
+            columns: ["locale"];
+            isOneToOne: false;
+            referencedRelation: "supported_locales";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
       recipe_tags: {
         Row: {
           recipe_id: string;
@@ -1275,6 +1397,7 @@ export type Database = {
           source_hash: string | null;
           source_id: string;
           straining: string | null;
+          submitted_by: string | null;
           updated_at: string;
         };
         Insert: {
@@ -1310,6 +1433,7 @@ export type Database = {
           source_hash?: string | null;
           source_id: string;
           straining?: string | null;
+          submitted_by?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -1345,6 +1469,7 @@ export type Database = {
           source_hash?: string | null;
           source_id?: string;
           straining?: string | null;
+          submitted_by?: string | null;
           updated_at?: string;
         };
         Relationships: [
@@ -1502,6 +1627,7 @@ export type Database = {
           display_name: string | null;
           is_admin: boolean;
           locale: string | null;
+          submissions_blocked_at: string | null;
           theme: string;
           updated_at: string;
           user_id: string;
@@ -1511,6 +1637,7 @@ export type Database = {
           display_name?: string | null;
           is_admin?: boolean;
           locale?: string | null;
+          submissions_blocked_at?: string | null;
           theme?: string;
           updated_at?: string;
           user_id: string;
@@ -1520,6 +1647,7 @@ export type Database = {
           display_name?: string | null;
           is_admin?: boolean;
           locale?: string | null;
+          submissions_blocked_at?: string | null;
           theme?: string;
           updated_at?: string;
           user_id?: string;
@@ -1644,6 +1772,28 @@ export type Database = {
       };
     };
     Functions: {
+      _upsert_recipe_core: {
+        Args: {
+          p_alcoholic_status: string;
+          p_fame_score: number;
+          p_flavor_profile: string[];
+          p_glass: string;
+          p_ingredients: Json;
+          p_instructions: string;
+          p_method: string;
+          p_name: string;
+          p_new_recipe_id: string;
+          p_recipe_id: string;
+          p_region: string;
+          p_set_fame_score: boolean;
+          p_set_method: boolean;
+          p_source: string;
+          p_source_id: string;
+          p_submitted_by: string;
+          p_tags: Json;
+        };
+        Returns: string;
+      };
       accept_bar_invite: {
         Args: { p_invite_id: string };
         Returns: {
@@ -1659,6 +1809,28 @@ export type Database = {
           isSetofReturn: false;
         };
       };
+      admin_approve_recipe_submission: {
+        Args: {
+          p_alcoholic_status: string;
+          p_bartender_tip?: string;
+          p_expected_updated_at: string;
+          p_fame_score?: number;
+          p_flavor_profile?: string[];
+          p_glass: string;
+          p_image_url?: string;
+          p_ingredients: Json;
+          p_instructions: string;
+          p_method?: string;
+          p_name: string;
+          p_recipe_id: string;
+          p_region: string;
+          p_set_fame_score?: boolean;
+          p_set_method?: boolean;
+          p_submission_id: string;
+          p_tags: Json;
+        };
+        Returns: string;
+      };
       admin_clear_moderation: {
         Args: {
           p_comment_id: string;
@@ -1672,6 +1844,56 @@ export type Database = {
         Returns: Json;
       };
       admin_delete_recipe: { Args: { p_recipe_id: string }; Returns: undefined };
+      admin_fetch_recipe_submission: {
+        Args: { p_id: string };
+        Returns: {
+          alcoholic_status: string;
+          approved_recipe_id: string;
+          author_blocked: boolean;
+          author_display_name: string;
+          author_id: string;
+          created_at: string;
+          glass: string;
+          id: string;
+          ingredients: Json;
+          instructions: string;
+          locale: string;
+          name: string;
+          note: string;
+          photo_path: string;
+          photo_screening: string;
+          rejection_reason: string;
+          reviewed_at: string;
+          screening_attempts: number;
+          screening_note: string;
+          similar_recipes: Json;
+          status: string;
+          submitted_at: string;
+          text_screening: string;
+          updated_at: string;
+        }[];
+      };
+      admin_list_recipe_submissions: {
+        Args: {
+          p_cursor_at?: string;
+          p_cursor_id?: string;
+          p_limit?: number;
+          p_status: string;
+        };
+        Returns: {
+          author_display_name: string;
+          author_id: string;
+          id: string;
+          locale: string;
+          name: string;
+          photo_path: string;
+          photo_screening: string;
+          reviewed_at: string;
+          submitted_at: string;
+          text_screening: string;
+          updated_at: string;
+        }[];
+      };
       admin_reset_recipe_to_source: {
         Args: { p_recipe_id: string };
         Returns: undefined;
@@ -1785,11 +2007,7 @@ export type Database = {
         }[];
       };
       classic_recipes: {
-        Args: {
-          locale?: string;
-          mocktails_only?: boolean;
-          page_limit?: number;
-        };
+        Args: { locale?: string; mocktails_only?: boolean; page_limit?: number };
         Returns: {
           alcoholic_status: string;
           base_name: string;
@@ -1847,6 +2065,49 @@ export type Database = {
           name: string;
         }[];
       };
+      fetch_my_recipe_submission: {
+        Args: { p_id?: string };
+        Returns: {
+          alcoholic_status: string;
+          approved_recipe_id: string;
+          blocked: boolean;
+          glass: string;
+          id: string;
+          ingredients: Json;
+          instructions: string;
+          locale: string;
+          name: string;
+          needs_display_name: boolean;
+          note: string;
+          photo_path: string;
+          rejection_reason: string;
+          status: string;
+          updated_at: string;
+        }[];
+      };
+      fetch_my_recipe_submissions: {
+        Args: {
+          p_cursor_id?: string;
+          p_cursor_submitted_at?: string;
+          p_limit?: number;
+          p_locale?: string;
+        };
+        Returns: {
+          approved_recipe_id: string;
+          id: string;
+          name: string;
+          photo_path: string;
+          recipe_base_name: string;
+          recipe_image_url: string;
+          recipe_name: string;
+          recipe_removed: boolean;
+          rejection_reason: string;
+          reviewed_at: string;
+          status: string;
+          submitted_at: string;
+          updated_at: string;
+        }[];
+      };
       fetch_pantry_items: {
         Args: { p_locale?: string; p_mocktails_only?: boolean };
         Returns: {
@@ -1869,21 +2130,19 @@ export type Database = {
           ingredients: Json;
           instructions: string;
           is_cocktaildb_recipe: boolean;
+          is_community: boolean;
           is_favorited: boolean;
           method: string;
           mocktail_safe: boolean;
           name: string;
           presentation_tip: string;
           straining: string;
+          submitted_by_name: string;
           taste_tags: string[];
         }[];
       };
       fetch_recipes_by_ids: {
-        Args: {
-          p_ids: string[];
-          p_locale?: string;
-          p_mocktails_only?: boolean;
-        };
+        Args: { p_ids: string[]; p_locale?: string; p_mocktails_only?: boolean };
         Returns: {
           alcoholic_status: string;
           base_name: string;
@@ -1980,6 +2239,10 @@ export type Database = {
       };
       normalize_comment_body: { Args: { p_body: string }; Returns: string };
       normalize_comment_photo_alt: { Args: { p_item: Json }; Returns: string };
+      normalize_recipe_submission_ingredients: {
+        Args: { p: Json };
+        Returns: Json;
+      };
       photo_own_visible: { Args: { p_photo_id: string }; Returns: boolean };
       popular_recipes_by_region: {
         Args: {
@@ -2006,6 +2269,14 @@ export type Database = {
           average: number;
           count: number;
         }[];
+      };
+      recipe_submission_ingredients_valid: {
+        Args: { p: Json };
+        Returns: boolean;
+      };
+      recipe_submitted_by_name: {
+        Args: { p_recipe_id: string };
+        Returns: string;
       };
       recommend_recipes: {
         Args: {
@@ -2073,6 +2344,25 @@ export type Database = {
       resolve_recipe_redirect: {
         Args: { p_recipe_id: string };
         Returns: string;
+      };
+      save_recipe_submission: {
+        Args: {
+          p_alcoholic_status: string;
+          p_display_name?: string;
+          p_glass: string;
+          p_id: string;
+          p_ingredients: Json;
+          p_instructions: string;
+          p_locale?: string;
+          p_name: string;
+          p_note?: string;
+          p_photo_path?: string;
+        };
+        Returns: {
+          id: string;
+          status: string;
+          updated_at: string;
+        }[];
       };
       search_bartender: {
         Args: { bar_id?: string; query: string; recent_recipe_ids?: string[] };

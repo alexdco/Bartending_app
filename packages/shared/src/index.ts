@@ -53,3 +53,4 @@ export * from "./flavorProfile";
 export * from "./catalogNames";
 export * from "./brand";
 export * from "./ageGate";
+export * from "./submissions";

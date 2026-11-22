@@ -5,6 +5,7 @@ import { toRecognizedUnit, validAmountMax, type RecognizedUnit } from "./units";
 import type { IngredientCategory } from "./batch";
 import { toAllergenList, type Allergen } from "./allergens";
 import { isDrinkStyle, type DrinkStyle } from "./drinkStyle";
+import { toRecipeCredit, type RecipeCredit } from "./submissions/credit";
 
 export type AlcoholicStatusFilter = "alcoholic" | "non_alcoholic" | "optional";
 
@@ -181,6 +182,8 @@ export interface RecipeDetail {
   presentationTip: string | null;
   /** Shown in mocktails only mode; false hides the recipe behind a notice (spec 0063 AC-6). */
   mocktailSafe: boolean;
+  /** Community recipes credit their author; null for catalog and admin recipes (spec 0064 AC-16). */
+  credit: RecipeCredit | null;
 }
 
 interface RecipeDetailIngredientRow {
@@ -247,6 +250,7 @@ export async function fetchRecipeDetail(
     presentationTip: data.presentation_tip ?? null,
     // Fails closed: a missing column reads as not safe.
     mocktailSafe: data.mocktail_safe === true,
+    credit: toRecipeCredit(data.is_community, data.submitted_by_name),
   };
 }
 
