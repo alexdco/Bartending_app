@@ -1,6 +1,10 @@
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
-import { isLearnCategory, type LearnCategory } from "@bartendingapp/shared";
+import {
+  isLearnCategory,
+  isMocktailsHiddenLearnCategory,
+  type LearnCategory,
+} from "@bartendingapp/shared";
 
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
@@ -11,6 +15,8 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useLearnArticles } from "@/learn/use-learn-articles";
 import { useQuizBySource } from "@/quizzes/use-quizzes";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
+import { MocktailsUnavailable } from "@/mocktails/mocktails-unavailable";
 
 const CATEGORY_LABELS: Record<LearnCategory, string> = {
   tools: "Tools",
@@ -20,16 +26,18 @@ const CATEGORY_LABELS: Record<LearnCategory, string> = {
   other: "Other",
 };
 
-export default function LearnCategoryScreen() {
+function LearnCategoryContent() {
   const theme = useTheme();
   const router = useRouter();
   const { category: categoryParam } = useLocalSearchParams<{ category: string }>();
   const category = isLearnCategory(categoryParam) ? categoryParam : null;
+  const mocktailsOnly = useMocktailsOnly();
 
   const articlesQuery = useLearnArticles(category ?? "other");
   const articles = category ? (articlesQuery.data ?? []) : [];
-  const quizQuery = useQuizBySource("learn_category", category);
-  const quiz = category ? (quizQuery.data ?? null) : null;
+  // Quizzes are hidden in mocktails only mode, so the lookup is skipped (spec 0063 AC-10).
+  const quizQuery = useQuizBySource("learn_category", mocktailsOnly ? null : category);
+  const quiz = category && !mocktailsOnly ? (quizQuery.data ?? null) : null;
 
   if (!category) {
     return (
@@ -130,3 +138,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
 });
+
+// Spirits, wine, and beer show the notice in mocktails only mode, before any
+// of their content is fetched (spec 0063 AC-9).
+export default function LearnCategoryScreen() {
+  const { category } = useLocalSearchParams<{ category: string }>();
+  const mocktailsOnly = useMocktailsOnly();
+  if (mocktailsOnly && isMocktailsHiddenLearnCategory(category ?? "")) {
+    return <MocktailsUnavailable />;
+  }
+  return <LearnCategoryContent />;
+}

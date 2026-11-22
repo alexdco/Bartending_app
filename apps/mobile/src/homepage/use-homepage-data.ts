@@ -11,6 +11,7 @@ import {
 import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
 import { getRecentlyViewedRecipeIds } from "@/recipes/recently-viewed-storage";
+import { useMocktailsQuery } from "@/mocktails/mocktails-context";
 
 const recentlyViewedIdsQueryKey = ["home", "recentlyViewedIds"] as const;
 
@@ -25,16 +26,18 @@ export function useHomeRecommendations() {
   const idsQuery = useRecentlyViewedIds();
   const recentRecipeIds = idsQuery.data ?? [];
   const locale = useActiveLocale();
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   const recommendationsQuery = useQuery({
-    queryKey: ["home", "recommendations", recentRecipeIds, locale] as const,
+    queryKey: ["home", "recommendations", recentRecipeIds, locale, { mocktailsOnly }] as const,
     queryFn: () =>
       fetchRecipeRecommendations(supabase, {
         recentRecipeIds,
         pageLimit: RECOMMENDATIONS_PAGE_SIZE,
         locale,
+        mocktailsOnly,
       }),
-    enabled: idsQuery.isSuccess,
+    enabled: idsQuery.isSuccess && ready,
   });
 
   return {
@@ -48,11 +51,12 @@ export function useHomeRecentlyViewed() {
   const idsQuery = useRecentlyViewedIds();
   const ids = idsQuery.data ?? [];
   const locale = useActiveLocale();
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   const recipesQuery = useQuery({
-    queryKey: ["home", "recentlyViewed", ids, locale] as const,
-    queryFn: () => fetchRecipesByIds(supabase, ids, locale),
-    enabled: idsQuery.isSuccess && ids.length > 0,
+    queryKey: ["home", "recentlyViewed", ids, locale, { mocktailsOnly }] as const,
+    queryFn: () => fetchRecipesByIds(supabase, ids, locale, { mocktailsOnly }),
+    enabled: idsQuery.isSuccess && ids.length > 0 && ready,
   });
 
   return {
@@ -64,19 +68,23 @@ export function useHomeRecentlyViewed() {
 }
 
 export function useHomePopularRegions() {
+  const { mocktailsOnly, ready } = useMocktailsQuery();
+
   return useQuery({
-    queryKey: ["home", "popularRegions"] as const,
-    queryFn: () => listPopularRegions(supabase),
+    queryKey: ["home", "popularRegions", { mocktailsOnly }] as const,
+    queryFn: () => listPopularRegions(supabase, { mocktailsOnly }),
+    enabled: ready,
   });
 }
 
 export function useHomePopularByRegion(region: string | null) {
   const locale = useActiveLocale();
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   return useQuery({
-    queryKey: ["home", "popularByRegion", region, locale] as const,
-    queryFn: () => fetchPopularByRegion(supabase, region as string, locale),
-    enabled: region !== null,
+    queryKey: ["home", "popularByRegion", region, locale, { mocktailsOnly }] as const,
+    queryFn: () => fetchPopularByRegion(supabase, region as string, locale, { mocktailsOnly }),
+    enabled: region !== null && ready,
   });
 }
 
@@ -87,10 +95,13 @@ const CLASSICS_STALE_TIME_MS = 10 * 60 * 1000;
 // staleTime.
 export function useHomeClassics() {
   const locale = useActiveLocale();
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   return useQuery({
-    queryKey: ["classic-recipes", locale] as const,
-    queryFn: () => fetchClassicRecipes(supabase, { locale, limit: CLASSICS_ROW_SIZE }),
+    queryKey: ["classic-recipes", locale, { mocktailsOnly }] as const,
+    queryFn: () =>
+      fetchClassicRecipes(supabase, { locale, limit: CLASSICS_ROW_SIZE, mocktailsOnly }),
+    enabled: ready,
     staleTime: CLASSICS_STALE_TIME_MS,
   });
 }

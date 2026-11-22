@@ -14,6 +14,7 @@ import { useIngredientSearch } from "@/pantry/use-ingredient-search";
 import { useCurrentBar } from "@/service/use-current-bar";
 import { useCreateBarRecipe } from "@/service/use-bar-mutations";
 import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 const UNITS = BAR_FORM_UNITS;
 
@@ -74,7 +75,7 @@ function AddIngredientRow({ onAdd }: { onAdd: (ingredient: DraftIngredient) => v
 // spec 0023-bar-data-model.md's build plan step 6 note). An owner can still
 // achieve the same practical result by naming the house recipe after the
 // classic it's based on and entering its own ratios directly.
-export default function BarRecipeFormScreen() {
+function BarRecipeFormScreen() {
   const theme = useTheme();
   const currentBar = useCurrentBar();
   const barId = currentBar.currentBar?.id;
@@ -265,3 +266,6 @@ const styles = StyleSheet.create({
     padding: Spacing.two,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(BarRecipeFormScreen);

@@ -12,6 +12,7 @@ import { useProfile, useUpdateBartenderModeEnabled } from "@/auth/use-preference
 import { useSignOut } from "@/auth/use-auth-mutations";
 import { Text } from "@/components/text";
 import { avatarSize, getInitials } from "@bartendingapp/shared";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 
 const HIT_SLOP = { top: 8, bottom: 8, left: 8, right: 8 };
 
@@ -84,8 +85,11 @@ function HeaderBadge() {
   const signOut = useSignOut();
   const updateBartenderModeEnabled = useUpdateBartenderModeEnabled();
   const [menuVisible, setMenuVisible] = useState(false);
+  const mocktailsOnly = useMocktailsOnly();
 
-  if (isLoading) {
+  // Mocktails only mode keeps the visitor a guest: no sign in, account menu,
+  // or Bartender Mode toggle (spec 0063 AC-11, AC-12).
+  if (isLoading || mocktailsOnly) {
     return <View style={styles.header} />;
   }
 
@@ -153,7 +157,9 @@ export default function AppTabs() {
   const accent = Colors[scheme === "light" ? "light" : "dark"].accent;
   const { t } = useTranslation();
   const { data: profile } = useProfile();
-  const bartenderModeEnabled = profile?.bartenderModeEnabled ?? true;
+  const mocktailsOnly = useMocktailsOnly();
+  // The service tab is a bar feature, hidden in mocktails only mode (spec 0063 AC-11).
+  const showService = (profile?.bartenderModeEnabled ?? true) && !mocktailsOnly;
 
   return (
     <View style={styles.container}>
@@ -228,7 +234,7 @@ export default function AppTabs() {
         <NativeTabs.Trigger name="quizzes" hidden />
 
         {/* TODO: missing asset: a dedicated service/bartender tab icon; reusing home.png as a placeholder per the engineer's call */}
-        {bartenderModeEnabled ? (
+        {showService ? (
           <NativeTabs.Trigger name="service">
             <NativeTabs.Trigger.Label>{t("nav.service")}</NativeTabs.Trigger.Label>
             <NativeTabs.Trigger.Icon

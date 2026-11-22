@@ -9,6 +9,7 @@ import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
 import { pantryQueryKeyPrefix } from "@/pantry/use-pantry";
 import { shoppingListQueryKey, shoppingListQueryKeyPrefix } from "./use-shopping-list";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 
 interface MutationContext {
   previousItems: ShoppingListItem[] | undefined;
@@ -17,7 +18,7 @@ interface MutationContext {
 export function useAddShoppingListItem() {
   const queryClient = useQueryClient();
   const locale = useActiveLocale();
-  const queryKey = shoppingListQueryKey(locale);
+  const queryKey = shoppingListQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string; name: string }) =>
@@ -50,7 +51,7 @@ export function useAddShoppingListItem() {
 export function useRemoveShoppingListItem() {
   const queryClient = useQueryClient();
   const locale = useActiveLocale();
-  const queryKey = shoppingListQueryKey(locale);
+  const queryKey = shoppingListQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string }) =>
@@ -79,7 +80,7 @@ export function useRemoveShoppingListItem() {
 export function useBuyShoppingListItem() {
   const queryClient = useQueryClient();
   const locale = useActiveLocale();
-  const queryKey = shoppingListQueryKey(locale);
+  const queryKey = shoppingListQueryKey(locale, useMocktailsOnly());
 
   return useMutation({
     mutationFn: ({ ingredientId }: { ingredientId: string }) =>

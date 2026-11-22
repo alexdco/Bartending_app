@@ -12,6 +12,7 @@ import { RecentlyViewedCarousel } from "@/homepage/recently-viewed-carousel";
 import { RecommendationsCarousel } from "@/homepage/recommendations-carousel";
 import { PopularByRegionCarousel } from "@/homepage/popular-by-region-carousel";
 import { useHomePopularRegions } from "@/homepage/use-homepage-data";
+import { MocktailsBadge } from "@/mocktails/mocktails-badge";
 
 export default function HomeScreen() {
   const theme = useTheme();
@@ -27,6 +28,9 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
       <ScrollView contentContainerStyle={styles.list}>
+        {/* Spec 0063 AC-15: plain text pill, only in mocktails only mode. */}
+        <MocktailsBadge />
+
         {showBanner && (
           <View
             style={[styles.banner, { backgroundColor: theme.surface, borderColor: theme.border }]}

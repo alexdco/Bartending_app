@@ -2,9 +2,16 @@ import { useQuery } from "@tanstack/react-query";
 import { searchIngredients, type Locale } from "@bartendingapp/shared";
 import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
+import { useMocktailsQuery } from "@/mocktails/mocktails-context";
 
-export function ingredientSearchQueryKey(query: string, locale: Locale, includeStaples: boolean) {
-  return ["ingredients", "search", query, locale, includeStaples] as const;
+// Spec 0063 AC-5, AC-7: the mode is part of the key.
+export function ingredientSearchQueryKey(
+  query: string,
+  locale: Locale,
+  includeStaples: boolean,
+  mocktailsOnly: boolean,
+) {
+  return ["ingredients", "search", query, locale, includeStaples, { mocktailsOnly }] as const;
 }
 
 /**
@@ -13,9 +20,12 @@ export function ingredientSearchQueryKey(query: string, locale: Locale, includeS
  */
 export function useIngredientSearch(query: string, { includeStaples = false } = {}) {
   const locale = useActiveLocale();
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   return useQuery({
-    queryKey: ingredientSearchQueryKey(query, locale, includeStaples),
-    queryFn: () => searchIngredients(supabase, query, 20, locale, { includeStaples }),
+    queryKey: ingredientSearchQueryKey(query, locale, includeStaples, mocktailsOnly),
+    queryFn: () =>
+      searchIngredients(supabase, query, 20, locale, { includeStaples, mocktailsOnly }),
+    enabled: ready,
   });
 }

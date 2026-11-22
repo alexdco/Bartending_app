@@ -7,6 +7,7 @@ import {
 } from "@bartendingapp/shared";
 import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
+import { useMocktailsQuery } from "@/mocktails/mocktails-context";
 import {
   getRecentlyViewedRecipeIds,
   recordRecentlyViewedRecipe,
@@ -19,8 +20,17 @@ export function recommendationsQueryKey(
   recentRecipeIds: string[],
   pageOffset: number,
   locale: Locale,
+  mocktailsOnly: boolean,
 ) {
-  return ["recommendations", currentRecipeId, recentRecipeIds, pageOffset, locale] as const;
+  // Spec 0063 AC-5: the mode is part of the key.
+  return [
+    "recommendations",
+    currentRecipeId,
+    recentRecipeIds,
+    pageOffset,
+    locale,
+    { mocktailsOnly },
+  ] as const;
 }
 
 export function useRecordRecentlyViewedRecipe(recipeId: string) {
@@ -44,9 +54,16 @@ export function useRecipeRecommendations(currentRecipeId: string, pageOffset = 0
   const recentRecipeIdsQuery = useRecentlyViewedRecipeIds();
   const recentRecipeIds = recentRecipeIdsQuery.data ?? [];
   const locale = useActiveLocale();
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   const recommendationsQuery = useQuery({
-    queryKey: recommendationsQueryKey(currentRecipeId, recentRecipeIds, pageOffset, locale),
+    queryKey: recommendationsQueryKey(
+      currentRecipeId,
+      recentRecipeIds,
+      pageOffset,
+      locale,
+      mocktailsOnly,
+    ),
     queryFn: () =>
       fetchRecipeRecommendations(supabase, {
         currentRecipeId,
@@ -54,8 +71,9 @@ export function useRecipeRecommendations(currentRecipeId: string, pageOffset = 0
         pageLimit: RECOMMENDATIONS_PAGE_SIZE,
         pageOffset,
         locale,
+        mocktailsOnly,
       }),
-    enabled: recentRecipeIdsQuery.isSuccess,
+    enabled: recentRecipeIdsQuery.isSuccess && ready,
   });
 
   return {

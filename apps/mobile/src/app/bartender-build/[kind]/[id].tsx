@@ -28,6 +28,7 @@ import {
 } from "@/service/quick-build-unit-storage";
 import { recordBartenderRecentlyViewed } from "@/service/bartender-recently-viewed-storage";
 import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 const KEEP_AWAKE_TAG = "quick-build-mode";
 const UNITS: QuickBuildUnit[] = ["oz", "ml", "parts"];
@@ -47,7 +48,7 @@ function MethodLine({ method, straining }: { method: string | null; straining: s
   );
 }
 
-export default function QuickBuildModeScreen() {
+function QuickBuildModeScreen() {
   const theme = useTheme();
   const { t, i18n } = useTranslation();
   const locale = isSupportedLocale(i18n.language) ? i18n.language : "en";
@@ -304,3 +305,6 @@ const styles = StyleSheet.create({
     gap: Spacing.one,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(QuickBuildModeScreen);

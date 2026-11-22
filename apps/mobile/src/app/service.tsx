@@ -16,6 +16,7 @@ import { useBarServiceData } from "@/service/use-bar-service-data";
 import { useCreateBar, useToggleStock } from "@/service/use-bar-mutations";
 import { usePinnedRecipes } from "@/service/use-pinned-recipes";
 import { useBartenderModeGuardState } from "@/service/use-bartender-mode-guard";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 function BarSwitcher({
   bars,
@@ -218,7 +219,7 @@ function CurrentMenuSection({ barId }: { barId: string }) {
   );
 }
 
-export default function ServiceScreen() {
+function ServiceScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { isLinked } = useSession();
@@ -365,3 +366,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.one,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(ServiceScreen);

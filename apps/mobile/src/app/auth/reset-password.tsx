@@ -11,8 +11,9 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { supabase } from "@/lib/supabase";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
-export default function ResetPasswordScreen() {
+function ResetPasswordScreen() {
   const theme = useTheme();
   const router = useRouter();
   const [password, setPassword] = useState("");
@@ -64,3 +65,6 @@ const styles = StyleSheet.create({
     width: "100%",
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(ResetPasswordScreen);

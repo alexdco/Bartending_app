@@ -12,9 +12,9 @@ import { useTheme } from "@/hooks/use-theme";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { RECOMMENDATIONS_PAGE_SIZE, type RecommendedRecipe } from "@bartendingapp/shared";
 import { useRecipeRecommendations } from "@/recipe-recommendations/use-recipe-recommendations";
+import { RecipeMocktailsGate } from "@/mocktails/recipe-mocktails-gate";
 
-export default function MoreLikeThisScreen() {
-  const { id } = useLocalSearchParams<{ id: string }>();
+function MoreLikeThisContent({ id }: { id: string }) {
   const theme = useTheme();
 
   const [pages, setPages] = useState<RecommendedRecipe[][]>([]);
@@ -108,3 +108,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
 });
+
+// In mocktails only mode, more like this for a recipe that is not mocktail
+// safe shows the notice (spec 0063 AC-6).
+export default function MoreLikeThisScreen() {
+  const { id } = useLocalSearchParams<{ id: string }>();
+  return (
+    <RecipeMocktailsGate recipeId={id}>
+      <MoreLikeThisContent id={id} />
+    </RecipeMocktailsGate>
+  );
+}

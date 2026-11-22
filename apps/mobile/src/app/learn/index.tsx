@@ -1,12 +1,17 @@
 import { useRouter } from "expo-router";
 import { SafeAreaView, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
-import { LEARN_CATEGORIES, type LearnCategory } from "@bartendingapp/shared";
+import {
+  isMocktailsHiddenLearnCategory,
+  LEARN_CATEGORIES,
+  type LearnCategory,
+} from "@bartendingapp/shared";
 
 import { BackButton } from "@/components/back-button";
 import { Card } from "@/components/card";
 import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 
 const CATEGORY_LABELS: Record<LearnCategory, string> = {
   tools: "Tools",
@@ -19,6 +24,11 @@ const CATEGORY_LABELS: Record<LearnCategory, string> = {
 export default function LearnScreen() {
   const theme = useTheme();
   const router = useRouter();
+  // Mocktails only mode hides spirits, wine, beer, and quizzes (spec 0063 AC-9, AC-10).
+  const mocktailsOnly = useMocktailsOnly();
+  const categories = mocktailsOnly
+    ? LEARN_CATEGORIES.filter((category) => !isMocktailsHiddenLearnCategory(category))
+    : LEARN_CATEGORIES;
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.bg }]}>
@@ -32,7 +42,7 @@ export default function LearnScreen() {
         </View>
 
         <View style={styles.grid}>
-          {LEARN_CATEGORIES.map((category) => (
+          {categories.map((category) => (
             <TouchableOpacity
               key={category}
               style={[styles.gridItem, styles.row]}
@@ -47,14 +57,16 @@ export default function LearnScreen() {
           ))}
         </View>
 
-        <TouchableOpacity
-          onPress={() => router.push("/quizzes" as never)}
-          accessibilityRole="button"
-        >
-          <Card>
-            <Text variant="label">Take a quiz</Text>
-          </Card>
-        </TouchableOpacity>
+        {!mocktailsOnly && (
+          <TouchableOpacity
+            onPress={() => router.push("/quizzes" as never)}
+            accessibilityRole="button"
+          >
+            <Card>
+              <Text variant="label">Take a quiz</Text>
+            </Card>
+          </TouchableOpacity>
+        )}
       </ScrollView>
     </SafeAreaView>
   );

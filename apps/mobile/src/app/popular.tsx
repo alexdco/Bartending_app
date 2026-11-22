@@ -15,6 +15,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { usePopularRegions, usePopularByRegion } from "@/popular/use-popular-by-region";
 import { useQuizBySource } from "@/quizzes/use-quizzes";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 
 export default function PopularScreen() {
   const theme = useTheme();
@@ -30,8 +31,10 @@ export default function PopularScreen() {
 
   const recipesQuery = usePopularByRegion(selectedRegion);
   const recipes = recipesQuery.data ?? [];
-  const quizQuery = useQuizBySource("recipe_region", selectedRegion);
-  const quiz = quizQuery.data ?? null;
+  // Quizzes are hidden in mocktails only mode (spec 0063 AC-10).
+  const mocktailsOnly = useMocktailsOnly();
+  const quizQuery = useQuizBySource("recipe_region", mocktailsOnly ? null : selectedRegion);
+  const quiz = mocktailsOnly ? null : (quizQuery.data ?? null);
   const { t } = useTranslation();
   const browseAll = () => router.push("/search");
 

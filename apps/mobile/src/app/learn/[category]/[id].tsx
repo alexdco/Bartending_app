@@ -1,7 +1,7 @@
 import { useLocalSearchParams } from "expo-router";
 import { ScrollView, SafeAreaView, StyleSheet, View } from "react-native";
 import Markdown from "react-native-markdown-display";
-import { isLearnCategory } from "@bartendingapp/shared";
+import { isLearnCategory, isMocktailsHiddenLearnCategory } from "@bartendingapp/shared";
 
 import { BackButton } from "@/components/back-button";
 import { EmptyState } from "@/components/empty-state";
@@ -10,8 +10,10 @@ import { Text } from "@/components/text";
 import { Spacing, TypeScale } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useLearnArticleDetail } from "@/learn/use-learn-articles";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
+import { MocktailsUnavailable } from "@/mocktails/mocktails-unavailable";
 
-export default function LearnArticleScreen() {
+function LearnArticleContent() {
   const theme = useTheme();
   const { category: categoryParam, id } = useLocalSearchParams<{ category: string; id: string }>();
   const category = isLearnCategory(categoryParam) ? categoryParam : null;
@@ -99,3 +101,14 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
 });
+
+// Spirits, wine, and beer articles show the notice in mocktails only mode,
+// before the article is fetched (spec 0063 AC-9).
+export default function LearnArticleScreen() {
+  const { category } = useLocalSearchParams<{ category: string }>();
+  const mocktailsOnly = useMocktailsOnly();
+  if (mocktailsOnly && isMocktailsHiddenLearnCategory(category ?? "")) {
+    return <MocktailsUnavailable />;
+  }
+  return <LearnArticleContent />;
+}

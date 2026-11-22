@@ -92,7 +92,8 @@
     "blockedTitle": "Vuelve más adelante",
     "blockedBody": "Cocktailist es para personas con la edad legal para beber. Vuelve cuando la tengas.",
     "privacyLink": "Política de privacidad",
-    "responsibleDrinking": "Bebe con responsabilidad."
+    "responsibleDrinking": "Bebe con responsabilidad.",
+    "mocktailsButton": "Continuar solo con mocktails"
   },
   "home": {
     "classicsTitle": "Clásicos para empezar"
@@ -233,6 +234,13 @@
   "search": {
     "sortLabel": "Ordenar",
     "sortPopular": "Populares",
-    "sortAz": "A a Z"
+    "sortAz": "A a Z",
+    "mocktailsEmpty": "Ningún mocktail coincide con tu búsqueda."
+  },
+  "mocktails": {
+    "badge": "Solo mocktails",
+    "unavailableTitle": "No disponible en el modo solo mocktails",
+    "unavailableBody": "Esta página es solo para personas con la edad legal para beber. Explora los mocktails.",
+    "browseLink": "Explorar mocktails"
   }
 }

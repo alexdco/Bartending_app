@@ -14,6 +14,7 @@ import { useTheme } from "@/hooks/use-theme";
 import { useCurrentBar } from "@/service/use-current-bar";
 import { useBartenderSearch } from "@/service/use-bartender-search";
 import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 const DEBOUNCE_MS = 200;
 const TIER_PREVIEW_COUNT = 5;
@@ -80,7 +81,7 @@ function TierSection({
 // Search screen for Bartender Mode (spec 0023-search-and-shorthand.md).
 // Tiers are rendered in the fixed order the RPC returns them in, per AC-1;
 // this screen only groups and displays, it never re-sorts across tiers.
-export default function BartenderSearchScreen() {
+function BartenderSearchScreen() {
   const theme = useTheme();
   const currentBar = useCurrentBar();
   const [inputValue, setInputValue] = useState("");
@@ -170,3 +171,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.six,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(BartenderSearchScreen);

@@ -39,6 +39,7 @@ import {
 } from "@/auth/use-auth-mutations";
 import { changeLocale, selectableLocales, useActiveLocale } from "@/i18n";
 import { BlockedPeopleCard } from "@/comments/blocked-people-card";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 function useAuthErrorMessage() {
   const { t } = useTranslation();
@@ -361,7 +362,7 @@ function LinkedAccountPanel({ email, prefillName }: { email: string; prefillName
   );
 }
 
-export default function AccountScreen() {
+function AccountScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { t } = useTranslation();
@@ -458,3 +459,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.six,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(AccountScreen);

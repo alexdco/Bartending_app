@@ -9,8 +9,9 @@ import { Text } from "@/components/text";
 import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useQuizzes } from "@/quizzes/use-quizzes";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
-export default function QuizzesScreen() {
+function QuizzesScreen() {
   const theme = useTheme();
   const router = useRouter();
   const quizzesQuery = useQuizzes();
@@ -89,3 +90,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(QuizzesScreen);

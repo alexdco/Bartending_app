@@ -24,9 +24,10 @@ type Props = {
   readonly state: AgeGateState;
   readonly onConfirm: () => void;
   readonly onDeny: () => void;
+  readonly onMocktails: () => void;
 };
 
-export function AgeGateOverlay({ state, onConfirm, onDeny }: Props) {
+export function AgeGateOverlay({ state, onConfirm, onDeny, onMocktails }: Props) {
   const { t } = useTranslation();
   const theme = useTheme();
   const titleRef = useRef<RNText>(null);
@@ -66,11 +67,19 @@ export function AgeGateOverlay({ state, onConfirm, onDeny }: Props) {
         <Text variant="body">{t(denied ? "ageGate.blockedBody" : "ageGate.question")}</Text>
 
         {denied ? (
-          <ExternalLink href={PRIVACY_POLICY_URL as `https://${string}` | `http://${string}`}>
-            <Text variant="label" style={styles.link}>
-              {t("ageGate.privacyLink")}
-            </Text>
-          </ExternalLink>
+          <>
+            {/* Spec 0063 AC-1: enters mocktails only mode, which hides this overlay. */}
+            <View style={styles.actions}>
+              <Button testID="age-gate-mocktails" onPress={onMocktails}>
+                {t("ageGate.mocktailsButton")}
+              </Button>
+            </View>
+            <ExternalLink href={PRIVACY_POLICY_URL as `https://${string}` | `http://${string}`}>
+              <Text variant="label" style={styles.link}>
+                {t("ageGate.privacyLink")}
+              </Text>
+            </ExternalLink>
+          </>
         ) : (
           <View style={styles.actions}>
             <Button testID="age-gate-confirm" onPress={onConfirm}>

@@ -11,11 +11,12 @@ import { useTheme } from "@/hooks/use-theme";
 import { useCurrentBar } from "@/service/use-current-bar";
 import { useInviteStaff } from "@/service/use-bar-mutations";
 import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 // Send-side of the invite flow (AC-2). Owner only, per RLS on bar_invites:
 // a staff member attempting to insert an invite is denied server side, so
 // this screen doesn't need its own role check beyond the empty state below.
-export default function BarInviteScreen() {
+function BarInviteScreen() {
   const theme = useTheme();
   const currentBar = useCurrentBar();
   const [email, setEmail] = useState("");
@@ -88,3 +89,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(BarInviteScreen);

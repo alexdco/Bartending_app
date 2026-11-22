@@ -92,7 +92,8 @@
     "blockedTitle": "Volte mais tarde",
     "blockedBody": "O Cocktailist é para pessoas com a idade mínima para beber. Volte quando tiver.",
     "privacyLink": "Política de privacidade",
-    "responsibleDrinking": "Beba com moderação."
+    "responsibleDrinking": "Beba com moderação.",
+    "mocktailsButton": "Continuar só com mocktails"
   },
   "home": {
     "classicsTitle": "Clássicos para começar"
@@ -233,6 +234,13 @@
   "search": {
     "sortLabel": "Ordenar",
     "sortPopular": "Populares",
-    "sortAz": "A a Z"
+    "sortAz": "A a Z",
+    "mocktailsEmpty": "Nenhum mocktail corresponde à sua pesquisa."
+  },
+  "mocktails": {
+    "badge": "Só mocktails",
+    "unavailableTitle": "Indisponível no modo só mocktails",
+    "unavailableBody": "Esta página é apenas para pessoas com idade legal para beber. Explore os mocktails.",
+    "browseLink": "Explorar mocktails"
   }
 }

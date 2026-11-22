@@ -9,6 +9,7 @@ import { StarRating } from "./star-rating";
 import { useTranslation } from "react-i18next";
 import { RATING_AVERAGE_FORMAT, ratingDisplay, type RatingScore } from "@bartendingapp/shared";
 import { useActiveLocale } from "@/i18n";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 
 export interface RecipeRatingProps {
   recipeId: string;
@@ -19,6 +20,9 @@ export function RecipeRating({ recipeId }: RecipeRatingProps) {
   const summary = useRatingSummary(recipeId);
   const myRating = useMyRating(recipeId, isLinked);
   const submitRating = useSubmitRating(recipeId);
+  // Spec 0063 AC-12: the summary stays, but the rating control and its sign in
+  // prompt are hidden in mocktails only mode.
+  const mocktailsOnly = useMocktailsOnly();
 
   const { t } = useTranslation();
   const locale = useActiveLocale();
@@ -48,7 +52,7 @@ export function RecipeRating({ recipeId }: RecipeRatingProps) {
           {t("ratings.none")}
         </Text>
       )}
-      {!isLoading && isLinked ? (
+      {mocktailsOnly ? null : !isLoading && isLinked ? (
         <StarRating
           value={myRating.data ?? 0}
           disabled={submitRating.isPending}

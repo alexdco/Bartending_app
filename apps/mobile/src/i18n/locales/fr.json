@@ -92,7 +92,8 @@
     "blockedTitle": "Revenez plus tard",
     "blockedBody": "Cocktailist est réservé aux personnes ayant l’âge légal pour consommer de l’alcool. Revenez quand vous aurez l’âge requis.",
     "privacyLink": "Politique de confidentialité",
-    "responsibleDrinking": "L’abus d’alcool est dangereux pour la santé, à consommer avec modération."
+    "responsibleDrinking": "L’abus d’alcool est dangereux pour la santé, à consommer avec modération.",
+    "mocktailsButton": "Continuer avec les mocktails uniquement"
   },
   "home": {
     "classicsTitle": "Des classiques pour commencer"
@@ -233,6 +234,13 @@
   "search": {
     "sortLabel": "Trier",
     "sortPopular": "Populaires",
-    "sortAz": "A à Z"
+    "sortAz": "A à Z",
+    "mocktailsEmpty": "Aucun mocktail ne correspond à votre recherche."
+  },
+  "mocktails": {
+    "badge": "Mocktails uniquement",
+    "unavailableTitle": "Indisponible en mode mocktails uniquement",
+    "unavailableBody": "Cette page est réservée aux personnes ayant l’âge légal pour boire de l’alcool. Découvrez plutôt les mocktails.",
+    "browseLink": "Découvrir les mocktails"
   }
 }

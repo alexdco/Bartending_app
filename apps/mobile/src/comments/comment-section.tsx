@@ -21,6 +21,7 @@ import { Text } from "@/components/text";
 import { Radii, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useSession } from "@/auth/use-session";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 import { useRecipeComments } from "./use-comments";
 import { usePostComment, useEditComment, useDeleteComment } from "./use-comment-mutations";
 import { CommentPhotoThumbnails } from "./comment-photo-thumbnails";
@@ -42,12 +43,16 @@ export function CommentSection({ recipeId }: CommentSectionProps) {
 
   const comments = useMemo(() => data?.pages.flatMap((page) => page.comments) ?? [], [data]);
   const [reportTarget, setReportTarget] = useState<ReportTarget | null>(null);
+  // Spec 0063 AC-12: no composer and no sign in prompt in mocktails only mode.
+  const mocktailsOnly = useMocktailsOnly();
 
   return (
     <View style={styles.container}>
       <Text variant="subheading">Comments</Text>
 
-      <Composer recipeId={recipeId} isLinked={isLinked} isSessionLoading={isSessionLoading} />
+      {!mocktailsOnly && (
+        <Composer recipeId={recipeId} isLinked={isLinked} isSessionLoading={isSessionLoading} />
+      )}
 
       {error ? (
         <Text variant="bodySmall" muted>
@@ -346,6 +351,9 @@ function CommentRow({
   const { session } = useSession();
 
   const isOwn = session?.user.id === comment.userId;
+  // Spec 0063 AC-12: comments are read only in mocktails only mode, with no
+  // report, block, edit, or delete control.
+  const mocktailsOnly = useMocktailsOnly();
 
   if (isEditing) {
     // Mounted fresh each time, so the draft starts from the saved comment.
@@ -373,13 +381,13 @@ function CommentRow({
         photos={comment.photos}
         displayName={comment.displayName}
         onReportPhoto={
-          isOwn
+          isOwn || mocktailsOnly
             ? undefined
             : (photoId) => onReport({ kind: "photo", commentId: comment.id, photoId })
         }
       />
-      {!isOwn && <OtherAuthorActions comment={comment} onReport={onReport} />}
-      {isOwn && (
+      {!isOwn && !mocktailsOnly && <OtherAuthorActions comment={comment} onReport={onReport} />}
+      {isOwn && !mocktailsOnly && (
         <View style={styles.rowActions}>
           {isConfirmingDelete ? (
             <>

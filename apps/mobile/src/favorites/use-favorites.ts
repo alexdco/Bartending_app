@@ -7,11 +7,13 @@ import {
 } from "@bartendingapp/shared";
 import { useActiveLocale } from "@/i18n";
 import { supabase } from "@/lib/supabase";
+import { useMocktailsQuery } from "@/mocktails/mocktails-context";
 
 export const favoriteRecipeIdsQueryKey = ["favorites", "ids"] as const;
 
-export function favoriteRecipesQueryKey(locale: Locale) {
-  return ["favorites", "list", locale] as const;
+// Spec 0063 AC-5: the mode is part of the key.
+export function favoriteRecipesQueryKey(locale: Locale, mocktailsOnly: boolean) {
+  return ["favorites", "list", locale, { mocktailsOnly }] as const;
 }
 
 export function useFavoriteRecipeIds() {
@@ -23,17 +25,20 @@ export function useFavoriteRecipeIds() {
 
 export function useFavoriteRecipes() {
   const locale = useActiveLocale();
+  const { mocktailsOnly, ready } = useMocktailsQuery();
 
   return useInfiniteQuery({
-    queryKey: favoriteRecipesQueryKey(locale),
+    queryKey: favoriteRecipesQueryKey(locale, mocktailsOnly),
     queryFn: ({ pageParam }) =>
       fetchFavoriteRecipes(supabase, {
         pageLimit: FAVORITES_PAGE_SIZE,
         pageOffset: pageParam,
         locale,
+        mocktailsOnly,
       }),
     initialPageParam: 0,
     getNextPageParam: (lastPage, allPages) =>
       lastPage.length < FAVORITES_PAGE_SIZE ? undefined : allPages.length * FAVORITES_PAGE_SIZE,
+    enabled: ready,
   });
 }

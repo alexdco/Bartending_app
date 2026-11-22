@@ -23,6 +23,7 @@ import { track } from "@/analytics/posthog-client";
 import { RecipeCard } from "@/recipes/recipe-card";
 import { useSearchSort } from "@/recipes/search-sort-context";
 import { useRecipeSearch } from "@/recipes/use-recipe-search";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 
 const STATUS_FILTERS: { value: AlcoholicStatusFilter; label: string }[] = [
   { value: "alcoholic", label: "Alcoholic" },
@@ -41,6 +42,9 @@ export default function SearchScreen() {
   const [inputValue, setInputValue] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<AlcoholicStatusFilter | null>(null);
+  // Spec 0063 AC-5: no status chips in mocktails only mode; useRecipeSearch
+  // also ignores any status left in state.
+  const mocktailsOnly = useMocktailsOnly();
 
   useEffect(() => {
     const timeout = setTimeout(() => setDebouncedQuery(inputValue.trim()), DEBOUNCE_MS);
@@ -100,17 +104,19 @@ export default function SearchScreen() {
           value={inputValue}
           onChangeText={setInputValue}
         />
-        <View style={styles.filters}>
-          {STATUS_FILTERS.map((filter) => (
-            <Chip
-              key={filter.value}
-              selected={statusFilter === filter.value}
-              onSelectedChange={(selected) => setStatusFilter(selected ? filter.value : null)}
-            >
-              {filter.label}
-            </Chip>
-          ))}
-        </View>
+        {!mocktailsOnly && (
+          <View style={styles.filters}>
+            {STATUS_FILTERS.map((filter) => (
+              <Chip
+                key={filter.value}
+                selected={statusFilter === filter.value}
+                onSelectedChange={(selected) => setStatusFilter(selected ? filter.value : null)}
+              >
+                {filter.label}
+              </Chip>
+            ))}
+          </View>
+        )}
         <SegmentedControl
           label={t("search.sortLabel")}
           options={[
@@ -148,7 +154,14 @@ export default function SearchScreen() {
             }
           }}
           ListEmptyComponent={
-            <EmptyState title="No recipes found" description="Try a different search or filter." />
+            mocktailsOnly ? (
+              <EmptyState title={t("search.mocktailsEmpty")} />
+            ) : (
+              <EmptyState
+                title="No recipes found"
+                description="Try a different search or filter."
+              />
+            )
           }
           ListFooterComponent={
             isFetchingNextPage ? (

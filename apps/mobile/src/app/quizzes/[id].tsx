@@ -25,6 +25,7 @@ import { supabase } from "@/lib/supabase";
 import { clearKeptQuizAnswers, keepQuizAnswers, readKeptQuizAnswers } from "@/quizzes/kept-results";
 import { QuizExplanation } from "@/quizzes/quiz-explanation";
 import { useQuizAttempt, useQuizDetail } from "@/quizzes/use-quizzes";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 interface ScoredResult {
   score: number;
@@ -39,7 +40,7 @@ function scoreAnswers(quiz: QuizDetail, answers: QuizAnswers): number {
   );
 }
 
-export default function QuizDetailScreen() {
+function QuizDetailScreen() {
   const theme = useTheme();
   const router = useRouter();
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -268,3 +269,6 @@ const styles = StyleSheet.create({
     paddingVertical: Spacing.four,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(QuizDetailScreen);

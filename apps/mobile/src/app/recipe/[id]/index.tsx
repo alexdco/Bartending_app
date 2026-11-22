@@ -19,12 +19,15 @@ import { AllergenSection } from "@/recipes/allergen-section";
 import { useRecipeDetail } from "@/recipes/use-recipe-detail";
 import { useRecipeRedirect } from "@/recipes/use-recipe-redirect";
 import { RecommendationsSection } from "@/recipe-recommendations/recommendations-section";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
+import { MocktailsUnavailable } from "@/mocktails/mocktails-unavailable";
 
 export default function RecipeDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const theme = useTheme();
   const { t } = useTranslation();
   const router = useRouter();
+  const mocktailsOnly = useMocktailsOnly();
   const { data: recipe, error, isPending, refetch } = useRecipeDetail(id);
   // A hidden duplicate opens its kept recipe instead (spec 0036, AC-2). One
   // hop: the target is live, so its own lookup never redirects again.
@@ -72,6 +75,12 @@ export default function RecipeDetailScreen() {
         </View>
       </SafeAreaView>
     );
+  }
+
+  // Until here only the loading state has rendered, so a recipe that is not
+  // mocktail safe never shows any of its content in the mode (spec 0063 AC-6).
+  if (mocktailsOnly && !recipe.mocktailSafe) {
+    return <MocktailsUnavailable />;
   }
 
   return (

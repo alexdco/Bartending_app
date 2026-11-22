@@ -92,7 +92,8 @@
     "blockedTitle": "またのお越しをお待ちしています",
     "blockedBody": "Cocktailist は飲酒が認められる年齢の方を対象としています。年齢に達してから、またお越しください。",
     "privacyLink": "プライバシーポリシー",
-    "responsibleDrinking": "お酒は適量を楽しみましょう。"
+    "responsibleDrinking": "お酒は適量を楽しみましょう。",
+    "mocktailsButton": "モクテルのみで続ける"
   },
   "home": {
     "classicsTitle": "まずはこの定番から"
@@ -228,6 +229,13 @@
   "search": {
     "sortLabel": "並べ替え",
     "sortPopular": "人気順",
-    "sortAz": "名前順"
+    "sortAz": "名前順",
+    "mocktailsEmpty": "検索に一致するモクテルはありません。"
+  },
+  "mocktails": {
+    "badge": "モクテルのみ",
+    "unavailableTitle": "モクテルのみモードでは利用できません",
+    "unavailableBody": "このページは法定飲酒年齢に達した方専用です。代わりにモクテルをご覧ください。",
+    "browseLink": "モクテルを見る"
   }
 }

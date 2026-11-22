@@ -23,6 +23,7 @@ import { track } from "@/analytics/posthog-client";
 import { useDrinkIdeas } from "@/drink-ideas/use-drink-ideas";
 import { useGenerateDrinkIdea } from "@/drink-ideas/use-generate-drink-idea";
 import { GeneratedRecipeCard } from "@/drink-ideas/generated-recipe-card";
+import { useMocktailsOnly } from "@/mocktails/mocktails-context";
 
 const MIN_PANTRY_INGREDIENTS_FOR_GENERATION = 2;
 
@@ -49,6 +50,7 @@ function generateErrorDescription(
   error: unknown,
   formatLocale: Locale,
   onSignIn: () => void,
+  mocktailsOnly: boolean,
 ): ReactNode {
   if (!(error instanceof GenerateDrinkIdeaError)) {
     return generateErrorMessage("generation_failed");
@@ -56,7 +58,14 @@ function generateErrorDescription(
 
   const limitMessage =
     error.reason === "quota_exceeded"
-      ? drinkIdeaLimitMessage(error, { copyLocale: SCREEN_COPY_LOCALE, formatLocale })
+      ? drinkIdeaLimitMessage(
+          // Spec 0063 AC-12: the visitor stays a guest in mocktails only mode,
+          // so the copy without the sign in offer is chosen.
+          mocktailsOnly
+            ? { resetsAt: error.resetsAt, limitReason: error.limitReason, signInHelps: false }
+            : error,
+          { copyLocale: SCREEN_COPY_LOCALE, formatLocale },
+        )
       : null;
 
   if (!limitMessage) {
@@ -79,6 +88,7 @@ function generateErrorDescription(
 export default function DrinkIdeasScreen() {
   const theme = useTheme();
   const router = useRouter();
+  const mocktailsOnly = useMocktailsOnly();
 
   const { t } = useTranslation();
   const pantry = usePantry();
@@ -119,8 +129,11 @@ export default function DrinkIdeasScreen() {
       ) : generateDrinkIdea.error ? (
         <EmptyState
           title="Couldn't generate an idea"
-          description={generateErrorDescription(generateDrinkIdea.error, locale, () =>
-            router.push("/account"),
+          description={generateErrorDescription(
+            generateDrinkIdea.error,
+            locale,
+            () => router.push("/account"),
+            mocktailsOnly,
           )}
           action={<Button onPress={() => generateDrinkIdea.mutate()}>Retry</Button>}
         />

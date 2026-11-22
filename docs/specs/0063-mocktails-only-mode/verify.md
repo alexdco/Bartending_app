@@ -92,3 +92,39 @@ _Steps derived from spec 0063 acceptance criteria. `/check verify` runs these; `
 
 ### Acceptance criteria coverage (milestone 3)
 - AC-9 Learn tiles, category and article routes · AC-10 quiz links, nav entry, quiz routes · AC-11 Service link, Bartender Mode toggle, service routes · AC-12 account and admin routes, sign in entries, composer, report, block, photo report, rating control, limit message · AC-13 no change needed (providers wait for `confirmed`) · AC-14 server rendered markers on every hidden area
+
+## Milestone 4: mobile parity
+
+Run on a dev client build. Answering "No" lives in memory, so force quit the app to start over.
+
+### UI / manual
+- [ ] Fresh launch, answer No → the blocked screen shows "Continue with mocktails only" under the blocked text, plus the privacy link; no control asks the age question again → AC-1
+- [ ] Tap Continue → the overlay closes, the Home screen shows the "Mocktails only" pill at the top, readable in light and dark → AC-1, AC-15
+- [ ] Force quit and reopen → the age question shows again → AC-2
+- [ ] Answer Yes once, force quit, reopen → full app, no question, no pill (confirmed wins) → AC-3
+- [ ] In the mode, Search: no status chips; typing "margarita" shows `search.mocktailsEmpty`; every result is a mocktail; scrolling loads more pages of mocktails → AC-5
+- [ ] In the mode, Home: classics, recommendations, ideas carousel, recently viewed, and the popular region row hold only mocktails → AC-5
+- [ ] In the mode, Popular: only regions with a mocktail, only mocktails in each, no "Take the quiz" card → AC-5, AC-10
+- [ ] In the mode, Favorites (with an alcoholic favorite saved earlier as an adult): only mocktail favorites show → AC-5
+- [ ] In the mode, Pantry search for "vodka" → no result; a vodka row added as an adult is not shown; the Shopping list hides it the same way → AC-7
+- [ ] In the mode, Drink ideas: matches are mocktails only; "Generate a new idea" returns a non alcoholic drink built from visible pantry items → AC-5, AC-8
+- [ ] In the mode, reach the AI ideas daily limit → the message has no sign in link → AC-12
+- [ ] In the mode, deep link to an alcoholic recipe (`cocktailist://recipe/<margarita id>`) → only a spinner, then the notice; no name, image, ingredients, rating, or comments at any moment; screen reader focus lands on the notice title → AC-6, AC-18
+- [ ] In the mode, its "More like this" route → spinner, then the notice → AC-6
+- [ ] In the mode, a mocktail recipe: rating summary and other people's comments show; no composer, sign in prompt, rating stars, Report, Block, photo report, or edit and delete on own comments → AC-12
+- [ ] In the mode, Learn: only Tools and Other tiles, no "Take a quiz" card; Tools has no quiz card; deep links to `learn/spirits`, `learn/wine`, `learn/beer`, and an article under each → the notice → AC-9, AC-10
+- [ ] In the mode, deep links to `quizzes`, a quiz, `service`, `bartender-search`, `bartender-build/recipe/<id>`, `bar-invite`, `bar-invite-accept`, `bar-recipe-form`, `account`, and `auth/reset-password` → the notice → AC-10, AC-11, AC-12
+- [ ] In the mode, the header has no sign in or account badge, and there is no Service tab even for a signed in bartender → AC-11, AC-12
+- [ ] In the mode, no request reaches the PostHog host (proxy or network inspector) → AC-13
+- [ ] As an adult, every screen above looks exactly as before → AC-17
+
+### Commands
+- [ ] `pnpm --filter mobile typecheck`, `pnpm --filter mobile lint`, and `pnpm test` pass (the locale parity test covers the six new keys in all nine mobile locales) → AC-18
+
+### Value sourcing
+- [ ] Mode on or off: in memory `mocktails` in `use-age-gate`, passed to `MocktailsOnlyProvider`; a force quit clears it → Value sourcing row 1
+- [ ] Recipe notice: `RecipeDetail.mocktailSafe` from `fetch_recipe_detail`; check a recipe marked `non_alcoholic` but holding a spirit (Fancy White Russian before its fix) shows the notice → Value sourcing row 4
+- [ ] Learn notice: `isMocktailsHiddenLearnCategory` on the route's `category` → Value sourcing row 5
+
+### Acceptance criteria coverage (milestone 4)
+- AC-1 overlay button · AC-2 memory only · AC-3 resolver precedence · AC-5 every list hook passes the flag and keys on it · AC-6 recipe and more like this notice after a loading only state · AC-7 pantry, shopping list, ingredient search · AC-8 AI ideas flag · AC-9 Learn grid and routes · AC-10 quiz links and routes · AC-11 service tab and bar screens · AC-12 account badge, account screens, comments, rating, limit message · AC-13 analytics wait for `confirmed` (no change) · AC-15 Home pill · AC-16 nothing stored, so nothing can throw · AC-19 lists wait for the provider's known state

@@ -2,7 +2,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { createAsyncStoragePersister } from "@tanstack/query-async-storage-persister";
 import { QueryClient } from "@tanstack/react-query";
 import { PersistQueryClientProvider } from "@tanstack/react-query-persist-client";
-import { ensureAnonymousSession } from "@bartendingapp/shared";
+import { ensureAnonymousSession, isMocktailsOnly } from "@bartendingapp/shared";
 import { DarkTheme, DefaultTheme, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { useEffect, useState } from "react";
@@ -16,6 +16,7 @@ import { useSession } from "@/auth/use-session";
 import { identify, initAnalytics } from "@/analytics/posthog-client";
 import { AgeGateOverlay } from "@/age-gate/age-gate-overlay";
 import { useAgeGate } from "@/age-gate/use-age-gate";
+import { MocktailsOnlyProvider } from "@/mocktails/mocktails-context";
 import { i18n, initI18n } from "@/i18n";
 import { useBarRemovalEviction } from "@/service/use-bar-removal-eviction";
 import { SearchSortProvider } from "@/recipes/search-sort-context";
@@ -116,15 +117,18 @@ export default function TabLayout() {
       <PersistQueryClientProvider client={queryClient} persistOptions={PERSIST_OPTIONS}>
         <BarRemovalEvictionRunner />
         <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <SearchSortProvider>
-            <AnimatedSplashOverlay />
-            <AppTabs />
-            <AgeGateOverlay
-              state={ageGate.state}
-              onConfirm={ageGate.confirm}
-              onDeny={ageGate.deny}
-            />
-          </SearchSortProvider>
+          <MocktailsOnlyProvider mocktailsOnly={isMocktailsOnly(ageGate.state)}>
+            <SearchSortProvider>
+              <AnimatedSplashOverlay />
+              <AppTabs />
+              <AgeGateOverlay
+                state={ageGate.state}
+                onConfirm={ageGate.confirm}
+                onDeny={ageGate.deny}
+                onMocktails={ageGate.chooseMocktails}
+              />
+            </SearchSortProvider>
+          </MocktailsOnlyProvider>
         </ThemeProvider>
       </PersistQueryClientProvider>
     </I18nextProvider>

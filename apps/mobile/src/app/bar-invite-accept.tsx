@@ -10,13 +10,14 @@ import { Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 import { useSession } from "@/auth/use-session";
 import { useAcceptInvite } from "@/service/use-bar-mutations";
+import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
 
 // Accept-side of the invite flow (AC-2). An invite id (from the invite email
 // or a shared link, once either exists as a real delivery channel) is
 // entered manually for MVP; accept_bar_invite itself enforces the linked
 // account requirement and the email match, so this screen only surfaces its
 // error states, it doesn't re-check them.
-export default function BarInviteAcceptScreen() {
+function BarInviteAcceptScreen() {
   const theme = useTheme();
   const { isLinked } = useSession();
   const params = useLocalSearchParams<{ inviteId?: string }>();
@@ -78,3 +79,6 @@ const styles = StyleSheet.create({
     gap: Spacing.two,
   },
 });
+
+// Hidden in mocktails only mode (spec 0063 AC-10 to AC-12).
+export default withMocktailsHidden(BarInviteAcceptScreen);
