@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   buildRecipeSlugPath,
+  recipeImageUrl,
   type MyRecipeSubmissionSummary,
   type SubmissionStatus,
 } from "@bartendingapp/shared";
@@ -15,7 +16,12 @@ import { LinkButton } from "@/components/link-button";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { SubmissionSignInPrompt } from "./submission-sign-in-prompt";
-import { useMyRecipeSubmissions, useWithdrawRecipeSubmission } from "./use-submissions";
+import { SubmissionThumbnail } from "./submission-thumbnail";
+import {
+  useMyRecipeSubmissions,
+  useSubmissionPhotoUrls,
+  useWithdrawRecipeSubmission,
+} from "./use-submissions";
 
 /** /my-recipes: the author's submissions and where each stands (spec 0064 AC-1, AC-6, AC-13). */
 export function MyRecipesPageClient() {
@@ -49,6 +55,10 @@ function MySubmissionList() {
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
     useMyRecipeSubmissions();
   const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+  const { data: photoUrls } = useSubmissionPhotoUrls(
+    items.map((item) => item.photoPath),
+    "card",
+  );
 
   if (error) {
     return (
@@ -83,7 +93,10 @@ function MySubmissionList() {
       <ul className="flex flex-col gap-three">
         {items.map((item) => (
           <li key={item.id}>
-            <MySubmissionRow item={item} />
+            <MySubmissionRow
+              item={item}
+              photoUrl={item.photoPath ? (photoUrls?.[item.photoPath] ?? null) : null}
+            />
           </li>
         ))}
       </ul>
@@ -114,7 +127,14 @@ const STATUS_CLASS: Record<SubmissionStatus, string> = {
   rejected: "border border-danger text-danger",
 };
 
-function MySubmissionRow({ item }: { item: MyRecipeSubmissionSummary }) {
+function MySubmissionRow({
+  item,
+  photoUrl,
+}: {
+  item: MyRecipeSubmissionSummary;
+  /** A signed URL for a pending or rejected row's own photo. */
+  photoUrl: string | null;
+}) {
   const t = useTranslations("submissions");
   const liveRecipe =
     item.status === "approved" && item.approvedRecipeId !== null && !item.recipeRemoved
@@ -128,10 +148,16 @@ function MySubmissionRow({ item }: { item: MyRecipeSubmissionSummary }) {
   return (
     <div className="flex flex-col gap-two rounded-medium border border-border p-three">
       <div className="flex items-start justify-between gap-three">
-        {/* Author text renders as plain text only (invariant 8). */}
-        <Text variant="subheading" as="h2" className="break-words">
-          {liveRecipe?.name ?? item.name}
-        </Text>
+        <div className="flex min-w-0 items-start gap-three">
+          <SubmissionThumbnail
+            url={liveRecipe ? recipeImageUrl(item.recipeImageUrl, "card") : photoUrl}
+            alt={t("photoThumbnailAlt")}
+          />
+          {/* Author text renders as plain text only (invariant 8). */}
+          <Text variant="subheading" as="h2" className="min-w-0 break-words">
+            {liveRecipe?.name ?? item.name}
+          </Text>
+        </div>
         <span
           className={`shrink-0 rounded-full px-two py-half text-label font-medium ${STATUS_CLASS[item.status]}`}
         >

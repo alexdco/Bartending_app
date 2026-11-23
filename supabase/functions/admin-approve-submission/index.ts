@@ -6,12 +6,23 @@
 //   admin_approve_recipe_submission checks is_admin again inside the database,
 //   which stays the authority for the stale check too.
 // - Steps: confirm admin, read the submission and return 409 early when it is
-//   no longer pending or its updated_at moved, generate the recipe id, then
-//   call the atomic approve function.
-// - Photos (copy into recipe-images, then delete the private originals) come
-//   in build task 7; until then `keep_photo` is accepted and ignored.
+//   no longer pending or its updated_at moved (before copying anything),
+//   generate the recipe id, copy a kept photo's hero and card from the
+//   private recipe-submission-photos bucket into
+//   recipe-images/recipes/<recipe id>/<hash>-(hero|card).webp with a one year
+//   cache header, then call the atomic approve function with the hero's
+//   public URL. If the approve fails, the copies are removed (the spec 0041
+//   orphan sweep is the backstop).
+// - After a successful approve the private originals are deleted, kept or
+//   not; a failed delete is left for the daily cleanup (AC-19).
 import { createClient } from "jsr:@supabase/supabase-js@2";
 import * as Sentry from "npm:@sentry/deno@10";
+
+const SUBMISSION_BUCKET = "recipe-submission-photos";
+const RECIPE_IMAGES_BUCKET = "recipe-images";
+/** One year: recipe image files are never overwritten (spec 0041). */
+const RECIPE_IMAGE_CACHE_SECONDS = "31536000";
+const PHOTO_SIZES = ["hero", "card"] as const;
 
 const sentryDsn = Deno.env.get("SENTRY_DSN");
 if (sentryDsn) {
@@ -32,6 +43,67 @@ const CORS_HEADERS = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
   "Access-Control-Allow-Methods": "POST, OPTIONS",
 };
+
+type Client = ReturnType<typeof createClient>;
+
+/** The 16 hex hash at the end of a photo path (`<uid>/<id>-<hash>`). */
+const photoHash = (photoPath: string): string | null =>
+  /-([0-9a-f]{16})$/.exec(photoPath)?.[1] ?? null;
+
+const isAlreadyExists = (error: { message: string; statusCode?: string | number }) =>
+  String(error.statusCode) === "409" || /already exists|duplicate/i.test(error.message);
+
+/**
+ * Copies both files into the recipe's own folder in recipe-images with the
+ * caller's client (the admin storage policies allow both sides). Returns the
+ * hero's public URL and every path written, so a failed approve can undo it.
+ */
+async function copyPhoto(
+  supabase: Client,
+  photoPath: string,
+  recipeId: string,
+): Promise<{ heroUrl: string; paths: string[] } | { heroUrl: null; paths: string[] }> {
+  const hash = photoHash(photoPath);
+  const written: string[] = [];
+  if (!hash) return { heroUrl: null, paths: written };
+
+  for (const size of PHOTO_SIZES) {
+    const { data: file, error: downloadError } = await supabase.storage
+      .from(SUBMISSION_BUCKET)
+      .download(`${photoPath}-${size}.webp`);
+    if (downloadError || !file) {
+      reportError(downloadError ?? new Error("empty download"), { stage: "copy_download", size });
+      return { heroUrl: null, paths: written };
+    }
+
+    const target = `recipes/${recipeId}/${hash}-${size}.webp`;
+    const { error: uploadError } = await supabase.storage
+      .from(RECIPE_IMAGES_BUCKET)
+      .upload(target, file, {
+        contentType: "image/webp",
+        cacheControl: RECIPE_IMAGE_CACHE_SECONDS,
+        upsert: false,
+      });
+    if (uploadError && !isAlreadyExists(uploadError)) {
+      reportError(uploadError, { stage: "copy_upload", size });
+      return { heroUrl: null, paths: written };
+    }
+    written.push(target);
+  }
+
+  const heroUrl = supabase.storage.from(RECIPE_IMAGES_BUCKET).getPublicUrl(written[0]!)
+    .data.publicUrl;
+  return { heroUrl, paths: written };
+}
+
+async function removeQuietly(supabase: Client, bucket: string, paths: string[], stage: string) {
+  if (paths.length === 0) return;
+  const { error } = await supabase.storage.from(bucket).remove(paths);
+  if (error) {
+    // The daily sweeps remove anything left behind.
+    console.warn("admin-approve-submission: cleanup failed", { stage, error: error.message });
+  }
+}
 
 function jsonResponse(body: unknown, status: number): Response {
   return new Response(JSON.stringify(body), {
@@ -152,7 +224,7 @@ Deno.serve(async (req) => {
   // function repeats it under a row lock, so this is never the only guard.
   const { data: submission, error: readError } = await supabase
     .from("recipe_submissions")
-    .select("status, updated_at")
+    .select("status, updated_at, photo_path")
     .eq("id", body.submission_id)
     .maybeSingle();
 
@@ -175,6 +247,19 @@ Deno.serve(async (req) => {
   const recipeId = crypto.randomUUID();
   const { recipe } = body;
 
+  // AC-11: a kept photo becomes the recipe's admin_upload image.
+  let imageUrl: string | null = null;
+  let copiedPaths: string[] = [];
+  if (body.keep_photo && submission.photo_path) {
+    const copy = await copyPhoto(supabase, submission.photo_path, recipeId);
+    copiedPaths = copy.paths;
+    if (copy.heroUrl === null) {
+      await removeQuietly(supabase, RECIPE_IMAGES_BUCKET, copiedPaths, "copy_failed");
+      return jsonResponse({ error: "photo_copy_failed" }, 502);
+    }
+    imageUrl = copy.heroUrl;
+  }
+
   const { data: approvedId, error: approveError } = await supabase.rpc(
     "admin_approve_recipe_submission",
     {
@@ -194,11 +279,12 @@ Deno.serve(async (req) => {
       p_set_fame_score: true,
       p_fame_score: recipe.fame_score,
       p_bartender_tip: recipe.bartender_tip,
-      p_image_url: null,
+      p_image_url: imageUrl,
     },
   );
 
   if (approveError) {
+    await removeQuietly(supabase, RECIPE_IMAGES_BUCKET, copiedPaths, "approve_failed");
     // P0001 is a raised code or 0030 message; anything else (a constraint,
     // a timeout) is a server failure, not the admin's input.
     if (approveError.code !== "P0001") {
@@ -211,6 +297,17 @@ Deno.serve(async (req) => {
       return jsonResponse({ error: mapped.error, message: approveError.message }, 422);
     }
     return jsonResponse({ error: mapped.error }, mapped.status);
+  }
+
+  // The private originals are no longer needed; author reads already return
+  // the path as null for an approved row.
+  if (submission.photo_path) {
+    await removeQuietly(
+      supabase,
+      SUBMISSION_BUCKET,
+      PHOTO_SIZES.map((size) => `${submission.photo_path}-${size}.webp`),
+      "remove_originals",
+    );
   }
 
   return jsonResponse({ recipe_id: approvedId }, 200);

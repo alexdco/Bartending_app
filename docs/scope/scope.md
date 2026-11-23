@@ -1028,7 +1028,7 @@ Signed in users submit their own recipes, and an admin reviews them before they 
 - [ ] Build it: `/develop user submitted recipes`
   - [x] Thin thread on web: submissions table and author and admin functions, `recipes.submitted_by`, shared validation, the approve Edge Function, My recipes and the submit form, the admin queue and review, and the credit line with JSON-LD, satisfies AC-1 to AC-5, AC-10, AC-11, AC-16, AC-21, AC-23
   - [x] Author lifecycle and form helpers: edit and resubmit, withdraw, reject with reason, stale review guard, duplicate warning, ingredient autocomplete, search prompt, satisfies AC-6, AC-7, AC-13, AC-14, AC-21
-  - [ ] Photos, screening, and Draft English: the private bucket and copy on approval, the Haiku screening function with trigger, cron, and caps, the "Not screened" warning, and the English draft for non English submissions, satisfies AC-8, AC-9, AC-11, AC-12, AC-15
+  - [x] Photos, screening, and Draft English: the private bucket and copy on approval, the Haiku screening function with trigger, cron, and caps, the "Not screened" warning, and the English draft for non English submissions, satisfies AC-8, AC-9, AC-11, AC-12, AC-15
   - [ ] Safety and lifecycle: block from submitting, the daily cleanup job, account deletion cleanup, the import guard test, and mocktails hiding, satisfies AC-17 to AC-20, AC-22
   - [ ] Mobile parity, strings in all 9 locales, analytics, and `verify.md`, satisfies AC-1, AC-3, AC-6 to AC-8, AC-16, AC-20, AC-21, AC-24
 - [ ] Verify it: `/check verify user submitted recipes`

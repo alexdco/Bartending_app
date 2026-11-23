@@ -12,7 +12,20 @@ import type { Locale } from "../locale";
 import { searchRecipes, type RecipeSearchResult } from "../recipes";
 import { DUPLICATE_SEARCH_LIMIT, findDuplicateRecipes } from "./duplicates";
 import { raisedCode, toSaveSubmissionError, type SaveSubmissionError } from "./errors";
-import { RECIPE_SUBMISSION_PHOTOS_BUCKET, submissionPhotoFiles } from "./photos";
+import {
+  mapRecipeImageUploadError,
+  RECIPE_IMAGE_CONTENT_TYPE,
+  type RecipeImagePair,
+  type UploadRecipeImageError,
+} from "../recipeImages";
+import {
+  RECIPE_SUBMISSION_PHOTOS_BUCKET,
+  SUBMISSION_PHOTO_SIGNED_URL_SECONDS,
+  submissionPhotoFile,
+  submissionPhotoFiles,
+  submissionPhotoPath,
+  type SubmissionPhotoSize,
+} from "./photos";
 import {
   toSubmissionIngredients,
   trimSubmissionText,
@@ -74,6 +87,12 @@ export interface SaveRecipeSubmissionInput {
   /** The current UI locale; used only when the row is created (AC-1, AC-6). */
   locale: string;
   photoPath?: string | null;
+  /**
+   * The photo path the row held before this save. When it differs from
+   * `photoPath` (replaced or removed), its files are removed after the save
+   * succeeds; a failed removal is left for the daily cleanup (AC-19).
+   */
+  replacedPhotoPath?: string | null;
   /** True when the form showed the display name field (AC-3). */
   requireDisplayName: boolean;
 }
@@ -93,7 +112,14 @@ export type SaveRecipeSubmissionResult =
 
 export async function saveRecipeSubmission(
   client: SupabaseClient<Database>,
-  { id, values, locale, photoPath = null, requireDisplayName }: SaveRecipeSubmissionInput,
+  {
+    id,
+    values,
+    locale,
+    photoPath = null,
+    replacedPhotoPath = null,
+    requireDisplayName,
+  }: SaveRecipeSubmissionInput,
 ): Promise<SaveRecipeSubmissionResult> {
   const errors = validateSubmissionForm(values, { requireDisplayName });
   if (errors.length > 0) {
@@ -121,10 +147,93 @@ export async function saveRecipeSubmission(
     return { data: null, error: toSaveSubmissionError(error) };
   }
 
+  if (replacedPhotoPath && replacedPhotoPath !== photoPath) {
+    await removeSubmissionPhoto(client, replacedPhotoPath);
+  }
+
   return {
     data: { id: data.id, status: toStatus(data.status), updatedAt: data.updated_at },
     error: null,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Photos (AC-8): the private bucket, readable only by the author and the admin
+
+const isAlreadyExists = (error: { message: string; statusCode?: string | number }) =>
+  String(error.statusCode) === "409" || /already exists|duplicate/i.test(error.message);
+
+export type UploadSubmissionPhotoResult =
+  { data: { photoPath: string }; error: null } | { data: null; error: UploadRecipeImageError };
+
+/**
+ * Uploads the spec 0041 hero and card pair to
+ * `<authorId>/<submissionId>-<hash>-(hero|card).webp` before the save, so the
+ * save can name the path. Files are never overwritten; a pair already stored
+ * under the same hash counts as uploaded, so a retried save is safe.
+ */
+export async function uploadSubmissionPhoto(
+  client: SupabaseClient<Database>,
+  authorId: string,
+  submissionId: string,
+  images: RecipeImagePair,
+): Promise<UploadSubmissionPhotoResult> {
+  const photoPath = submissionPhotoPath(authorId, submissionId, images.hash);
+  const bucket = client.storage.from(RECIPE_SUBMISSION_PHOTOS_BUCKET);
+  const files = [
+    { path: submissionPhotoFile(photoPath, "hero"), bytes: images.hero },
+    { path: submissionPhotoFile(photoPath, "card"), bytes: images.card },
+  ];
+
+  for (const file of files) {
+    const { error } = await bucket.upload(file.path, file.bytes, {
+      contentType: RECIPE_IMAGE_CONTENT_TYPE,
+      upsert: false,
+    });
+    if (error && !isAlreadyExists(error)) {
+      return { data: null, error: mapRecipeImageUploadError(error) };
+    }
+  }
+
+  return { data: { photoPath }, error: null };
+}
+
+/** Removes both files of a photo path. Best effort: the daily cleanup is the backstop. */
+export async function removeSubmissionPhoto(
+  client: SupabaseClient<Database>,
+  photoPath: string,
+): Promise<void> {
+  await client.storage
+    .from(RECIPE_SUBMISSION_PHOTOS_BUCKET)
+    .remove(submissionPhotoFiles(photoPath))
+    .catch(() => undefined);
+}
+
+/**
+ * Signed URLs (valid one hour) for the given photo paths at one size, keyed
+ * by photo path. A path the caller may not read, or a missing file, is left
+ * out, so the UI shows its no photo state.
+ */
+export async function signSubmissionPhotoUrls(
+  client: SupabaseClient<Database>,
+  photoPaths: readonly string[],
+  size: SubmissionPhotoSize,
+): Promise<Readonly<Record<string, string>>> {
+  const unique = [...new Set(photoPaths)];
+  if (unique.length === 0) return {};
+
+  const files = unique.map((path) => submissionPhotoFile(path, size));
+  const { data, error } = await client.storage
+    .from(RECIPE_SUBMISSION_PHOTOS_BUCKET)
+    .createSignedUrls(files, SUBMISSION_PHOTO_SIGNED_URL_SECONDS);
+
+  if (error || !data) return {};
+
+  return Object.fromEntries(
+    data.flatMap((entry, index) =>
+      entry.error || !entry.signedUrl ? [] : [[unique[index]!, entry.signedUrl] as const],
+    ),
+  );
 }
 
 // ---------------------------------------------------------------------------
@@ -288,10 +397,7 @@ export async function withdrawRecipeSubmission(
 
   const photoPath = (data as { photo_path: string | null }).photo_path;
   if (photoPath) {
-    await client.storage
-      .from(RECIPE_SUBMISSION_PHOTOS_BUCKET)
-      .remove(submissionPhotoFiles(photoPath))
-      .catch(() => undefined);
+    await removeSubmissionPhoto(client, photoPath);
   }
 
   return { data: { id }, error: null };
@@ -519,6 +625,8 @@ export type ApproveSubmissionError =
   | { reason: "not_found" }
   /** A database validation message (spec 0030's plain text). */
   | { reason: "rejected"; message: string }
+  /** The kept photo could not be copied into recipe-images; nothing was saved. */
+  | { reason: "photo_copy_failed" }
   /** The recipe is live under `recipeId`, but its style and tips did not save. */
   | { reason: "notes_failed"; recipeId: string; message: string }
   | { reason: "request_failed"; message: string };
@@ -591,6 +699,12 @@ export async function approveRecipeSubmission(
       if (status === 409) return { data: null, error: { reason: "stale" } };
       if (status === 403) return { data: null, error: { reason: "not_admin" } };
       if (status === 404) return { data: null, error: { reason: "not_found" } };
+      if (status === 502) {
+        const body = await readErrorBody(error);
+        if (body.error === "photo_copy_failed") {
+          return { data: null, error: { reason: "photo_copy_failed" } };
+        }
+      }
       if (status === 422) {
         const body = await readErrorBody(error);
         const message = typeof body.message === "string" ? body.message : "Validation failed.";
@@ -627,4 +741,78 @@ export async function approveRecipeSubmission(
   }
 
   return { data: { recipeId }, error: null };
+}
+
+// ---------------------------------------------------------------------------
+// Admin: Draft English (AC-12)
+
+export interface EnglishDraft {
+  name: string;
+  instructions: string;
+  glass: string | null;
+  note: string | null;
+  ingredients: { name: string; measure: string | null }[];
+}
+
+export type DraftEnglishError =
+  | { reason: "not_admin" }
+  | { reason: "not_found" }
+  /** The model failed or returned an unusable draft; try again. */
+  | { reason: "model_failed" }
+  | { reason: "request_failed"; message: string };
+
+export type DraftEnglishResult =
+  { data: EnglishDraft; error: null } | { data: null; error: DraftEnglishError };
+
+const isText = (value: unknown): value is string => typeof value === "string";
+const isOptionalText = (value: unknown): value is string | null =>
+  value === null || typeof value === "string";
+
+/** Shape check of the Edge Function's reply; null when it isn't a draft. */
+export function toEnglishDraft(raw: unknown): EnglishDraft | null {
+  if (typeof raw !== "object" || raw === null) return null;
+  const { name, instructions, glass, note, ingredients } = raw as Record<string, unknown>;
+  if (!isText(name) || !isText(instructions) || !isOptionalText(glass) || !isOptionalText(note)) {
+    return null;
+  }
+  if (!Array.isArray(ingredients)) return null;
+  const parsed = ingredients.map((item: unknown) => {
+    if (typeof item !== "object" || item === null) return null;
+    const { name: ingredientName, measure } = item as Record<string, unknown>;
+    return isText(ingredientName) && isOptionalText(measure)
+      ? { name: ingredientName, measure }
+      : null;
+  });
+  const valid = parsed.filter(
+    (item): item is { name: string; measure: string | null } => item !== null,
+  );
+  if (valid.length !== parsed.length) return null;
+  return { name, instructions, glass, note, ingredients: valid };
+}
+
+/**
+ * Asks the draft-submission-english Edge Function for an English version of
+ * a non English submission. Nothing is saved; the draft fills the review form.
+ */
+export async function draftSubmissionEnglish(
+  client: SupabaseClient<Database>,
+  submissionId: string,
+): Promise<DraftEnglishResult> {
+  const { data, error } = await client.functions.invoke<unknown>("draft-submission-english", {
+    method: "POST",
+    body: { submission_id: submissionId },
+  });
+
+  if (error) {
+    if (error instanceof FunctionsHttpError) {
+      const status = error.context.status as number;
+      if (status === 403) return { data: null, error: { reason: "not_admin" } };
+      if (status === 404) return { data: null, error: { reason: "not_found" } };
+      if (status === 502) return { data: null, error: { reason: "model_failed" } };
+    }
+    return { data: null, error: { reason: "request_failed", message: error.message } };
+  }
+
+  const draft = toEnglishDraft(data);
+  return draft ? { data: draft, error: null } : { data: null, error: { reason: "model_failed" } };
 }

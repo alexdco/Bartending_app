@@ -75,3 +75,40 @@ _Steps derived from spec 0064 acceptance criteria. `/check verify` runs these; `
 
 ### Acceptance-criteria coverage (milestone 2)
 - AC-6 … edit, approved read only, withdraw steps, check script · AC-7 … three duplicate steps, unit tests · AC-13 … reject steps, author reason step, check script · AC-14 … stale step, check script · AC-21 (search prompt) … three prompt steps · AC-1 (autocomplete) … ingredient step · AC-5 (withdraw keeps count) … daily count step, check script
+
+## Milestone 3: photos, screening, and Draft English · updated 2026-11-22
+
+### UI / manual (web, `pnpm web`)
+- [ ] On `/my-recipes/new`, attach a large non square JPEG → a center square preview shows; submit → the row on `/my-recipes` shows the thumbnail → AC-8
+- [ ] In Storage, `recipe-submission-photos/<your uid>/` holds `<submission id>-<hash>-hero.webp` and `-card.webp`, both WebP, hero at most 1000px, card 400px, no EXIF → AC-8
+- [ ] Attach a file that is too small or not an image → a field error, nothing uploads → AC-8
+- [ ] Edit that submission, replace the photo, resubmit → the new pair exists under a new hash and the old pair is gone; edit again and remove the photo → no files left for that id → AC-8
+- [ ] As another signed in user, request the first user's hero through `storage.from('recipe-submission-photos').download(...)` → error (403), nothing returned → AC-8, AC-23
+- [ ] Submit a normal recipe with a photo, wait about a minute, open it as admin → "Text: Clear" and "Photo: Clear" badges, no "Not screened" warning → AC-9, AC-15
+- [ ] Submit one with a spam link in the note → within a minute or two the Text badge is "Flagged" and the note shows prominently; Approve still works → AC-9, AC-15
+- [ ] Right after submitting (before screening lands), open it as admin → "Not screened" warning; Approve still works → AC-15
+- [ ] As the author, `/my-recipes` and the edit page never show any screening result or note → AC-9, invariant 8
+- [ ] Approve a submission with "Keep photo" checked → the recipe page shows the photo, served from `recipe-images/recipes/<recipe id>/`, and the submission's private files are gone from `recipe-submission-photos` → AC-11 (Value sourcing: `image_url` from the copy step, `image_origin = 'admin_upload'`)
+- [ ] Approve another with "Keep photo" unchecked → the recipe has no image; the private files are still removed → AC-11
+- [ ] Open a submission made in `/ja/...` as admin → "Draft English" shows; on an `en` submission it does not → AC-12
+- [ ] Click "Draft English" → the review form fills with English name, instructions, glass, ingredients, measures, and note, with the original shown beside it; "Use original" restores the original → AC-12
+- [ ] Approve the drafted one → the saved recipe row is English (`select name, instructions from recipes where id = …`); `/ja/recipes/...` shows English until the next `translate-catalog` run, and that run's dry run lists the recipe for every catalog locale → AC-12, invariant 6
+
+### Commands
+- [ ] Paste `supabase/tests/recipe_submission_photos_check.sql` in the SQL editor → every line PASS, no FAIL → AC-4, AC-8, AC-11, AC-23
+- [ ] Paste `supabase/tests/recipe_submission_screening_check.sql` → every line PASS, no FAIL (covers 3 failures → `error`, the 300 ceiling → `skipped`, the late result for an older `submitted_at` discarded, status never changed) → AC-9
+- [ ] `select status_code, content from net._http_response order by created desc limit 3` after a cron tick → 200 with `{"screened":…,"flagged":…,"failed":…,"skipped":…,"deferred":…}` → AC-9 (the 5 minute sweep reaches the function with the Vault `secret_key`)
+- [ ] `select has_function_privilege('authenticated', 'public.claim_pending_recipe_submissions(uuid, integer)', 'execute')` → false (same for `reserve_recipe_screening`, `record_recipe_submission_screening`) → AC-23
+- [ ] Call `draft-submission-english` with a non admin user's JWT → 403 `not_admin`; with no session → 401 → AC-12, AC-23
+- [ ] `pnpm test` → green, including `submission-verdict.test.ts`, `english-draft.test.ts`, and `photos.test.ts` → AC-8, AC-9, AC-12
+
+### Value sourcing coverage (milestone 3 rows)
+- which version was checked (`submitted_at` from the claim): the screening check script's late result line, and resubmitting while a check is in flight
+- image sent to Haiku (the hero WebP): the clear and flagged photo steps
+- daily global count (`recipe_screening_daily_total`, cap 300 or `RECIPE_SCREENING_DAILY_CAP`): the check script's ceiling line
+- model id (`SCREENING_MODEL`, default `claude-haiku-5-5`): the screening steps run against the deployed function
+- `image_url` and `image_origin` from the copy step: the Keep photo approve step
+- recipe English text from the review form (optionally Draft English): the Draft English approve step
+
+### Acceptance-criteria coverage (milestone 3)
+- AC-8 … attach, storage layout, bad file, replace and remove, other user steps, photos check, unit tests · AC-9 … clear and flagged steps, author never sees it, screening check, cron command · AC-11 (photo) … keep and drop approve steps, photos check · AC-12 … Draft English steps, auth command · AC-15 … Not screened and flagged steps

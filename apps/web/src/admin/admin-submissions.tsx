@@ -13,7 +13,8 @@ import { EmptyState } from "@/components/empty-state";
 import { SegmentedControl } from "@/components/segmented-control";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
-import { useAdminRecipeSubmissions } from "@/submissions/use-submissions";
+import { SubmissionThumbnail } from "@/submissions/submission-thumbnail";
+import { useAdminRecipeSubmissions, useSubmissionPhotoUrls } from "@/submissions/use-submissions";
 
 /**
  * /admin/submissions: Pending (oldest first), Rejected, and Approved (newest
@@ -46,6 +47,10 @@ function AdminSubmissionList({ status }: { status: SubmissionStatus }) {
   const { data, error, isPending, isFetchingNextPage, hasNextPage, fetchNextPage, refetch } =
     useAdminRecipeSubmissions(status);
   const items = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
+  const { data: photoUrls } = useSubmissionPhotoUrls(
+    items.map((item) => item.photoPath),
+    "card",
+  );
 
   if (error) {
     return (
@@ -74,7 +79,10 @@ function AdminSubmissionList({ status }: { status: SubmissionStatus }) {
       <ul className="flex flex-col gap-three">
         {items.map((item) => (
           <li key={item.id}>
-            <AdminSubmissionRow item={item} />
+            <AdminSubmissionRow
+              item={item}
+              photoUrl={item.photoPath ? (photoUrls?.[item.photoPath] ?? null) : null}
+            />
           </li>
         ))}
       </ul>
@@ -92,21 +100,30 @@ function AdminSubmissionList({ status }: { status: SubmissionStatus }) {
   );
 }
 
-function AdminSubmissionRow({ item }: { item: AdminSubmissionSummary }) {
+function AdminSubmissionRow({
+  item,
+  photoUrl,
+}: {
+  item: AdminSubmissionSummary;
+  photoUrl: string | null;
+}) {
   const t = useTranslations("admin.recipeSubmissions");
   return (
     <Link
       href={`/admin/submissions/${item.id}`}
-      className="flex flex-col gap-one rounded-medium border border-border p-three hover:bg-surface-selected"
+      className="flex items-start gap-three rounded-medium border border-border p-three hover:bg-surface-selected"
     >
-      {/* Author text renders as plain text only (invariant 8). */}
-      <Text variant="label" className="break-words">
-        {item.name}
-      </Text>
-      <Text variant="bodySmall" muted>
-        {item.authorDisplayName ?? t("noDisplayName")} · {item.locale.toUpperCase()}
-      </Text>
-      <ScreeningBadges text={item.textScreening} photo={item.photoScreening} />
+      <SubmissionThumbnail url={photoUrl} alt={t("photoThumbnailAlt")} />
+      <div className="flex min-w-0 flex-col gap-one">
+        {/* Author text renders as plain text only (invariant 8). */}
+        <Text variant="label" className="break-words">
+          {item.name}
+        </Text>
+        <Text variant="bodySmall" muted>
+          {item.authorDisplayName ?? t("noDisplayName")} · {item.locale.toUpperCase()}
+        </Text>
+        <ScreeningBadges text={item.textScreening} photo={item.photoScreening} />
+      </div>
     </Link>
   );
 }

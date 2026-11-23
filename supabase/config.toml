@@ -382,6 +382,13 @@ verify_jwt = false
 # header, never by an end user. The function checks that key itself (spec 0062).
 verify_jwt = false
 
+[functions.screen-recipe-submission]
+# Called only by the database (the recipe_submissions insert and update
+# triggers and the 5 minute cron) through pg_net with the `secret_key` Vault
+# secret on the apikey header, never by an end user. The function checks that
+# key itself (spec 0064 AC-9).
+verify_jwt = false
+
 [edge_runtime]
 enabled = true
 # Supported request policies: `oneshot`, `per_worker`.

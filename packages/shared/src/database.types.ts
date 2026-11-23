@@ -1123,6 +1123,21 @@ export type Database = {
           },
         ];
       };
+      recipe_screening_daily_total: {
+        Row: {
+          count: number;
+          day: string;
+        };
+        Insert: {
+          count?: number;
+          day: string;
+        };
+        Update: {
+          count?: number;
+          day?: string;
+        };
+        Relationships: [];
+      };
       recipe_submission_usage: {
         Row: {
           count: number;
@@ -1894,13 +1909,15 @@ export type Database = {
           updated_at: string;
         }[];
       };
+      admin_reject_recipe_submission: {
+        Args: { p_expected_updated_at: string; p_id: string; p_reason: string };
+        Returns: {
+          updated_at: string;
+        }[];
+      };
       admin_reset_recipe_to_source: {
         Args: { p_recipe_id: string };
         Returns: undefined;
-      };
-      admin_reject_recipe_submission: {
-        Args: { p_expected_updated_at: string; p_id: string; p_reason: string };
-        Returns: { updated_at: string }[];
       };
       admin_review_candidates: {
         Args: never;
@@ -2008,6 +2025,20 @@ export type Database = {
         Returns: {
           id: string;
           storage_path: string;
+        }[];
+      };
+      claim_pending_recipe_submissions: {
+        Args: { p_limit?: number; p_submission_id?: string };
+        Returns: {
+          alcoholic_status: string;
+          glass: string;
+          id: string;
+          ingredients: Json;
+          instructions: string;
+          name: string;
+          note: string;
+          photo_path: string;
+          submitted_at: string;
         }[];
       };
       classic_recipes: {
@@ -2308,6 +2339,17 @@ export type Database = {
         Args: { p_categories?: string[]; p_outcome: string; p_photo_id: string };
         Returns: Database["public"]["Enums"]["moderation_status"];
       };
+      record_recipe_submission_screening: {
+        Args: {
+          p_note?: string;
+          p_outcome: string;
+          p_photo_screening?: string;
+          p_submission_id: string;
+          p_submitted_at: string;
+          p_text_screening?: string;
+        };
+        Returns: string;
+      };
       release_ai_generation_slot: {
         Args: { p_day: string; p_ip_hash: string; p_user_id: string };
         Returns: undefined;
@@ -2344,6 +2386,7 @@ export type Database = {
         }[];
       };
       reserve_photo_screening: { Args: never; Returns: boolean };
+      reserve_recipe_screening: { Args: { p_cap?: number }; Returns: boolean };
       resolve_locale: { Args: { p_locale: string }; Returns: string };
       resolve_recipe_redirect: {
         Args: { p_recipe_id: string };
@@ -2459,7 +2502,9 @@ export type Database = {
       };
       withdraw_recipe_submission: {
         Args: { p_id: string };
-        Returns: { photo_path: string }[];
+        Returns: {
+          photo_path: string;
+        }[];
       };
     };
     Enums: {

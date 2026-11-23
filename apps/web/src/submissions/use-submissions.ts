@@ -7,6 +7,7 @@ import {
   adminFetchRecipeSubmission,
   adminListRecipeSubmissions,
   approveRecipeSubmission,
+  draftSubmissionEnglish,
   fetchMyRecipeSubmission,
   fetchMyRecipeSubmissions,
   fetchSubmissionFormContext,
@@ -14,13 +15,19 @@ import {
   rejectRecipeSubmission,
   saveRecipeSubmission,
   searchIngredients,
+  signSubmissionPhotoUrls,
+  uploadSubmissionPhoto,
   withdrawRecipeSubmission,
   type ApproveSubmissionInput,
   type Locale,
   type RejectSubmissionInput,
+  type RecipeImagePair,
   type SaveRecipeSubmissionInput,
+  type SaveRecipeSubmissionResult,
   type SubmissionCursor,
+  type SubmissionPhotoSize,
   type SubmissionStatus,
+  type UploadRecipeImageError,
 } from "@bartendingapp/shared";
 import { useSession } from "@/auth/use-session";
 import { supabase } from "@/lib/supabase";
@@ -53,10 +60,61 @@ export function useSubmissionFormContext() {
   });
 }
 
+/** What saving the form does to the submission's photo (AC-8). */
+export type SubmissionPhotoChange =
+  { kind: "keep" } | { kind: "remove" } | { kind: "replace"; image: RecipeImagePair };
+
+export interface SaveSubmissionWithPhotoInput extends Omit<
+  SaveRecipeSubmissionInput,
+  "photoPath" | "replacedPhotoPath"
+> {
+  /** The row's current photo path (null for a new submission or no photo). */
+  currentPhotoPath: string | null;
+  photo: SubmissionPhotoChange;
+}
+
+export type SaveSubmissionWithPhotoResult =
+  | SaveRecipeSubmissionResult
+  | { data: null; error: { reason: "photo_failed"; upload: UploadRecipeImageError } };
+
+/**
+ * Uploads a new photo first (under the submission id, so the save can name
+ * its path), then saves. A replaced or removed photo's files are removed once
+ * the save succeeds. A photo uploaded for a save that then fails stays until
+ * the daily cleanup, or is reused when the same picture is saved again.
+ */
 export function useSaveRecipeSubmission() {
   const queryClient = useQueryClient();
+  const { session } = useSession();
   return useMutation({
-    mutationFn: (input: SaveRecipeSubmissionInput) => saveRecipeSubmission(supabase, input),
+    mutationFn: async ({
+      currentPhotoPath,
+      photo,
+      ...input
+    }: SaveSubmissionWithPhotoInput): Promise<SaveSubmissionWithPhotoResult> => {
+      let photoPath = photo.kind === "keep" ? currentPhotoPath : null;
+
+      if (photo.kind === "replace") {
+        const userId = session?.user.id;
+        if (!userId) {
+          return {
+            data: null,
+            error: { reason: "photo_failed", upload: { reason: "forbidden" } },
+          };
+        }
+        const upload = await uploadSubmissionPhoto(supabase, userId, input.id, photo.image);
+        if (upload.error) {
+          return { data: null, error: { reason: "photo_failed", upload: upload.error } };
+        }
+        photoPath = upload.data.photoPath;
+      }
+
+      return saveRecipeSubmission(supabase, {
+        ...input,
+        photoPath,
+        replacedPhotoPath: currentPhotoPath,
+      });
+    },
     onSuccess: (result) => {
       if (result.error) return;
       void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
@@ -173,5 +231,30 @@ export function useSubmissionIngredientSuggestions(query: string) {
       }),
     enabled: debouncedQuery.length >= 2,
     staleTime: 5 * 60 * 1000,
+  });
+}
+
+/**
+ * Signed URLs for private submission photos (AC-8), keyed by photo path. They
+ * last an hour, so the query refreshes them well before that.
+ */
+export function useSubmissionPhotoUrls(
+  photoPaths: readonly (string | null)[],
+  size: SubmissionPhotoSize,
+) {
+  const paths = [...new Set(photoPaths.filter((path): path is string => path !== null))].sort();
+  return useQuery({
+    queryKey: ["submission-photo-urls", size, paths],
+    queryFn: () => signSubmissionPhotoUrls(supabase, paths, size),
+    enabled: paths.length > 0,
+    staleTime: 45 * 60 * 1000,
+    refetchInterval: 45 * 60 * 1000,
+  });
+}
+
+/** AC-12: an English draft of a non English submission; saves nothing. */
+export function useDraftSubmissionEnglish() {
+  return useMutation({
+    mutationFn: (submissionId: string) => draftSubmissionEnglish(supabase, submissionId),
   });
 }

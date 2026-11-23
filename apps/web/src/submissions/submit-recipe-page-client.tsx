@@ -15,7 +15,6 @@ import {
   SUBMISSION_NOTE_MAX_LENGTH,
   type MyRecipeSubmission,
   type RecipeSearchResult,
-  type SaveRecipeSubmissionResult,
   type SubmissionFormIngredient,
   type SubmissionValidationError,
 } from "@bartendingapp/shared";
@@ -28,6 +27,7 @@ import { LinkButton } from "@/components/link-button";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { alcoholicStatusKey } from "@/recipes/format";
+import { SubmissionPhotoField } from "./submission-photo-field";
 import { SubmissionSignInPrompt } from "./submission-sign-in-prompt";
 import {
   useDuplicateRecipeNames,
@@ -35,6 +35,9 @@ import {
   useSaveRecipeSubmission,
   useSubmissionFormContext,
   useSubmissionIngredientSuggestions,
+  useSubmissionPhotoUrls,
+  type SaveSubmissionWithPhotoResult,
+  type SubmissionPhotoChange,
 } from "./use-submissions";
 
 type SubmissionsTranslator = ReturnType<typeof useTranslations<"submissions">>;
@@ -186,11 +189,15 @@ function ingredientRowError(
 /** The server refusals that are not a field error, in the form's words. */
 function saveErrorMessage(
   t: SubmissionsTranslator,
-  error: NonNullable<SaveRecipeSubmissionResult["error"]>,
+  error: NonNullable<SaveSubmissionWithPhotoResult["error"]>,
 ): string | null {
   switch (error.reason) {
     case "validation":
       return null;
+    case "photo_failed":
+      return error.upload.reason === "too_large" || error.upload.reason === "wrong_type"
+        ? t("photoErrorUploadRejected")
+        : t("photoUploadFailed");
     case "pending_cap":
       return t("errorPendingCap");
     case "daily_cap":
@@ -232,8 +239,8 @@ function SubmissionForm({
   const router = useRouter();
   const save = useSaveRecipeSubmission();
   // Generated once for a new submission, so a retried save updates the same
-  // row instead of creating a second one (and, from task 7, names the photo
-  // path). An edit keeps the existing id.
+  // row instead of creating a second one, and names the photo path. An edit
+  // keeps the existing id.
   const [submissionId] = useState(() => existing?.id ?? crypto.randomUUID());
   const [name, setName] = useState(existing?.name ?? "");
   const [ingredients, setIngredients] = useState(() => initialIngredients(existing));
@@ -243,6 +250,11 @@ function SubmissionForm({
     existing?.alcoholicStatus ?? "alcoholic",
   );
   const [note, setNote] = useState(existing?.note ?? "");
+  // AC-8: keep, remove, or replace the one photo; uploaded only on save.
+  const [photoChange, setPhotoChange] = useState<SubmissionPhotoChange>({ kind: "keep" });
+  const currentPhotoPath = existing?.photoPath ?? null;
+  const { data: photoUrls } = useSubmissionPhotoUrls([currentPhotoPath], "card");
+  const currentPhotoUrl = currentPhotoPath ? (photoUrls?.[currentPhotoPath] ?? null) : null;
   const [displayName, setDisplayName] = useState("");
   const [errors, setErrors] = useState<SubmissionValidationError[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
@@ -292,7 +304,8 @@ function SubmissionForm({
       id: submissionId,
       locale,
       requireDisplayName,
-      photoPath: existing?.photoPath ?? null,
+      currentPhotoPath,
+      photo: photoChange,
       values: { name, ingredients, instructions, glass, alcoholicStatus, note, displayName },
     });
 
@@ -466,6 +479,14 @@ function SubmissionForm({
         maxLength={SUBMISSION_NOTE_MAX_LENGTH}
         rows={3}
         error={fieldError(t, errors, "note")}
+      />
+
+      <SubmissionPhotoField
+        currentUrl={currentPhotoUrl}
+        hasCurrent={currentPhotoPath !== null}
+        change={photoChange}
+        onChange={setPhotoChange}
+        disabled={isSaving}
       />
 
       {requireDisplayName && (
