@@ -1,15 +1,23 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import { useInfiniteQuery, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useLocale } from "next-intl";
 import {
   adminFetchRecipeSubmission,
   adminListRecipeSubmissions,
   approveRecipeSubmission,
+  fetchMyRecipeSubmission,
   fetchMyRecipeSubmissions,
   fetchSubmissionFormContext,
+  findDuplicateRecipeNames,
+  rejectRecipeSubmission,
   saveRecipeSubmission,
+  searchIngredients,
+  withdrawRecipeSubmission,
   type ApproveSubmissionInput,
+  type Locale,
+  type RejectSubmissionInput,
   type SaveRecipeSubmissionInput,
   type SubmissionCursor,
   type SubmissionStatus,
@@ -84,5 +92,86 @@ export function useApproveRecipeSubmission() {
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
     },
+  });
+}
+
+/** One of the author's own submissions, for the edit form (AC-6). Null when missing. */
+export function useMyRecipeSubmission(id: string) {
+  const { isLinked } = useSession();
+  return useQuery({
+    queryKey: [...SUBMISSIONS_KEY, "mine-detail", id],
+    queryFn: () => fetchMyRecipeSubmission(supabase, id),
+    enabled: isLinked,
+  });
+}
+
+export function useWithdrawRecipeSubmission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => withdrawRecipeSubmission(supabase, id),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
+    },
+  });
+}
+
+export function useRejectRecipeSubmission() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: RejectSubmissionInput) => rejectRecipeSubmission(supabase, input),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
+    },
+  });
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const timeout = setTimeout(() => setDebounced(value), delayMs);
+    return () => clearTimeout(timeout);
+  }, [value, delayMs]);
+  return debounced;
+}
+
+const DUPLICATE_DEBOUNCE_MS = 500;
+
+/**
+ * Catalog recipes whose name exactly matches the typed name, checked once
+ * typing pauses (AC-7). The form calls `refetch` again on submit.
+ */
+export function useDuplicateRecipeNames(name: string) {
+  const locale = useLocale() as Locale;
+  const debouncedName = useDebouncedValue(name.trim(), DUPLICATE_DEBOUNCE_MS);
+  const query = useQuery({
+    queryKey: [...SUBMISSIONS_KEY, "duplicates", locale, debouncedName],
+    queryFn: () => findDuplicateRecipeNames(supabase, { name: debouncedName, locale }),
+    enabled: debouncedName.length > 0,
+    staleTime: 60 * 1000,
+  });
+  return {
+    /** Matches for `checkedName`; empty while the name is blank. */
+    matches: debouncedName.length > 0 ? (query.data ?? []) : [],
+    checkedName: debouncedName,
+    /** The same check, run now (on submit). */
+    checkNow: (value: string) => findDuplicateRecipeNames(supabase, { name: value, locale }),
+  };
+}
+
+const INGREDIENT_SUGGESTION_LIMIT = 10;
+const INGREDIENT_DEBOUNCE_MS = 250;
+
+/** Ingredient catalog names for the focused row, in the author's locale (AC-1). */
+export function useSubmissionIngredientSuggestions(query: string) {
+  const locale = useLocale() as Locale;
+  const debouncedQuery = useDebouncedValue(query.trim(), INGREDIENT_DEBOUNCE_MS);
+  return useQuery({
+    queryKey: ["ingredients", "submission-suggestions", locale, debouncedQuery],
+    queryFn: () =>
+      searchIngredients(supabase, debouncedQuery, INGREDIENT_SUGGESTION_LIMIT, locale, {
+        includeStaples: true,
+      }),
+    enabled: debouncedQuery.length >= 2,
+    staleTime: 5 * 60 * 1000,
   });
 }

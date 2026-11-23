@@ -878,7 +878,16 @@
       "errorStale": "Предложение изменилось, обновите страницу.",
       "errorNotAdmin": "Одобрять предложения может только администратор.",
       "approveFailed": "Не удалось одобрить. Ошибка: {message}",
-      "approveNotesFailed": "Рецепт опубликован, но стиль и советы не сохранились. Ошибка: {message}"
+      "approveNotesFailed": "Рецепт опубликован, но стиль и советы не сохранились. Ошибка: {message}",
+      "reload": "Обновить",
+      "rejectHeading": "Отклонить",
+      "rejectReason": "Причина",
+      "rejectReasonHint": "Автор увидит её в разделе «Мои рецепты» и сможет изменить и отправить снова.",
+      "reject": "Отклонить",
+      "rejecting": "Отклоняем…",
+      "rejectReasonRequired": "Укажите причину.",
+      "rejectReasonTooLong": "Не больше {max} символов.",
+      "rejectFailed": "Не удалось отклонить: {message}"
     },
     "submissionsMetaTitle": "Предложенные рецепты",
     "submissionReviewMetaTitle": "Проверка рецепта"
@@ -951,6 +960,21 @@
     "errorBlocked": "Для вашего аккаунта предложение рецептов недоступно.",
     "errorNotEditable": "Этот рецепт больше нельзя изменить.",
     "errorDisplayNameRequired": "Чтобы отправить рецепт, укажите отображаемое имя.",
-    "errorSaveFailed": "Не удалось отправить рецепт. Попробуйте ещё раз."
+    "errorSaveFailed": "Не удалось отправить рецепт. Попробуйте ещё раз.",
+    "editTitle": "Изменить рецепт",
+    "editMetaTitle": "Изменить свой рецепт",
+    "backToMyRecipes": "Назад к моим рецептам",
+    "notFound": "Этого рецепта больше нет.",
+    "rejectedNotice": "Не одобрен. Причина:",
+    "duplicateWarning": "Рецепт с таким названием уже есть",
+    "resubmit": "Сохранить и отправить снова",
+    "edit": "Изменить",
+    "editAndResubmit": "Изменить и отправить снова",
+    "withdraw": "Отозвать",
+    "withdrawing": "Отзываем…",
+    "withdrawConfirm": "Отозвать этот рецепт? Он будет удалён.",
+    "withdrawFailed": "Не удалось отозвать рецепт. Попробуйте ещё раз.",
+    "searchPrompt": "Не нашли?",
+    "searchPromptAction": "Отправьте свой рецепт"
   }
 }

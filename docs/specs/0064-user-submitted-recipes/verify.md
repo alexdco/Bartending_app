@@ -45,3 +45,33 @@ _Steps derived from spec 0064 acceptance criteria. `/check verify` runs these; `
 ## Acceptance-criteria coverage (milestone 1)
 - AC-1 … Japanese submit, valid submit, not public steps, check script · AC-2 … blank fields step, unit tests, check script · AC-3 … display name steps · AC-4 … guest step, privilege command · AC-5 … 6th submit, daily cap command · AC-6 (approved read only, link) … My recipes step, check script · AC-10 … admin queue step · AC-11 … review and Approve steps · AC-14 … stale step, check script · AC-15 (warning only) … review step · AC-16 … credit steps, JSON-LD test · AC-21 (menu links) … menu step · AC-23 … REST count command, check script
 - Later milestones: AC-7, AC-8, AC-9, AC-12, AC-13, AC-17 (photos part), AC-18, AC-19, AC-20 (mobile), AC-21 (search prompt), AC-22 (import guard), AC-24 (mobile strings)
+
+## Milestone 2: author lifecycle and form helpers · updated 2026-11-22
+
+### UI / manual (web, `pnpm web`)
+- [ ] As the author, `/my-recipes` → a pending row shows Edit and Withdraw; an approved row shows neither → AC-6
+- [ ] Edit a pending submission, change the instructions, "Save and resubmit" → back on `/my-recipes`, still "Pending review", the change is in the admin view → AC-6
+- [ ] Open `/my-recipes/<approved id>/edit` directly → "This recipe can't be changed anymore", no form → AC-6
+- [ ] Edit a submission created in `/ja/...` while the UI is English, resubmit → the admin queue still shows JA → AC-6 (Value sourcing: `locale` unchanged on edit)
+- [ ] Withdraw a pending row → confirm text shows; Cancel keeps it; Withdraw removes it from the list → AC-6
+- [ ] Withdraw one submission after 10 saves today, then save again → still "Daily limit reached" → AC-5 (withdrawing doesn't lower the day's count)
+- [ ] As admin, open a pending submission, Reject with a blank reason → "Add a reason.", nothing changes → AC-13
+- [ ] Reject with a reason → back on the queue; the row is under Rejected → AC-13
+- [ ] As the author, `/my-recipes` → the rejected row shows "Rejected", the reason, and "Edit and resubmit"; the edit page shows the reason above the form → AC-13
+- [ ] Resubmit the rejected one → "Pending review", no reason shown, it's back in the admin Pending tab → AC-6
+- [ ] Load a pending submission as admin, edit it as the author in another session, then Reject (and separately Approve) as admin → "This submission changed, reload it" with a Reload button, nothing written; Reload shows the new text → AC-14
+- [ ] On `/my-recipes/new`, type "margarita" (any case, with extra spaces) and pause → "A recipe with this name already exists" with a link to the catalog Margarita → AC-7
+- [ ] On `/es/my-recipes/new`, type the Spanish name of a translated catalog recipe → the warning shows; type its English name → the warning shows too → AC-7 (Value sourcing: `search_recipes` in the current locale, matched on localized or English name)
+- [ ] Type a duplicate name and press Submit at once (before the pause) → the warning shows and nothing saves; Submit again → it saves → AC-7
+- [ ] In an ingredient row, type "lim" → a suggestion list from the catalog appears (in the UI language); a name not in the catalog still saves → AC-1 (Value sourcing: `search_ingredients`)
+- [ ] Search for something with results, scroll to the end → "Can't find it? Submit your recipe" links to `/my-recipes/new` → AC-21
+- [ ] Search for nonsense → the empty state is followed by the same prompt → AC-21
+- [ ] As a guest, the prompt links to `/account` (sign in) → AC-21
+- [ ] Turn on mocktails only mode → the search prompt is gone → AC-20
+
+### Commands
+- [ ] Paste `supabase/tests/recipe_submissions_lifecycle_check.sql` in the SQL editor → 16 PASS lines and no FAIL → AC-4, AC-5, AC-6, AC-13, AC-14, AC-23
+- [ ] `pnpm test` → green, including `duplicates.test.ts`, `photos.test.ts`, and the `validateRejectionReason` cases → AC-7, AC-13
+
+### Acceptance-criteria coverage (milestone 2)
+- AC-6 … edit, approved read only, withdraw steps, check script · AC-7 … three duplicate steps, unit tests · AC-13 … reject steps, author reason step, check script · AC-14 … stale step, check script · AC-21 (search prompt) … three prompt steps · AC-1 (autocomplete) … ingredient step · AC-5 (withdraw keeps count) … daily count step, check script

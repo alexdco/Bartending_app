@@ -878,7 +878,16 @@
       "errorStale": "Este envio mudou, recarregue a página.",
       "errorNotAdmin": "Só um administrador pode aprovar envios.",
       "approveFailed": "Não foi possível aprovar: {message}",
-      "approveNotesFailed": "A receita já está publicada, mas o estilo e as dicas não foram salvos: {message}"
+      "approveNotesFailed": "A receita já está publicada, mas o estilo e as dicas não foram salvos: {message}",
+      "reload": "Recarregar",
+      "rejectHeading": "Rejeitar",
+      "rejectReason": "Motivo",
+      "rejectReasonHint": "O autor vê isto em Minhas receitas e pode editar e reenviar.",
+      "reject": "Rejeitar",
+      "rejecting": "Rejeitando…",
+      "rejectReasonRequired": "Adicione um motivo.",
+      "rejectReasonTooLong": "Use {max} caracteres ou menos.",
+      "rejectFailed": "Falha ao rejeitar: {message}"
     },
     "submissionsMetaTitle": "Receitas enviadas",
     "submissionReviewMetaTitle": "Revisar envio"
@@ -951,6 +960,21 @@
     "errorBlocked": "O envio de receitas não está disponível para sua conta.",
     "errorNotEditable": "Esta receita não pode mais ser alterada.",
     "errorDisplayNameRequired": "Adicione um nome de exibição para enviar.",
-    "errorSaveFailed": "Não conseguimos enviar sua receita. Tente de novo."
+    "errorSaveFailed": "Não conseguimos enviar sua receita. Tente de novo.",
+    "editTitle": "Edite sua receita",
+    "editMetaTitle": "Edite sua receita",
+    "backToMyRecipes": "Voltar para Minhas receitas",
+    "notFound": "Esta receita não existe mais.",
+    "rejectedNotice": "Não aprovada. Motivo:",
+    "duplicateWarning": "Já existe uma receita com este nome",
+    "resubmit": "Salvar e reenviar",
+    "edit": "Editar",
+    "editAndResubmit": "Editar e reenviar",
+    "withdraw": "Retirar",
+    "withdrawing": "Retirando…",
+    "withdrawConfirm": "Retirar esta receita? Ela será excluída.",
+    "withdrawFailed": "Não foi possível retirar esta receita. Tente novamente.",
+    "searchPrompt": "Não encontrou?",
+    "searchPromptAction": "Envie sua receita"
   }
 }

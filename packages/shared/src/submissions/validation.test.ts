@@ -3,6 +3,7 @@ import {
   submissionTextLength,
   toSubmissionIngredients,
   trimSubmissionText,
+  validateRejectionReason,
   validateSubmissionForm,
   type SubmissionFormValues,
 } from "./validation";
@@ -116,5 +117,16 @@ describe("toSubmissionIngredients", () => {
 describe("trimSubmissionText", () => {
   it("trims spaces, tabs, and line breaks like the database", () => {
     expect(trimSubmissionText("\t Garden Sour \r\n")).toBe("Garden Sour");
+  });
+});
+
+describe("validateRejectionReason", () => {
+  it("requires a non blank reason", () => {
+    expect(validateRejectionReason(" \n ")).toBe("required");
+  });
+
+  it("allows 500 characters after trimming and refuses 501", () => {
+    expect(validateRejectionReason(` ${"r".repeat(500)} `)).toBeNull();
+    expect(validateRejectionReason("r".repeat(501))).toBe("too_long");
   });
 });

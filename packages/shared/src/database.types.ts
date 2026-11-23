@@ -1898,6 +1898,10 @@ export type Database = {
         Args: { p_recipe_id: string };
         Returns: undefined;
       };
+      admin_reject_recipe_submission: {
+        Args: { p_expected_updated_at: string; p_id: string; p_reason: string };
+        Returns: { updated_at: string }[];
+      };
       admin_review_candidates: {
         Args: never;
         Returns: {
@@ -2452,6 +2456,10 @@ export type Database = {
           isOneToOne: true;
           isSetofReturn: false;
         };
+      };
+      withdraw_recipe_submission: {
+        Args: { p_id: string };
+        Returns: { photo_path: string }[];
       };
     };
     Enums: {

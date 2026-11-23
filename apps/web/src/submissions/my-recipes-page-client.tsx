@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   buildRecipeSlugPath,
@@ -15,7 +15,7 @@ import { LinkButton } from "@/components/link-button";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { SubmissionSignInPrompt } from "./submission-sign-in-prompt";
-import { useMyRecipeSubmissions } from "./use-submissions";
+import { useMyRecipeSubmissions, useWithdrawRecipeSubmission } from "./use-submissions";
 
 /** /my-recipes: the author's submissions and where each stands (spec 0064 AC-1, AC-6, AC-13). */
 export function MyRecipesPageClient() {
@@ -148,6 +148,8 @@ function MySubmissionRow({ item }: { item: MyRecipeSubmissionSummary }) {
         </div>
       )}
 
+      {item.status !== "approved" && <AuthorActions item={item} />}
+
       {liveRecipe ? (
         <Link
           href={`/recipes/${buildRecipeSlugPath(liveRecipe.id, liveRecipe.name, liveRecipe.baseName)}`}
@@ -160,6 +162,60 @@ function MySubmissionRow({ item }: { item: MyRecipeSubmissionSummary }) {
           {t("removedFromCatalog")}
         </Text>
       ) : null}
+    </div>
+  );
+}
+
+/** AC-6: edit and withdraw, for pending and rejected rows only. */
+function AuthorActions({ item }: { item: MyRecipeSubmissionSummary }) {
+  const t = useTranslations("submissions");
+  const tCommon = useTranslations("common");
+  const withdraw = useWithdrawRecipeSubmission();
+  const [isConfirming, setIsConfirming] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleWithdraw() {
+    setError(null);
+    const result = await withdraw.mutateAsync(item.id);
+    if (result.error) {
+      setError(
+        result.error.reason === "not_editable" ? t("errorNotEditable") : t("withdrawFailed"),
+      );
+      setIsConfirming(false);
+    }
+  }
+
+  return (
+    <div className="flex flex-col gap-one">
+      <div className="flex flex-wrap items-center gap-two">
+        {isConfirming ? (
+          <>
+            <Text variant="bodySmall" muted>
+              {t("withdrawConfirm")}
+            </Text>
+            <Button variant="secondary" onClick={() => setIsConfirming(false)}>
+              {tCommon("cancel")}
+            </Button>
+            <Button disabled={withdraw.isPending} onClick={handleWithdraw}>
+              {withdraw.isPending ? t("withdrawing") : t("withdraw")}
+            </Button>
+          </>
+        ) : (
+          <>
+            <LinkButton href={`/my-recipes/${item.id}/edit`}>
+              {item.status === "rejected" ? t("editAndResubmit") : t("edit")}
+            </LinkButton>
+            <Button variant="secondary" onClick={() => setIsConfirming(true)}>
+              {t("withdraw")}
+            </Button>
+          </>
+        )}
+      </div>
+      {error && (
+        <Text variant="bodySmall" role="alert" className="text-danger">
+          {error}
+        </Text>
+      )}
     </div>
   );
 }

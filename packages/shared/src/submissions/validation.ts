@@ -146,3 +146,16 @@ export function validateSubmissionForm(
 
   return errors;
 }
+
+/** AC-13: admin_reject_recipe_submission takes a trimmed reason of 1 to 500 characters. */
+export const SUBMISSION_REJECTION_REASON_MAX_LENGTH = 500;
+
+export type RejectionReasonError = "required" | "too_long";
+
+/** Null when the reason is valid. Pure; the database checks it again. */
+export function validateRejectionReason(reason: string): RejectionReasonError | null {
+  const trimmed = trimSubmissionText(reason);
+  if (trimmed.length === 0) return "required";
+  if (submissionTextLength(trimmed) > SUBMISSION_REJECTION_REASON_MAX_LENGTH) return "too_long";
+  return null;
+}

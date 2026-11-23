@@ -31,6 +31,7 @@ import {
   writeStoredSearchSort,
 } from "./search-url";
 import { useRecipeSearch } from "./use-recipe-search";
+import { SubmitRecipePrompt } from "@/submissions/submit-recipe-prompt";
 
 const STATUS_FILTERS: readonly AlcoholicStatusFilter[] = ["alcoholic", "non_alcoholic", "optional"];
 
@@ -220,10 +221,13 @@ export function SearchPageClient({ initialResults, initialSort }: SearchPageClie
             <Spinner label={t("loading")} />
           </div>
         ) : results.length === 0 ? (
-          <EmptyState
-            title={t("emptyTitle")}
-            description={mocktailsOnly ? t("mocktailsEmpty") : t("emptyDescription")}
-          />
+          <>
+            <EmptyState
+              title={t("emptyTitle")}
+              description={mocktailsOnly ? t("mocktailsEmpty") : t("emptyDescription")}
+            />
+            {mocktailsState === false && <SubmitRecipePrompt />}
+          </>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-three sm:grid-cols-3 md:grid-cols-4">
@@ -234,6 +238,8 @@ export function SearchPageClient({ initialResults, initialSort }: SearchPageClie
             <div ref={sentinelRef} className="flex justify-center py-four">
               {isFetchingNextPage && <Spinner label={t("loadingMore")} />}
             </div>
+            {/* Spec 0064 AC-21: the prompt ends the results; hidden in mocktails only mode. */}
+            {!hasNextPage && mocktailsState === false && <SubmitRecipePrompt />}
           </>
         )}
       </div>

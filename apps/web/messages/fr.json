@@ -878,7 +878,16 @@
       "errorStale": "Cette proposition a changé, rechargez-la.",
       "errorNotAdmin": "Seul un administrateur peut valider des propositions.",
       "approveFailed": "Échec de la validation : {message}",
-      "approveNotesFailed": "La recette est en ligne, mais son style et ses astuces n’ont pas été enregistrés : {message}"
+      "approveNotesFailed": "La recette est en ligne, mais son style et ses astuces n’ont pas été enregistrés : {message}",
+      "reload": "Recharger",
+      "rejectHeading": "Refuser",
+      "rejectReason": "Motif",
+      "rejectReasonHint": "L'auteur le voit dans Mes recettes et peut modifier puis renvoyer.",
+      "reject": "Refuser",
+      "rejecting": "Refus…",
+      "rejectReasonRequired": "Ajoutez un motif.",
+      "rejectReasonTooLong": "Utilisez {max} caractères au maximum.",
+      "rejectFailed": "Échec du refus : {message}"
     },
     "submissionsMetaTitle": "Recettes proposées",
     "submissionReviewMetaTitle": "Examiner la proposition"
@@ -951,6 +960,21 @@
     "errorBlocked": "La proposition de recettes n’est pas disponible pour votre compte.",
     "errorNotEditable": "Cette recette ne peut plus être modifiée.",
     "errorDisplayNameRequired": "Ajoutez un nom affiché pour envoyer.",
-    "errorSaveFailed": "Impossible d’envoyer votre recette. Réessayez."
+    "errorSaveFailed": "Impossible d’envoyer votre recette. Réessayez.",
+    "editTitle": "Modifier votre recette",
+    "editMetaTitle": "Modifier votre recette",
+    "backToMyRecipes": "Retour à Mes recettes",
+    "notFound": "Cette recette n'existe plus.",
+    "rejectedNotice": "Non approuvée. Motif :",
+    "duplicateWarning": "Une recette portant ce nom existe déjà",
+    "resubmit": "Enregistrer et renvoyer",
+    "edit": "Modifier",
+    "editAndResubmit": "Modifier et renvoyer",
+    "withdraw": "Retirer",
+    "withdrawing": "Retrait…",
+    "withdrawConfirm": "Retirer cette recette ? Elle sera supprimée.",
+    "withdrawFailed": "Impossible de retirer cette recette. Réessayez.",
+    "searchPrompt": "Vous ne la trouvez pas ?",
+    "searchPromptAction": "Proposez votre recette"
   }
 }

@@ -86,6 +86,7 @@ const ROUTES: Record<string, RouteMeta> = {
   },
   "my-recipes/page.tsx": { title: ["submissions", "myRecipesMetaTitle"], description: null },
   "my-recipes/new/page.tsx": { title: ["submissions", "submitMetaTitle"], description: null },
+  "my-recipes/[id]/edit/page.tsx": { title: ["submissions", "editMetaTitle"], description: null },
   "service/page.tsx": { title: ["service", "metaTitle"], description: null },
   "service/search/page.tsx": { title: ["service", "searchMetaTitle"], description: null },
   "service/build/[kind]/[id]/page.tsx": {

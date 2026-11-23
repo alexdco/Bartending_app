@@ -878,7 +878,16 @@
       "errorStale": "이 제출이 바뀌었어요. 새로고침하세요.",
       "errorNotAdmin": "관리자만 제출을 승인할 수 있어요.",
       "approveFailed": "승인하지 못했어요. 오류: {message}",
-      "approveNotesFailed": "레시피는 공개됐지만 스타일과 팁은 저장되지 않았어요. 오류: {message}"
+      "approveNotesFailed": "레시피는 공개됐지만 스타일과 팁은 저장되지 않았어요. 오류: {message}",
+      "reload": "새로고침",
+      "rejectHeading": "거절",
+      "rejectReason": "사유",
+      "rejectReasonHint": "작성자는 내 레시피에서 이 사유를 보고 수정해 다시 제출할 수 있습니다.",
+      "reject": "거절",
+      "rejecting": "거절하는 중…",
+      "rejectReasonRequired": "사유를 입력하세요.",
+      "rejectReasonTooLong": "{max}자 이하로 입력하세요.",
+      "rejectFailed": "거절 실패: {message}"
     },
     "submissionsMetaTitle": "제출된 레시피",
     "submissionReviewMetaTitle": "제출 검토"
@@ -951,6 +960,21 @@
     "errorBlocked": "이 계정으로는 레시피를 제출할 수 없어요.",
     "errorNotEditable": "이 레시피는 더 이상 바꿀 수 없어요.",
     "errorDisplayNameRequired": "제출하려면 표시 이름을 입력하세요.",
-    "errorSaveFailed": "레시피를 제출하지 못했어요. 다시 시도하세요."
+    "errorSaveFailed": "레시피를 제출하지 못했어요. 다시 시도하세요.",
+    "editTitle": "레시피 수정",
+    "editMetaTitle": "내 레시피 수정",
+    "backToMyRecipes": "내 레시피로 돌아가기",
+    "notFound": "이 레시피는 더 이상 없습니다.",
+    "rejectedNotice": "승인되지 않았습니다. 사유:",
+    "duplicateWarning": "같은 이름의 레시피가 이미 있습니다",
+    "resubmit": "저장하고 다시 제출",
+    "edit": "수정",
+    "editAndResubmit": "수정하고 다시 제출",
+    "withdraw": "철회",
+    "withdrawing": "철회하는 중…",
+    "withdrawConfirm": "이 레시피를 철회할까요? 삭제됩니다.",
+    "withdrawFailed": "레시피를 철회하지 못했습니다. 다시 시도해 주세요.",
+    "searchPrompt": "찾을 수 없나요?",
+    "searchPromptAction": "레시피 제출하기"
   }
 }

@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  buildRecipeSlugPath,
+  normalizeRecipeNameForMatch,
   SUBMISSION_ALCOHOLIC_STATUSES,
   SUBMISSION_GLASS_MAX_LENGTH,
   SUBMISSION_INGREDIENT_NAME_MAX_LENGTH,
@@ -11,53 +13,106 @@ import {
   SUBMISSION_MEASURE_MAX_LENGTH,
   SUBMISSION_NAME_MAX_LENGTH,
   SUBMISSION_NOTE_MAX_LENGTH,
+  type MyRecipeSubmission,
+  type RecipeSearchResult,
   type SaveRecipeSubmissionResult,
   type SubmissionFormIngredient,
   type SubmissionValidationError,
 } from "@bartendingapp/shared";
 import { useSession } from "@/auth/use-session";
-import { useRouter } from "@/i18n/navigation";
+import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
+import { LinkButton } from "@/components/link-button";
 import { Spinner } from "@/components/spinner";
 import { Text } from "@/components/text";
 import { alcoholicStatusKey } from "@/recipes/format";
 import { SubmissionSignInPrompt } from "./submission-sign-in-prompt";
-import { useSaveRecipeSubmission, useSubmissionFormContext } from "./use-submissions";
+import {
+  useDuplicateRecipeNames,
+  useMyRecipeSubmission,
+  useSaveRecipeSubmission,
+  useSubmissionFormContext,
+  useSubmissionIngredientSuggestions,
+} from "./use-submissions";
 
 type SubmissionsTranslator = ReturnType<typeof useTranslations<"submissions">>;
 
-/** /my-recipes/new (spec 0064 AC-1 to AC-5, AC-18 state, AC-21 entry). */
-export function SubmitRecipePageClient() {
+/**
+ * /my-recipes/new, and /my-recipes/[id]/edit when `submissionId` is set
+ * (spec 0064 AC-1 to AC-7, AC-13 reason, AC-18 state, AC-21 entry).
+ */
+export function SubmitRecipePageClient({ submissionId }: { submissionId?: string }) {
   const t = useTranslations("submissions");
-  const tCommon = useTranslations("common");
   const { isLinked, isLoading } = useSession();
-  const context = useSubmissionFormContext();
 
   return (
     <div className="mx-auto flex w-full max-w-2xl flex-col gap-four px-four py-six">
       <Text variant="display" as="h1">
-        {t("submitTitle")}
+        {submissionId ? t("editTitle") : t("submitTitle")}
       </Text>
       {isLoading ? (
         <FormSpinner label={t("loadingForm")} />
       ) : !isLinked ? (
         <SubmissionSignInPrompt />
-      ) : context.isError ? (
-        <EmptyState
-          title={tCommon("somethingWentWrong")}
-          description={t("formLoadFailed")}
-          action={<Button onClick={() => context.refetch()}>{tCommon("retry")}</Button>}
-        />
-      ) : !context.data ? (
-        <FormSpinner label={t("loadingForm")} />
-      ) : context.data.blocked ? (
-        <EmptyState title={t("errorBlocked")} />
+      ) : submissionId ? (
+        <EditSubmission submissionId={submissionId} />
       ) : (
-        <SubmissionForm requireDisplayName={context.data.needsDisplayName} />
+        <NewSubmission />
       )}
     </div>
+  );
+}
+
+function NewSubmission() {
+  const t = useTranslations("submissions");
+  const tCommon = useTranslations("common");
+  const context = useSubmissionFormContext();
+
+  if (context.isError) {
+    return (
+      <EmptyState
+        title={tCommon("somethingWentWrong")}
+        description={t("formLoadFailed")}
+        action={<Button onClick={() => context.refetch()}>{tCommon("retry")}</Button>}
+      />
+    );
+  }
+  if (!context.data) return <FormSpinner label={t("loadingForm")} />;
+  if (context.data.blocked) return <EmptyState title={t("errorBlocked")} />;
+  return <SubmissionForm requireDisplayName={context.data.needsDisplayName} />;
+}
+
+function EditSubmission({ submissionId }: { submissionId: string }) {
+  const t = useTranslations("submissions");
+  const tCommon = useTranslations("common");
+  const { data, isError, isPending, refetch } = useMyRecipeSubmission(submissionId);
+  const backAction = <LinkButton href="/my-recipes">{t("backToMyRecipes")}</LinkButton>;
+
+  if (isError) {
+    return (
+      <EmptyState
+        title={tCommon("somethingWentWrong")}
+        description={t("formLoadFailed")}
+        action={<Button onClick={() => refetch()}>{tCommon("retry")}</Button>}
+      />
+    );
+  }
+  if (isPending) return <FormSpinner label={t("loadingForm")} />;
+  if (data === null) return <EmptyState title={t("notFound")} action={backAction} />;
+  // AC-6: an approved submission is read only.
+  if (data.status === "approved") {
+    return <EmptyState title={t("errorNotEditable")} action={backAction} />;
+  }
+  if (data.blocked) return <EmptyState title={t("errorBlocked")} action={backAction} />;
+
+  return (
+    <SubmissionForm
+      key={data.updatedAt}
+      requireDisplayName={data.needsDisplayName}
+      existing={data}
+    />
   );
 }
 
@@ -157,34 +212,87 @@ function saveErrorMessage(
 
 const emptyIngredient = (): SubmissionFormIngredient => ({ name: "", measure: "" });
 
-function SubmissionForm({ requireDisplayName }: { requireDisplayName: boolean }) {
+function initialIngredients(existing?: MyRecipeSubmission): SubmissionFormIngredient[] {
+  if (!existing || existing.ingredients.length === 0) return [emptyIngredient()];
+  return existing.ingredients.map((i) => ({ name: i.name, measure: i.measure ?? "" }));
+}
+
+function SubmissionForm({
+  requireDisplayName,
+  existing,
+}: {
+  requireDisplayName: boolean;
+  /** Set when editing a pending or rejected submission (AC-6). */
+  existing?: MyRecipeSubmission;
+}) {
   const t = useTranslations("submissions");
   const tCommon = useTranslations("common");
   const tStatus = useTranslations("alcoholicStatus");
   const locale = useLocale();
   const router = useRouter();
   const save = useSaveRecipeSubmission();
-  // Generated once, so a retried save updates the same row instead of
-  // creating a second one (and, from task 7, names the photo path).
-  const [submissionId] = useState(() => crypto.randomUUID());
-  const [name, setName] = useState("");
-  const [ingredients, setIngredients] = useState<SubmissionFormIngredient[]>([emptyIngredient()]);
-  const [instructions, setInstructions] = useState("");
-  const [glass, setGlass] = useState("");
-  const [alcoholicStatus, setAlcoholicStatus] = useState<string>("alcoholic");
-  const [note, setNote] = useState("");
+  // Generated once for a new submission, so a retried save updates the same
+  // row instead of creating a second one (and, from task 7, names the photo
+  // path). An edit keeps the existing id.
+  const [submissionId] = useState(() => existing?.id ?? crypto.randomUUID());
+  const [name, setName] = useState(existing?.name ?? "");
+  const [ingredients, setIngredients] = useState(() => initialIngredients(existing));
+  const [instructions, setInstructions] = useState(existing?.instructions ?? "");
+  const [glass, setGlass] = useState(existing?.glass ?? "");
+  const [alcoholicStatus, setAlcoholicStatus] = useState<string>(
+    existing?.alcoholicStatus ?? "alcoholic",
+  );
+  const [note, setNote] = useState(existing?.note ?? "");
   const [displayName, setDisplayName] = useState("");
   const [errors, setErrors] = useState<SubmissionValidationError[]>([]);
   const [formError, setFormError] = useState<string | null>(null);
+
+  // AC-7: the duplicate warning, after typing pauses and again on submit.
+  const duplicates = useDuplicateRecipeNames(name);
+  const [submitMatches, setSubmitMatches] = useState<{
+    name: string;
+    matches: RecipeSearchResult[];
+  } | null>(null);
+  // The name a warning was last shown for, so a second submit goes through.
+  const [warnedName, setWarnedName] = useState<string | null>(null);
+  const typedKey = normalizeRecipeNameForMatch(name);
+  const visibleMatches =
+    submitMatches && normalizeRecipeNameForMatch(submitMatches.name) === typedKey
+      ? submitMatches.matches
+      : normalizeRecipeNameForMatch(duplicates.checkedName) === typedKey
+        ? duplicates.matches
+        : [];
+
+  // A warning already on screen for this name lets the submit go through.
+  const alreadyWarned = visibleMatches.length > 0 || warnedName === typedKey;
+
+  // AC-1: catalog names for the focused ingredient row; free text still allowed.
+  const ingredientListId = useId();
+  const [activeIngredientIndex, setActiveIngredientIndex] = useState<number | null>(null);
+  const activeIngredientQuery =
+    activeIngredientIndex === null ? "" : (ingredients[activeIngredientIndex]?.name ?? "");
+  const { data: ingredientSuggestions = [] } =
+    useSubmissionIngredientSuggestions(activeIngredientQuery);
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setFormError(null);
 
+    if (typedKey.length > 0 && !alreadyWarned) {
+      const matches = await duplicates.checkNow(name).catch(() => []);
+      if (matches.length > 0) {
+        // Shown once; submitting again is still allowed.
+        setSubmitMatches({ name, matches });
+        setWarnedName(typedKey);
+        return;
+      }
+    }
+
     const result = await save.mutateAsync({
       id: submissionId,
       locale,
       requireDisplayName,
+      photoPath: existing?.photoPath ?? null,
       values: { name, ingredients, instructions, glass, alcoholicStatus, note, displayName },
     });
 
@@ -203,15 +311,45 @@ function SubmissionForm({ requireDisplayName }: { requireDisplayName: boolean })
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-four" noValidate>
-      <Input
-        label={t("name")}
-        value={name}
-        onChange={(event) => setName(event.target.value)}
-        error={fieldError(t, errors, "name")}
-        maxLength={SUBMISSION_NAME_MAX_LENGTH}
-        autoComplete="off"
-        required
-      />
+      {existing?.status === "rejected" && existing.rejectionReason && (
+        <div className="flex flex-col gap-half rounded-medium border border-danger p-three">
+          <Text variant="label">{t("rejectedNotice")}</Text>
+          {/* Plain text only (invariant 8). */}
+          <Text variant="bodySmall" className="whitespace-pre-line break-words">
+            {existing.rejectionReason}
+          </Text>
+        </div>
+      )}
+
+      <div className="flex flex-col gap-one">
+        <Input
+          label={t("name")}
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          error={fieldError(t, errors, "name")}
+          maxLength={SUBMISSION_NAME_MAX_LENGTH}
+          autoComplete="off"
+          required
+        />
+        {visibleMatches.length > 0 && (
+          <div role="status" className="flex flex-col gap-half">
+            <Text variant="bodySmall">{t("duplicateWarning")}</Text>
+            <ul className="flex flex-col gap-half">
+              {visibleMatches.map((recipe) => (
+                <li key={recipe.id}>
+                  <Link
+                    href={`/recipes/${buildRecipeSlugPath(recipe.id, recipe.name, recipe.baseName)}`}
+                    target="_blank"
+                    className="text-body-small font-medium underline underline-offset-4"
+                  >
+                    {recipe.name}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       <fieldset className="flex flex-col gap-two">
         <legend className="contents">
@@ -227,6 +365,8 @@ function SubmissionForm({ requireDisplayName }: { requireDisplayName: boolean })
             <Input
               label={t("ingredientName", { number: index + 1 })}
               value={ingredient.name}
+              list={ingredientListId}
+              onFocus={() => setActiveIngredientIndex(index)}
               onChange={(event) =>
                 setIngredients((current) =>
                   current.map((row, i) =>
@@ -264,6 +404,11 @@ function SubmissionForm({ requireDisplayName }: { requireDisplayName: boolean })
             </Button>
           </div>
         ))}
+        <datalist id={ingredientListId}>
+          {ingredientSuggestions.map((suggestion) => (
+            <option key={suggestion.id} value={suggestion.name} />
+          ))}
+        </datalist>
         <Button
           type="button"
           variant="secondary"
@@ -346,7 +491,7 @@ function SubmissionForm({ requireDisplayName }: { requireDisplayName: boolean })
       )}
 
       <Button type="submit" disabled={isSaving} className="self-start">
-        {isSaving ? t("submitting") : t("submit")}
+        {isSaving ? t("submitting") : existing ? t("resubmit") : t("submit")}
       </Button>
     </form>
   );

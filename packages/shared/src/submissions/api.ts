@@ -8,11 +8,17 @@ import {
   type AdminRecipeValidationError,
 } from "../adminRecipes";
 import { canonicalGlass } from "../catalogNames";
+import type { Locale } from "../locale";
+import { searchRecipes, type RecipeSearchResult } from "../recipes";
+import { DUPLICATE_SEARCH_LIMIT, findDuplicateRecipes } from "./duplicates";
 import { raisedCode, toSaveSubmissionError, type SaveSubmissionError } from "./errors";
+import { RECIPE_SUBMISSION_PHOTOS_BUCKET, submissionPhotoFiles } from "./photos";
 import {
   toSubmissionIngredients,
   trimSubmissionText,
+  validateRejectionReason,
   validateSubmissionForm,
+  type RejectionReasonError,
   type SubmissionFormValues,
   type SubmissionIngredientPayload,
   type SubmissionValidationError,
@@ -249,6 +255,70 @@ export async function fetchMyRecipeSubmission(
 }
 
 // ---------------------------------------------------------------------------
+// Author: withdraw (AC-6)
+
+export type WithdrawSubmissionError =
+  /** Gone already, or not the caller's. */
+  | { reason: "not_found" }
+  /** Approved rows are read only. */
+  | { reason: "not_editable" }
+  | { reason: "request_failed"; message: string };
+
+export type WithdrawSubmissionResult =
+  { data: { id: string }; error: null } | { data: null; error: WithdrawSubmissionError };
+
+/**
+ * Deletes a pending or rejected submission, then removes its photo files. A
+ * failed file removal is left for the daily cleanup (AC-19), so it never
+ * fails the withdraw.
+ */
+export async function withdrawRecipeSubmission(
+  client: SupabaseClient<Database>,
+  id: string,
+): Promise<WithdrawSubmissionResult> {
+  const { data, error } = await client.rpc("withdraw_recipe_submission", { p_id: id }).single();
+
+  if (error) {
+    const code = raisedCode(error);
+    if (code === "not_found" || code === "not_editable") {
+      return { data: null, error: { reason: code } };
+    }
+    return { data: null, error: { reason: "request_failed", message: error.message } };
+  }
+
+  const photoPath = (data as { photo_path: string | null }).photo_path;
+  if (photoPath) {
+    await client.storage
+      .from(RECIPE_SUBMISSION_PHOTOS_BUCKET)
+      .remove(submissionPhotoFiles(photoPath))
+      .catch(() => undefined);
+  }
+
+  return { data: { id }, error: null };
+}
+
+// ---------------------------------------------------------------------------
+// Author: duplicate name warning (AC-7)
+
+/**
+ * Live catalog recipes whose localized or English name equals the typed
+ * name: `search_recipes` in the current locale, then the exact match filter.
+ */
+export async function findDuplicateRecipeNames(
+  client: SupabaseClient<Database>,
+  { name, locale }: { name: string; locale: Locale },
+): Promise<RecipeSearchResult[]> {
+  const query = trimSubmissionText(name);
+  if (query.length === 0) return [];
+  const results = await searchRecipes(client, {
+    query,
+    pageLimit: DUPLICATE_SEARCH_LIMIT,
+    locale,
+  });
+  return findDuplicateRecipes(query, results);
+}
+
+// ---------------------------------------------------------------------------
 // Admin: list and fetch (AC-10, AC-11)
 
 export interface AdminSubmissionSummary {
@@ -384,6 +454,58 @@ export async function adminFetchRecipeSubmission(
     authorBlocked: data.author_blocked === true,
     similarRecipes: toSimilarRecipes(data.similar_recipes),
   };
+}
+
+// ---------------------------------------------------------------------------
+// Admin: reject (AC-13, AC-14)
+
+export type RejectSubmissionError =
+  | { reason: "validation"; error: RejectionReasonError }
+  /** The author saved after you loaded it, or it is no longer pending (AC-14). */
+  | { reason: "stale" }
+  | { reason: "not_admin" }
+  | { reason: "not_found" }
+  | { reason: "request_failed"; message: string };
+
+export type RejectSubmissionResult =
+  { data: { updatedAt: string }; error: null } | { data: null; error: RejectSubmissionError };
+
+export interface RejectSubmissionInput {
+  submissionId: string;
+  reason: string;
+  /** The `updatedAt` the admin loaded. */
+  expectedUpdatedAt: string;
+}
+
+export async function rejectRecipeSubmission(
+  client: SupabaseClient<Database>,
+  { submissionId, reason, expectedUpdatedAt }: RejectSubmissionInput,
+): Promise<RejectSubmissionResult> {
+  const invalid = validateRejectionReason(reason);
+  if (invalid !== null) {
+    return { data: null, error: { reason: "validation", error: invalid } };
+  }
+
+  const { data, error } = await client
+    .rpc("admin_reject_recipe_submission", {
+      p_id: submissionId,
+      p_reason: trimSubmissionText(reason),
+      p_expected_updated_at: expectedUpdatedAt,
+    })
+    .single();
+
+  if (error) {
+    const code = raisedCode(error);
+    if (code === "stale" || code === "not_admin" || code === "not_found") {
+      return { data: null, error: { reason: code } };
+    }
+    if (code === "invalid_reason") {
+      return { data: null, error: { reason: "validation", error: "required" } };
+    }
+    return { data: null, error: { reason: "request_failed", message: error.message } };
+  }
+
+  return { data: { updatedAt: data.updated_at }, error: null };
 }
 
 // ---------------------------------------------------------------------------

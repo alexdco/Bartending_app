@@ -878,7 +878,16 @@
       "errorStale": "此投稿已更改，请重新加载。",
       "errorNotAdmin": "只有管理员可以审核投稿。",
       "approveFailed": "无法通过。错误：{message}",
-      "approveNotesFailed": "配方已上线，但风格和小窍门未能保存。错误：{message}"
+      "approveNotesFailed": "配方已上线，但风格和小窍门未能保存。错误：{message}",
+      "reload": "重新加载",
+      "rejectHeading": "拒绝",
+      "rejectReason": "原因",
+      "rejectReasonHint": "作者会在“我的配方”中看到原因，并可编辑后重新提交。",
+      "reject": "拒绝",
+      "rejecting": "正在拒绝…",
+      "rejectReasonRequired": "请填写原因。",
+      "rejectReasonTooLong": "请不超过 {max} 个字符。",
+      "rejectFailed": "拒绝失败：{message}"
     },
     "submissionsMetaTitle": "投稿的配方",
     "submissionReviewMetaTitle": "审核投稿"
@@ -951,6 +960,21 @@
     "errorBlocked": "你的账号无法提交配方。",
     "errorNotEditable": "此配方已无法修改。",
     "errorDisplayNameRequired": "请填写显示名称后再提交。",
-    "errorSaveFailed": "无法提交你的配方。请重试。"
+    "errorSaveFailed": "无法提交你的配方。请重试。",
+    "editTitle": "编辑你的配方",
+    "editMetaTitle": "编辑你的配方",
+    "backToMyRecipes": "返回我的配方",
+    "notFound": "此配方已不存在。",
+    "rejectedNotice": "未通过审核。原因：",
+    "duplicateWarning": "已有同名配方",
+    "resubmit": "保存并重新提交",
+    "edit": "编辑",
+    "editAndResubmit": "编辑并重新提交",
+    "withdraw": "撤回",
+    "withdrawing": "正在撤回…",
+    "withdrawConfirm": "撤回此配方？它将被删除。",
+    "withdrawFailed": "无法撤回此配方，请重试。",
+    "searchPrompt": "没找到？",
+    "searchPromptAction": "提交你的配方"
   }
 }

@@ -1,10 +1,13 @@
 "use client";
 
+import { useState } from "react";
 import { useTranslations } from "next-intl";
 import {
   buildRecipeSlugPath,
+  SUBMISSION_REJECTION_REASON_MAX_LENGTH,
   type AdminSubmissionDetail,
   type ApproveSubmissionResult,
+  type RejectSubmissionError,
 } from "@bartendingapp/shared";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/button";
@@ -14,6 +17,7 @@ import { Text } from "@/components/text";
 import {
   useAdminRecipeSubmission,
   useApproveRecipeSubmission,
+  useRejectRecipeSubmission,
 } from "@/submissions/use-submissions";
 import { AdminRecipeForm, type AdminRecipeSubmitOutcome } from "./admin-recipe-form";
 import { ScreeningBadges } from "./admin-submissions";
@@ -62,7 +66,7 @@ export function AdminSubmissionReview({ submissionId }: { submissionId: string }
       </Link>
       <SubmissionOriginal submission={data} />
       {data.status === "pending" ? (
-        <ApprovePanel submission={data} />
+        <ReviewActions key={data.updatedAt} submission={data} onReload={() => refetch()} />
       ) : (
         <Text variant="body" muted>
           {t("alreadyReviewed")}
@@ -178,7 +182,142 @@ function approveOutcome(
   }
 }
 
-function ApprovePanel({ submission }: { submission: AdminSubmissionDetail }) {
+/**
+ * Approve and reject, both sending the updated_at the admin loaded. A stale
+ * result (AC-14) shows a reload action; reloading remounts this with the new
+ * token.
+ */
+function ReviewActions({
+  submission,
+  onReload,
+}: {
+  submission: AdminSubmissionDetail;
+  onReload: () => void;
+}) {
+  const t = useTranslations("admin.recipeSubmissions");
+  const [isStale, setIsStale] = useState(false);
+
+  return (
+    <div className="flex flex-col gap-six">
+      {isStale && (
+        <div
+          role="alert"
+          className="flex flex-wrap items-center gap-three rounded-medium border border-danger p-three"
+        >
+          <Text variant="body" className="text-danger">
+            {t("errorStale")}
+          </Text>
+          <Button variant="secondary" onClick={onReload}>
+            {t("reload")}
+          </Button>
+        </div>
+      )}
+      <ApprovePanel submission={submission} onStale={() => setIsStale(true)} />
+      <RejectPanel submission={submission} onStale={() => setIsStale(true)} />
+    </div>
+  );
+}
+
+function rejectErrorMessage(t: ReviewTranslator, error: RejectSubmissionError): string {
+  switch (error.reason) {
+    case "validation":
+      return error.error === "too_long"
+        ? t("rejectReasonTooLong", { max: SUBMISSION_REJECTION_REASON_MAX_LENGTH })
+        : t("rejectReasonRequired");
+    case "stale":
+      return t("errorStale");
+    case "not_admin":
+      return t("errorNotAdmin");
+    case "not_found":
+      return t("notFound");
+    case "request_failed":
+      return t("rejectFailed", { message: error.message });
+  }
+}
+
+/** AC-13: reject with a reason the author will see. */
+function RejectPanel({
+  submission,
+  onStale,
+}: {
+  submission: AdminSubmissionDetail;
+  onStale: () => void;
+}) {
+  const t = useTranslations("admin.recipeSubmissions");
+  const router = useRouter();
+  const reject = useRejectRecipeSubmission();
+  const [reason, setReason] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleReject(event: React.FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const result = await reject.mutateAsync({
+      submissionId: submission.id,
+      reason,
+      expectedUpdatedAt: submission.updatedAt,
+    });
+    if (result.error) {
+      if (result.error.reason === "stale") onStale();
+      setError(rejectErrorMessage(t, result.error));
+      return;
+    }
+    router.push("/admin/submissions");
+  }
+
+  return (
+    <section className="flex flex-col gap-three rounded-medium border border-border p-four">
+      <Text variant="heading" as="h2">
+        {t("rejectHeading")}
+      </Text>
+      <form onSubmit={handleReject} className="flex flex-col gap-three" noValidate>
+        <div className="flex flex-col gap-one">
+          <label htmlFor="reject-reason" className="text-label font-medium text-text">
+            {t("rejectReason")}
+          </label>
+          <Text id="reject-reason-hint" variant="bodySmall" muted>
+            {t("rejectReasonHint")}
+          </Text>
+          <textarea
+            id="reject-reason"
+            value={reason}
+            onChange={(event) => setReason(event.target.value)}
+            maxLength={SUBMISSION_REJECTION_REASON_MAX_LENGTH}
+            rows={3}
+            aria-describedby={
+              error ? "reject-reason-hint reject-reason-error" : "reject-reason-hint"
+            }
+            aria-invalid={error ? true : undefined}
+            className={`rounded-small border bg-surface px-three py-two text-body text-text ${
+              error ? "border-danger" : "border-border"
+            }`}
+          />
+          {error && (
+            <span id="reject-reason-error" role="alert" className="text-body-small text-danger">
+              {error}
+            </span>
+          )}
+        </div>
+        <Button
+          type="submit"
+          variant="secondary"
+          disabled={reject.isPending}
+          className="self-start"
+        >
+          {reject.isPending ? t("rejecting") : t("reject")}
+        </Button>
+      </form>
+    </section>
+  );
+}
+
+function ApprovePanel({
+  submission,
+  onStale,
+}: {
+  submission: AdminSubmissionDetail;
+  onStale: () => void;
+}) {
   const t = useTranslations("admin.recipeSubmissions");
   const router = useRouter();
   const approve = useApproveRecipeSubmission();
@@ -211,6 +350,7 @@ function ApprovePanel({ submission }: { submission: AdminSubmissionDetail }) {
             values,
           });
           if (result.error) {
+            if (result.error.reason === "stale") onStale();
             return approveOutcome(t, result.error);
           }
           router.push("/admin/submissions");

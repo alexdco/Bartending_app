@@ -878,7 +878,16 @@
       "errorStale": "Este envío cambió, vuelve a cargarlo.",
       "errorNotAdmin": "Solo un administrador puede aprobar envíos.",
       "approveFailed": "No se pudo aprobar: {message}",
-      "approveNotesFailed": "La receta ya está publicada, pero su estilo y consejos no se guardaron: {message}"
+      "approveNotesFailed": "La receta ya está publicada, pero su estilo y consejos no se guardaron: {message}",
+      "reload": "Recargar",
+      "rejectHeading": "Rechazar",
+      "rejectReason": "Motivo",
+      "rejectReasonHint": "El autor lo ve en Mis recetas y puede editar y reenviar.",
+      "reject": "Rechazar",
+      "rejecting": "Rechazando…",
+      "rejectReasonRequired": "Añade un motivo.",
+      "rejectReasonTooLong": "Usa {max} caracteres o menos.",
+      "rejectFailed": "Error al rechazar: {message}"
     },
     "submissionsMetaTitle": "Recetas enviadas",
     "submissionReviewMetaTitle": "Revisar envío"
@@ -951,6 +960,21 @@
     "errorBlocked": "Enviar recetas no está disponible para tu cuenta.",
     "errorNotEditable": "Esta receta ya no se puede cambiar.",
     "errorDisplayNameRequired": "Añade un nombre visible para enviar.",
-    "errorSaveFailed": "No pudimos enviar tu receta. Inténtalo de nuevo."
+    "errorSaveFailed": "No pudimos enviar tu receta. Inténtalo de nuevo.",
+    "editTitle": "Edita tu receta",
+    "editMetaTitle": "Edita tu receta",
+    "backToMyRecipes": "Volver a Mis recetas",
+    "notFound": "Esta receta ya no existe.",
+    "rejectedNotice": "No aprobada. Motivo:",
+    "duplicateWarning": "Ya existe una receta con este nombre",
+    "resubmit": "Guardar y reenviar",
+    "edit": "Editar",
+    "editAndResubmit": "Editar y reenviar",
+    "withdraw": "Retirar",
+    "withdrawing": "Retirando…",
+    "withdrawConfirm": "¿Retirar esta receta? Se eliminará.",
+    "withdrawFailed": "No pudimos retirar esta receta. Inténtalo de nuevo.",
+    "searchPrompt": "¿No la encuentras?",
+    "searchPromptAction": "Envía tu receta"
   }
 }

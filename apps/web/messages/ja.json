@@ -878,7 +878,16 @@
       "errorStale": "この投稿は変更されました。再読み込みしてください。",
       "errorNotAdmin": "投稿を承認できるのは管理者だけです。",
       "approveFailed": "承認できませんでした。エラー: {message}",
-      "approveNotesFailed": "レシピは公開されましたが、スタイルとコツは保存されませんでした。エラー: {message}"
+      "approveNotesFailed": "レシピは公開されましたが、スタイルとコツは保存されませんでした。エラー: {message}",
+      "reload": "再読み込み",
+      "rejectHeading": "却下",
+      "rejectReason": "理由",
+      "rejectReasonHint": "投稿者はマイレシピでこれを見て、編集して再送信できます。",
+      "reject": "却下",
+      "rejecting": "却下中…",
+      "rejectReasonRequired": "理由を入力してください。",
+      "rejectReasonTooLong": "{max}文字以内で入力してください。",
+      "rejectFailed": "却下に失敗しました：{message}"
     },
     "submissionsMetaTitle": "投稿されたレシピ",
     "submissionReviewMetaTitle": "投稿の審査"
@@ -951,6 +960,21 @@
     "errorBlocked": "お使いのアカウントではレシピを投稿できません。",
     "errorNotEditable": "このレシピはもう変更できません。",
     "errorDisplayNameRequired": "投稿するには表示名を入力してください。",
-    "errorSaveFailed": "レシピを投稿できませんでした。もう一度お試しください。"
+    "errorSaveFailed": "レシピを投稿できませんでした。もう一度お試しください。",
+    "editTitle": "レシピを編集",
+    "editMetaTitle": "投稿したレシピを編集",
+    "backToMyRecipes": "マイレシピに戻る",
+    "notFound": "このレシピはもう存在しません。",
+    "rejectedNotice": "承認されませんでした。理由：",
+    "duplicateWarning": "この名前のレシピはすでにあります",
+    "resubmit": "保存して再送信",
+    "edit": "編集",
+    "editAndResubmit": "編集して再送信",
+    "withdraw": "取り下げる",
+    "withdrawing": "取り下げ中…",
+    "withdrawConfirm": "このレシピを取り下げますか？削除されます。",
+    "withdrawFailed": "レシピを取り下げられませんでした。もう一度お試しください。",
+    "searchPrompt": "見つかりませんか？",
+    "searchPromptAction": "レシピを投稿する"
   }
 }

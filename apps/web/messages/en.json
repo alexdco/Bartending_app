@@ -878,7 +878,16 @@
       "errorStale": "This submission changed, reload it.",
       "errorNotAdmin": "Only an admin can approve submissions.",
       "approveFailed": "Approve failed: {message}",
-      "approveNotesFailed": "The recipe is live, but its style and tips didn't save: {message}"
+      "approveNotesFailed": "The recipe is live, but its style and tips didn't save: {message}",
+      "reload": "Reload",
+      "rejectHeading": "Reject",
+      "rejectReason": "Reason",
+      "rejectReasonHint": "The author sees this on My recipes and can edit and resubmit.",
+      "reject": "Reject",
+      "rejecting": "Rejecting…",
+      "rejectReasonRequired": "Add a reason.",
+      "rejectReasonTooLong": "Use {max} characters or fewer.",
+      "rejectFailed": "Reject failed: {message}"
     },
     "submissionsMetaTitle": "Recipe submissions",
     "submissionReviewMetaTitle": "Review submission"
@@ -951,6 +960,21 @@
     "errorBlocked": "Submitting recipes isn't available for your account.",
     "errorNotEditable": "This recipe can't be changed anymore.",
     "errorDisplayNameRequired": "Add a display name to submit.",
-    "errorSaveFailed": "We couldn't submit your recipe. Try again."
+    "errorSaveFailed": "We couldn't submit your recipe. Try again.",
+    "editTitle": "Edit your recipe",
+    "editMetaTitle": "Edit your recipe",
+    "backToMyRecipes": "Back to My recipes",
+    "notFound": "This recipe no longer exists.",
+    "rejectedNotice": "Not approved. Reason:",
+    "duplicateWarning": "A recipe with this name already exists",
+    "resubmit": "Save and resubmit",
+    "edit": "Edit",
+    "editAndResubmit": "Edit and resubmit",
+    "withdraw": "Withdraw",
+    "withdrawing": "Withdrawing…",
+    "withdrawConfirm": "Withdraw this recipe? It will be deleted.",
+    "withdrawFailed": "We couldn't withdraw this recipe. Try again.",
+    "searchPrompt": "Can't find it?",
+    "searchPromptAction": "Submit your recipe"
   }
 }
