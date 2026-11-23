@@ -615,6 +615,40 @@ export async function rejectRecipeSubmission(
 }
 
 // ---------------------------------------------------------------------------
+// Admin: block from submitting (AC-18)
+
+export type SetSubmissionBlockError =
+  { reason: "not_admin" } | { reason: "not_found" } | { reason: "request_failed"; message: string };
+
+export type SetSubmissionBlockResult =
+  { data: { blocked: boolean }; error: null } | { data: null; error: SetSubmissionBlockError };
+
+export interface SetSubmissionBlockInput {
+  /** Any submission by the author; the block applies to the author. */
+  submissionId: string;
+  blocked: boolean;
+}
+
+export async function setSubmissionBlock(
+  client: SupabaseClient<Database>,
+  { submissionId, blocked }: SetSubmissionBlockInput,
+): Promise<SetSubmissionBlockResult> {
+  const { data, error } = await client
+    .rpc("admin_set_submission_block", { p_submission_id: submissionId, p_blocked: blocked })
+    .single();
+
+  if (error) {
+    const code = raisedCode(error);
+    if (code === "not_admin" || code === "not_found") {
+      return { data: null, error: { reason: code } };
+    }
+    return { data: null, error: { reason: "request_failed", message: error.message } };
+  }
+
+  return { data: { blocked: data.blocked }, error: null };
+}
+
+// ---------------------------------------------------------------------------
 // Admin: approve (AC-11, AC-14)
 
 export type ApproveSubmissionError =

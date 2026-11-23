@@ -1976,6 +1976,12 @@ export type Database = {
         };
         Returns: undefined;
       };
+      admin_set_submission_block: {
+        Args: { p_blocked: boolean; p_submission_id: string };
+        Returns: {
+          blocked: boolean;
+        }[];
+      };
       admin_upsert_recipe: {
         Args: {
           p_alcoholic_status: string;
@@ -2056,6 +2062,17 @@ export type Database = {
       comment_with_photos_json: {
         Args: { p_comment_id: string };
         Returns: Json;
+      };
+      delete_expired_rejected_recipe_submissions: {
+        Args: { p_dry_run?: boolean; p_limit: number };
+        Returns: {
+          id: string;
+          photo_path: string;
+        }[];
+      };
+      delete_old_recipe_submission_usage: {
+        Args: { p_dry_run?: boolean };
+        Returns: number;
       };
       edit_comment: {
         Args: { p_body: string; p_comment_id: string; p_photos: Json };
@@ -2244,6 +2261,10 @@ export type Database = {
         Returns: string[];
       };
       list_orphan_recipe_images: {
+        Args: { p_limit: number };
+        Returns: string[];
+      };
+      list_orphan_recipe_submission_photos: {
         Args: { p_limit: number };
         Returns: string[];
       };

@@ -23,6 +23,7 @@ import {
   useApproveRecipeSubmission,
   useDraftSubmissionEnglish,
   useRejectRecipeSubmission,
+  useSetSubmissionBlock,
   useSubmissionPhotoUrls,
 } from "@/submissions/use-submissions";
 import { AdminRecipeForm, type AdminRecipeSubmitOutcome } from "./admin-recipe-form";
@@ -83,7 +84,54 @@ export function AdminSubmissionReview({ submissionId }: { submissionId: string }
           </Text>
         </>
       )}
+      <BlockAuthorControl submissionId={data.id} blocked={data.authorBlocked} />
     </div>
+  );
+}
+
+/**
+ * AC-18: "Block from submitting", on every review screen whatever the status.
+ * It applies to the author, so their pending submissions stay in the queue.
+ */
+function BlockAuthorControl({ submissionId, blocked }: { submissionId: string; blocked: boolean }) {
+  const t = useTranslations("admin.recipeSubmissions");
+  const setBlock = useSetSubmissionBlock();
+  const [error, setError] = useState<string | null>(null);
+
+  async function handleChange(next: boolean) {
+    setError(null);
+    const result = await setBlock.mutateAsync({ submissionId, blocked: next });
+    if (result.error) {
+      setError(
+        t("blockFailed", {
+          message:
+            result.error.reason === "request_failed" ? result.error.message : result.error.reason,
+        }),
+      );
+    }
+  }
+
+  return (
+    <section className="flex flex-col gap-two border-t border-border pt-four">
+      <label className="flex items-center gap-two text-label font-medium text-text">
+        <input
+          type="checkbox"
+          checked={blocked}
+          disabled={setBlock.isPending}
+          aria-describedby={error ? "block-author-hint block-author-error" : "block-author-hint"}
+          onChange={(event) => void handleChange(event.target.checked)}
+        />
+        {t("blockLabel")}
+      </label>
+      <Text id="block-author-hint" variant="bodySmall" muted>
+        {t("blockHint")}
+      </Text>
+      {error && (
+        <span id="block-author-error" role="alert" className="text-body-small text-danger">
+          {error}
+        </span>
+      )}
+    </section>
   );
 }
 

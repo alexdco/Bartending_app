@@ -15,6 +15,7 @@ import {
   rejectRecipeSubmission,
   saveRecipeSubmission,
   searchIngredients,
+  setSubmissionBlock,
   signSubmissionPhotoUrls,
   uploadSubmissionPhoto,
   withdrawRecipeSubmission,
@@ -24,6 +25,7 @@ import {
   type RecipeImagePair,
   type SaveRecipeSubmissionInput,
   type SaveRecipeSubmissionResult,
+  type SetSubmissionBlockInput,
   type SubmissionCursor,
   type SubmissionPhotoSize,
   type SubmissionStatus,
@@ -177,6 +179,17 @@ export function useRejectRecipeSubmission() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: RejectSubmissionInput) => rejectRecipeSubmission(supabase, input),
+    onSettled: () => {
+      void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
+    },
+  });
+}
+
+/** AC-18: turn "Block from submitting" on or off for a submission's author. */
+export function useSetSubmissionBlock() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: (input: SetSubmissionBlockInput) => setSubmissionBlock(supabase, input),
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
     },

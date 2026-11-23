@@ -112,3 +112,32 @@ _Steps derived from spec 0064 acceptance criteria. `/check verify` runs these; `
 
 ### Acceptance-criteria coverage (milestone 3)
 - AC-8 … attach, storage layout, bad file, replace and remove, other user steps, photos check, unit tests · AC-9 … clear and flagged steps, author never sees it, screening check, cron command · AC-11 (photo) … keep and drop approve steps, photos check · AC-12 … Draft English steps, auth command · AC-15 … Not screened and flagged steps
+
+## Milestone 4: safety and lifecycle · updated 2026-11-23
+
+### UI / manual (web, `pnpm web`)
+- [ ] As admin, open any submission at `/admin/submissions/<id>` (pending, rejected, or approved) → a "Block from submitting" checkbox with its hint shows at the bottom → AC-18
+- [ ] Tick it, then as that author open `/my-recipes/new` → "Submitting recipes isn't available for your account", no form → AC-18
+- [ ] As the blocked author, try to save an edit of a pending submission → the same neutral message, nothing saved; the admin queue still lists their pending row → AC-18
+- [ ] As the blocked author, withdraw a pending submission → it goes, along with its photo files → AC-6, AC-18
+- [ ] As admin, untick the box → the author can save again → AC-18
+- [ ] Sign in as a throwaway author with one approved recipe (with photo) and one pending submission with a photo, then delete the account from `/account` → the pending row is gone from the admin queue, `recipe-submission-photos/<uid>/` is empty in Storage, and the approved recipe page reads "Submitted by a community member" with no JSON-LD `author` → AC-16, AC-17
+- [ ] Favorite and rate that approved recipe from another account before the deletion → both still work after it → AC-17
+- [ ] Turn on mocktails only mode → no "Submit a recipe" or "My recipes" in the account menu, no search prompt, and `/my-recipes`, `/my-recipes/new`, and `/my-recipes/<id>/edit` redirect home; an approved non alcoholic community recipe shows in mocktail lists → AC-20
+
+### Commands
+- [ ] Paste `supabase/tests/recipe_submissions_safety_check.sql` into the dashboard SQL editor → every line PASS (block on, off, and for an author with no preferences row; 90 day reject sweep and dry run; orphan file list; 7 day usage sweep; helpers refused for signed in callers; import, merge, hide, custom import, and reset leave a community recipe byte for byte unchanged; fame on arrival fills only an empty fame score; account deletion cascade) → AC-17, AC-18, AC-19, AC-22, AC-23
+- [ ] `select jobname, schedule from cron.job where jobname = 'cleanup-recipe-submissions'` → one row, `30 3 * * *` → AC-19
+- [ ] POST `{"dryRun": true}` to `cleanup-recipe-submissions` with the `secret_key` on the `apikey` header → 200 with `wouldDeleteRejected`, `wouldDeleteOrphanFiles`, `wouldDeleteUsageRows`, nothing deleted; without the key → 401 → AC-19
+- [ ] After the first nightly run, check the function logs → `run complete` with `deletedRejected`, `deletedOrphanFiles`, `deletedUsageRows` → AC-19
+- [ ] As admin in the dashboard, edit a community recipe through the spec 0030 form → `source`, `source_id`, and `submitted_by` are unchanged afterwards → AC-22
+- [ ] `pnpm test` → green, including `communityGuard.test.ts` (the overrides file can't name a `community-<uuid>` id) → AC-22
+
+### Value sourcing coverage (milestone 4 rows)
+- blocked (`user_preferences.submissions_blocked_at`): the block on and off steps, and the check script's block lines
+- rejection age (`reviewed_at`): the check script's 89 day versus 91 day line
+- `fame_score` left empty at approval, filled by the next import's fame on arrival: the check script's fame lines (a score set at review is kept)
+- `submitted_by_name` after account deletion (null, community member fallback): the account deletion step and the check script's detail line
+
+### Acceptance-criteria coverage (milestone 4)
+- AC-17 … account deletion steps, check script cascade lines · AC-18 … block steps, check script block lines · AC-19 … check script sweep lines, cron and dry run commands · AC-20 … mocktails step (web) · AC-22 … check script import guard lines, admin edit command, `communityGuard.test.ts`
