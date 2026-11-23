@@ -52,6 +52,31 @@ function AccountMenu({
                 {t("menu.account")}
               </Text>
             </Pressable>
+            {/* Spec 0064 AC-21; the whole menu is absent in mocktails only mode (AC-20). */}
+            <Pressable
+              accessibilityRole="button"
+              style={styles.menuItem}
+              onPress={() => {
+                onClose();
+                router.push("/my-recipes/new");
+              }}
+            >
+              <Text variant="label" style={{ color: theme.text }}>
+                {t("menu.submitRecipe")}
+              </Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              style={styles.menuItem}
+              onPress={() => {
+                onClose();
+                router.push("/my-recipes");
+              }}
+            >
+              <Text variant="label" style={{ color: theme.text }}>
+                {t("menu.myRecipes")}
+              </Text>
+            </Pressable>
             <View style={[styles.menuItem, styles.menuToggleItem]}>
               <Text variant="label" style={{ color: theme.text }}>
                 {t("menu.bartenderMode")}

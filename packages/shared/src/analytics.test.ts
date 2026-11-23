@@ -6,7 +6,42 @@ import {
   buildPantryItemAddedEvent,
   buildSearchPerformedEvent,
   buildSearchSortChangedEvent,
+  buildRecipeSubmissionFormOpenedEvent,
+  buildRecipeSubmissionSavedEvent,
+  buildRecipeSubmissionWithdrawnEvent,
+  parseRecipeSubmissionFormEntry,
 } from "./analytics";
+
+describe("recipe submission events (spec 0064)", () => {
+  it("recipe_submission_saved carries exactly is_resubmit, has_photo, locale", () => {
+    const event = buildRecipeSubmissionSavedEvent({
+      is_resubmit: true,
+      has_photo: false,
+      locale: "ja",
+    });
+    expect(event.name).toBe("recipe_submission_saved");
+    expect(event.properties).toEqual({ is_resubmit: true, has_photo: false, locale: "ja" });
+  });
+
+  it("recipe_submission_withdrawn carries no properties", () => {
+    const event = buildRecipeSubmissionWithdrawnEvent();
+    expect(event.name).toBe("recipe_submission_withdrawn");
+    expect(event.properties).toEqual({});
+  });
+
+  it("recipe_submission_form_opened carries exactly entry", () => {
+    const event = buildRecipeSubmissionFormOpenedEvent({ entry: "search" });
+    expect(event.name).toBe("recipe_submission_form_opened");
+    expect(event.properties).toEqual({ entry: "search" });
+  });
+
+  it("parseRecipeSubmissionFormEntry maps only `search` to search", () => {
+    expect(parseRecipeSubmissionFormEntry("search")).toBe("search");
+    expect(parseRecipeSubmissionFormEntry(null)).toBe("menu");
+    expect(parseRecipeSubmissionFormEntry("menu")).toBe("menu");
+    expect(parseRecipeSubmissionFormEntry("other")).toBe("menu");
+  });
+});
 
 describe("analytics event builders", () => {
   it("search_performed carries exactly query, result_count, and sort (spec 0061 AC-13)", () => {

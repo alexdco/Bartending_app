@@ -157,6 +157,59 @@ export async function saveRecipeSubmission(
   };
 }
 
+/** What saving the form does to the submission's one photo (AC-8). */
+export type SubmissionPhotoChange =
+  { kind: "keep" } | { kind: "remove" } | { kind: "replace"; image: RecipeImagePair };
+
+export interface SaveSubmissionWithPhotoInput extends Omit<
+  SaveRecipeSubmissionInput,
+  "photoPath" | "replacedPhotoPath"
+> {
+  /** The row's current photo path (null for a new submission or no photo). */
+  currentPhotoPath: string | null;
+  photo: SubmissionPhotoChange;
+}
+
+export type SaveSubmissionWithPhotoResult =
+  | SaveRecipeSubmissionResult
+  | { data: null; error: { reason: "photo_failed"; upload: UploadRecipeImageError } };
+
+/** Whether the row has a photo once this change is saved (the analytics `has_photo` flag). */
+export function submissionHasPhotoAfterSave(
+  currentPhotoPath: string | null,
+  photo: SubmissionPhotoChange,
+): boolean {
+  return photo.kind === "replace" || (photo.kind === "keep" && currentPhotoPath !== null);
+}
+
+/**
+ * Uploads a new photo first (under the submission id, so the save can name
+ * its path), then saves. A replaced or removed photo's files are removed once
+ * the save succeeds. A photo uploaded for a save that then fails stays until
+ * the daily cleanup, or is reused when the same picture is saved again.
+ * `authorId` is the signed in user's id; null refuses the upload.
+ */
+export async function saveRecipeSubmissionWithPhoto(
+  client: SupabaseClient<Database>,
+  authorId: string | null,
+  { currentPhotoPath, photo, ...input }: SaveSubmissionWithPhotoInput,
+): Promise<SaveSubmissionWithPhotoResult> {
+  let photoPath = photo.kind === "keep" ? currentPhotoPath : null;
+
+  if (photo.kind === "replace") {
+    if (!authorId) {
+      return { data: null, error: { reason: "photo_failed", upload: { reason: "forbidden" } } };
+    }
+    const upload = await uploadSubmissionPhoto(client, authorId, input.id, photo.image);
+    if (upload.error) {
+      return { data: null, error: { reason: "photo_failed", upload: upload.error } };
+    }
+    photoPath = upload.data.photoPath;
+  }
+
+  return saveRecipeSubmission(client, { ...input, photoPath, replacedPhotoPath: currentPhotoPath });
+}
+
 // ---------------------------------------------------------------------------
 // Photos (AC-8): the private bucket, readable only by the author and the admin
 

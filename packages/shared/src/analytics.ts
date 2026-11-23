@@ -7,6 +7,9 @@ export const ANALYTICS_EVENT_NAMES = {
   recipeFavorited: "recipe_favorited",
   quizSourceLinkClicked: "quiz_source_link_clicked",
   searchSortChanged: "search_sort_changed",
+  recipeSubmissionSaved: "recipe_submission_saved",
+  recipeSubmissionWithdrawn: "recipe_submission_withdrawn",
+  recipeSubmissionFormOpened: "recipe_submission_form_opened",
 } as const;
 
 export interface SearchPerformedProperties {
@@ -46,6 +49,44 @@ export interface QuizSourceLinkClickedProperties {
   question_id: string;
   target_kind: "article" | "recipe";
   was_correct: boolean;
+}
+
+// Spec 0064: ids and flags only, never recipe text or names (invariant 8).
+export interface RecipeSubmissionSavedProperties {
+  is_resubmit: boolean;
+  has_photo: boolean;
+  locale: string;
+}
+
+export type RecipeSubmissionWithdrawnProperties = Record<string, never>;
+
+export type RecipeSubmissionFormEntry = "menu" | "search";
+
+export interface RecipeSubmissionFormOpenedProperties {
+  entry: RecipeSubmissionFormEntry;
+}
+
+/** The submit form's `from` param: `search` from the search prompt, anything else counts as `menu`. */
+export function parseRecipeSubmissionFormEntry(
+  from: string | null | undefined,
+): RecipeSubmissionFormEntry {
+  return from === "search" ? "search" : "menu";
+}
+
+export function buildRecipeSubmissionSavedEvent(
+  properties: RecipeSubmissionSavedProperties,
+): AnalyticsEvent<RecipeSubmissionSavedProperties> {
+  return { name: ANALYTICS_EVENT_NAMES.recipeSubmissionSaved, properties };
+}
+
+export function buildRecipeSubmissionWithdrawnEvent(): AnalyticsEvent<RecipeSubmissionWithdrawnProperties> {
+  return { name: ANALYTICS_EVENT_NAMES.recipeSubmissionWithdrawn, properties: {} };
+}
+
+export function buildRecipeSubmissionFormOpenedEvent(
+  properties: RecipeSubmissionFormOpenedProperties,
+): AnalyticsEvent<RecipeSubmissionFormOpenedProperties> {
+  return { name: ANALYTICS_EVENT_NAMES.recipeSubmissionFormOpened, properties };
 }
 
 export interface AnalyticsEvent<Properties> {

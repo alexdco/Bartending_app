@@ -1,9 +1,19 @@
 "use client";
 
-import { useId, useState } from "react";
+import { Suspense, useEffect, useId, useState } from "react";
+import { useSearchParams } from "next/navigation";
 import { useLocale, useTranslations } from "next-intl";
 import {
   buildRecipeSlugPath,
+  buildRecipeSubmissionFormOpenedEvent,
+  buildRecipeSubmissionSavedEvent,
+  parseRecipeSubmissionFormEntry,
+  submissionFieldMessage,
+  submissionHasPhotoAfterSave,
+  submissionIngredientRowMessage,
+  submissionIngredientsMessage,
+  submissionSaveMessage,
+  type SubmissionMessage,
   normalizeRecipeNameForMatch,
   SUBMISSION_ALCOHOLIC_STATUSES,
   SUBMISSION_GLASS_MAX_LENGTH,
@@ -18,6 +28,7 @@ import {
   type SubmissionFormIngredient,
   type SubmissionValidationError,
 } from "@bartendingapp/shared";
+import { track } from "@/analytics/posthog-client";
 import { useSession } from "@/auth/use-session";
 import { Link, useRouter } from "@/i18n/navigation";
 import { Button } from "@/components/button";
@@ -36,7 +47,6 @@ import {
   useSubmissionFormContext,
   useSubmissionIngredientSuggestions,
   useSubmissionPhotoUrls,
-  type SaveSubmissionWithPhotoResult,
   type SubmissionPhotoChange,
 } from "./use-submissions";
 
@@ -84,7 +94,25 @@ function NewSubmission() {
   }
   if (!context.data) return <FormSpinner label={t("loadingForm")} />;
   if (context.data.blocked) return <EmptyState title={t("errorBlocked")} />;
-  return <SubmissionForm requireDisplayName={context.data.needsDisplayName} />;
+  return (
+    <>
+      <Suspense fallback={null}>
+        <TrackFormOpened />
+      </Suspense>
+      <SubmissionForm requireDisplayName={context.data.needsDisplayName} />
+    </>
+  );
+}
+
+/** Fires `recipe_submission_form_opened` once the new form shows; `?from=search` marks the search prompt. */
+function TrackFormOpened() {
+  const searchParams = useSearchParams();
+  const entry = parseRecipeSubmissionFormEntry(searchParams.get("from"));
+  useEffect(() => {
+    const event = buildRecipeSubmissionFormOpenedEvent({ entry });
+    track(event.name, event.properties);
+  }, [entry]);
+  return null;
 }
 
 function EditSubmission({ submissionId }: { submissionId: string }) {
@@ -127,94 +155,9 @@ function FormSpinner({ label }: { label: string }) {
   );
 }
 
-function fieldError(
-  t: SubmissionsTranslator,
-  errors: readonly SubmissionValidationError[],
-  field: "name" | "instructions" | "glass" | "note" | "displayName" | "alcoholicStatus",
-): string | undefined {
-  const match = errors.find((error) => error.field === field);
-  if (!match) return undefined;
-  if (match.reason === "required") return t("errorRequired");
-  if (match.reason === "invalid") return t("errorInvalidStatus");
-  switch (field) {
-    case "name":
-      return t("errorTooLong", { max: SUBMISSION_NAME_MAX_LENGTH });
-    case "instructions":
-      return t("errorTooLong", { max: SUBMISSION_INSTRUCTIONS_MAX_LENGTH });
-    case "glass":
-      return t("errorTooLong", { max: SUBMISSION_GLASS_MAX_LENGTH });
-    case "note":
-      return t("errorTooLong", { max: SUBMISSION_NOTE_MAX_LENGTH });
-    default:
-      return t("errorTooLong", { max: 50 });
-  }
-}
-
-function ingredientsError(
-  t: SubmissionsTranslator,
-  errors: readonly SubmissionValidationError[],
-): string | undefined {
-  const match = errors.find(
-    (error) =>
-      error.field === "ingredients" && (error.reason === "required" || error.reason === "too_many"),
-  );
-  if (!match) return undefined;
-  return match.reason === "too_many"
-    ? t("errorTooManyIngredients", { max: SUBMISSION_MAX_INGREDIENTS })
-    : t("errorIngredientsRequired");
-}
-
-function ingredientRowError(
-  t: SubmissionsTranslator,
-  errors: readonly SubmissionValidationError[],
-  index: number,
-  part: "name" | "measure",
-): string | undefined {
-  const match = errors.find(
-    (error) =>
-      error.field === "ingredients" &&
-      "index" in error &&
-      error.index === index &&
-      (part === "measure"
-        ? error.reason === "measure_too_long"
-        : error.reason !== "measure_too_long"),
-  );
-  if (!match || !("index" in match)) return undefined;
-  if (match.reason === "name_required") return t("errorRequired");
-  return t("errorTooLong", {
-    max: part === "measure" ? SUBMISSION_MEASURE_MAX_LENGTH : SUBMISSION_INGREDIENT_NAME_MAX_LENGTH,
-  });
-}
-
-/** The server refusals that are not a field error, in the form's words. */
-function saveErrorMessage(
-  t: SubmissionsTranslator,
-  error: NonNullable<SaveSubmissionWithPhotoResult["error"]>,
-): string | null {
-  switch (error.reason) {
-    case "validation":
-      return null;
-    case "photo_failed":
-      return error.upload.reason === "too_large" || error.upload.reason === "wrong_type"
-        ? t("photoErrorUploadRejected")
-        : t("photoUploadFailed");
-    case "pending_cap":
-      return t("errorPendingCap");
-    case "daily_cap":
-      return t("errorDailyCap");
-    case "blocked":
-      return t("errorBlocked");
-    case "not_editable":
-      return t("errorNotEditable");
-    case "anonymous":
-      return t("signInTitle");
-    case "display_name_required":
-      return t("errorDisplayNameRequired");
-    case "invalid":
-      return t("errorSaveFailed");
-    case "request_failed":
-      return t("errorSaveFailed");
-  }
+/** A shared submission message (spec 0064), in this locale. */
+function message(t: SubmissionsTranslator, value: SubmissionMessage | null): string | undefined {
+  return value ? t(value.key, value.values) : undefined;
 }
 
 const emptyIngredient = (): SubmissionFormIngredient => ({ name: "", measure: "" });
@@ -311,16 +254,22 @@ function SubmissionForm({
 
     if (result.error) {
       setErrors(result.error.reason === "validation" ? result.error.errors : []);
-      setFormError(saveErrorMessage(t, result.error));
+      setFormError(message(t, submissionSaveMessage(result.error)) ?? null);
       return;
     }
 
     setErrors([]);
+    const savedEvent = buildRecipeSubmissionSavedEvent({
+      is_resubmit: existing !== undefined,
+      has_photo: submissionHasPhotoAfterSave(currentPhotoPath, photoChange),
+      locale: existing?.locale ?? locale,
+    });
+    track(savedEvent.name, savedEvent.properties);
     router.push("/my-recipes");
   }
 
   const isSaving = save.isPending;
-  const listError = ingredientsError(t, errors);
+  const listError = message(t, submissionIngredientsMessage(errors));
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-four" noValidate>
@@ -339,7 +288,7 @@ function SubmissionForm({
           label={t("name")}
           value={name}
           onChange={(event) => setName(event.target.value)}
-          error={fieldError(t, errors, "name")}
+          error={message(t, submissionFieldMessage(errors, "name"))}
           maxLength={SUBMISSION_NAME_MAX_LENGTH}
           autoComplete="off"
           required
@@ -387,7 +336,7 @@ function SubmissionForm({
                   ),
                 )
               }
-              error={ingredientRowError(t, errors, index, "name")}
+              error={message(t, submissionIngredientRowMessage(errors, index, "name"))}
               maxLength={SUBMISSION_INGREDIENT_NAME_MAX_LENGTH}
               autoComplete="off"
               className="min-w-0"
@@ -402,7 +351,7 @@ function SubmissionForm({
                   ),
                 )
               }
-              error={ingredientRowError(t, errors, index, "measure")}
+              error={message(t, submissionIngredientRowMessage(errors, index, "measure"))}
               maxLength={SUBMISSION_MEASURE_MAX_LENGTH}
               autoComplete="off"
               className="min-w-0"
@@ -440,14 +389,14 @@ function SubmissionForm({
         onChange={setInstructions}
         maxLength={SUBMISSION_INSTRUCTIONS_MAX_LENGTH}
         rows={6}
-        error={fieldError(t, errors, "instructions")}
+        error={message(t, submissionFieldMessage(errors, "instructions"))}
       />
 
       <Input
         label={t("glass")}
         value={glass}
         onChange={(event) => setGlass(event.target.value)}
-        error={fieldError(t, errors, "glass")}
+        error={message(t, submissionFieldMessage(errors, "glass"))}
         maxLength={SUBMISSION_GLASS_MAX_LENGTH}
         autoComplete="off"
       />
@@ -478,7 +427,7 @@ function SubmissionForm({
         onChange={setNote}
         maxLength={SUBMISSION_NOTE_MAX_LENGTH}
         rows={3}
-        error={fieldError(t, errors, "note")}
+        error={message(t, submissionFieldMessage(errors, "note"))}
       />
 
       <SubmissionPhotoField
@@ -494,7 +443,7 @@ function SubmissionForm({
           label={t("displayName")}
           value={displayName}
           onChange={(event) => setDisplayName(event.target.value)}
-          error={fieldError(t, errors, "displayName")}
+          error={message(t, submissionFieldMessage(errors, "displayName"))}
           maxLength={50}
           autoComplete="nickname"
           required

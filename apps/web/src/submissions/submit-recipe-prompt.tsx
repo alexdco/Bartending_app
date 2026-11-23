@@ -18,7 +18,7 @@ export function SubmitRecipePrompt() {
     <Text variant="bodySmall" muted className="text-center" data-mocktails="hide">
       {t("searchPrompt")}{" "}
       <Link
-        href={isLinked ? "/my-recipes/new" : "/account"}
+        href={isLinked ? "/my-recipes/new?from=search" : "/account"}
         className="font-medium text-text underline underline-offset-4"
       >
         {t("searchPromptAction")}

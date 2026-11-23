@@ -24,6 +24,7 @@ import { RecipeCard } from "@/recipes/recipe-card";
 import { useSearchSort } from "@/recipes/search-sort-context";
 import { useRecipeSearch } from "@/recipes/use-recipe-search";
 import { useMocktailsOnly } from "@/mocktails/mocktails-context";
+import { SubmitRecipePrompt } from "@/submissions/submission-prompts";
 
 const STATUS_FILTERS: { value: AlcoholicStatusFilter; label: string }[] = [
   { value: "alcoholic", label: "Alcoholic" },
@@ -168,6 +169,10 @@ export default function SearchScreen() {
               <View style={styles.centered}>
                 <Spinner label="Loading more recipes" />
               </View>
+            ) : !hasNextPage && !mocktailsOnly ? (
+              // Spec 0064 AC-21: ends the results and follows the empty state;
+              // hidden in mocktails only mode (AC-20).
+              <SubmitRecipePrompt />
             ) : null
           }
         />

@@ -141,3 +141,46 @@ _Steps derived from spec 0064 acceptance criteria. `/check verify` runs these; `
 
 ### Acceptance-criteria coverage (milestone 4)
 - AC-17 … account deletion steps, check script cascade lines · AC-18 … block steps, check script block lines · AC-19 … check script sweep lines, cron and dry run commands · AC-20 … mocktails step (web) · AC-22 … check script import guard lines, admin edit command, `communityGuard.test.ts`
+
+## Milestone 5: mobile parity, strings, and analytics · updated 2026-11-23
+
+### UI / manual (mobile, `pnpm mobile`, dev client on a device or simulator)
+- [ ] Signed in, tap the header avatar → the menu shows "Submit a recipe" and "My recipes" under Account; the Account screen shows both buttons under "View favorites" → AC-21
+- [ ] As a guest (anonymous), open the Account screen → neither button shows; push `/my-recipes/new` (deep link `cocktailist://my-recipes/new` or the search prompt) → "Sign in to submit a recipe" with a Sign in button, no form → AC-4
+- [ ] As a user with no display name, open Submit a recipe → a required Display name field shows; submit it blank → "This field is required." and nothing saves → AC-3
+- [ ] Submit with a blank name, no ingredient name, and blank instructions → an error under each field, nothing saved → AC-2
+- [ ] Fill name, 2 ingredients (type "lim" in one → catalog suggestions in the app language; tap one to fill it; a name not in the catalog also saves), instructions, Type chip, note; submit → lands on My recipes, the row says "Pending review" → AC-1
+- [ ] With the app in Japanese, submit → the admin queue on web shows locale JA → AC-1 (Value sourcing: `locale` from the current UI locale)
+- [ ] Type "margarita" and pause → "A recipe with this name already exists" with a tappable link to it; tap Submit at once with a duplicate → warning shows, nothing saves; tap again → it saves → AC-7
+- [ ] Add a photo from the library (a large non square iPhone photo, HEIC original) → a square preview shows; submit → the My recipes row shows the thumbnail; in Storage the pair is `<uid>/<id>-<hash>-hero.webp` (at most 1000px) and `-card.webp` (400px), both WebP → AC-8
+- [ ] Pick an image under 600px on its short side → "That image is too small…", nothing uploads → AC-8
+- [ ] Edit a pending row, replace the photo, "Save and resubmit" → still Pending, the old pair is gone from Storage; edit again, Remove photo → "The photo will be removed when you submit.", then no files for that id → AC-6, AC-8
+- [ ] Withdraw a pending row → the confirm text with Cancel and Withdraw; Cancel keeps it, Withdraw removes it → AC-6
+- [ ] Reject one on web with a reason → on mobile My recipes shows "Rejected", the reason, and "Edit and resubmit"; the edit screen shows the reason above the form → AC-13
+- [ ] Approve one on web → on mobile its row shows "Approved", the live name and public image, and "View recipe" opens the recipe; Edit and Withdraw are gone; opening its edit route shows "This recipe can't be changed anymore." → AC-6
+- [ ] Open the approved recipe on mobile → "Submitted by <name>" under the rating; a catalog recipe shows no such line; after the author deletes their account → "Submitted by a community member" → AC-16
+- [ ] Block the author on web → on mobile Submit a recipe shows "Submitting recipes isn't available for your account" → AC-18
+- [ ] Search with results and scroll to the end → "Can't find it? Submit your recipe"; search nonsense → the empty state is followed by the same prompt; as a guest the prompt opens Account (sign in) → AC-21
+- [ ] Turn on mocktails only mode → no header menu, no Account buttons, no search prompt, and pushing `/my-recipes`, `/my-recipes/new`, or `/my-recipes/<id>/edit` shows the mocktails unavailable notice → AC-20
+- [ ] Switch the app through all 9 languages → every new label, button, error, and status reads in that language, with no raw `submissions.` keys → AC-24
+
+### Analytics (PostHog live events, consented session)
+- [ ] Open the form from the menu → `recipe_submission_form_opened` with `{ entry: "menu" }`; from the search prompt → `{ entry: "search" }` (web: `/my-recipes/new?from=search`) → spec Configuration
+- [ ] Submit a new recipe with a photo → `recipe_submission_saved` `{ is_resubmit: false, has_photo: true, locale }`; resubmit an edit after removing the photo → `{ is_resubmit: true, has_photo: false, locale: <the row's original locale> }` → spec Configuration
+- [ ] Withdraw → `recipe_submission_withdrawn` with no properties; no event ever carries a recipe name or text → invariant 8
+
+### Commands
+- [ ] `pnpm test` → green, including `messages.test.ts` (shared message keys, `submissionHasPhotoAfterSave`, `recipeImageHashFromDigest`), `analytics.test.ts`, and both apps' `placeholderMessages.test.ts` → AC-2, AC-5, AC-24
+- [ ] `pnpm typecheck && pnpm lint` → clean (mobile route types regenerate when `pnpm mobile` starts) → AC-24
+- [ ] Supabase security advisor → for this feature only the intended items: no policy INFO on `recipe_submission_usage` and `recipe_screening_daily_total`, definer functions callable by signed in users (each checks owner, anonymous, or `is_admin` inside), and `recipe_submitted_by_name` callable by anon (returns only a community recipe's already public credit name) → AC-23
+
+### Value sourcing coverage (milestone 5 rows)
+- `locale` from the UI locale (mobile: the active i18next language): the Japanese submit step
+- duplicate matches from `search_recipes` in the current locale: the margarita step
+- ingredient autocomplete from `search_ingredients`: the "lim" step
+- alcoholic status options from `SUBMISSION_ALCOHOLIC_STATUSES`: the Type chips in the submit step
+- `submitted_by_name` live, credit text derived: the recipe detail step
+- My recipes link from `approved_recipe_id`: the View recipe step
+
+### Acceptance-criteria coverage (milestone 5)
+- AC-1 … submit, Japanese, autocomplete steps · AC-2 … blank fields step · AC-3 … display name step · AC-4 … guest step · AC-6 … edit, withdraw, approved steps · AC-7 … duplicate step · AC-8 … photo steps · AC-13 … rejected step · AC-16 … credit step · AC-18 … blocked step · AC-20 … mocktails step · AC-21 … menu and prompt steps · AC-23 … advisor command · AC-24 … language step, placeholder tests

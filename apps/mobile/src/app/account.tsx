@@ -379,6 +379,17 @@ function AccountScreen() {
           <Button variant="secondary" onPress={() => router.push("/favorites")}>
             {t("account.viewFavorites")}
           </Button>
+          {/* Spec 0064 AC-21: signed in users only (this screen is hidden in mocktails only mode). */}
+          {isLinked && (
+            <>
+              <Button variant="secondary" onPress={() => router.push("/my-recipes/new")}>
+                {t("menu.submitRecipe")}
+              </Button>
+              <Button variant="secondary" onPress={() => router.push("/my-recipes")}>
+                {t("menu.myRecipes")}
+              </Button>
+            </>
+          )}
         </Card>
 
         <LanguageCard />

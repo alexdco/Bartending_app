@@ -25,4 +25,12 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "comments.report.errors.invalid_input": ["max"],
   "account.blocked.blockedOn": ["date"],
   "account.blocked.unblockLabel": ["name"],
+  // Copied from web's reviewed submission strings (spec 0064 AC-24): ru
+  // phrases each as label plus value, or numbers only.
+  "recipe.submittedBy": ["name"],
+  "submissions.ingredientName": ["number"],
+  "submissions.measure": ["number"],
+  "submissions.noteHint": ["max"],
+  "submissions.errorTooLong": ["max"],
+  "submissions.errorTooManyIngredients": ["max"],
 };

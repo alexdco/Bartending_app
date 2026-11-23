@@ -7,30 +7,28 @@ import {
   adminFetchRecipeSubmission,
   adminListRecipeSubmissions,
   approveRecipeSubmission,
+  buildRecipeSubmissionWithdrawnEvent,
   draftSubmissionEnglish,
   fetchMyRecipeSubmission,
   fetchMyRecipeSubmissions,
   fetchSubmissionFormContext,
   findDuplicateRecipeNames,
   rejectRecipeSubmission,
-  saveRecipeSubmission,
+  saveRecipeSubmissionWithPhoto,
   searchIngredients,
   setSubmissionBlock,
   signSubmissionPhotoUrls,
-  uploadSubmissionPhoto,
   withdrawRecipeSubmission,
   type ApproveSubmissionInput,
   type Locale,
   type RejectSubmissionInput,
-  type RecipeImagePair,
-  type SaveRecipeSubmissionInput,
-  type SaveRecipeSubmissionResult,
+  type SaveSubmissionWithPhotoInput,
   type SetSubmissionBlockInput,
   type SubmissionCursor,
   type SubmissionPhotoSize,
   type SubmissionStatus,
-  type UploadRecipeImageError,
 } from "@bartendingapp/shared";
+import { track } from "@/analytics/posthog-client";
 import { useSession } from "@/auth/use-session";
 import { supabase } from "@/lib/supabase";
 
@@ -62,61 +60,16 @@ export function useSubmissionFormContext() {
   });
 }
 
-/** What saving the form does to the submission's photo (AC-8). */
-export type SubmissionPhotoChange =
-  { kind: "keep" } | { kind: "remove" } | { kind: "replace"; image: RecipeImagePair };
+// The photo change and result types live in shared, beside the save they drive.
+export type { SaveSubmissionWithPhotoResult, SubmissionPhotoChange } from "@bartendingapp/shared";
 
-export interface SaveSubmissionWithPhotoInput extends Omit<
-  SaveRecipeSubmissionInput,
-  "photoPath" | "replacedPhotoPath"
-> {
-  /** The row's current photo path (null for a new submission or no photo). */
-  currentPhotoPath: string | null;
-  photo: SubmissionPhotoChange;
-}
-
-export type SaveSubmissionWithPhotoResult =
-  | SaveRecipeSubmissionResult
-  | { data: null; error: { reason: "photo_failed"; upload: UploadRecipeImageError } };
-
-/**
- * Uploads a new photo first (under the submission id, so the save can name
- * its path), then saves. A replaced or removed photo's files are removed once
- * the save succeeds. A photo uploaded for a save that then fails stays until
- * the daily cleanup, or is reused when the same picture is saved again.
- */
+/** Uploads a new photo first, then saves (shared `saveRecipeSubmissionWithPhoto`, AC-8). */
 export function useSaveRecipeSubmission() {
   const queryClient = useQueryClient();
   const { session } = useSession();
   return useMutation({
-    mutationFn: async ({
-      currentPhotoPath,
-      photo,
-      ...input
-    }: SaveSubmissionWithPhotoInput): Promise<SaveSubmissionWithPhotoResult> => {
-      let photoPath = photo.kind === "keep" ? currentPhotoPath : null;
-
-      if (photo.kind === "replace") {
-        const userId = session?.user.id;
-        if (!userId) {
-          return {
-            data: null,
-            error: { reason: "photo_failed", upload: { reason: "forbidden" } },
-          };
-        }
-        const upload = await uploadSubmissionPhoto(supabase, userId, input.id, photo.image);
-        if (upload.error) {
-          return { data: null, error: { reason: "photo_failed", upload: upload.error } };
-        }
-        photoPath = upload.data.photoPath;
-      }
-
-      return saveRecipeSubmission(supabase, {
-        ...input,
-        photoPath,
-        replacedPhotoPath: currentPhotoPath,
-      });
-    },
+    mutationFn: (input: SaveSubmissionWithPhotoInput) =>
+      saveRecipeSubmissionWithPhoto(supabase, session?.user.id ?? null, input),
     onSuccess: (result) => {
       if (result.error) return;
       void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
@@ -169,6 +122,11 @@ export function useWithdrawRecipeSubmission() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => withdrawRecipeSubmission(supabase, id),
+    onSuccess: (result) => {
+      if (result.error) return;
+      const event = buildRecipeSubmissionWithdrawnEvent();
+      track(event.name, event.properties);
+    },
     onSettled: () => {
       void queryClient.invalidateQueries({ queryKey: SUBMISSIONS_KEY });
     },

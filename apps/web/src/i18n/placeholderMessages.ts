@@ -22,6 +22,7 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "admin.recipeSubmissions.approveNotesFailed": ["message"],
   "admin.recipeSubmissions.rejectReasonTooLong": ["max"],
   "admin.recipeSubmissions.rejectFailed": ["message"],
+  "admin.recipeSubmissions.blockFailed": ["message"],
   "search.metaTitleQuery": ["query"],
   "search.metaDescriptionQuery": ["query"],
   "batch.percent": ["value"],

@@ -126,6 +126,14 @@ export function recipeImageCardSide(heroSide: number): number {
 /** First 16 hex characters of SHA-256 (Web Crypto, in browsers and Node 20). */
 export async function recipeImageHash(bytes: ArrayBuffer | Uint8Array): Promise<string> {
   const digest = await globalThis.crypto.subtle.digest("SHA-256", new Uint8Array(bytes));
+  return recipeImageHashFromDigest(digest);
+}
+
+/**
+ * The first 16 hex characters of an already computed SHA-256 digest, for
+ * runtimes without Web Crypto `subtle` (React Native hashes with expo-crypto).
+ */
+export function recipeImageHashFromDigest(digest: ArrayBuffer): string {
   return Array.from(new Uint8Array(digest))
     .map((byte) => byte.toString(16).padStart(2, "0"))
     .join("")

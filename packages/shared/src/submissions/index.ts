@@ -5,4 +5,5 @@ export * from "./errors";
 export * from "./duplicates";
 export * from "./photos";
 export * from "./credit";
+export * from "./messages";
 export * from "./api";
