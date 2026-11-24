@@ -85,6 +85,9 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "service.glass": ["value"],
   "service.ice": ["value"],
   "service.garnish": ["value"],
+  // Spec 0065: the 86'd heading and the allergen tag are label plus value in every locale.
+  "substitutes.heading": ["ingredient"],
+  "substitutes.addsAllergens": ["allergens"],
   "admin.removePhotoLabel": ["label"],
   "admin.imageSaveFailed": ["message"],
   "admin.translationNotesHeading": ["language"],

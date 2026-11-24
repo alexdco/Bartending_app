@@ -1014,5 +1014,39 @@
     "photoErrorUploadRejected": "이 사진은 업로드할 수 없습니다. 다른 이미지를 사용해 보세요.",
     "photoUploadFailed": "사진이 업로드되지 않았습니다. 연결을 확인하고 다시 시도하세요.",
     "photoThumbnailAlt": "레시피 사진"
+  },
+  "substitutes": {
+    "bannerLabel": "품절 재료와 대체 재료",
+    "heading": "품절: {ingredient}",
+    "noneKnown": "적절한 대체 재료 없음",
+    "noneInStock": "재고 있는 대체 재료 없음",
+    "alreadyInDrink": "이미 이 음료에 들어감",
+    "addsAllergens": "추가되는 알레르기 유발 성분: {allergens}",
+    "checkAllergens": "알레르기 유발 성분 확인",
+    "swapAvailable": "대체 가능",
+    "ratio": {
+      "quarter": "분량의 1/4",
+      "third": "분량의 1/3",
+      "half": "분량의 1/2",
+      "twoThirds": "분량의 2/3",
+      "threeQuarters": "분량의 3/4",
+      "oneAndQuarter": "분량의 1.25배",
+      "oneAndHalf": "분량의 1.5배",
+      "double": "분량의 2배",
+      "triple": "분량의 3배",
+      "quadruple": "분량의 4배"
+    },
+    "ratioApprox": {
+      "quarter": "분량의 약 1/4",
+      "third": "분량의 약 1/3",
+      "half": "분량의 약 1/2",
+      "twoThirds": "분량의 약 2/3",
+      "threeQuarters": "분량의 약 3/4",
+      "oneAndQuarter": "분량의 약 1.25배",
+      "oneAndHalf": "분량의 약 1.5배",
+      "double": "분량의 약 2배",
+      "triple": "분량의 약 3배",
+      "quadruple": "분량의 약 4배"
+    }
   }
 }

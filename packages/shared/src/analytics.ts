@@ -10,6 +10,7 @@ export const ANALYTICS_EVENT_NAMES = {
   recipeSubmissionSaved: "recipe_submission_saved",
   recipeSubmissionWithdrawn: "recipe_submission_withdrawn",
   recipeSubmissionFormOpened: "recipe_submission_form_opened",
+  substitutesShown: "substitutes_shown",
 } as const;
 
 export interface SearchPerformedProperties {
@@ -128,4 +129,19 @@ export function buildQuizSourceLinkClickedEvent(
   properties: QuizSourceLinkClickedProperties,
 ): AnalyticsEvent<QuizSourceLinkClickedProperties> {
   return { name: ANALYTICS_EVENT_NAMES.quizSourceLinkClicked, properties };
+}
+
+// Spec 0065 AC-12: one event per 86'd ingredient block the Quick Build banner shows.
+export interface SubstitutesShownProperties {
+  ingredient_id: string;
+  shown_count: number;
+  outcome: "shown" | "none_known" | "none_in_stock" | "not_reviewed";
+  recipe_kind: "catalog" | "house";
+  platform: string;
+}
+
+export function buildSubstitutesShownEvent(
+  properties: SubstitutesShownProperties,
+): AnalyticsEvent<SubstitutesShownProperties> {
+  return { name: ANALYTICS_EVENT_NAMES.substitutesShown, properties };
 }

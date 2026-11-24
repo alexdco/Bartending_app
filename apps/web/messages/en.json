@@ -1014,5 +1014,39 @@
     "photoErrorUploadRejected": "That photo couldn't be uploaded. Try a different image.",
     "photoUploadFailed": "The photo didn't upload. Check your connection and try again.",
     "photoThumbnailAlt": "Recipe photo"
+  },
+  "substitutes": {
+    "bannerLabel": "86'd ingredients and swaps",
+    "heading": "{ingredient} is 86'd",
+    "noneKnown": "No good substitute",
+    "noneInStock": "No substitute in stock",
+    "alreadyInDrink": "Already in this drink",
+    "addsAllergens": "Adds allergens: {allergens}",
+    "checkAllergens": "Check allergens",
+    "swapAvailable": "Swap available",
+    "ratio": {
+      "quarter": "1/4 the amount",
+      "third": "1/3 the amount",
+      "half": "1/2 the amount",
+      "twoThirds": "2/3 the amount",
+      "threeQuarters": "3/4 the amount",
+      "oneAndQuarter": "1 1/4 times the amount",
+      "oneAndHalf": "1 1/2 times the amount",
+      "double": "Double the amount",
+      "triple": "Triple the amount",
+      "quadruple": "4 times the amount"
+    },
+    "ratioApprox": {
+      "quarter": "About 1/4 the amount",
+      "third": "About 1/3 the amount",
+      "half": "About 1/2 the amount",
+      "twoThirds": "About 2/3 the amount",
+      "threeQuarters": "About 3/4 the amount",
+      "oneAndQuarter": "About 1 1/4 times the amount",
+      "oneAndHalf": "About 1 1/2 times the amount",
+      "double": "About double the amount",
+      "triple": "About triple the amount",
+      "quadruple": "About 4 times the amount"
+    }
   }
 }

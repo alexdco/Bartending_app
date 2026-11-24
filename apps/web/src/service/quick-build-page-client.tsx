@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useLocale, useTranslations } from "next-intl";
 import {
+  buildSubstituteBanner,
+  buildSubstitutesShownEvent,
   computeParts,
   formatAmountInUnit,
   formatParts,
@@ -11,6 +13,7 @@ import {
   quickBuildMethodText,
   type Locale,
 } from "@bartendingapp/shared";
+import { track } from "@/analytics/posthog-client";
 import { BackButton } from "@/components/back-button";
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -24,6 +27,9 @@ import {
 } from "@/service/quick-build-unit-storage";
 import { recordBartenderRecentlyViewed } from "@/service/bartender-recently-viewed-storage";
 import { usePinnedRecipes, usePinRecipe, useUnpinRecipe } from "@/service/use-pinned-recipes";
+import { useCurrentBar } from "@/service/use-current-bar";
+import { useBarServiceData } from "@/service/use-bar-service-data";
+import { SubstituteBanner } from "@/service/substitute-banner";
 
 const UNITS: QuickBuildUnit[] = ["oz", "ml", "parts"];
 
@@ -146,6 +152,53 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
 
   const recipe = useQuickBuildRecipe(kind, id);
 
+  // Spec 0065 AC-1: the current bar's service data (already persisted for
+  // offline use) feeds the 86'd banner. It never gates the recipe: the
+  // banner just stays away while this is loading, failed, or has no bar.
+  const { currentBar } = useCurrentBar();
+  const serviceData = useBarServiceData(currentBar?.id ?? null);
+
+  const substituteBlocks = useMemo(() => {
+    const detail = recipe.data;
+    const snapshot = serviceData.data;
+    if (!detail || !snapshot) {
+      return [];
+    }
+    // AC-6: a catalog recipe is alcohol free only when 'non_alcoholic'; a
+    // house recipe uses the RPC's alcohol_free.
+    const alcoholFree =
+      detail.kind === "recipe"
+        ? detail.alcoholicStatus === "non_alcoholic"
+        : (snapshot.houseRecipes.find((house) => house.id === detail.id)?.alcoholFree ?? false);
+    return buildSubstituteBanner({
+      ingredients: detail.ingredients,
+      serviceData: snapshot,
+      alcoholFree,
+      locale,
+    });
+  }, [recipe.data, serviceData.data, locale]);
+
+  // AC-12: one substitutes_shown per recipe, ingredient, and outcome for this
+  // mount; unit toggles, refetches, and locale changes never resend it.
+  const sentSubstituteEvents = useRef(new Set<string>());
+  useEffect(() => {
+    substituteBlocks.forEach((block) => {
+      const key = `${id}:${block.ingredientId}:${block.picked.outcome}`;
+      if (sentSubstituteEvents.current.has(key)) {
+        return;
+      }
+      sentSubstituteEvents.current.add(key);
+      const event = buildSubstitutesShownEvent({
+        ingredient_id: block.ingredientId,
+        shown_count: block.picked.items.length,
+        outcome: block.picked.outcome,
+        recipe_kind: kind === "recipe" ? "catalog" : "house",
+        platform: "web",
+      });
+      track(event.name, event.properties);
+    });
+  }, [substituteBlocks, id, kind]);
+
   useEffect(() => {
     getStoredQuickBuildUnit().then(setUnit);
   }, []);
@@ -251,6 +304,14 @@ export function QuickBuildPageClient({ kind, id }: QuickBuildPageClientProps) {
           ))}
         </div>
       </div>
+
+      <SubstituteBanner
+        blocks={substituteBlocks}
+        ingredients={data.ingredients}
+        partsLines={partsLines}
+        unit={unit}
+        locale={locale}
+      />
 
       <Text variant="display" className="font-bold">
         {data.name.toUpperCase()}

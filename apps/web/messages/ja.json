@@ -1014,5 +1014,39 @@
     "photoErrorUploadRejected": "この写真はアップロードできませんでした。別の画像をお試しください。",
     "photoUploadFailed": "写真をアップロードできませんでした。接続を確認して、もう一度お試しください。",
     "photoThumbnailAlt": "レシピの写真"
+  },
+  "substitutes": {
+    "bannerLabel": "品切れの材料と代替品",
+    "heading": "品切れ：{ingredient}",
+    "noneKnown": "適した代替品はありません",
+    "noneInStock": "在庫のある代替品はありません",
+    "alreadyInDrink": "このドリンクにすでに使用",
+    "addsAllergens": "追加されるアレルゲン：{allergens}",
+    "checkAllergens": "アレルゲンを確認してください",
+    "swapAvailable": "代替品あり",
+    "ratio": {
+      "quarter": "分量の1/4",
+      "third": "分量の1/3",
+      "half": "分量の1/2",
+      "twoThirds": "分量の2/3",
+      "threeQuarters": "分量の3/4",
+      "oneAndQuarter": "分量の1.25倍",
+      "oneAndHalf": "分量の1.5倍",
+      "double": "分量の2倍",
+      "triple": "分量の3倍",
+      "quadruple": "分量の4倍"
+    },
+    "ratioApprox": {
+      "quarter": "分量の約1/4",
+      "third": "分量の約1/3",
+      "half": "分量の約1/2",
+      "twoThirds": "分量の約2/3",
+      "threeQuarters": "分量の約3/4",
+      "oneAndQuarter": "分量の約1.25倍",
+      "oneAndHalf": "分量の約1.5倍",
+      "double": "分量の約2倍",
+      "triple": "分量の約3倍",
+      "quadruple": "分量の約4倍"
+    }
   }
 }

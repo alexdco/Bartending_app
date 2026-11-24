@@ -1014,5 +1014,39 @@
     "photoErrorUploadRejected": "Cette photo n'a pas pu être envoyée. Essayez une autre image.",
     "photoUploadFailed": "La photo n'a pas été envoyée. Vérifiez votre connexion et réessayez.",
     "photoThumbnailAlt": "Photo de la recette"
+  },
+  "substitutes": {
+    "bannerLabel": "Ingrédients en rupture et substituts",
+    "heading": "En rupture (86) : {ingredient}",
+    "noneKnown": "Aucun bon substitut",
+    "noneInStock": "Aucun substitut en stock",
+    "alreadyInDrink": "Déjà dans ce cocktail",
+    "addsAllergens": "Ajoute des allergènes : {allergens}",
+    "checkAllergens": "Vérifiez les allergènes",
+    "swapAvailable": "Substitut disponible",
+    "ratio": {
+      "quarter": "1/4 de la quantité",
+      "third": "1/3 de la quantité",
+      "half": "1/2 de la quantité",
+      "twoThirds": "2/3 de la quantité",
+      "threeQuarters": "3/4 de la quantité",
+      "oneAndQuarter": "1 fois 1/4 la quantité",
+      "oneAndHalf": "1 fois 1/2 la quantité",
+      "double": "Le double de la quantité",
+      "triple": "Le triple de la quantité",
+      "quadruple": "4 fois la quantité"
+    },
+    "ratioApprox": {
+      "quarter": "Environ 1/4 de la quantité",
+      "third": "Environ 1/3 de la quantité",
+      "half": "Environ 1/2 de la quantité",
+      "twoThirds": "Environ 2/3 de la quantité",
+      "threeQuarters": "Environ 3/4 de la quantité",
+      "oneAndQuarter": "Environ 1 fois 1/4 la quantité",
+      "oneAndHalf": "Environ 1 fois 1/2 la quantité",
+      "double": "Environ le double de la quantité",
+      "triple": "Environ le triple de la quantité",
+      "quadruple": "Environ 4 fois la quantité"
+    }
   }
 }

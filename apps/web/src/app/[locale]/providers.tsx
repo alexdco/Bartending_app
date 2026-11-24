@@ -38,7 +38,7 @@ const PERSIST_OPTIONS = {
   // Bump this when a persisted query's shape changes incompatibly, so a
   // stale shape from a previous build is never deserialized. Kept in sync
   // with mobile's buster string per the umbrella spec's cross child contract.
-  buster: "bartender-mode-v1",
+  buster: "bartender-mode-v2",
   maxAge: 24 * 60 * 60 * 1000,
   dehydrateOptions: {
     shouldDehydrateQuery: (query: { queryKey: readonly unknown[] }) =>
