@@ -752,3 +752,167 @@ export async function translateCatalog(
     await translateRecipes(supabase, anthropic, locale, localeName, options);
   }
 }
+
+const NoteTranslationBatchSchema = z.object({
+  items: z.array(z.object({ id: z.string(), note: z.string() })),
+});
+
+/** One translated swap note, ready for the SQL editor file (spec 0065 AC-14). */
+export interface SubstituteNoteTranslationRow {
+  readonly ingredientId: string;
+  readonly substituteIngredientId: string;
+  readonly locale: NonDefaultLocale;
+  readonly note: string;
+  /** The swap's note_hash (md5 of the English note) at translation time. */
+  readonly sourceNoteHash: string;
+}
+
+/** The prompt for a batch of swap notes: short bar notes, not names. */
+export function substituteNotePrompt(
+  localeName: string,
+  terms: string,
+  batch: readonly { readonly id: string; readonly note: string }[],
+): string {
+  const itemsText = batch.map((item) => `id: ${item.id}\nnote: ${item.note}`).join("\n---\n");
+  return (
+    `Translate each short note below from English into ${localeName}. Each one tells a bartender ` +
+    `how an ingredient swap changes a cocktail. Keep it short (under 120 characters), keep ` +
+    `ingredient names a bartender in ${localeName} would recognize, and return only the ` +
+    `translated note. Return one item per input, referencing each by its id.${terms}\n\n${itemsText}`
+  );
+}
+
+/**
+ * Translates swap notes whose stored translation is missing or no longer
+ * matches the note's hash (or every note, with reprocessAll) into each
+ * locale. Returns rows instead of writing them: swap translations only
+ * enter the database through the SQL editor (spec 0065). Not part of
+ * translateCatalog, so the import job never runs it.
+ */
+export async function translateSubstituteNotes(
+  supabase: SupabaseClient<Database>,
+  anthropic: Anthropic,
+  {
+    reprocessAll = false,
+    locales = CATALOG_TRANSLATION_LOCALES,
+    limit,
+    ids,
+  }: TranslateCatalogOptions = {},
+): Promise<SubstituteNoteTranslationRow[]> {
+  const options: RunOptions = {
+    reprocessAll,
+    limit,
+    ids: ids === undefined ? undefined : new Set(ids),
+  };
+
+  const { data: swaps, error } = await supabase
+    .from("ingredient_substitutes")
+    .select("ingredient_id, substitute_ingredient_id, note, note_hash")
+    .not("note", "is", null);
+  if (error) {
+    throw new Error(`Failed to read ingredient_substitutes: ${error.message}`);
+  }
+
+  const { data: existing, error: existingError } = await supabase
+    .from("ingredient_substitute_translations")
+    .select("ingredient_id, substitute_ingredient_id, locale, source_note_hash");
+  if (existingError) {
+    throw new Error(`Failed to read ingredient_substitute_translations: ${existingError.message}`);
+  }
+
+  const keyOf = (ingredientId: string, substituteId: string) => `${ingredientId}:${substituteId}`;
+  const existingHash = new Map(
+    (existing ?? []).map((row) => [
+      `${keyOf(row.ingredient_id, row.substitute_ingredient_id)}:${row.locale}`,
+      row.source_note_hash,
+    ]),
+  );
+
+  const notes = (swaps ?? []).flatMap((swap) =>
+    swap.note !== null && swap.note_hash !== null
+      ? [
+          {
+            id: keyOf(swap.ingredient_id, swap.substitute_ingredient_id),
+            ingredientId: swap.ingredient_id,
+            substituteIngredientId: swap.substitute_ingredient_id,
+            note: swap.note,
+            hash: swap.note_hash,
+          },
+        ]
+      : [],
+  );
+
+  let rows: SubstituteNoteTranslationRow[] = [];
+  for (const locale of locales) {
+    const localeName = LOCALE_AI_LANGUAGE[locale];
+    const typeset = localeTypography(locale);
+    // --ids matches the ingredient that is out.
+    const inputs = notes
+      .filter((note) =>
+        selectsRow(
+          note.ingredientId,
+          options,
+          () => existingHash.get(`${note.id}:${locale}`) !== note.hash,
+        ),
+      )
+      .slice(0, limit);
+
+    console.log(
+      `[${locale}] Translating ${inputs.length} swap notes in batches of ${BATCH_SIZE}...`,
+    );
+    let skipped = 0;
+
+    for (const batch of chunk(inputs, BATCH_SIZE)) {
+      const result = await withRetry(`[${locale}] swap note batch`, async () => {
+        const message = await anthropic.messages.parse({
+          model: "claude-haiku-4-5-20251001",
+          max_tokens: 4096,
+          messages: [
+            {
+              role: "user",
+              content: substituteNotePrompt(localeName, LOCALE_AI_TERMS[locale], batch),
+            },
+          ],
+          output_config: { format: zodOutputFormat(NoteTranslationBatchSchema) },
+        });
+        const parsed = message.parsed_output;
+        if (!parsed) {
+          throw new Error("swap note translation call did not return a parseable response");
+        }
+        assertTranslationIds(batch, parsed.items);
+        return parsed.items;
+      });
+
+      if (!result) {
+        skipped += batch.length;
+        continue;
+      }
+
+      const byId = new Map(batch.map((note) => [note.id, note]));
+      const translated = result.flatMap((item) => {
+        const source = byId.get(item.id);
+        const note = typeset(item.note).trim();
+        // The DB check (1 to 120 characters, trimmed) would reject the whole file.
+        return source && note !== "" && note.length <= 120
+          ? [
+              {
+                ingredientId: source.ingredientId,
+                substituteIngredientId: source.substituteIngredientId,
+                locale,
+                note,
+                sourceNoteHash: source.hash,
+              },
+            ]
+          : [];
+      });
+      skipped += batch.length - translated.length;
+      rows = [...rows, ...translated];
+    }
+
+    console.log(
+      `[${locale}] Swap notes done. ${skipped} skipped.` +
+        (skipped > 0 ? " Rerun to retry skipped notes." : ""),
+    );
+  }
+  return rows;
+}

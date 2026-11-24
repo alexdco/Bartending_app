@@ -36,7 +36,9 @@
     "propose-recipe-notes": "tsx scripts/propose-recipe-notes.ts",
     "apply-recipe-notes": "tsx scripts/apply-recipe-notes.ts",
     "propose-ingredient-allergens": "tsx scripts/propose-ingredient-allergens.ts",
-    "apply-ingredient-allergens": "tsx scripts/apply-ingredient-allergens.ts"
+    "apply-ingredient-allergens": "tsx scripts/apply-ingredient-allergens.ts",
+    "propose-ingredient-substitutes": "tsx scripts/propose-ingredient-substitutes.ts",
+    "apply-ingredient-substitutes": "tsx scripts/apply-ingredient-substitutes.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.124.0",

@@ -5,6 +5,11 @@
 // tag_translations / recipe_ingredient_translations. Unlike tag-regions.ts
 // this writes to the database directly, there is no separate review/apply step.
 //
+// Swap notes (spec 0065 AC-14) are the exception: they are translated after
+// the catalog, but written to scripts/tagging/substitute-note-translations-apply.sql
+// for you to run in the SQL editor, since swap rows only enter the database
+// that way. --ids there matches the ingredient that is out.
+//
 // The translation logic itself lives in catalogTranslation.ts, shared with
 // the import job's ongoing translation step.
 //
@@ -20,8 +25,18 @@
 import { createClient } from "@supabase/supabase-js";
 import Anthropic from "@anthropic-ai/sdk";
 import type { Database } from "../src/database.types";
-import { translateCatalog } from "../src/catalogTranslation";
-import { parseIdsFlag, parseLimitFlag, parseLocaleFlag, requireEnv } from "./review-file";
+import { writeFileSync } from "node:fs";
+import { translateCatalog, translateSubstituteNotes } from "../src/catalogTranslation";
+import { buildSubstituteNoteTranslationsSql } from "../src/ingredientSubstituteProposals";
+import {
+  parseIdsFlag,
+  parseLimitFlag,
+  parseLocaleFlag,
+  requireEnv,
+  reviewFilePath,
+} from "./review-file";
+
+const NOTE_SQL_FILE_PATH = reviewFilePath("substitute-note-translations-apply.sql");
 
 async function main() {
   const reprocessAll = process.argv.includes("--all");
@@ -37,6 +52,21 @@ async function main() {
   const anthropic = new Anthropic({ apiKey: env.ANTHROPIC_API_KEY });
 
   await translateCatalog(supabase, anthropic, { reprocessAll, locales, limit, ids });
+
+  const noteRows = await translateSubstituteNotes(supabase, anthropic, {
+    reprocessAll,
+    locales,
+    limit,
+    ids,
+  });
+  if (noteRows.length > 0) {
+    writeFileSync(NOTE_SQL_FILE_PATH, buildSubstituteNoteTranslationsSql(noteRows));
+    console.log(
+      `\nWrote ${noteRows.length} swap note translations to ${NOTE_SQL_FILE_PATH}. Run it in the SQL editor.`,
+    );
+  } else {
+    console.log("\nNo swap notes needed translating.");
+  }
 
   console.log("\nDone.");
 }
