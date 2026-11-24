@@ -75,7 +75,7 @@ _These are recommendations to keep your build orderly, not requirements. Skip an
 | 62 | Search sort control | Slice 32 | in-progress |
 | 63 | Comment safety | Slice 33 | in-progress |
 | 64 | Translate Learn and quizzes | Slice 34 | planned |
-| 65 | Ingredient substitution suggestions | Slice 35 | planned |
+| 65 | Ingredient substitution suggestions | Slice 35 | in-progress |
 | 66 | Shared shift log | Slice 36 | planned |
 | 67 | Mocktails only mode | Slice 37 | in-progress |
 | 68 | User submitted recipes | Slice 38 | in-progress |
@@ -991,10 +991,18 @@ Learn articles and quizzes are English only in every locale (from spec 0045, fea
 
 ## Slice 35: Ingredient substitution suggestions
 
-### 65. Ingredient substitution suggestions · needs a decision
+### 65. Ingredient substitution suggestions · in-progress
 When an ingredient is 86'd in Bartender Mode, suggest a swap so the drink can still be made (from spec 0023, feature 26).
 **Done when:** a recipe with an 86'd ingredient shows at least one sensible substitute where one exists, and says so plainly where none does.
-- [ ] Design it (spec): `/architect ingredient substitution suggestions`
+- [x] Design it (spec): [0065](../specs/0065-ingredient-substitution-suggestions/index.md)
+- [ ] Build it: `/develop ingredient substitution suggestions`
+  - [x] Data and shared logic: swap tables, `substitutes_reviewed_at`, `fetch_bar_service_data` returning swaps with translations and `alcohol_free`, a few hand seeded rows, `pickSubstitutes` and `formatSubstituteAmount`, satisfies AC-2 through AC-9, AC-15
+  - [x] Web thin thread: Quick Build loads the current bar's service data and shows the 86'd banner with swaps, buster `bartender-mode-v2`, satisfies AC-1 through AC-8, AC-10
+  - [ ] Mobile parity, the menu "swap available" hint, strings in 9 locales, and `substitutes_shown`, satisfies AC-1 through AC-12
+  - [ ] Catalog seeding: Haiku propose and apply scripts, your review and apply across the catalog, and note translations in `translate-catalog`, satisfies AC-13, AC-14
+- [ ] Verify it: `/check verify ingredient substitution suggestions`
+- [ ] Test it: `/test ingredient substitution suggestions`
+Spec [0065](../specs/0065-ingredient-substitution-suggestions/index.md) · code in `supabase/migrations`, `packages/shared/src`, `packages/shared/scripts`, `apps/web/src/service`, `apps/mobile/src/app/bartender-build`, `apps/mobile/src/app/service.tsx`
 
 ## Slice 36: Shared shift log
 
@@ -1178,6 +1186,11 @@ Out of scope for the current build pass, kept so the plan stays honest.
 - **Suspend posting for repeat offenders**: an admin switch that stops an account from commenting, using report history (feature 63) · needs a decision · from spec 0062
 - **Screen comment text**: run the Haiku check on comment text too, if text abuse shows up (feature 63) · needs a decision · from spec 0062
 - **Comment photo sweep cron key**: move the spec 0032 orphan photo sweep cron to the `secret_key` on `apikey` pattern; it still sends the legacy Bearer key (feature 34) · from spec 0062
+- **Bartender search 86'd marker**: the search result part of spec 0023 AC-10, still unbuilt (feature 26) · from spec 0065
+- **Bar specific swaps**: an owner adds or hides a swap for their bar, once catalog swaps fall short in real use (feature 65) · needs a decision · from spec 0065
+- **Swap editing admin page**: edit, add, and reorder swaps in the admin UI if review files get painful (feature 65) · from spec 0065
+- **Swaps for home users**: show substitutes on recipe pages and in pantry drink ideas, reusing the swap table (feature 65) · needs a decision · from spec 0065
+- **Flag unreviewed new ingredients**: have the import job or freshness checks surface ingredients with no swap review (features 59, 65) · from spec 0065
 
 ## Legend
 

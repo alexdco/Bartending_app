@@ -45,6 +45,7 @@ export * from "./bar";
 export * from "./bartenderRecentlyViewed";
 export * from "./parts";
 export * from "./quickBuildInstructions";
+export * from "./substitutes";
 export * from "./learnArticles";
 export * from "./quizzes";
 export * from "./adminRecipes";

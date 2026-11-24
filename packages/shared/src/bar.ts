@@ -1,5 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import type { Database } from "./database.types";
+import { mapBarSubstitutes, type BarIngredientSubstitutes } from "./substitutes";
 import {
   toBarFormUnit,
   toRecognizedUnit,
@@ -51,6 +52,8 @@ export interface BarRecipe {
   glass: string | null;
   ice: string | null;
   garnish: string | null;
+  /** Computed by fetch_bar_service_data for the swap alcohol rule (spec 0065 AC-6). */
+  alcoholFree: boolean;
   ingredients: BarRecipeIngredient[];
 }
 
@@ -71,6 +74,8 @@ export interface BarServiceData {
   menu: BarMenuItem[];
   houseRecipes: BarRecipe[];
   stock86: BarStock86Entry[];
+  /** Swaps for each currently 86'd ingredient (spec 0065). */
+  substitutes: BarIngredientSubstitutes[];
 }
 
 async function currentUserId(client: SupabaseClient<Database>): Promise<string> {
@@ -286,6 +291,7 @@ interface RawBarServiceRow {
   menu: unknown;
   house_recipes: unknown;
   stock_86: unknown;
+  substitutes?: unknown;
 }
 
 function mapMenu(raw: unknown): BarMenuItem[] {
@@ -315,6 +321,7 @@ function mapHouseRecipes(raw: unknown): BarRecipe[] {
     glass: row.glass,
     ice: row.ice,
     garnish: row.garnish,
+    alcoholFree: row.alcohol_free === true,
     ingredients: Array.isArray(row.ingredients)
       ? row.ingredients.map((ingredient: Record<string, unknown>) => ({
           ingredientId: ingredient.ingredient_id,
@@ -353,6 +360,7 @@ export async function fetchBarServiceData(
     menu: mapMenu(row?.menu),
     houseRecipes: mapHouseRecipes(row?.house_recipes),
     stock86: mapStock86(row?.stock_86),
+    substitutes: mapBarSubstitutes(row?.substitutes),
   };
 }
 
@@ -591,6 +599,8 @@ export interface QuickBuildRecipeDetail {
   method: string | null;
   straining: string | null;
   glass: string | null;
+  /** recipes.alcoholic_status; only 'non_alcoholic' makes the swap alcohol rule apply (spec 0065 AC-6). */
+  alcoholicStatus: string | null;
   ingredients: QuickBuildIngredient[];
 }
 
@@ -650,6 +660,7 @@ export async function fetchQuickBuildRecipeDetail(
     method: data.method,
     straining: data.straining,
     glass: data.glass,
+    alcoholicStatus: data.alcoholic_status ?? null,
     ingredients,
   };
 }

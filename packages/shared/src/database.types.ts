@@ -573,6 +573,99 @@ export type Database = {
           },
         ];
       };
+      ingredient_substitute_translations: {
+        Row: {
+          created_at: string;
+          ingredient_id: string;
+          locale: string;
+          note: string;
+          source_note_hash: string;
+          substitute_ingredient_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          ingredient_id: string;
+          locale: string;
+          note: string;
+          source_note_hash: string;
+          substitute_ingredient_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          ingredient_id?: string;
+          locale?: string;
+          note?: string;
+          source_note_hash?: string;
+          substitute_ingredient_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ingredient_substitute_transla_ingredient_id_substitute_ing_fkey";
+            columns: ["ingredient_id", "substitute_ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredient_substitutes";
+            referencedColumns: ["ingredient_id", "substitute_ingredient_id"];
+          },
+          {
+            foreignKeyName: "ingredient_substitute_translations_locale_fkey";
+            columns: ["locale"];
+            isOneToOne: false;
+            referencedRelation: "supported_locales";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      ingredient_substitutes: {
+        Row: {
+          created_at: string;
+          ingredient_id: string;
+          note: string | null;
+          note_hash: string | null;
+          rank: number;
+          ratio: number;
+          substitute_ingredient_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          ingredient_id: string;
+          note?: string | null;
+          note_hash?: never;
+          rank: number;
+          ratio?: number;
+          substitute_ingredient_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          ingredient_id?: string;
+          note?: string | null;
+          note_hash?: never;
+          rank?: number;
+          ratio?: number;
+          substitute_ingredient_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ingredient_substitutes_ingredient_id_fkey";
+            columns: ["ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ingredient_substitutes_substitute_ingredient_id_fkey";
+            columns: ["substitute_ingredient_id"];
+            isOneToOne: false;
+            referencedRelation: "ingredients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       ingredient_translations: {
         Row: {
           created_at: string;
@@ -626,6 +719,7 @@ export type Database = {
           is_staple: boolean;
           name: string;
           normalized_name: string | null;
+          substitutes_reviewed_at: string | null;
           updated_at: string;
         };
         Insert: {
@@ -638,6 +732,7 @@ export type Database = {
           is_staple?: boolean;
           name: string;
           normalized_name?: string | null;
+          substitutes_reviewed_at?: string | null;
           updated_at?: string;
         };
         Update: {
@@ -650,6 +745,7 @@ export type Database = {
           is_staple?: boolean;
           name?: string;
           normalized_name?: string | null;
+          substitutes_reviewed_at?: string | null;
           updated_at?: string;
         };
         Relationships: [];
@@ -2100,6 +2196,7 @@ export type Database = {
           house_recipes: Json;
           menu: Json;
           stock_86: Json;
+          substitutes: Json;
         }[];
       };
       fetch_favorite_recipes: {
