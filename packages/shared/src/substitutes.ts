@@ -418,3 +418,27 @@ export function hasSubstituteAvailable(input: Omit<SubstituteBannerInput, "local
     (block) => block.picked.outcome === "shown",
   );
 }
+
+export interface SubstituteHouseRecipe {
+  readonly alcoholFree: boolean;
+  readonly ingredients: readonly { readonly ingredientId: string; readonly name: string }[];
+}
+
+/**
+ * AC-11 for a Service menu item. House recipe lines carry no staple flag and
+ * the menu's 86'd warning counts every line, so every line is checked here.
+ */
+export function houseRecipeHasSubstitute(
+  recipe: SubstituteHouseRecipe,
+  serviceData: SubstituteServiceSnapshot,
+): boolean {
+  return hasSubstituteAvailable({
+    ingredients: recipe.ingredients.map((ingredient) => ({
+      ingredientId: ingredient.ingredientId,
+      name: ingredient.name,
+      isStaple: false,
+    })),
+    serviceData,
+    alcoholFree: recipe.alcoholFree,
+  });
+}

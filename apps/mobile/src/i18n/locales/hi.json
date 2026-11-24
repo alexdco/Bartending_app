@@ -333,5 +333,39 @@
     "nonAlcoholic": "बिना अल्कोहल",
     "optional": "अल्कोहल वैकल्पिक",
     "unknown": "पता नहीं"
+  },
+  "substitutes": {
+    "bannerLabel": "86 सामग्री और विकल्प",
+    "heading": "86 है: {{ingredient}}",
+    "noneKnown": "कोई अच्छा विकल्प नहीं",
+    "noneInStock": "कोई विकल्प स्टॉक में नहीं",
+    "alreadyInDrink": "इस ड्रिंक में पहले से है",
+    "addsAllergens": "एलर्जी तत्व जोड़ता है: {{allergens}}",
+    "checkAllergens": "एलर्जी तत्व जांचें",
+    "swapAvailable": "विकल्प मौजूद है",
+    "ratio": {
+      "quarter": "मात्रा का 1/4",
+      "third": "मात्रा का 1/3",
+      "half": "मात्रा का 1/2",
+      "twoThirds": "मात्रा का 2/3",
+      "threeQuarters": "मात्रा का 3/4",
+      "oneAndQuarter": "मात्रा का 1 1/4 गुना",
+      "oneAndHalf": "मात्रा का 1 1/2 गुना",
+      "double": "मात्रा का दोगुना",
+      "triple": "मात्रा का तिगुना",
+      "quadruple": "मात्रा का 4 गुना"
+    },
+    "ratioApprox": {
+      "quarter": "लगभग मात्रा का 1/4",
+      "third": "लगभग मात्रा का 1/3",
+      "half": "लगभग मात्रा का 1/2",
+      "twoThirds": "लगभग मात्रा का 2/3",
+      "threeQuarters": "लगभग मात्रा का 3/4",
+      "oneAndQuarter": "लगभग मात्रा का 1 1/4 गुना",
+      "oneAndHalf": "लगभग मात्रा का 1 1/2 गुना",
+      "double": "लगभग मात्रा का दोगुना",
+      "triple": "लगभग मात्रा का तिगुना",
+      "quadruple": "लगभग मात्रा का 4 गुना"
+    }
   }
 }

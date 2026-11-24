@@ -3,6 +3,7 @@ import {
   buildSubstituteBanner,
   formatSubstituteAmount,
   hasSubstituteAvailable,
+  houseRecipeHasSubstitute,
   mapBarSubstitutes,
   pickSubstitutes,
   type BarIngredientSubstitutes,
@@ -342,5 +343,22 @@ describe("buildSubstituteBanner", () => {
         alcoholFree: false,
       }),
     ).toBe(false);
+  });
+
+  it("checks a house recipe's lines for the menu hint, honoring alcohol free (AC-11, AC-6)", () => {
+    const rumOut: BarIngredientSubstitutes = {
+      ingredientId: "rum",
+      reviewed: true,
+      allergens: [],
+      items: [item({ substituteIngredientId: "cachaca", rank: 1, category: "spirit" })],
+    };
+    const snapshot = {
+      stock86: [{ ingredientId: "rum", is86d: true }],
+      substitutes: [rumOut],
+    };
+    const recipe = { alcoholFree: false, ingredients: [{ ingredientId: "rum", name: "Rum" }] };
+    expect(houseRecipeHasSubstitute(recipe, snapshot)).toBe(true);
+    expect(houseRecipeHasSubstitute({ ...recipe, alcoholFree: true }, snapshot)).toBe(false);
+    expect(houseRecipeHasSubstitute(recipe, { stock86: [], substitutes: [rumOut] })).toBe(false);
   });
 });

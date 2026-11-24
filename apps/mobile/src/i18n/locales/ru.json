@@ -343,5 +343,39 @@
     "nonAlcoholic": "Безалкогольный",
     "optional": "Алкоголь по желанию",
     "unknown": "Неизвестно"
+  },
+  "substitutes": {
+    "bannerLabel": "Стоп-лист и замены",
+    "heading": "В стоп-листе: {{ingredient}}",
+    "noneKnown": "Хорошей замены нет",
+    "noneInStock": "Замен нет в наличии",
+    "alreadyInDrink": "Уже есть в этом напитке",
+    "addsAllergens": "Добавляет аллергены: {{allergens}}",
+    "checkAllergens": "Проверьте аллергены",
+    "swapAvailable": "Есть замена",
+    "ratio": {
+      "quarter": "1/4 от количества",
+      "third": "1/3 от количества",
+      "half": "1/2 от количества",
+      "twoThirds": "2/3 от количества",
+      "threeQuarters": "3/4 от количества",
+      "oneAndQuarter": "В 1¼ раза больше",
+      "oneAndHalf": "В 1½ раза больше",
+      "double": "Вдвое больше",
+      "triple": "Втрое больше",
+      "quadruple": "В 4 раза больше"
+    },
+    "ratioApprox": {
+      "quarter": "Около 1/4 от количества",
+      "third": "Около 1/3 от количества",
+      "half": "Около 1/2 от количества",
+      "twoThirds": "Около 2/3 от количества",
+      "threeQuarters": "Около 3/4 от количества",
+      "oneAndQuarter": "Примерно в 1¼ раза больше",
+      "oneAndHalf": "Примерно в 1½ раза больше",
+      "double": "Примерно вдвое больше",
+      "triple": "Примерно втрое больше",
+      "quadruple": "Примерно в 4 раза больше"
+    }
   }
 }

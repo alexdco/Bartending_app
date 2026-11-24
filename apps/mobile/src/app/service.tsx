@@ -2,6 +2,7 @@ import { useRouter } from "expo-router";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Modal, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { houseRecipeHasSubstitute } from "@bartendingapp/shared";
 
 import { Button } from "@/components/button";
 import { EmptyState } from "@/components/empty-state";
@@ -119,6 +120,7 @@ function WorkingSoloPanel({ isLinked }: { isLinked: boolean }) {
 
 function CurrentMenuSection({ barId }: { barId: string }) {
   const router = useRouter();
+  const { t } = useTranslation();
   const serviceData = useBarServiceData(barId);
   const toggleStock = useToggleStock(barId);
 
@@ -173,6 +175,11 @@ function CurrentMenuSection({ barId }: { barId: string }) {
             const eightySixedNames = (recipe?.ingredients ?? [])
               .filter((ingredient) => stock86Ids.has(ingredient.ingredientId))
               .map((ingredient) => ingredient.name);
+            // Spec 0065 AC-11: only items already showing the 86'd warning.
+            const swapAvailable =
+              recipe !== undefined &&
+              eightySixedNames.length > 0 &&
+              houseRecipeHasSubstitute(recipe, data);
 
             return (
               <Button
@@ -182,7 +189,9 @@ function CurrentMenuSection({ barId }: { barId: string }) {
                   router.push(`/bartender-build/bar_recipe/${item.barRecipeId}` as never)
                 }
               >
-                {`${item.name}${eightySixedNames.length > 0 ? "  ⚠" : ""}`}
+                {`${item.name}${eightySixedNames.length > 0 ? "  ⚠" : ""}${
+                  swapAvailable ? ` · ${t("substitutes.swapAvailable")}` : ""
+                }`}
               </Button>
             );
           })

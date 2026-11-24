@@ -33,4 +33,8 @@ export const REVIEWED_PLACEHOLDER_MESSAGES: Readonly<Record<string, readonly str
   "submissions.noteHint": ["max"],
   "submissions.errorTooLong": ["max"],
   "submissions.errorTooManyIngredients": ["max"],
+  // Copied from web's spec 0065 strings: the 86'd heading and the allergen
+  // tag are label plus value in every locale.
+  "substitutes.heading": ["ingredient"],
+  "substitutes.addsAllergens": ["allergens"],
 };

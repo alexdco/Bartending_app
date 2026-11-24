@@ -328,5 +328,39 @@
     "nonAlcoholic": "无酒精",
     "optional": "酒精可选",
     "unknown": "未知"
+  },
+  "substitutes": {
+    "bannerLabel": "售罄原料与替代品",
+    "heading": "已售罄：{{ingredient}}",
+    "noneKnown": "没有合适的替代品",
+    "noneInStock": "替代品均无库存",
+    "alreadyInDrink": "此饮品中已有",
+    "addsAllergens": "新增过敏原：{{allergens}}",
+    "checkAllergens": "请检查过敏原",
+    "swapAvailable": "有替代品",
+    "ratio": {
+      "quarter": "用量的 1/4",
+      "third": "用量的 1/3",
+      "half": "用量的 1/2",
+      "twoThirds": "用量的 2/3",
+      "threeQuarters": "用量的 3/4",
+      "oneAndQuarter": "用量的 1.25 倍",
+      "oneAndHalf": "用量的 1.5 倍",
+      "double": "用量的 2 倍",
+      "triple": "用量的 3 倍",
+      "quadruple": "用量的 4 倍"
+    },
+    "ratioApprox": {
+      "quarter": "约为用量的 1/4",
+      "third": "约为用量的 1/3",
+      "half": "约为用量的 1/2",
+      "twoThirds": "约为用量的 2/3",
+      "threeQuarters": "约为用量的 3/4",
+      "oneAndQuarter": "约为用量的 1.25 倍",
+      "oneAndHalf": "约为用量的 1.5 倍",
+      "double": "约为用量的 2 倍",
+      "triple": "约为用量的 3 倍",
+      "quadruple": "约为用量的 4 倍"
+    }
   }
 }

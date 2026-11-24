@@ -1,9 +1,11 @@
 import { activateKeepAwakeAsync, deactivateKeepAwake } from "expo-keep-awake";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
+import { Platform, SafeAreaView, ScrollView, StyleSheet, View } from "react-native";
 import {
+  buildSubstituteBanner,
+  buildSubstitutesShownEvent,
   computeParts,
   formatAmountInUnit,
   formatParts,
@@ -29,6 +31,10 @@ import {
 import { recordBartenderRecentlyViewed } from "@/service/bartender-recently-viewed-storage";
 import { useBartenderModeGuard } from "@/service/use-bartender-mode-guard";
 import { withMocktailsHidden } from "@/mocktails/with-mocktails-hidden";
+import { useCurrentBar } from "@/service/use-current-bar";
+import { useBarServiceData } from "@/service/use-bar-service-data";
+import { SubstituteBanner } from "@/service/substitute-banner";
+import { track } from "@/analytics/posthog-client";
 
 const KEEP_AWAKE_TAG = "quick-build-mode";
 const UNITS: QuickBuildUnit[] = ["oz", "ml", "parts"];
@@ -61,6 +67,54 @@ function QuickBuildModeScreen() {
   const bartenderModeAllowed = useBartenderModeGuard();
 
   const recipe = useQuickBuildRecipe(kind, id);
+
+  // Spec 0065 AC-1: the current bar's service data (already persisted for
+  // offline use) feeds the 86'd banner. It never gates the recipe: the
+  // banner just stays away while this is loading, failed, or has no bar.
+  const { currentBar } = useCurrentBar();
+  const serviceData = useBarServiceData(currentBar?.id ?? null);
+
+  const substituteBlocks = useMemo(() => {
+    const detail = recipe.data;
+    const snapshot = serviceData.data;
+    if (!detail || !snapshot) {
+      return [];
+    }
+    // AC-6: a catalog recipe is alcohol free only when 'non_alcoholic'; a
+    // house recipe uses the RPC's alcohol_free.
+    const alcoholFree =
+      detail.kind === "recipe"
+        ? detail.alcoholicStatus === "non_alcoholic"
+        : (snapshot.houseRecipes.find((house) => house.id === detail.id)?.alcoholFree ?? false);
+    return buildSubstituteBanner({
+      ingredients: detail.ingredients,
+      serviceData: snapshot,
+      alcoholFree,
+      locale,
+    });
+  }, [recipe.data, serviceData.data, locale]);
+
+  // AC-12: one substitutes_shown per recipe, ingredient, and outcome for this
+  // mount; unit toggles, refetches, and locale changes never resend it. track
+  // is a no op when analytics are disabled (isAnalyticsDisabled at init).
+  const sentSubstituteEvents = useRef(new Set<string>());
+  useEffect(() => {
+    substituteBlocks.forEach((block) => {
+      const key = `${id}:${block.ingredientId}:${block.picked.outcome}`;
+      if (sentSubstituteEvents.current.has(key)) {
+        return;
+      }
+      sentSubstituteEvents.current.add(key);
+      const event = buildSubstitutesShownEvent({
+        ingredient_id: block.ingredientId,
+        shown_count: block.picked.items.length,
+        outcome: block.picked.outcome,
+        recipe_kind: kind === "recipe" ? "catalog" : "house",
+        platform: Platform.OS,
+      });
+      track(event.name, event.properties);
+    });
+  }, [substituteBlocks, id, kind]);
 
   useEffect(() => {
     getStoredQuickBuildUnit().then(setUnit);
@@ -198,6 +252,14 @@ function QuickBuildModeScreen() {
       </View>
 
       <ScrollView contentContainerStyle={styles.content}>
+        <SubstituteBanner
+          blocks={substituteBlocks}
+          ingredients={data.ingredients}
+          partsLines={partsLines}
+          unit={unit}
+          locale={locale}
+        />
+
         <Text variant="display" style={styles.name}>
           {data.name.toUpperCase()}
         </Text>

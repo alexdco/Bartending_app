@@ -998,7 +998,7 @@ When an ingredient is 86'd in Bartender Mode, suggest a swap so the drink can st
 - [ ] Build it: `/develop ingredient substitution suggestions`
   - [x] Data and shared logic: swap tables, `substitutes_reviewed_at`, `fetch_bar_service_data` returning swaps with translations and `alcohol_free`, a few hand seeded rows, `pickSubstitutes` and `formatSubstituteAmount`, satisfies AC-2 through AC-9, AC-15
   - [x] Web thin thread: Quick Build loads the current bar's service data and shows the 86'd banner with swaps, buster `bartender-mode-v2`, satisfies AC-1 through AC-8, AC-10
-  - [ ] Mobile parity, the menu "swap available" hint, strings in 9 locales, and `substitutes_shown`, satisfies AC-1 through AC-12
+  - [x] Mobile parity, the menu "swap available" hint, strings in 9 locales, and `substitutes_shown`, satisfies AC-1 through AC-12
   - [ ] Catalog seeding: Haiku propose and apply scripts, your review and apply across the catalog, and note translations in `translate-catalog`, satisfies AC-13, AC-14
 - [ ] Verify it: `/check verify ingredient substitution suggestions`
 - [ ] Test it: `/test ingredient substitution suggestions`
